@@ -1,0 +1,3165 @@
+﻿//USEUNIT PrimeDispReagentsFeatureSteps
+//USEUNIT PrimeDispAuthentication
+
+//******************************************************************************
+//                          CI Pipeline
+//******************************************************************************
+function CI_Reagents_Scenarios()
+{
+  try
+  {
+     //Initialize Metadata
+     Log["AppendFolder"]("Initialize datafile and XML's")
+     InitializeMetaDataHYDRA();
+     Log["PopLogFolder"]();
+     
+     Log["AppendFolder"]("CI Pipeline :: Reagents Scenarios");
+     
+     //FEATURE 225953 - Loading/Unloading CH reagent packs
+     FT_225953_LoadUnloadCHReagentPack();
+     
+     //FEATURE 225934 - Load Unload Reagents
+     FT_225934_LoadUnloadReagents();
+     
+     //FEATURE 292033 - HYDRA Reagent Overview Screen
+     FT_292033_ReagentOverviewScreen();
+     
+     //FEATURE 225699 - Expired Reagent usage
+     FT_225699_ExpiredReagentUsage();
+     
+     //FEATURE 225952 - Loading/Unloading IM reagent packs
+     FT_225952_LoadUnloadIMReagentPacks();
+     
+     Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                                FEATURES  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+ 
+ 
+//******************************************************************************
+//                    FEATURE : 225953 : Loading/Unloading CH reagent packs
+//******************************************************************************
+function FT_225953_LoadUnloadCHReagentPack()
+{
+  try
+  {
+      //Initialize Datafile and XMLS
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 225953 :: Loading/Unloading CH reagent packs");
+      
+      //MIT 339437
+      MIT_339437_UnloadCHReagentPacks();
+      
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                    FEATURE : 225934 : Load Unload Reagents
+//******************************************************************************
+function FT_225934_LoadUnloadReagents()
+{
+  try
+  {
+      //Initialize Datafile and XMLS
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 225934 : Load Unload Reagents");
+      
+      //MIT 339438
+      MIT_339438_LoadingUnloadingCHReagentPacksAutomaticallyUnloadExpiredOrEmptyCHReagent_01();
+      
+      //MIT 334420
+      MIT_334420_LoadUnloadReagentsReagentDoorClosedPrevTrayPositionStatusIsEmpty_01();
+      
+      //MIT 339390
+      MIT_339390_01();
+      
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                    FEATURE : 292033 : HYDRA-Reagent Overview Screen
+//******************************************************************************
+function FT_292033_ReagentOverviewScreen()
+{
+  try
+  {
+      //Initialize Datafile and XMLS
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 292033 : HYDRA-Reagent Overview Screen");
+      
+      //MIT 339392
+      MIT_339392_ReagentOverviewScreen();
+      
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                    FEATURE : 225699 : Expired Reagent usage
+//******************************************************************************
+function FT_225699_ExpiredReagentUsage()
+{
+  try
+  {
+      //Initialize Datafile and XMLS
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 225699 : Expired Reagent usage");
+      
+      //MIT 336026
+      MIT_336026_01();
+      MIT_336026_02();
+      
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                    FEATURE : 225952 : Loading/Unloading IM reagent packs
+//******************************************************************************
+function FT_225952_LoadUnloadIMReagentPacks()
+{
+  try
+  {
+      //Initialize Datafile and XMLS
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 225952 : Loading/Unloading IM reagent packs");
+      
+      //MIT 339403
+      MIT_339403_01();
+      MIT_339403_02();
+      
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//                                GWT's   
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 225953 : Loading/Unloading CH reagent packs ]
+//******************************************************************************
+function MIT_339437_UnloadCHReagentPacks()
+{
+  try
+  {
+    var featureName = "Consumables_FT_225699";
+    var testcaseName = "MIT_339437_UnloadCHReagentPacks";
+    var testDataName = "TC_339437";
+    
+    //Initialize metaData
+    InitializeMetaDataHYDRA();
+     
+    //USER STORY
+    LogHighlight("Scenario : Feature 225699 :: Reagent")
+    Log["AppendFolder"]("MIT : 339437 - Loading/Unloading CH reagent packs - Unload CH Reagent Pack")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Empty Ch Drawer after unloading existing CH reagents");
+    if(!GivenEmptyChDrawerAfterUnloadingCHReagents(testDataName))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Load the CH reagents to reagent compartment");
+    if(!WhenChReagentsLoaded(testDataName)) 
+    {
+      Log["Error"]("Failed to load CH reagents to reagent cmpartment");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+
+    //THEN1
+    Log["AppendFolder"]("Then :: CH Reagents are loaded and enabled");
+    if(!VerifyReagentsAreLoadedAndEnabled(testDataName))
+    {
+      Log["Error"]("Failed to verify if reagents are loaded and enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify CH Reagent Present In Drawer After unloaded")   
+    if(!ThenVerifyChReagentPresentInDrawerAfterUnload(testDataName))
+    {
+      Log["Error"]("Then :: Failed to verify if unloaded Ch reagent is present in empty drawer");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POST-RUN
+    Log["AppendFolder"]("Post :: Clear CH drawer");
+    if(!PostRunClearCHDrawer())
+    {
+      Log["Error"]("Post :: Clear the CH drawer");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*************************************** **************************************
+//              GWTs [FEATURE : 225934 : Load Unload Reagents]
+//******************************************************************************
+function MIT_339438_LoadingUnloadingCHReagentPacksAutomaticallyUnloadExpiredOrEmptyCHReagent_01()
+{
+  try
+  {
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_339438_LoadingUnloadingCHReagentPacksAutomaticallyUnloadExpiredOrEmptyCHReagent_01";
+    var testDataName = "TC_339438";
+     
+    InitializeMetaDataHYDRA();
+     
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Load Unload Reagents")
+    Log["AppendFolder"]("MIT: Loading/Unloading CH reagent packs - Automatically unload expired/empty CH Reagent")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: IM Primary Tray Position Is Empty ");
+    var CHInUseCountAfterLoading=GivenCHReagentIsLoaded(testDataName);
+    if(CHInUseCountAfterLoading == "" || CHInUseCountAfterLoading == false || CHInUseCountAfterLoading.length <= 0)
+    {
+      Log["Error"]("Failed to Load the CH Reagent");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+//    //WHEN 1
+//    Log["AppendFolder"]("When :: CH Reagent Emptied/Expired And OpenedClosed the door ");
+//    if(!WhenCHReagentsEmptiedAndOpenCloseCHDrawer(testDataName))
+//    {
+//      Log["Error"]("Failed to Empty/Expire CH reagent");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+//    
+//    //THEN 1
+//    Log["AppendFolder"]("Then :: Verify Pack Unloaded from Compartment into Empty Slot");
+//    if(!ThenVerifyPackUnloadedFromCompartmentIntoEmptySlot(testDataName))
+//    {
+//      Log["Error"]("Failed to Verify Pack Unloaded from Compartment into Empty Slot");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+    Log["PopLogFolder"]();
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function MIT_334420_LoadUnloadReagentsReagentDoorClosedPrevTrayPositionStatusIsEmpty_01()
+{
+  try
+  {
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_334420_LoadUnloadReagents_Reagent_door_closed_Prev_Tray_position_status_Is_Empty_01";
+    var testDataName = "TC_334420";
+    
+    InitializeMetaDataHYDRA();
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Load Unload Reagents")
+    Log["AppendFolder"]("MIT: Load Unload Reagents - Reagent door closed, Prev Tray position status = Empty")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: IM Primary Tray Position Is Empty ");
+    if(!IMPrimaryTrayPositionIsEmpty(testDataName))
+    {
+      Log["Error"]("Failed to setup the IM Primary Tray Position as Empty");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: IM Primary Tray Position Displays Barcode Error ");
+    if(!IMPrimaryTrayPositionDisplaysBarcodeError(testDataName))
+    {
+      Log["Error"]("Failed to setup the IM Primary Tray Position as Barcode Error");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Entering PackID in Manual Entry Popup ");
+    if(!EnteringPackIDInManualEntryPopup(testDataName))
+    {
+      Log["Error"]("Failed to Enter PackID inManual entry popup");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Reagent loaded in Tray position ");
+    if(!VerifyReagentLoadedInTrayPosition(testDataName))
+    {
+      Log["Error"]("Failed to Verify Reagent loaded in tray position");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Reagent Loaded  log in Event Log ");
+    if(!ThenVerifyEventLogDisplaysReagentLoaded(testDataName))
+    {
+      Log["Error"]("Failed to Verify log in Event log");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//shrutika
+function MIT_339390_01()
+{
+try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_333990_01";
+    var testdata = "TC_339390_01";
+    
+    Log["AppendFolder"]("MIT_339390_01");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given:: that previous tray position is Scanned ID- Manual ID");
+    if(!IMPrimaryTrayPostionIsScannedIDManualID(testdata))
+    {
+      Log["Error"]("Failed in step to get scanned manual ID");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+	//WHEN
+    Log["AppendFolder"]("When:: that scanned tray position X is No Read");
+    if(!IMPrimaryTrayPositionIsEmpty(testdata))
+    {
+      Log["Error"]("Failed in step to get NO Read");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+	//THEN
+    Log["AppendFolder"]("Then:: software process pack removal and position is marked empty and user cannot pack id since Manual ID entry window does not show this pack postion due to no read");
+    if(!VerifyManualPackRemovalAndPopUpDidNotAppear(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*************************************** **************************************
+//              GWTs [FEATURE : 292033 : HYDRA-Reagent Overview Screen]
+//******************************************************************************
+function MIT_339392_ReagentOverviewScreen()
+{
+  try
+  {
+    var featureName = "Consumables_FT_225699";
+    var testcaseName = "MIT_339392_ReagentOverviewScreen";
+    var testDataName = "TC_339392";
+    
+     //USER STORY
+    LogHighlight("Scenario : Feature 225699 :: Reagent Overview");
+    Log["AppendFolder"]("MIT : 339392 - Reagent Overview Screen - Navigate to Reagent Overview Screen");
+
+    InitializeMetaDataHYDRA();
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+     
+    //GIVEN1
+    Log["AppendFolder"]("Given :: Load more than one reagent");
+    if(!GivenLoadMultipleReagentsOfDiffrentReagentTypes(testDataName))
+    {
+      Log["Error"]("Failed to load reagents");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log["AppendFolder"]("When :: Reagents are loaded and enabled");
+    if(!VerifyReagentsAreLoadedAndEnabled(testDataName))
+    {
+      Log["Error"]("Failed to reagents are loaded and enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify default sorting in reagent overview grid")
+    if(!ThenVerifyReagentOverviewDefaultSorting(testDataName))
+    {
+      Log["Error"]("Failed to verify default sorting in reagent overview grid");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();  
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify columns present in reagent overview grid")
+    if(!ThenVerifyColumnsPresentInReagentOverviewGrid(testDataName))
+    {
+      Log["Error"]("Failed to verify columns present in reagent overview grid");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();  
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify group by reagent in reagent overview grid");
+    if(!ThenVerifyGroupByReagentInReagentOverviewGrid())
+    {
+      Log["Error"]("Failed to group by reagent in reagent overview grid");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify reagent overview grid sorting");
+    if(!VerifyReagentOverviewGridSorting(testDataName))
+    {
+      Log["Error"]("Failed to verify reagent overview grid sorting");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*************************************** **************************************
+//              GWTs [FEATURE : 225699 : Expired Reagent usage]
+//******************************************************************************
+
+function MIT_345552_336026_336006()
+{
+    InitializeMetaDataHYDRA();     
+      //Removing old samples
+      if(!SetupMoveAllSamplesToHistorical())
+        return false;
+      
+      //  MIT_345552_01_IMPrimaryPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+//  MIT_345552_02_CHUnpairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+//  MIT_345552_03_CHPairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+
+  //MIT_336006_01()
+  MIT_336026_01()
+  MIT_336026_02()
+
+}
+
+//SHRUTIKA
+//function TC_336026_WorkOrdersWithIMPrimaryandAncillaryReagentPacksExpired()
+function MIT_336026_01()
+{
+  try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_336026_01"
+    var testdata = "TC_336026_01"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_336026_01");
+    
+    Log["AppendFolder"]("Setup for this scenario- Keep mastercurve of IMPrimary lot which is expired")
+    if(!SetupPlaceMasterCurve(testdata))
+    {
+      Log["Error"]("Setup is failed to place mastercurve");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+  
+    //GIVEN *****
+    //check the hydra & dl ready state
+    Log.AppendFolder("GIVEN: Hydra and DL are Ready");
+    if(!CheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("HYDRA / DL ready state verification failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    //GIVEN*****
+    //load IM primary expired reagents
+    Log.AppendFolder("GIVEN : IM Primary reagent pack are loaded. One of the required reagent pack is expired");
+    if(!IMPrimaryReagentPackLoadedAndVerifyReagentDetails(testdata))
+    {
+      Log["Error"]("IM Primary reagent pack with expired lot is not loaded sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN *****
+    //create patient order with test of expired reagent packs
+    Log.AppendFolder("WHEN : Operator creates a new work order");
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+    {
+      Log["Error"]("Patient order is not created sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN*******
+    var failstep = 0 ;
+    Log.AppendFolder("THEN : Expired reagent packs are displayed 'Expired' on reagent overview screen and verify operator event log");
+    if(!ThenVerifyOperatorEventLog(testdata))
+    {
+      Log["Error"]("Test step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      failstep = 1 ;
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : AND New order for the expired reagent packs should not get processed");
+    if(!ThenVerifySampleStatusInSampleList(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : AND New order for the expired reagent packs should get flaged as 'No Primary");
+    if(!ThenVerifySampleTestDataInWorklist(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]()
+  
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_336026_02()
+{
+  try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "TC_336026_02"
+    var testdata = "TC_336026_02"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    
+    Log.AppendFolder("MIT_336026_02");
+    
+     //GIVEN *****
+    //check the hydra & dl ready state
+    Log.AppendFolder("GIVEN: Hydra and DL are Ready");
+    if(!CheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("HYDRA / DL ready state verification failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    //GIVEN*****
+    //load IM primary and IM ancillary expired reagents
+    var failstep = 0 ;
+    Log.AppendFolder("GIVEN : IM Ancillary reagent pack are loaded. One of the required reagent pack is expired");
+    if(!IMPrimaryReagentPackLoadedAndVerifyReagentDetails(testdata))
+    {
+      Log["Error"]("IM Primary good reagent pack is not loaded sucessfully");
+      failstep=1;
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+    }
+    if(!IMAncillaryReagentPackLoadedAndVerifyReagentDetails(testdata))
+    {
+      Log["Error"]("IM Ancillary reagent pack with expired lot is not loaded sucessfully");
+      failstep=1;
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+    }
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN *****
+    //create patient order with test of expired reagent packs
+    Log.AppendFolder("WHEN : Operator creates a new work order");
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+    {
+      Log["Error"]("Patient order is not created sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN*******
+    var failstep = 0 ;
+    Log.AppendFolder("THEN : Expired reagent packs are displayed 'Expired' on reagent overview screen");
+    if(!ThenVerifyOperatorEventLog(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : AND New order for the expired reagent packs should not get processed");
+    if(!ThenVerifySampleStatusInSampleList(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : AND New order for the expired reagent packs should get flaged as 'No Ancillary");
+    if(!ThenVerifySampleTestDataInWorklist(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]()
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 225952 : Loading/Unloading IM reagent packs ]
+//******************************************************************************
+//Shrutika
+function MIT_339403_01() //IM Primary
+{
+  try
+    {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_339403_01"
+    var testdata = "TC_339403_01"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    
+    Log.AppendFolder("MIT_339403_01");
+     //GIVEN *****
+    //check the hydra & dl ready state
+    Log.AppendFolder("GIVEN: Hydra and DL are Ready");
+    if(!CheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("HYDRA / DL ready state verification failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    //GIVEN*****
+    //load at least one IM primary reagents
+    Log.AppendFolder("GIVEN : at least one IM Primary reagent pack are already loaded to hydra module.");
+    if(!IMPrimaryReagentPackLoadedAndVerifyReagentDetails(testdata))
+    {
+      Log["Error"]("IM Primary reagent pack loading failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //GIVEN*****
+    //restart hydra
+    Log.AppendFolder("GIVEN : Hydra module is powered off and WHEN : Power on the Hydra module and Hydra is in Ready state");
+    if(!HydraRestartAndVerifyModulesAreReady("SiemensInternal","Siemens1234567!")) // need to pass from testdata - see later
+    {
+      Log["Error"]("Restart Hydra step is failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+
+    //THEN*******
+    var failstep = 0;
+    Log.AppendFolder("THEN : System should indentify the loaded IM Primary and IM Ancillary reagent packs");
+    if(!VerifyIMPrimaryPackDetailsInReagentDetails(testdata))
+    {
+      Log["Error"]("Step is failed");
+      failstep =1;
+      ReportTestStatusToResultXML(featureName,testcase,"I")
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : System should log the pack load");
+    if(!ThenVerifyOperatorEventLog(testdata))// currently this functionality is not working in tpr build - task id 449558
+    {
+      Log["Error"]("Step is failed --currently this functionality is not working - task id 449558");
+	  ReportTestStatusToResultXML(featureName,testcase,"F");
+      failstep =1;
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN 2*****
+    //unload and reload the same IM primary pack
+    Log.AppendFolder("WHEN : Unloaded the IM Primary pack and reload the same pack");
+    if(!WhenUnloadedOneIMPrimaryPackAndReloadedSamePack(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+
+    //THEN 2*******
+    Log.AppendFolder("THEN : Reagent summary UI should be updated with inventory details and pack status flags should be displayed");
+    if(!VerifyIMPrimaryPackDetailsInReagentDetails(testdata))
+    {
+      Log["Error"]("Step is failed");
+      failstep =1;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]()
+    
+    if (failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+//Shrutika
+function MIT_339403_02()//IM Ancillary
+{
+try{
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_339403_02"
+    var testdata = "TC_339403_01"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    
+    //GIVEN *****
+    //check the hydra & dl ready state
+    Log.AppendFolder("GIVEN: Hydra and DL are Ready");
+    if(!CheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("HYDRA / DL ready state verification failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    //GIVEN*****
+    //load at least one IM primary reagents
+    Log.AppendFolder("GIVEN : at least one IM Ancillary reagent pack are already loaded to hydra module.");
+    if(!IMAncillaryReagentPackLoadedAndVerifyReagentDetails(testdata))
+    {
+      Log["Error"]("IM Primary reagent pack loading failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+     //GIVEN*****
+    //restart hydra
+    Log.AppendFolder("GIVEN : Hydra module is powered off and WHEN : Power on the Hydra module and Hydra is in Ready state");
+    if(!HydraRestartAndVerifyModulesAreReady("SiemensInternal","Siemens1234567!"))
+    {
+      Log["Error"]("Restart Hydra step is failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+
+    //THEN*******
+    var failstep = 0;
+    Log.AppendFolder("THEN : System should indentify the loaded IM Ancillary reagent packs");
+    if(!VerifyIMAncillaryPackDetailsInReagentDetails(testdata))
+    {
+      Log["Error"]("Step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      failstep =1;
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : System should log the pack load");
+    if(!ThenVerifyOperatorEventLogOnReScanningOfAlreadyLoadedOneIMAncillaryReagentPack(testdata))// currently this functionality is not working in tpr build - task id 449558
+    {
+		Log["Error"]("Step is failed --currently this functionality is not working - task id 449558");
+		ReportTestStatusToResultXML(featureName,testcase,"F");
+		failstep =1;
+		Log["PopLogFolder"]()
+	 }
+	Log["PopLogFolder"]()
+
+    //WHEN 2*****
+    //unload and reload the same IM primary pack
+    Log.AppendFolder("WHEN 2 : Unloaded the IM Primary pack and reload the same pack");
+    if(!WhenUnloadedOneIMAncillaryPackAndReloadedSamePack(testdata))
+    {
+      Log["Error"]("Step failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+
+    //THEN 2*******
+    Log.AppendFolder("THEN 2 : Reagent summary UI should be updatedwith inventory details and pack status flags should be displayed");
+    if(!VerifyIMAncillaryPackDetailsInReagentDetails(testdata))
+    {
+      Log["Error"]("Step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      failstep =1;
+    }
+    Log["PopLogFolder"]()
+    
+    if (failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function MIT_334430_01()
+{
+try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_334430_01";
+    var testdata = "TC_334430_01";
+    
+    Log["AppendFolder"]("MIT_334430_01");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 
+    Log["AppendFolder"]("Given:: ensure tray position x has scanned ID and replace pack position x with Bad Read pack and scan and ensure Barcode error pack now at position x");
+    if(!IMPrimaryTrayPositionDisplaysAPackAndThenBarcodeErrorATaPosition(testdata))
+    {
+      Log["Error"]("Failed in step to get scanned manual ID and then barcode error");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log["AppendFolder"]("When:: click on pack position x and Open IM compartment and type in label [Same as previous] , save and close the IM compartment door , wait for scan");
+    if(!EnterManualPackLabelSameOrDifferentAsPreviouslyScannedBarcodeInIMPrimaryCompartment(testdata))
+    {
+      Log["Error"]("Failed in step to type in manual pack in pop up and scan the IM compartment door");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN
+    Log["AppendFolder"]("Then::pack barcode error window opens and closes and UI shows manual ID on the pack graphic in position x and no confirm manual entered packs for position x and log entry indicating that manual pack ID is applied to pack compartment in position");
+    if(!VerifyManualEnteredPackInReagentOverviewAndOperatorEventLog(testdata))
+    {
+      Log["Error"]("Step is failed to manual pack registerd in system and corresponding operator event log");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_334430_02()
+{
+try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_334430_02";
+    var testdata = "TC_334430_02";
+    
+    Log["AppendFolder"]("MIT_334430_01");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN
+    var failstep = 0;
+    Log["AppendFolder"]("Given:: ensure tray position x has scanned ID and replace pack position x with Bad Read pack and scan and ensure Barcode error pack now at position x");
+    if(!IMPrimaryTrayPositionDisplaysAPackAndThenBarcodeErrorATaPosition(testdata))
+    {
+      Log["Error"]("Failed in step to get scanned manual ID and then barcode error");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log["AppendFolder"]("When:: click on pack position x and Open IM compartment and type in label [Different from previous] , save and close the IM compartment door , wait for scan");
+    if(!EnterManualPackLabelSameOrDifferentAsPreviouslyScannedBarcodeInIMPrimaryCompartment(testdata))
+    {
+      Log["Error"]("Failed in step to type in manual pack in pop up and scan the IM compartment door");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN
+    Log["AppendFolder"]("Then::pack barcode error window opens and closes and UI shows manual ID on the pack graphic in position x and no confirm manual entered packs for position x and log entry indicating that manual pack ID is applied to pack compartment in position");
+    if(!VerifyManualEnteredPackInReagentOverviewAndOperatorEventLog(testdata))
+    {
+      Log["Error"]("Step is failed to manual pack registerd in system and corresponding operator event log");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_334422_01()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_334422_01";
+    var testdata = "TC_334422_01";
+    
+    Log["AppendFolder"]("MIT_334422_01");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given:: Ensure the last scanned tray position X is bad read and previous tray position X  status is Bad Read-Manual ID");
+    //previous tray position X  status is Bad Read-Manual ID
+    if(!IMPrimaryTrayPostionIsScannedIDManualID(testdata))
+    {
+      Log["Error"]("Failed in given step");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+     
+    Log["AppendFolder"]("When:: -Open and Close the Door. -Wait for scan to complete.");
+    if(!VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("Then:: Prompt for ID confirmation is displayed-  IF same ID THEN clear pack/probe use Audit");
+    if(!VerifyClearPackAuditAndVerifyOperatorEventLog(testdata))  // audit trail not implemented yet
+    {
+      //failstep = 1;
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+  
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_334422_02()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_334422_02";
+    var testdata = "TC_334422_02";
+    
+    Log["AppendFolder"]("MIT_334422_02");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given:: Ensure the last scanned tray position X is bad read and previous tray position X  status is Bad Read-Manual ID");
+    //previous tray position X  status is Bad Read-Manual ID
+    if(!IMPrimaryTrayPostionIsScannedIDManualID(testdata))
+    {
+      Log["Error"]("Failed in given step");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+    Log["AppendFolder"]("When:: -Open and Close the Door. -Wait for scan to complete.");
+    if(!VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile(testdata))
+    {
+      //failstep = 1;
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+  
+    Log["AppendFolder"]("Then:: Prompt for ID confirmation is displayed-   ELSE  a) PROCESS Pack Swap (man ID1 => Unidentified b) log entry: Manual Pack ID for position is changed from <oldManID> to <Unidentified> ");
+    if(!VerifyProcessPackSwapWhenUserDoesNotConfirmManualPackOnConfirmationPrompt(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function MIT_334439_01()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_334439_01";
+    var testdata = "TC_334439_01";
+    
+    Log["AppendFolder"]("MIT_334439_01");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given:: Ensure tray position x has a pack with a BARCODE ERROR and previously confirmed Manual ID AND open door, close door, wait for scan AND at Confirmation window, uncheck the row for pack at position x and Save - ensure BARCODE ERROR pack now at position x");
+    if(!IMPrimaryTrayPositionXIsConfirmedManualIDAndThenBarcodeError(testdata))
+    {
+      Log["Error"]("Failed in given step");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //WHEN
+    Log["AppendFolder"]("When::click on pack graphic in position x and open IM compartment door ,type in pack label [SAME as previous], Save and close IM compartment door, wait for scan");
+    if(!((EnteringPackIDInManualEntryPopup(testdata)) && (VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile(testdata))))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    //THEN
+    Log["AppendFolder"]("Then:: Pack Barcode Error window closes, UI shows manual ID on the pack graphic in position x AND no Confirm Manually Entered Packs for position x ,Log entry indicating that Manual Pack ID is applied to pack compartment in position");
+    if(!VerifyManualEnteredPackInReagentOverviewAndOperatorEventLog(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_334439_02()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName = "Consumables_FT225934";
+    var testcaseName = "MIT_334439_02";
+    var testdata = "TC_334439_02";
+    
+    Log["AppendFolder"]("MIT_334439_02");
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given:: Ensure tray position x has a pack with a BARCODE ERROR and previously confirmed Manual ID AND open door, close door, wait for scan AND at Confirmation window, uncheck the row for pack at position x and Save - ensure BARCODE ERROR pack now at position x");
+    //previous tray position X  status is CONFRIMED -Manual ID and then barcode error
+    if(!IMPrimaryTrayPositionXIsConfirmedManualIDAndThenBarcodeError(testdata))
+    {
+      Log["Error"]("Failed in given step");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //WHEN
+    Log["AppendFolder"]("When::click on pack graphic in position x and open IM compartment door ,type in pack label [SAME as previous], Save and close IM compartment door, wait for scan");
+    if(!((EnteringDifferentPackIDInManualEntryPopupOnUnconfirmingPreviousManualID(testdata)) && (VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile(testdata))))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    //THEN
+    Log["AppendFolder"]("Then:: Pack Barcode Error window closes, UI shows manual ID on the pack graphic in position x AND no Confirm Manually Entered Packs for position x ,Log entry indicating that Manual Pack ID is applied to pack compartment in position");
+    if(!VerifyManualEnteredPackInReagentOverviewAndOperatorEventLogOnUncofirmingThePreviousManualPackID(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function MIT_336006_01()
+{
+  try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_336006_01"
+    var testdata = "TC_336006_01"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_336006_01");
+
+    //GIVEN*****
+    //load IM primary expired reagents
+    Log.AppendFolder("GIVEN : CH reagent pack are loaded. One of the required reagent pack is expired");
+    if(!CHReagentExpiredPackLoadedAndVerifyReagentDetails(testdata))
+    {
+      Log["Error"]("IM Primary reagent pack with expired lot is not loaded sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN *****
+    //create patient order with test of expired reagent packs
+    Log.AppendFolder("WHEN : Operator creates a new work order");
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+    {
+      Log["Error"]("Patient order is not created sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN*******
+    var failstep = 0 ;
+    Log.AppendFolder("THEN : Expired reagent packs are displayed 'Expired' on reagent overview screen and verify operator event log");
+    if(!ThenVerifyOperatorEventLog(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      Log["PopLogFolder"]()
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : AND New order for the expired reagent packs should not get processed");
+    if(!ThenVerifySampleStatusInSampleList(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      Log["PopLogFolder"]()
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("THEN : AND New order for the expired reagent packs should get flaged as 'No Primary");
+    if(!ThenVerifySampleTestDataInWorklist(testdata))
+    {
+      Log["Error"]("Test step failed");
+      failstep = 1 ;
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      Log["PopLogFolder"]()
+    }
+  
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+
+function MIT_339405_01()
+{
+ try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_339405_01"
+    var testdata = "TC_339405_01"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_339405_01");
+
+    //GIVEN*****
+    //load IM primary expired reagents
+    Log.AppendFolder("GIVEN : Hydra Module in Scanning state(means any state where Hydra scans the CH Reagents packs after drawer close)");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("IM Primary reagent pack with expired lot is not loaded sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+	  Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: CH drawer/loader is empty before start loading CH reagent");
+    if(!GivenEmptyChDrawerAfterUnloadingCHReagents(testdata))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN2
+    Log["AppendFolder"]("When :: Operator loads a new CH Reagent pack or Paired Pack(Usable) with a valid Barcode and lot not expired");
+    if(!WhenChReagentsLoaded(testdata)) 
+    {
+      Log["Error"]("Failed to load CH reagents to reagent cmpartment");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+
+    //THEN1
+    Log["AppendFolder"]("Then :: The newly added reagent pack is loaded into the reagent compartment and is available for use");
+    if(!VerifyCHReagentPackDetailsInReagentDetails(testdata))
+    {
+      Log["Error"]("Failed to verify if reagents are loaded and enabled");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+    {
+      Log["Error"]("Patient order is not created sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false
+    }
+  
+    var failstep = 0;
+    if(!ThenVerifySampleStatusInSampleList(testdata))
+    {
+      failstep=1;
+      Log["Error"]("Test step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      Log["PopLogFolder"]()
+    }
+
+    if(!ThenVerifySampleResultedInWorklist(testdata))
+    {
+      failstep=1;
+      Log["Error"]("Test step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_01_IMPrimaryOBSAlmostFinished()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_01_IMPrimaryOBSAlmostFinished"
+    var testdata = "TC_345747_01_IMPrimary"
+    var reagentType = "IMPrimary"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_01_IMPrimaryOBSAlmostFinished");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: IM primary Reagent Pack loaded and OBS is almost expired");
+    if(!IMPrimaryPackIsLoadedAndThenOBSReachesBelowThresholdAlmostExpired(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+  
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+  
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeOfIMPrimaryIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_02_IMAncillaryOBSAlmostFinished()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_02_IMAncillaryOBSAlmostFinished"
+    var testdata = "TC_345747_02_IMAncillary"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_02_IMAncillaryOBSAlmostFinished");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: IM ancillary Reagent Pack loaded and OBS is almost expired");
+    if(!IMAncillaryPackIsLoadedAndThenOBSReachesBelowThresholdAlmostExpired(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    var reagentType="IMAncillary"
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_03_CHUnpairedPackOBSAlmostFinished()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_03_CHUnpairedPackOBSAlmostFinished"
+    var testdata = "TC_345747_03_CHUnpairedPack"
+    var reagentType="CH"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_03_CHUnpairedPackOBSAlmostFinished");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: CH unpaired pack is loaded and OBS almost expired");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //need to process asmaple to get OBS
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))
+    {
+      Log["Warning"]("Step is failed -processing sample to get OBS");
+    }
+    if(!ShutdownHydraAndRunSQLQueryAndThenLaunchAndLoginToHydra(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+  
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_04_CHPairedPackOBSAlmostFinished()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_04_CHPairedPackOBSAlmostFinished"
+    var testdata = "TC_345747_04_CHPairedPack"
+    var reagentType="CHPaired"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_04_CHPairedPackOBSAlmostFinished");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not Ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: CH paired pack is loaded and LOT/OBS almost expired");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //need to process sampple to get OBS
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))
+    {
+      Log["Warning"]("Step is failed -processing sample to get OBS");
+    }
+    if(!ShutdownHydraAndRunSQLQueryAndThenLaunchAndLoginToHydra(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+  
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_05_IMPrimaryLotAlmostExpired()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_05_IMPrimaryLotAlmostExpired"
+    var testdata = "TC_345747_05_IMPrimary"
+    var reagentType="IMPrimary"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_05_IMPrimaryLotAlmostExpired");
+
+    //setup-//keep an afp mastercurve of lot 222 which will expire in next 3 days - should get lot expiration warning
+    Log["AppendFolder"]("Setup for this scenario- Keep mastercurve of IMPrimary lot which is going to expire in next 2 days")
+    if(!SetupPlaceMasterCurve(testdata))
+    {
+      Log["Error"]("Setup is failed to place mastercurve");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: IM Primary pack is loaded and LOT almost expired");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+  
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeOfIMPrimaryIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_06_IMAncillaryLotAlmostExpired()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_06_IMAncillaryLotAlmostExpired"
+    var testdata = "TC_345747_06_IMAncillary"
+    var reagentType ="IMAncillary" 
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_06_IMAncillaryLotAlmostExpired");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not Ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+     
+    Log["AppendFolder"]("Given :: IM Primary pack is loaded and LOT almost expired");
+    if(!IMAncillaryPackIsLoadedAndThenLotReachesBelowThresholdAlmostExpired(testdata,reagentType))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+  
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failstep = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeIsTracked(testdata,reagentType))
+    {
+      failstep = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_07_CHUnpairedPackLotAlmostExpired(testdata)
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_07_CHUnpairedPackLotAlmostExpired"
+    var testdata = "TC_345747_07_CHUnpairedPack"
+    var reagentType="CH"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_07_CHUnpairedPackLotAlmostExpired");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: CH drawer/loader is empty before start loading CH reagent");
+    if(!GivenEmptyChDrawerAfterUnloadingCHReagents(testdata))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Given :: CH unpaired pack is loaded and LOT almost expired");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //need to process asmaple to get OBS
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))
+    {
+      Log["Warning"]("Step is failed -processing sample to get OBS");
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_08_CHPairedPackLotAlmostExpired(testdata)
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345747_08_CHPairedPackLotAlmostExpired"
+    var testdata = "MIT_345747_08_CHPairedPack"
+    var reagentType="CHPaired"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_08_CHPairedPackLotAlmostExpired");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: CH drawer/loader is empty before start loading CH reagent");
+    if(!GivenEmptyChDrawerAfterUnloadingCHReagents(testdata))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Given :: CH paired pack is loaded and LOT almost expired");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //need to process asmaple to get OBS
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))
+    {
+      Log["Warning"]("Step is failed -processing sample to get OBS");
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();  
+    
+    var failstep=0;
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    if(!VerifyReagentVolumeIsTracked(testdata,reagentType))
+    {
+      failsetp = 1;
+      Log["Error"]("Step is failed");
+    }
+    Log["PopLogFolder"](); 
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345747_Step2ReagentPacksLoadedAndThenBecomesUnusableRecoverable()
+{
+    InitializeMetaDataHYDRA();
+    var arrreagentType = new Array();
+    arrreagentType = ["IMPrimary","IMAncillary","CH","CHPaired"]
+    
+    var dictTestData  = new ActiveXObject("Scripting.Dictionary");
+    dictTestData.Add("IMPrimary",["TC_345747_09_IMPrimary","MIT_345747_09_IMPrimaryPackUnusableRecoverable"])
+    dictTestData.Add("IMAncillary",["TC_345747_10_IMAncillary","MIT_345747_10_IMAncillaryPackUnusableRecoverable"])
+    dictTestData.Add("CH",["TC_345747_11_CHUnpairedPack","MIT_345747_09_IMPrimaryPackUnusableRecoverable"])
+    dictTestData.Add("CHPaired",["TC_345747_12_CHPairedPack","MIT_345747_09_IMPrimaryPackUnusableRecoverable"])
+    
+   var failcount =0;
+   for(var i=0;i<dictTestData.Count;i++)
+   {
+     var key = aqConvert["VarToStr"](arrreagentType[i])
+     var keyvalue =  dictTestData.Item(key)
+     var testdata = keyvalue[0]
+     var testcase = keyvalue[1]
+     var reagentType = key
+     var result = MIT_345747_ReagentPackAndThenBecomesUnusableRecoverable(testcase,testdata,reagentType)
+     if(result==false)
+     {
+       Log.Message("Scenario "+testcase +" is failed")
+       failcount =1;
+     }
+   }
+   if(failcount==1)
+   {
+     Log["Error"]("MIT_345747_Step2ReagentPacksLoadedAndThenBecomesUnusableRecoverable is failed")
+   }
+   else
+   {
+     Log["Message"]("MIT_345747_Step2ReagentPacksLoadedAndThenBecomesUnusableRecoverable is passed")
+   }
+}
+
+function MIT_345747_ReagentPackAndThenBecomesUnusableRecoverable(testcase,testdata,reagentType)
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    //var testcase = "MIT_345747_09_IMPrimaryPack_UnusableRecoverable"
+    //var testdata = "TC_345747_09_IMPrimaryPack_UnusableRecoverable"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345747_ReagentPackAndThenBecomesUnusableRecoverable");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]();
+  
+    //var reagentType="IMPrimary"
+    Log["AppendFolder"]("Given :: "+reagentType +" pack is loaded and pack is unusable recoverable");
+    if(!PackIsLoadedAndThenPackBecomesUnusableRecoverable(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator selects the reagent row and view the reagent details for the selected @Reagent pack");
+    if(!OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+    
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345552_01_IMPrimaryPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345552_01_IMPrimaryPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails"
+    var testdata = "TC_345552_01_IMPrimary"
+    var reagentType="IMPrimary"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345552_01_IMPrimaryPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails");
+
+    Log["AppendFolder"]("Step1 of MIT 345552 will start now @reagentpack = IMPrimary")
+      //GIVEN
+      Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+      if(!CheckAllSystemModulesReadyState(testdata))
+      {
+        Log["Error"]("Modules are not ready");
+        ReportTestStatusToResultXML(featureName,testcase, "F");
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        return false
+      }
+      Log["PopLogFolder"]();
+
+      Log["AppendFolder"]("Given :: IMPrimary pack is loaded");
+      if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+      {
+        Log["Error"]("Step is failed");
+        ReportTestStatusToResultXML(featureName, testcase, "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]()
+        return false;
+      }
+      Log["PopLogFolder"](); 
+    
+      Log["AppendFolder"]("When:: Operator disables @reagent pack");
+      if(!OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,"DISABLE"))
+      {
+        Log["Error"]("Step is failed");
+        ReportTestStatusToResultXML(featureName, testcase, "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]()
+        return false;
+      }
+      Log["PopLogFolder"]();
+    
+      var step1failcount =0
+      Log["AppendFolder"]("Then:: Operator verifies the reagent details after disabling @reagentpack = IMPrimary");
+      if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+      {
+        step1failcount =1
+        Log["Error"]("Step is failed");
+      }
+      if(!OperatorVerifyIMPrimaryReagentPackDetailsAfterDisablingTheReagentPack(testdata))
+      {
+        step1failcount =1 
+        Log["Error"]("Step is failed");
+      }
+      if(step1failcount ==1)
+      {
+        Log["Error"]("Step1 of MIT 345552 is failed @reagentpack = IMPrimary");
+      }
+      Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Step2 of MIT 345552 will start now @reagentpack = IMPrimary")
+      Log["AppendFolder"]("When:: Operator re-enables @reagentpack = IMPrimary");
+      if(!OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,"ENABLE"))
+      {
+        Log["Error"]("Step is failed");
+        ReportTestStatusToResultXML(featureName, testcase, "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+    
+      Log["AppendFolder"]("Then:: Operator verifies the reagent details after re-enabling @reagentpack = IMPrimary");
+      if(!OperatorVerifyIMPrimaryReagentPackDetailsAfterReEnablingTheReagent(testdata,reagentType))
+      {
+        Log["Error"]("Step2 of MIT 345552 is failed");
+        ReportTestStatusToResultXML(featureName, testcase, "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+	Log["Checkpoint"]("Testscenario is PASSED");    
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345552_02_CHUnpairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345552_02_CHUnpairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails"
+    var testdata = "TC_345552_02_CHUnpairedPack"
+    var reagentType="CH"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345552_02_CHUnpairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails");
+
+    Log["AppendFolder"]("Step1 of MIT 345552 will start now @reagentpack = CHUnpairedPack")
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Given :: CH Unpaired pack is loaded");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //need to process asmaple to get OBS
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))
+    {
+      Log["Warning"]("Step is failed -processing sample to get OBS");
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator disables @reagentpack = CHUnpairedPack");
+    if(!OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,"DISABLE"))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]();   
+    
+    var  step1failcount=0
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details after disabling @reagentpack = CHUnpairedPack");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      step1failcount =1
+      Log["Error"]("Step is failed");
+    }
+    if(!OperatorVerifyCHUnpairedOrPairedPackDetailsAfterDisablingTheReagentPack(testdata,reagentType))
+    {
+      step1failcount =1 
+      Log["Error"]("Step is failed");
+    }
+    if(step1failcount ==1)
+    {
+      Log["Error"]("Step1 of MIT 345552 is failed @reagentpack = CHUnpairedPack");
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Step2 of MIT 345552 will start now @reagentpack = CHUnpairedPack")
+    Log["AppendFolder"]("When:: Operator re-enables @reagentpack = CHUnpairedPack");
+    if(!OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,"ENABLE"))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details after re-enabling @reagentpack = CHUnpairedPack");
+    if(!OperatorVerifyCHUnpairedOrPairedReagentPackDetailsAfterReEnablingTheReagent(testdata,reagentType))
+    {
+      Log["Error"]("Step2 of MIT 345552 is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+	Log["Checkpoint"]("Testscenario is PASSED");
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_345552_03_CHPairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_345552_03_CHPairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails"
+    var testdata = "TC_345552_03_CHPairedPack"
+    var reagentType="CHPaired"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_345552_03_CHPairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails");
+
+    Log["AppendFolder"]("Step1 of MIT 345552 will start now @reagentpack = CHPairedPack")
+    //GIVEN
+    Log.AppendFolder("GIVEN : Hydra Modules are Ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Modules are not ready");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Given :: CH Paired pack is loaded");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //need to process asmaple to get OBS
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))
+    {
+      Log["Warning"]("Step is failed -processing sample to get OBS");
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("When:: Operator disables @reagentpack = CHPairedPack");
+    if(!OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,"DISABLE"))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]();   
+    
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details after disabling @reagentpack = CHPairedPack");
+    if(!OperatorVerifyTheReagentDetails(testdata,reagentType))
+    {
+      step1failcount =1
+      Log["Error"]("Step is failed");
+    }
+    if(!OperatorVerifyCHUnpairedOrPairedPackDetailsAfterDisablingTheReagentPack(testdata,reagentType)())
+    {
+      step1failcount =1 
+      Log["Error"]("Step is failed");
+    }
+    if(step1failcount ==1)
+    {
+      Log["Error"]("Step1 of MIT 345552 is failed - CH paired pack");
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Step2 of MIT 345552 will start now @reagentpack = CHPairedPack")
+    Log["AppendFolder"]("When:: Operator re-enables @reagent pack");
+    if(!OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,"ENABLE"))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then:: Operator verifies the reagent details after re-enablign @reagentpack = CHPairedPack");
+    if(!OperatorVerifyCHUnpairedOrPairedReagentPackDetailsAfterReEnablingTheReagent(testdata,reagentType))
+    {
+      Log["Error"]("Step2 of MIT 345552 is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+	Log["Checkpoint"]("Testscenario is PASSED");
+    ReportTestStatusToResultXML(featureName, testcase, "P");
+    Log["PopLogFolder"]();   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+
+
+function MIT_339405_02()
+{
+ try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225953"
+    var testcase = "MIT_339405_02"
+    var testdata = "TC_339405_02"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_339405_02");
+
+    //GIVEN**
+    Log.AppendFolder("GIVEN : Hydra Module in Scanning state(means any state where Hydra scans the CH Reagents packs after drawer close)");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("IM Primary reagent pack with expired lot is not loaded sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+	  Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log["AppendFolder"]("Given :: CH drawer/loader is empty before start loading CH reagent");
+    if(!GivenEmptyChDrawerAfterUnloadingCHReagents(testdata))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log["AppendFolder"]("When :: Operator loads a new CH Reagent pack or Paired pack (Non Usable-Recoverable) with a valid Barcode and lot not expired");
+    if(!WhenNonUsableRecoverableCHReagentPackIsLoadedUsingLotInactiveCondition(testdata)) 
+    {
+      Log["Error"]("Failed to load CH reagents to reagent cmpartment");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+
+    //THEN
+    Log["AppendFolder"]("Then :: The newly added reagent pack is loaded into the reagent compartment and is available for use when operator makes it usable");
+    if(!VerifyCHReagentPackIsNonUsableRecoverableAndOperatorMakeItUsable(testdata))
+    {
+      Log["Error"]("Failed to verify if reagents are loaded and enabled");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+    {
+      Log["Error"]("Patient order is not created sucessfully");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false
+    }
+  
+    var failstep = 0;
+    if(!ThenVerifySampleStatusInSampleList(testdata))
+    {
+      failstep=1;
+      Log["Error"]("Test step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    
+    if(!ThenVerifySampleResultedInWorklist(testdata))
+    {
+      failstep=1;
+      Log["Error"]("Test step failed");
+      ReportTestStatusToResultXML(featureName,testcase,"I");
+    }
+    Log["PopLogFolder"]();
+    
+    if(failstep==1)
+    {
+      ReportTestStatusToResultXML(featureName,testcase,"F");
+      Log["PopLogFolder"]();
+      return false
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_335996_01()
+{
+ try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_335996_01"
+    var testdata = "TC_335996_01"
+    var reagentType = "CH";
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_335996_01");
+
+    //GIVEN*****
+    
+    Log.AppendFolder("GIVEN : All modules are ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]()
+    /*
+    Log["AppendFolder"]("Given :: CH drawer/loader is empty before start loading CH reagent");
+    if(!GivenEmptyChDrawerAfterUnloadingCHReagents(testdata))
+    {
+      Log["Error"]("Failed to empty Ch Drawer after unloading existing CH reagents");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    */
+    Log["AppendFolder"]("Given ::CH Reagent pack is loaded -A test for the respective CH reagent pack is scheduled -Make sure the CH reagent pack gets expired while test in process");
+    var actualTestCount_beforeExpiry = GivenCHReagentPackLoadedAndOBSExpiringSoonWhileTestInProcess(testdata)
+    if(actualTestCount_beforeExpiry=="")
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When : Observe the reagent overview screen when the CH reagent packs gets expired");
+    var parameterno=2;
+    if(!VerifyReagentPackExpiredWhileTestInProcess(testdata,parameterno)) 
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: The newly added reagent pack is loaded into the reagent compartment and is available for use when operator makes it usable");
+    if(!ThenVerifyTestUsingPackAlreadyStartedShouldResulted(testdata,actualTestCount_beforeExpiry,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+        
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_335996_02()
+{
+ try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_335996_02"
+    var testdata = "TC_335996_02"
+    var reagentType = "IMPrimary";
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_335996_02");
+
+    //GIVEN*
+    Log.AppendFolder("GIVEN : All modules are ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    Log["AppendFolder"]("Given ::IM primary Reagent pack is loaded -A test for the respective IM primary reagent pack is scheduled -Make sure the IM primary reagent pack gets expired while test in process");
+    var actualActualLevel_beforeExpiry = GivenIMPrimaryReagentPackLoadedAndOBSExpiringSoonWhileTestInProcess(testdata)
+    if(actualActualLevel_beforeExpiry=="")
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When : Observe the reagent overview screen when the IM primary reagent packs gets expired");
+    var parameterno=3;
+    if(!VerifyReagentPackExpiredWhileTestInProcess(testdata,parameterno)) 
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: The newly added reagent pack is loaded into the reagent compartment and is available for use when operator makes it usable");
+    if(!ThenVerifyTestUsingPackAlreadyStartedShouldResulted(testdata,actualActualLevel_beforeExpiry,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function MIT_335996_03()
+{
+ try
+  {
+    //-------------------------------------Check HYDRA Ready State in Primary UI--------------------------------
+    InitializeMetaDataHYDRA();
+      
+    var featureName= "Consumables_FT_225699"
+    var testcase = "MIT_335996_03"
+    var testdata = "TC_335996_03"
+    var reagentType = "IMAncillary"
+    ReportTestStatusToResultXML(featureName,testcase, "I");
+    Log.AppendFolder("MIT_335996_03");
+
+    //GIVEN*
+    Log.AppendFolder("GIVEN : All modules are ready");
+    if(!CheckAllSystemModulesReadyState(testdata))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName,testcase, "F");
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    Log["AppendFolder"]("Given ::IM ancillary reagent pack is loaded -A test for the respective IM ancillary reagent pack is scheduled -Make sure the IM ancillary reagent pack gets expired while test in process");
+    var actualActualLevel_IMAncillary_beforeExpiry = GivenIMAncillaryReagentPackLoadedAndOBSExpiringSoonWhileTestInProcess(testdata)
+    if(actualActualLevel_IMAncillary_beforeExpiry=="")
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When : Observe the reagent overview screen when the IM ancillary reagent packs gets expired");
+    var parameterno=2;
+    if(!VerifyReagentPackExpiredWhileTestInProcess(testdata,parameterno)) 
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: The newly added reagent pack is loaded into the reagent compartment and is available for use when operator makes it usable");
+    if(!ThenVerifyTestUsingPackAlreadyStartedShouldResulted(testdata,actualActualLevel_IMAncillary_beforeExpiry,reagentType))
+    {
+      Log["Error"]("Step is failed");
+      ReportTestStatusToResultXML(featureName, testcase, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    
+    ReportTestStatusToResultXML(featureName,testcase, "P");
+    Log["PopLogFolder"]();
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+
+function BatchExecution()
+{
+  MIT_339403_01() // passed
+  MIT_339403_02() // passed
+
+  MIT_339405_01()
+  MIT_339405_02()
+  
+  MIT_339438_LoadingUnloadingCHReagentPacksAutomaticallyUnloadExpiredOrEmptyCHReagent_01()
+  
+  MIT_339437_UnloadCHReagentPacks()
+  
+  MIT_345552_01_IMPrimaryPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+  MIT_345552_02_CHUnpairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+  MIT_345552_03_CHPairedPackDisableAndVerifyReagentDetailsAndReEnableAndVerifyReagentDetails()
+  
+  MIT_339392_ReagentOverviewScreen()
+  
+  MIT_339390_01()
+
+  MIT_334430_01()
+  MIT_334430_02()
+
+  MIT_334420_LoadUnloadReagentsReagentDoorClosedPrevTrayPositionStatusIsEmpty_01()
+
+  MIT_334422_01()
+
+  MIT_334422_02()
+
+  MIT_334439_01()
+
+  MIT_334439_02()
+
+  MIT_335996_01()
+  MIT_335996_02()
+  MIT_335996_03()
+  
+  
+  MIT_345747_01_IMPrimaryOBSAlmostFinished()
+  MIT_345747_02_IMAncillaryOBSAlmostFinished()
+  MIT_345747_03_CHUnpairedPackOBSAlmostFinished()
+  MIT_345747_04_CHPairedPackOBSAlmostFinished()
+}

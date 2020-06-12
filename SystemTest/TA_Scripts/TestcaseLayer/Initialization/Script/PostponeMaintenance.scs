@@ -1,0 +1,32 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT Maintenance
+
+function SetMaintenanceAsNotPerformed()
+{
+  InitializeMetaData();
+  
+  ReportTestStatusToResultXML("Initialize", "Postpone Maintenance", "I");
+  
+  var Navigation = InvokeWorkflow("Maintenance_Schedule");
+  if (!Navigation)
+    ReportTestStatusToResultXML("Initialize", "Postpone Maintenance", "F");
+    
+  var boolValue = SetMaintenanceActivitiesAsNotPerformed();
+  
+  if(boolValue == true)
+    ReportTestStatusToResultXML("Initialize", "Postpone Maintenance", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "Postpone Maintenance", "F");
+}
+
+function DisableMaintenanceAutoStart()
+{
+  ReportTestStatusToResultXML("Initialize", "Disable_MaintenanceAutoStart", "I");
+  
+  var boolValue = DisableAutomaticMaintenanceActivities();
+  
+  if(boolValue == true)
+    ReportTestStatusToResultXML("Initialize", "Disable_MaintenanceAutoStart", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "Disable_MaintenanceAutoStart", "F");
+} 

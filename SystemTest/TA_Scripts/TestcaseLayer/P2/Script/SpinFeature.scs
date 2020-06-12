@@ -1,0 +1,1184 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT SpinFeatureSteps
+
+function SpinIntegration()
+{
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263863: Spun/UnSpun");
+  
+  GWT233562_01_SampleCentrifugationStatusDetermination();
+  GWT233555_01_SampleCentrifugationStatusDetermination();
+  
+  Log["PopLogFolder"]();
+}
+
+function SpinRegression()
+{
+// These are the scenarios covered in the Spin regression charter
+
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263863: Spun/UnSpun");
+  
+  GWT233562_01_SampleCentrifugationStatusDetermination();
+  
+  GWT233556_01_SampleCentrifugationStatusDetermination();
+  
+  GWT233556_02_SampleCentrifugationStatusDetermination();
+  
+  GWT233557_01_SampleCentrifugationStatusDetermination();
+  
+  GWT233555_01_SampleCentrifugationStatusDetermination(); 
+  GWT238286_01();
+  
+//  GWT257382_01_SampleSpunDetermination();
+  
+  RegCharter_Sc03();
+  
+  Log["PopLogFolder"]();
+}
+
+function SpinFeature()
+{
+//This contains all the Spin scenarios that were automated
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263863: Spun/UnSpun");
+  
+  GWT233562_01_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233556_01_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233556_02_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233557_01_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233555_01_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233549_01_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233549_02_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT233549_03_SampleCentrifugationStatusDetermination();//charter
+  
+  GWT238286_01();//charter
+  
+  GWT257382_01_SampleSpunDetermination(); //charter
+  
+  GWT238287_Scenario01();
+  
+  GWT238287_Scenario02();
+  
+  GWT238288_Scenario01();
+  
+  GWT238288_Scenario02()
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT233562_01_SampleCentrifugationStatusDetermination()
+{
+
+  Log["AppendFolder"]("GWT233562_01 : Sample centrifugation determination unspun sort area configured and available for specimen type 'Other'");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233562_01";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "I");
+
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233562())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233562())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is unspun");
+  if(!WhenSQCCentrifugationDeterminationIsUnspun_GWT233562())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is configured and spot available and specimen type is Other");
+  if(!WhenSortAreaConfiguredAndSpecimenTypeIsOther_GWT233562())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then process the order and sample status is vision unspun sample");
+  if(!ThenProcessTheOrder_GWT233562())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unload the sample to output area");
+  if(!ThenSampleIsUnloadedToTheOutputArea_GWT233562())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT233556_01_SampleCentrifugationStatusDetermination()
+{
+  Log["AppendFolder"]("GWT233556 Scenario1 : Sample centrifugation determination unspun sort area configured and spot not available for specimen type 'Serum'");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233556_01";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "I");
+
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233556())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233556_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is unspun");
+  if(!WhenSQCCentrifugationDeterminationIsUnspun_GWT233556_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is configured and spot not available and specimen type is Serum");
+  if(!WhenSortAreaConfiguredAndSpecimenTypeIsSerum_GWT233556_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then order is not processed and sample status is vision unspun sample");
+  if(!ThenOrderIsNotProcessed_GWT233556_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unload the sample to holding area");
+  if(!ThenSampleIsUnloadedToHoldingArea_GWT233556_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And an event log is generated");
+  if(!ThenEventLogIsGenerated_GWT233556_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT233556_02_SampleCentrifugationStatusDetermination()
+{
+  
+  Log["AppendFolder"]("GWT233556 Scenario2 : Sample centrifugation determination unspun sort area configured and spot not available for specimen type 'Serum'");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233556_02";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "I");
+
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233556())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233556_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is unspun");
+  if(!WhenSQCCentrifugationDeterminationIsUnspun_GWT233556_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is configured and spot not available and specimen type is Serum");
+  if(!WhenSortAreaConfiguredAndSpecimenTypeIsSerum_GWT233556_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then order is not processed and sample status is vision unspun sample");
+  if(!ThenOrderIsNotProcessed_GWT233556_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unload the sample to holding area");
+  if(!ThenSampleIsUnloadedToHoldingArea_GWT233556_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And an event log is generated");
+  if(!ThenEventLogIsGenerated_GWT233556_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  TearDownFullyPopulatedTray("GWT233556_02_TD");
+  Log["PopLogFolder"]();
+}
+
+function GWT238286_01()
+{
+  Log["AppendFolder"]("GWT#238286: SQC successfully made a sample spun/unsun determination causing sample not to be processed-Patient sample");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT238286_01";
+    
+  ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And Global Override setting set to process samples");
+  if(!GivenGlobalOverrideSettingSetToProcessSamples())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample typ is Patient");
+  if(!WhenSampleTypeIsPatient_GWT238286_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Output area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToOutputArea_GWT238286_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+//************************************************************
+function GWT238287_Scenario01()
+{
+  Log["AppendFolder"]("GWT238287_Scenario01 : SQC successfully made a sample spun/unspun determination causing the sample not to be processed - Sampletype Control");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT238287_01";
+    
+  ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Global Override setting set to process samples");
+  if(!GivenGlobalOverrideSettingSetToProcessSamples())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When sample type is control");
+ 
+  if(!WhenNonExceptionControlSampleWithSpinError_GWT238287_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample routed to Analyzer and unloaded to output tray");
+    if(!ThenSamplePrcessedAndUnloadedOutput_GWT238287_01())
+    {
+      Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function GWT238287_Scenario02()
+{
+  Log["AppendFolder"]("GWT238287_Scenario02 : SQC successfully made a sample spun/unspun determination causing the sample not to be processed - Sampletype Control");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT238287_02";
+    
+  ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Global Override setting set NOT to process samples");
+  if(!GivenGlobalOverrideSettingSetNOTToProcessSamples())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When sample type is control");
+ 
+  if(!WhenNonExceptionControlSampleWithSpinError_GWT238287_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample routed to Analyzer and unloaded to output tray");
+    if(!ThenSamplePrcessedAndUnloadedOutput_GWT238287_02())
+    {
+      Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function GWT233557_01_SampleCentrifugationStatusDetermination()
+{
+
+  Log["AppendFolder"]("GWT233557_01 : Sample centrifugation determination unspun sort area not configured for specimen type serum");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233557_01";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "I");
+
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233557())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is unspun");
+  if(!WhenSQCCentrifugationDeterminationIsUnspun())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is not configured And Specimen type is Serum");
+  if(!WhenSortAreaIsNotConfiguredAndSpecimenTypeIsSerum())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then donot process the order and sample status is vision unspun sample");
+  if(!ThenDonotProcessTheOrderAndSampleStatusIsVisionUnspun())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is unloaded to output area");
+  if(!ThenSampleIsUnloadedToTheOutputArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Operator event log shows Vision unspon sample flag for each test");
+  if(!ThenOpearatorEventLogShowsVisionUnspunFlagForTheTest())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"](); 
+} 
+
+
+
+function GWT233555_01_SampleCentrifugationStatusDetermination()
+{
+  Log["AppendFolder"]("GWT233555_01 : Sample centrifugation determination unspun sort area is configured for specimen type plasma");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233555_01";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "I");
+   Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is unspun");
+  if(!WhenSQCCentrifugationDeterminationIsUnspun_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is configured And Specimen type is Plasma");
+  if(!WhenSortAreaIsConfiguredAndSpecimenTypeIsPlasma_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then donot process the order and sample status is vision unspun sample");
+  if(!ThenDonotProcessTheOrderAndSampleStatusIsVisionUnspun_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sample is unloaded to Vision Unspun sort area");
+  if(!ThenSampleIsUnloadedToTheVisionUnspunSortArea_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Operator event log shows Vision unspon sample flag for each test");
+  if(!ThenOpearatorEventLogShowsVisionUnspunFlagForTheTest_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And add-on order shows vision spin mismatch error");
+  if(!ThenAddOnOrderShowsVisionSpinError_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"](); 
+} 
+
+
+function GWT233549_01_SampleCentrifugationStatusDetermination()
+{
+  Log["AppendFolder"]("GWT233549_01 : Sample centrifugation determination spun sort area is configured for specimen type serum/plasma");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233549_01";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "I");
+   Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233549_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is spun");
+  if(!WhenSQCCentrifugationDeterminationIsSpun_GWT233549_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is configured available And Specimen type is Serum/Plasma/Other");
+  if(!WhenSortAreaIsConfiguredAndSpecimenTypeIsSerumOrPlasma_GWT233549_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then process the order");
+  if(!ThenProcessTheOrder_GWT233549_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is unloaded to Output area");
+  if(!ThenSampleIsUnloadedToOutputArea_GWT233549_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  Log["PopLogFolder"](); 
+} 
+
+
+function GWT233549_02_SampleCentrifugationStatusDetermination()
+{
+
+  Log["AppendFolder"]("GWT233549_02 : Sample centrifugation determination spun sort area is configured and not available for specimen type serum/plasma");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233549_02";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "I");
+   Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233555_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233549_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is spun");
+  if(!WhenSQCCentrifugationDeterminationIsSpun_GWT233549_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is configured not available And Specimen type is Serum/Plasma/Other");
+  if(!WhenSortAreaIsConfiguredAndSpecimenTypeIsSerumOrPlasma_GWT233549_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then process the order");
+  if(!ThenProcessTheOrder_GWT233549_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is unloaded to Output area");
+  if(!ThenSampleIsUnloadedToOutputArea_GWT233549_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  TearDownFullyPopulatedTray("GWT233549_TD");
+  Log["PopLogFolder"]();   
+} 
+
+function GWT233549_03_SampleCentrifugationStatusDetermination()
+{
+  Log["AppendFolder"]("GWT233549_03: Sample centrifugation determination spun sort area is not configured for specimen type serum/plasma");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233549_03";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "I");
+   Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT233549_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC sample centrifugation check");
+  if(!GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233549_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("When SQC centrifugation determination is spun");
+  if(!WhenSQCCentrifugationDeterminationIsSpun_GWT233549_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort area is not configured And Specimen type is Serum/Plasma/Other");
+  if(!WhenSortAreaIsNotConfiguredAndSpecimenTypeIsSerumOrPlasma_GWT233549_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then process the order");
+  if(!ThenProcessTheOrder_GWT233549_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is unloaded to Output area");
+  if(!ThenSampleIsUnloadedToOutputArea_GWT233549_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();   
+}
+
+function GWT257382_01_SampleSpunDetermination()
+{
+  Log["AppendFolder"]("GWT257382 : Sample spun/unspun determination- Re-introduced with chemistry analyzer not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT257382_01";
+
+  ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "I");
+
+  Log["AppendFolder"]("Given system is configured to use SQC");
+  if(!GivenSystemIsConfiguredToUseSQC_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area is configured with vision spin error");
+  if(!GivenSortAreaIsConfiguredWithVisionSpinError_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And initial smaple scan shows spin issue and prevents processing of sample's tests");
+  if(!GivenInitialSampleScanShowsSpinIssue_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample re-introduced to finish processing initial testing that was not done");
+  if(!WhenSampleIsReintroduced_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    TearDown_ResumeCC();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC spin re-determination shows no pre analytical issues and analyzer is not available");
+  if(!WhenSQCSpinRedeterminationShowsNoIssues_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    TearDown_ResumeCC();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then sample will be unloaded to holding area and no log entry for sample override will be logged");
+  if(!ThenSampleUnloadedToHoldingArea_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    TearDown_ResumeCC();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And no log entry for sample override will be logged");
+  if(!ThenNoLogEntryForSampleOverride_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    Log["PopLogFolder"]();
+    TearDown_ResumeCC();
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+  Log["PopLogFolder"]();
+  TearDown_ResumeCC();
+  Log["PopLogFolder"]();
+}
+
+function GWT238288_Scenario01()
+{
+  Log["AppendFolder"]("GWT238288_Scenario01 : SQC successfully made a sample spun/unspun determination causing the sample not to be processed - Calibration Sample");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT238288_01";
+    
+  ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Global Override setting set to process samples");
+  if(!GivenGlobalOverrideSettingSetToProcessSamples())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When sample type is calibrator");
+ 
+  if(!WhenNonExceptionCalibrationSampleWithSpinError_GWT238288_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample routed to Analyzer and unloaded to output tray");
+    if(!ThenSamplePrcessedAndUnloadedOutput_GWT238288_01())
+    {
+      Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function GWT238288_Scenario02()
+{
+  Log["AppendFolder"]("GWT238288_Scenario02 : SQC successfully made a sample spun/unspun determination causing the sample not to be processed - Calibration sample");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT238288_02";
+    
+  ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Global Override setting set NOT to process samples");
+  if(!GivenGlobalOverrideSettingSetNOTToProcessSamples())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When sample type is calibrator");
+ 
+  if(!WhenNonExceptionCalibrationSampleWithSpinError_GWT238288_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample routed to Analyzer and unloaded to output tray");
+    if(!ThenSamplePrcessedAndUnloadedOutput_GWT238288_02())
+    {
+      Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function RegCharter_Sc03()
+{
+  Log["AppendFolder"]("SQC Regression Charter for Spin : Scenario 3 - Sample re-introduced from sort area");
+  NetworkSuite["Variables"]["SHScenario"] = "SpinSc03SampleLoad";
+
+  ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "I");
+
+  Log["AppendFolder"]("Given system is configured to use SQC");
+  if(!GivenSystemIsConfiguredToUseSQC_GWT257382())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area is configured with vision spin error");
+  if(!GivenSortAreaIsConfiguredWithVisionSpinError_SpinRegSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And initial sample scan shows spin issue and prevents processing of sample's tests");
+  if(!GivenInitialSampleScanShowsSpinIssue_SpinRegSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When spot becomes available in vision spin error sort area");
+  if(!WhenSpotIsAvailable_SpinRegSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample re-introduced from sort area to input tray");
+  if(!WhenSampleIsReintroduced_SpinRegSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then sample will be unloaded to holding area and archived");
+  if(!ThenSampleUnloadedToHoldingArea_SpinRegSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}

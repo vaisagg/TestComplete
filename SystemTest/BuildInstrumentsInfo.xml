@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<InstrumentsInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<BuildInfo>
+		<NAME>Main.T.ALL_20161024.1</NAME>
+		<DEPLOYMENTTYPE>SCD</DEPLOYMENTTYPE>
+	</BuildInfo>
+	<Instruments>
+		<Instrument>
+			<NAME>PCC</NAME>
+			<IP>192.168.1.106</IP>
+			<TYPE>PCC</TYPE>
+			<SERIAL_NO>PCC</SERIAL_NO>
+			<PRIMARY>true</PRIMARY>
+		</Instrument>
+		<Instrument>
+			<NAME>SH</NAME>
+			<IP>192.168.1.140</IP>
+			<TYPE>SH</TYPE>
+			<SERIAL_NO>SH</SERIAL_NO>
+			<PRIMARY>false</PRIMARY>
+		</Instrument>
+		<Instrument>
+			<NAME>DCR-01</NAME>
+			<IP>192.168.1.102</IP>
+			<TYPE>DECAPPER</TYPE>
+			<SERIAL_NO>DECAPPER</SERIAL_NO>
+			<PRIMARY>false</PRIMARY>
+		</Instrument>
+		<Instrument>
+			<NAME>CH2</NAME>
+			<IP>192.168.1.150</IP>
+			<TYPE>CH</TYPE>
+			<SERIAL_NO>CH2</SERIAL_NO>
+			<PRIMARY>false</PRIMARY>
+		</Instrument>
+		<SetUp>
+			<SampleProcess>simulator</SampleProcess>
+		</SetUp>
+	</Instruments>
+</InstrumentsInfo>

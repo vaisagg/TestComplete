@@ -1,0 +1,237 @@
+﻿//USEUNIT Authentication
+//USEUNIT StepDefinitionHydra
+//USEUNIT CommonUtilities
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+//USEUNIT DiagnosticsLibrary
+
+//******************************************************************
+//         FEATURE 1: 224694 - Sequences
+//******************************************************************
+
+function GIVENSystemIsInDiagnosticsState(){
+    try
+    { 
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        //InitializeMetaDataHYDRA();
+
+        //StepDefinition 
+        res =StepClickOnEnterDiagnostics();
+        if(!res){
+            ProjectSuite["Variables"]["ExecutionStatus"] ="Fail"
+            Returnval = false;}
+        
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function WHENUserExecutesPredefinedSequenceTHENVerifySequence(){
+    try
+    { 
+        //Initialize Variables
+       // var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+           
+        
+         //Read data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq");
+        dataCount = arrTestData.length
+
+        //StepDefinition -Iterate for all Mechanism Names, Sequence names and reagent Types
+        for(i =0 ;i<dataCount ; i++){
+            dictColumn=arrTestData[i];
+            var SequenceNames=dictColumn["Item"]("SeqName")            
+            res =StepExecutePredefinedSequence(dictColumn["Item"]("MechanismName"),SequenceNames,dictColumn["Item"]("ReagentType"))            
+            if(!res){
+                return false}
+          }           
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+    return true
+}
+
+
+function WhenRunThermalIniatialzationAndPollingSequences()
+{
+  
+//  if(!StartServiceAndInitializeDiagnostics())
+//    return false;
+
+  // check load data checkbox
+  if(!ClickLoadDataCheckbox())
+    return false
+      
+  //Running sequences in Diagnostic
+  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAPrimaryThermalInitialization");
+  dictColumn = arrTestData[0];
+  var MechName1 = dictColumn["Item"]("MechanismName")
+  var SeqName1 = dictColumn["Item"]("SeqName")
+  
+  //IM Primary Reagent Compartment Thermal
+  if(!StepExecutePredefinedSequence_New(MechName1,SeqName1))
+  {
+      Log["Error"]("Diagnostics IM Primary Reagent Compartment Thermal Intialize Sequence Execution Failed")
+      return false
+  }
+  
+  //IM Ancillary Reagent Compartment Thermal
+  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAAncillaryThermalInitialization");
+  dictColumn = arrTestData[0];
+  var MechName2 = dictColumn["Item"]("MechanismName")
+  var SeqName2 = dictColumn["Item"]("SeqName")
+  if(!StepExecutePredefinedSequence_New(MechName2,SeqName2))
+  {
+      Log["Error"]("Diagnostics IM Ancillary Reagent Compartment Thermal Intialize Sequence Execution Failed")
+      return false
+  }
+  
+  //IM_Primary_Reagent_Thermal_Polling_ON
+  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAPrimaryThermalPolling");
+  dictColumn = arrTestData[0];
+  var MechName3 = dictColumn["Item"]("MechanismName")
+  var SeqName3 = dictColumn["Item"]("SeqName")
+  if(!StepExecutePredefinedSequence_New(MechName3,SeqName3))
+  {
+      Log["Error"]("Diagnostics IM_Primary_Reagent_Thermal_Polling_ON Sequence Execution Failed")
+      return false
+  }
+   
+  //IM_Ancillary_Reagent_Thermal_Polling_ON 
+  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAAncillaryThermalPolling");
+  dictColumn = arrTestData[0];
+  var MechName4 = dictColumn["Item"]("MechanismName")
+  var SeqName4 = dictColumn["Item"]("SeqName")
+  if(!StepExecutePredefinedSequence_New(MechName4,SeqName4))
+  {
+      Log["Error"]("IM_Ancillary_Reagent_Thermal_Polling_ON Sequence Execution Failed")
+      return false
+  }
+  return true
+}
+
+function ThenVerifyIAPrimaryAndAncillaryReagentCompartmentThermalMechanismTEDValues()
+{
+   
+  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAPrimaryThermalInitialization");
+  dictColumn = arrTestData[0];
+  var MechName1 = dictColumn["Item"]("MechanismName")
+  
+  var errorcount =0;
+  if(!StepVerifySubSystemTabMechanismTED1Values(MechName1))
+    errorcount = errorcount +1;
+    
+  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAAncillaryThermalInitialization");
+  dictColumn = arrTestData[0];
+  var MechName2 = dictColumn["Item"]("MechanismName")
+  
+  if(!StepVerifySubSystemTabMechanismTED1Values(MechName2))
+    errorcount = errorcount +1;
+  
+  if(errorcount>0)
+    return false
+  else
+    return true
+    
+}
+
+
+function WhenCHPhotometricRunCuvetteMapping()
+{
+  //InitializeMetaDataHYDRA();
+
+  if(StepVerifyCHPhotometerRunCuvetteMapping())
+  {
+    aqUtils["Delay"](50000,"Waiting for Photometric Run Cuvette Mapping to get complete")
+    return true
+  }
+  else
+    return false
+}
+
+function ThenVerifyAutoAlignmentPhotmetricRunCompletedAndOffsetGraph()
+{  
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","CHPhotometricRunCuvetteMapping");
+  dictColumn = arrTestData[0];
+  var AlignmentName = dictColumn ["Item"]("AlignmentName")
+  var AlignmentState = dictColumn ["Item"]("AlignmentState")
+  var arrAlignmentState = AlignmentState["split"](";")
+  
+  if(!StepVerifyAutoAlignmentPhotmetricRun(AlignmentName,arrAlignmentState[0] ,false))
+    return false
+  if(!StepVerifyAutoAlignmentPhotmetricRun(AlignmentName,arrAlignmentState[1] ,false))
+    return false
+  if(!StepVerifyAutoAlignmentPhotmetricRun(AlignmentName,"" ,true))
+    return false
+    
+  return StepVerifyCHPhotometerRunOffsetGraph()
+
+}
+
+
+function WhenCHReagentCompartmentThermalsControlLoopRun()
+{
+//  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAPrimaryThermalInitialization");
+//  dictColumn = arrTestData[0];
+//  var MechName1 = dictColumn["Item"]("MechanismName")
+    
+  return StepVerifySubSystemMechanismControlLoopIsTurnOnInTED1TED2("CH_Reagent_Compartment_Thermal")
+    
+//  if(!StepVerifySubSystemMechanismControlLoopIsTurnOn(MechanismName))
+//    return false
+
+}
+
+function ThenVerifyCHReagentCompartmentThermalsControlLoopTEDValues()
+{
+  if(!StepVerifySubSystemTabMechanismTED1Values("CH_Reagent_Compartment_Thermal"))
+    return false;
+  return StepVerifySubSystemTabMechanismTED2Values("CH_Reagent_Compartment_Thermal")
+
+}
+
+function WhenIMIncuabtionRingThermalControlLoopRun()
+{
+//  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAPrimaryThermalInitialization");
+//  dictColumn = arrTestData[0];
+//  var MechName1 = dictColumn["Item"]("MechanismName")
+    
+  return StepVerifySubSystemMechanismControlLoopIsTurnOnInTED1TED2("IM_Incuabtion_Ring_Thermal")
+}
+
+function ThenVerifyIMIncuabtionRingThermalControlLoopTEDValues()
+{
+  if(!StepVerifySubSystemTabMechanismTED1Values("IM_Incuabtion_Ring_Thermal"))
+    return false
+  return StepVerifySubSystemTabMechanismTED2Values("IM_Incuabtion_Ring_Thermal")
+
+}
+
+function WhenIMLuminometerPMTThermalControlLoopRun()
+{
+//  arrTestData = GetTestItemsByTestName(TestDataFile,"Diagnostics","IAPrimaryThermalInitialization");
+//  dictColumn = arrTestData[0];
+//  var MechName1 = dictColumn["Item"]("MechanismName")
+    
+  return StepVerifySubSystemMechanismControlLoopIsTurnOnInTED1("IM_Luminometer_PMT_Thermal")
+}
+
+function ThenVerifyIMLuminometerPMTThermalControlLoopTEDValues()
+{
+  return StepVerifySubSystemTabMechanismTED1Values("IM_Luminometer_PMT_Thermal")
+}

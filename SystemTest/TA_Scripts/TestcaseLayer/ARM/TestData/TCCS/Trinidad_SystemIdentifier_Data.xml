@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<SystemIdentifier xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>CSESIEM-$DL</Name>
+  <SerialNumber>CSESIEM-4K62FLE$DL</SerialNumber>
+  <ModuleType>DL</ModuleType>
+  <PCCIPAddress>192.168.1.7</PCCIPAddress>
+</SystemIdentifier>

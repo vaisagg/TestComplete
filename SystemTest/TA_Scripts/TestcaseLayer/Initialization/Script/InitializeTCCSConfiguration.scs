@@ -1,0 +1,27 @@
+﻿//USEUNIT TCCSConfigLibrary
+
+function InitializeTCCSConfiguration()
+{
+  try
+  {
+   // ReportTestStatusToResultXML("Initialize", "TCCS_Config", "I") 
+   ////Step 1: Launch TCCS Configuration Editor     
+    InvokeTCCSConfigEditor()
+    
+    ////Step 2: Enter TCCSConfigEditor Modules details  
+    SetTCCSConfigEditorModulesIP()
+    
+    ////Step 3: Click on apply changes    
+    ApplyChangesToTCCSConfigEditor()
+    
+    ////Step 4: Verify TCCSConfiguration is successful
+    VerifyTCCSConfiguration()
+    
+    ////Step 5: Exit TCCSConfigEditor
+    ExitTCCSConfigEditor()
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }    
+}

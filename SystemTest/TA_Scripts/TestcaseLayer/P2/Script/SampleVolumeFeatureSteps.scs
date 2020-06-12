@@ -1,0 +1,5122 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_01()
+{
+  //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_01");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample - Above Threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_01");
+  var dictColumn           = arrTestData[1];
+  
+  //Get the data and create workorder for second sample - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233847_01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+
+function WhenSortAreaConfiguredAndSpotAvailable_GWT233847_01()
+{
+//Verify whether empty slots are there in Vision Volume error sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function WhenProcessingOptionIsSetToProcessAll_GWT233847_01()
+{
+  //Setting of Sample processing option to Process All is already done in Given
+  //Only verification has to be done now
+  return StepVerifyTCSSettingsForSampleLowVolume("No");
+}
+
+function ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_01()
+{
+  //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+//Verification of Cap status and sample status as Aspirated for second sample
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    return false;  
+  }
+} 
+
+
+//****************GWT233847 Sc02****************
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_02()
+{
+  //Configure SH  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_02");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample - Above Threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_02");
+  var dictColumn           = arrTestData[1];
+  
+  //Get the data and create workorder for second sample - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233847_02"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+
+function WhenSortAreaConfiguredAndSpotAvailable_GWT233847_02()
+{
+//Verify whether empty slots are there in Vision Volume error sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function WhenProcessingOptionIsSetToDonotProcess_GWT233847_02()
+{
+  //Setting of Sample processing option to Process All is already done in Given statement
+  //Only verification has to be done now
+  return StepVerifyTCSSettingsForSampleLowVolume("No");
+}
+
+function ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_02()
+{
+  //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_02")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+//Verification of Cap status and sample status as Aspirated for second sample
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_02")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    return false;  
+  }
+}
+
+
+//****************GWT233847 Sc03****************
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_03()
+{
+  //Configure SH
+   
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_03");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample - Above Threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_03");
+  var dictColumn           = arrTestData[1];
+  
+  //Get the data and create workorder for second sample - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Get the sample volume threshold level from SampleProcessignSetting.xml
+    
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233847_03"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+
+function WhenSortAreaConfiguredAndSpotNotAvailable_GWT233847_03()
+{
+//Verify whether empty slots are there in Vision Volume error sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_03")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return !(StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+}
+
+function ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_03()
+{
+  //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_03")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+//Verification of Cap status and sample status as Aspirated for second sample
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  //Verify sample unloading location as Holding Area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_03")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_03")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    return false;  
+  }
+}
+
+//****************GWT233847 Sc04****************
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_04()
+{
+   //Configure SH
+   
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+      if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+   
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_04");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample - Above Threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_04");
+  var dictColumn           = arrTestData[1];
+  
+  //Get the data and create workorder for second sample - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Get the sample volume threshold level from SampleProcessignSetting.xml
+    
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233847_04"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+
+function WhenSortAreaConfiguredAndSpotNotAvailable_GWT233847_04()
+{
+  //Verify whether empty slots are there in Vision Volume error sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_04")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return !(StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+} 
+
+function ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_04()
+{
+    //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_04")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+//Verification of Cap status and sample status as Aspirated for second sample
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  //Verify sample unloading location as Holding Area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_04")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_04")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    return false;  
+  }
+} 
+
+//****************GWT233847 Sc05****************
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_05()
+{
+  //Configure SH  
+  //var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQC_VolumeErrorNotConfigured");
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+   if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_05");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample - Above Threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_05");
+  var dictColumn           = arrTestData[1];
+  
+  //Get the data and create workorder for second sample - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Get the sample volume threshold level from SampleProcessignSetting.xml
+    
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233847_05"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function WhenSortAreaNotConfigured_GWT233847_05()
+{
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  return StepVerifySortPanelActive(PanelName);
+}
+
+function ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_05()
+{
+//Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_05")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+//Verification of Cap status and sample status as Aspirated for second sample
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  //Verify sample unloading location as Holding Area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_05")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_05")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    return false;  
+  }
+} 
+
+//****************GWT233847 Sc06****************
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_06()
+{
+  //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_06");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample - Above Threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_06");
+  var dictColumn           = arrTestData[1];
+  
+  //Get the data and create workorder for second sample - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Get the sample volume threshold level from SampleProcessingSetting.xml
+
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233847_06"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+
+function ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_06()
+{
+//Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233847_06")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+   if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+//Verification of Cap status and sample status as Aspirated for second sample
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  //Verify sample unloading location as Holding Area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_06")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233847_06")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    return false;  
+  }
+}
+
+function WhenSortAreaNotConfigured_GWT233847_06()
+{
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  return StepVerifySortPanelActive(PanelName);
+}
+
+function WhenSQCLicenseNotPurchasedForTCS2()
+{
+  if(!StepModifyTCSVersion(1))
+    return false;
+  
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutDownDecapperSim())
+    return false;
+    
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  if(!StepLaunchAndLoadDecapper())
+    return false;
+    
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+    
+  return StepVerifyAvailableSQC(1,1)
+}
+
+function HILConfigurationsNotAvailable()
+{
+  return StepHILConfigurationsNotAvailable();
+}
+
+function VolumeConfigurationsNotAvailable()
+{
+  return StepVolumeConfigurationsNotAvailable();
+}
+
+function SpinConfigurationsNotAvailable()
+{
+  return StepSpinConfigurationsNotAvailable();
+}
+
+function VisionErrorConfigurationsNotAvailable()
+{
+  return StepVisionErrorConfigurationsNotAvailable("Vision HIL Error;Vision Volume Error;Vision Spin Error");
+} 
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SQCVolume");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+    
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false;
+  
+    if(!StepAddPanel(PanelName))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    //Set Configured processing option to Process All 
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;   
+      
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+ 
+    if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+    {
+      if(!StepStopAnalyzer("SH"))
+        return false;
+        
+      //Set Configured processing option to Process All 
+      if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+        return false;   
+      
+       if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false; 
+     else
+        return true;
+    }  
+    else
+    {
+      return true;
+    } 
+     
+}
+
+function WhenSQCVolumeDeterminationIsInvalid()
+{
+    //Verify sample attributes property
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233853_01"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function WhenSortAreaIsConfiguredAndProcessingOptionSetToProcessAll()
+{
+  if(!StepVerifySortPanelActive("VisionVolumeErrorSortPanel"))
+    return false;
+  
+  //verify  Configured processing option is to Process All 
+  return StepVerifyTCSSettingsForSampleLowVolume("No")
+} 
+
+function ThenSampleShouldBeSentToAnalyzer()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+    
+}
+
+function ThenSampleShouldBeUnloadedToHoldingArea()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233853_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    return false;  
+  } 
+} 
+
+
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_02()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SQCVolume");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+    
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false;
+  
+    if(!StepAddPanel(PanelName))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    //Set Configured processing option to Do not process
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;   
+      
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+    {
+      if(!StepStopAnalyzer("SH"))
+        return false;
+        
+      //Set Configured processing option to Do not process 
+      if(!StepSetTCSSettingsForSampleLowVolume("No"))
+        return false;   
+      
+       if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+     else
+      return true;
+    
+    }
+    else
+    {
+      return true;
+    }    
+}
+
+function WhenSQCVolumeDeterminationIsInvalid_GWT233853_02()
+{
+    //Verify sample attributes property
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233853_02"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_02");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function WhenSortAreaIsConfiguredAndProcessingOptionSetToDoNotProcess_GWT233853_02()
+{
+  if(!StepVerifySortPanelActive("VisionVolumeErrorSortPanel"))
+    return false;
+  
+  //verify  Configured processing option is to Process All 
+  return StepVerifyTCSSettingsForSampleLowVolume("No")
+} 
+
+function ThenSampleShouldBeSentToAnalyzer_GWT233853_02()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_02");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+    
+}
+
+function ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_02()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_02")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233853_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    return false;  
+  } 
+} 
+
+function WhenSQCVolumeDeterminationIsInvalid_GWT233853_03()
+{
+    //Verify sample attributes property
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233853_03"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_03");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  //To simulate sort area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+      
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function WhenSortAreaIsConfiguredAndProcessingOptionSetToProcessAll_GWT233853_03()
+{
+  if(!StepVerifySortPanelActive("VisionVolumeErrorSortPanel"))
+    return false;
+  
+  //verify  Configured processing option is to Process All 
+  return StepVerifyTCSSettingsForSampleLowVolume("No")
+} 
+
+function ThenSampleShouldBeSentToAnalyzer_GWT233853_03()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_03");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+    
+}
+
+function ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_03()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_03")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233853_03")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    return false;  
+  } 
+} 
+
+function WhenSQCVolumeDeterminationIsInvalid_GWT233853_04()
+{
+    //Verify sample attributes property
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233853_04"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_04");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  //To simulate sort area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+      
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function WhenSortAreaIsConfiguredAndProcessingOptionSetToDoNotProcess_GWT233853_04()
+{
+  if(!StepVerifySortPanelActive("VisionVolumeErrorSortPanel"))
+    return false;
+  
+  //verify  Configured processing option is to Do not Process 
+  return StepVerifyTCSSettingsForSampleLowVolume("Yes")
+} 
+
+function ThenSampleShouldBeSentToAnalyzer_GWT233853_04()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_04");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+    
+}
+
+function ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_04()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_04")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233853_04")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    return false;  
+  } 
+} 
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_05()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");// no vision volume error sort area should be configured
+    
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+//    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+//      return false;
+  
+    if(!StepAddPanel(PanelName))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+      return false;
+    
+    //Set Configured processing option to Process all
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;   
+      
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+    {
+      if(!StepStopAnalyzer("SH"))
+        return false;
+        
+      //Set Configured processing option to Process All 
+      if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+        return false;   
+      
+       if(!StepStartAnalyzer("SH"))
+        return false;
+        
+      if(!GivenAtellicaInitialized())
+        return false;
+      else
+        return true;
+    }
+    else
+    {
+      return true;
+    } 
+ 
+      
+  
+     
+}
+
+function WhenSortAreaNotConfiguredAndProcessingOptionSetToProcessAll_GWT233853_05()
+{
+  if(!StepVerifySortPanelActive("HoldAndArchive"))// panel should not have vision olume error sort area
+    return false;
+  
+  //verify  Configured processing option is to Process All 
+  return StepVerifyTCSSettingsForSampleLowVolume("No")
+} 
+function WhenSQCVolumeDeterminationIsInvalid_GWT233853_05()
+{
+    //Verify sample attributes property
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233853_05"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_05");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSampleShouldBeSentToAnalyzer_GWT233853_05()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_05");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+    
+}
+
+function ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_05()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_05")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233853_05")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    return false;  
+  } 
+} 
+
+
+function GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_06()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+ 
+  var PanelName=arrDrawers[0]["Item"]("Panel");// no vision volume error sort area should be configured
+    
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+//    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+//      return false;
+  
+    if(!StepAddPanel(PanelName))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+      return false;
+    
+    //Set Configured processing option to do not Process
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;   
+      
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+     else
+        return true;
+  }
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+    {
+      if(!StepStopAnalyzer("SH"))
+        return false;
+        
+      //Set Configured processing option to do not Process 
+      if(!StepSetTCSSettingsForSampleLowVolume("No"))
+        return false;   
+      
+       if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false; 
+     else
+      return true;
+    
+     }
+      else
+      {
+        return true;
+      } 
+ 
+      
+  
+     
+}
+
+    
+
+function WhenSortAreaNotConfiguredAndProcessingOptionSetToDoNotProcess_GWT233853_06()
+{
+  if(!StepVerifySortPanelActive("HoldAndArchive"))// panel should not have vision volume error sort area
+    return false;
+  
+  //verify  Configured processing option is to Do not Process 
+  return StepVerifyTCSSettingsForSampleLowVolume("Yes")
+} 
+function WhenSQCVolumeDeterminationIsInvalid_GWT233853_06()
+{
+    //Verify sample attributes property
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233853_06"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_06");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+ if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSampleShouldBeSentToAnalyzer_GWT233853_06()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_06");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+    
+}
+
+function ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_06()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233853_06")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233853_06")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    return false;  
+  } 
+} 
+
+
+//GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume feature steps
+
+function GivenSQCSampleVolumeDeterminationShowsInsufficientVolume()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SQCVolume");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+
+  //Configure SH (Vision volume error should be configured)
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false;
+  
+    if(!StepAddPanel(PanelName))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    //Set Configured processing option to Do not process   
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+   if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  else
+  {
+    return true;
+  } 
+}
+
+function AndConfigurationIsSetToDoNotProcess()
+{
+  //verify  Configured processing option is to DoNotProcess
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+    return false;
+  else
+    return true;
+}
+
+
+function WhenLoadedSampleTypeIspatientType()
+{
+  //Update analysis data with volume less than configured threshold value
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT234376_01"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT234376_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample();
+}
+
+function ThenSampleIsNotRoutedToAnalyzer()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT234376_01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  //var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  //Verify unloading location to holding  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT234376_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  //Verify sample is not loaded to decapper and analyzer
+  if(!StepSampleNotLoadedToDecapper(SampleID))
+    return false;
+  
+  //Verify an indication for insufficient sample volume for all tests
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT234376_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleProblem = dictColumn["Item"]("SampleProblem");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+//  if(StepWaitForSampleStatus(SampleId, SampleStatus));
+//    return false;
+  
+   if(!StepVerifySampleStatus(SampleId, SampleStatus,SampleProblem))
+    return false;
+  
+  
+  //Verify event log entry for sample with insufficient volume
+  var sTime="2 Hours"
+  var sModuleSerialNumber="All"
+  
+  var sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue.";
+  var transsEvent=GetTranslatedString(sEvent,""); 
+  transsEvent = ReplaceString(transsEvent, "{0}", SampleId, true)
+  transsEvent = ReplaceString(transsEvent, "{1}", "Vision Volume Insufficient", true);
+  
+  var boolValue=StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,transsEvent)
+   
+  
+    
+  //var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01", "F");
+    return false;  
+  } 
+  
+}
+
+function TearDownSQCLicenseNotPurchased()
+{ 
+  if(!StepModifyTCSVersion(2))
+    return false;
+  
+   if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutDownDecapperSim())
+    return false;
+    
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  if(!StepLaunchAndLoadDecapper())
+    return false;
+    
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+  else
+    return true;
+}
+
+function GivenSQCIdentifiesSampleVolumeGWT207722Sce01()
+{
+  //Configure SH
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+//    if(!StepSetAttributeInSampleProcessingSetting(AttributeName,ExpectedAttributeValue)) // not needed in FeatureStep.. Set default value of volume threshold in alaysis data file in Global setup
+//      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+//    if(!StepSetAttributeInSampleProcessingSetting(AttributeName,ExpectedAttributeValue))
+//      return false;
+      
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+   if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207722Scenario01");
+  var dictColumn           = arrTestData[0];
+  
+  //patient order having low threshold volume
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT207722Scenario01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function WhenSampleBelowThresholdGWT207722Sce01()
+{
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207722Scenario01");
+  var dictColumn           = arrTestData[0];
+  
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");  //Vision Volume Insufficient
+   
+  return StepVerifySampleProblemsAssociated(SampleId, SampleProblem)
+}
+
+function ThenSampleNotSentToAnalyzerGWT207722Sce01()
+{    
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207722Scenario01");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Assay                = dictColumn["Item"]("Assay");
+  //var SampleError        = dictColumn["Item"]("SampleProblem");
+  var SampleError          = dictColumn["Item"]("VisionError"); // Vision Volume Insufficient
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");//Vision Volume Error
+  
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+   
+  if(!StepVerifySampleTestHasVisionError(SampleId, Assay,SampleError))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT207722Scenario01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+    return false;  
+  }
+
+}
+
+function GivenSQCIdentifiesSampleVolumeGWT207723Sce01()
+{
+  //Configure SH
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+      
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207723Scenario01");
+  var dictColumn           = arrTestData[0];
+  
+  //patient order having low threshold volume
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT207723Scenario01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function WhenSampleBelowThresholdGWT207723Sce01()
+{
+  
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207723Scenario01");
+  var dictColumn           = arrTestData[0];
+  
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");  // should not come with Vision Volume Insufficient problem in smplelist
+   
+  if(!StepVerifySampleProblemsAssociated(SampleId, SampleProblem))
+    return true;
+  else
+    return false;
+}
+
+function ThenSampleSentToAnalyzerGWT207723Sce01()
+{    
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207723Scenario01");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("VisionError"); //should not come with Vision Volume Insufficient error in worklist
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");// Aspirated ;Complete
+  var aSampleStatus        =SampleStatus["split"](";");
+  
+  for(var count=0;count<aSampleStatus["length"];count++)
+  {
+    if(!StepWaitForSampleStatus(SampleId, aSampleStatus[count]))
+      return false;
+  }
+   
+//  if(!StepVerifySampleTestHasVisionError(SampleId, Assay,SampleError))
+//    return false;
+      
+  if(!StepVerifySampleTestHasNotThisVisionError(SampleId, Assay,SampleError))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT207723Scenario01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+    return false;  
+  }
+}
+
+function GivenConfigureProcessTestsWhenVolumeIsBelowThresholdGWT193786_01()
+{
+//Configure SH 
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile, "SortConfig", "VisionVolumeError");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "VisionVolumeError"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  else
+    return true;
+}
+
+function WhenSampleVolumeIsAboveThresholdGWT193786_01()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT193786_01");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for second sample - Above threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT193786_01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+} 
+
+function WhenSpotAvailableForInsufficientVolumeGWT193786_01()
+{
+//Verify whether empty slots are there invalid tube sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT193786_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function ThenSampleGetsProcessedInTheSystemGWT193786_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT193786_01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleStatus(SampleIDs, "Aspirated"))
+    return false;
+    
+  //Verify sample unloading location    
+  var boolValue =StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    return false;
+  }
+
+} 
+
+function WhenSampleVolumeIsAtThresholdGWT193786_02()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT193786_02");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for sample volume - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT193786_02"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+} 
+
+function ThenSampleGetsProcessedInTheSystemGWT193786_02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT193786_02")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleStatus(SampleIDs, "Aspirated"))
+    return false;
+    
+  //Verify sample unloading location    
+  var boolValue =StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    return false;
+  }
+} 
+
+function WhenSampleVolumeIsBelowThresholdGWT193786_03()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT193786_03");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for sample volume - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT193786_03"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function ThenSampleGetsProcessedInTheSystemGWT193786_03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT193786_03")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleStatus(SampleIDs, "Aspirated"))
+    return false;
+    
+  //Verify sample unloading location    
+  var boolValue =StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    return false;
+  }
+}
+
+function GivenDoNotProcessSampleWithLowVolume_GWT234377_01()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SampleParking");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if(StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+      
+  if(!StepAddPanel(PanelName))        // added after feature set up came into picture
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+    return false;
+    
+  if(!StepSetTCSSettingsForSampleLowVolume("No"))  //Deselecting TCSSettings Sample Low Volume
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))
+    return false;
+        
+  if(!GivenAtellicaInitialized())
+    return false;
+  else
+    return true;
+  
+}
+
+function WhenNonExceptionControlSampleVolLowerThanThreshold_GWT234377_01()
+{
+   //create QC definition and order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  //Update analysis data
+ 
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT234377_01"))
+    return false;
+  
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSamplePrcessedAndUnloadedOutput_GWT234377_01()
+{
+   var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+//  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var SampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "NoCap", 90000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT234377_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+    //Verify sample gets unloaded to Holding area 
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+ 
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234377_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234377_01", "F");
+    return false;
+  }
+    
+}
+
+function GivenTCS2IsConfiguredOnTheSystem_GWT207726_01()
+{
+  return StepVerifyAvailableSQC(1,2);
+} 
+
+function WhenASiemensserviceuserLogsIntoTheSystem_GWT207726_01()
+{
+  var sUser="SiemensInternal";
+  var Password="Siemens1234567!"
+  if(!StepVerifyLoggedInUser(sUser))
+  {
+    if(!StepLogOutFromAtellica())
+      return false;
+    
+    return StepLoginToAtellica(sUser,Password)
+  } 
+  else
+    return true;
+  
+} 
+function ThentheUserIsAbleToConfigureTheSampleVolumeSufficiencyBehaviour_GWT207726_01()
+{
+    
+  if(!StepSetAttributeInSampleProcessingSetting("VisionVolumeThreshold","1000"))
+    return false;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+    
+  if(!StepSetTCSSettingsForSampleLowVolume("No"))
+    return false;
+    
+  if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))
+    return false;
+        
+  if(!GivenAtellicaInitialized())
+    return false;
+  else
+    return true;
+   
+    
+}
+
+function ThenTheuserIsAllowedToConfigureTheSampleVolumeSufficiencyThreshold_GWT207726_01()
+{
+  
+  var iSampleVolumeThreshold=StepGetAttributeInSampleProcessingSetting("VisionVolumeThreshold");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(trim(iSampleVolumeThreshold)=="1000")
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "F");
+    return false;  
+  }  
+    
+} 
+
+
+
+function GivenSQCIdentifiesTheSampleVolume_GWT207724_01()
+{    
+  //Configure SH
+
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel("Default"))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    //Set Configured processing option to Process All   
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  
+  //Update analysis data with volume less than configured threshold value
+  return StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT207724_01")
+   
+} 
+
+function WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_01()
+{
+      
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function ThenTheSampleIsSentTotheAnalyzer_GWT207724_01()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  var boolValue= StepWaitForSampleStatus(SampleId, SampleStatus);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "F");
+    return false;  
+  } 
+  
+  
+} 
+
+function GivenSQCIdentifiesTheSampleVolume_GWT207724_02()
+{
+   //Configure SH
+
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel("Default"))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    //Set Configured processing option to Process All   
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  
+  //Update analysis data with volume greater than configured threshold value
+  return StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT207724_02")
+   
+} 
+
+function WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_02()
+{
+       
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_02");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function ThenTheSampleIsSentTotheAnalyzer_GWT207724_02()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_02");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  var boolValue= StepWaitForSampleStatus(SampleId, SampleStatus);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "F");
+    return false;  
+  } 
+  
+  
+} 
+
+
+function SampleVolume_Setup()
+{
+   
+  //Modifying TCS version in Federationconfig.xml to 2 as it is automatically having the value from CI builds is 0
+  StepModifyTCSVersion(2)
+
+  StepConfigureHILSettings("CH-Based HIL", "manual hil", "", "")
+     
+  if(!StepSetAttributeInSampleProcessingSetting("VisionVolumeThreshold","1000"))
+    return false;
+ 
+  if(!StepShutdownAllApps())
+    return false;
+    
+  return StepInvokeAllApps();
+}
+
+function GivenSQCIdentifiesTheSampleVolume_GWT207724_03()
+{
+   //Configure SH
+
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel("Default"))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    //Set Configured processing option to do not Process   
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+     
+    if(!StepStartAnalyzer("SH"))
+      return false;
+        
+    if(!GivenAtellicaInitialized())
+      return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  
+  //Update analysis data with volume greater than configured threshold value
+  return StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT207724_03")
+   
+} 
+
+function WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_03()
+{
+       
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_03");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function ThenTheSampleIsSentTotheAnalyzer_GWT207724_03()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_03");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  var boolValue= StepWaitForSampleStatus(SampleId, SampleStatus);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "F");
+    return false;  
+  } 
+  
+  
+} 
+
+function GivenSQCIdentifiesTheSampleVolume_GWT207724_04()
+{
+   //Configure SH
+
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel("Default"))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    //Set Configured processing option to do not Process   
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+        
+    if(!GivenAtellicaInitialized())
+      return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  } 
+  
+  
+  //Update analysis data with volume greater than configured threshold value
+  return StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT207724_04")
+   
+} 
+
+function WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_04()
+{
+       
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_04");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function ThenTheSampleIsSentTotheAnalyzer_GWT207724_04()
+{
+   //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT207724_04");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+  //  Wait for sample to come in ASPIRATED status  
+  var boolValue= StepWaitForSampleStatus(SampleId, SampleStatus);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "F");
+    return false;  
+  }
+} 
+
+function GivenConfigureDonotProcessTestsWhenVolumeIsBelowThresholdGWT181274_01()
+{
+  //Configure SH 
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile, "SortConfig", "VisionVolumeError");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "VisionVolumeError"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+    }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+     else
+      return true;
+  }
+  else
+    return true;
+}
+
+function WhenSampleVolumeIsAtThresholdGWT181274_01()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT181274_01");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for sample volume - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT181274_01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function WhenSpotAvailableForInsufficientVolumeGWT181274_01()
+{
+  //Verify whether empty slots are there invalid tube sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT181274_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function ThenSampleGetsProcessedInTheSystemGWT181274_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots", "GWT181274_01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleStatus(SampleIDs, "Aspirated"))
+    return false;
+    
+  //Verify sample unloading location
+  var boolValue =StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    return false;
+  }
+}
+
+function WhenSampleVolumeIsAtThresholdGWT181274_02()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT181274_02");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for sample volume - At threshold
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT181274_02"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function WhenSpotAvailableForInsufficientVolumeGWT181274_02()
+{
+//Verify whether empty slots are there invalid tube sort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT181274_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function ThenSampleGetsProcessedInTheSystemGWT181274_02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots", "GWT181274_02")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleStatus(SampleIDs, "Aspirated"))
+    return false;
+    
+  //Verify sample unloading location
+  var boolValue =StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    return false;
+  }
+}
+
+
+function GivenSHPanelAndTCSSettingsGWT234378Sce01()
+{
+  
+  //Configure SH
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+    if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+        
+    if(!GivenAtellicaInitialized())
+      return false;
+  }
+  
+  return (!StepIsHoldingAreaConfigured())
+} 
+
+function WhenCalibrationCappedSampleLoadedGWT234378Sce01()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","GWT234378Scenario01")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename=dictColumn["Item"]("FakeBarcodeFileName");
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");    
+  SampleID = dictColumn["Item"]("SampleID");
+  
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+  
+  //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT234378Scenario01"))
+    return false;
+    
+  //calibration order
+  var CCSerialNumbers=StepGetModuleNames("CC")
+  if(!StepPlaceCalibrationOrder(Assay, CCSerialNumbers[0], CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+} 
+
+function ThenCalSampleUnloadGWT234378Sce01()
+{ 
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","GWT234378Scenario01")
+  var dictColumn=arrTestData[0];
+  SampleID = dictColumn["Item"]("SampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //Wait for sample to status Aspirated;Complete
+  for(var i= 0;i<aSampleStatus["length"];i++)
+  {
+	  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[i]))
+	    return false;
+  }
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT234378Scenario01")// unload to output area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    return false;  
+  }
+}
+
+
+function GivenSHPanelAndTCSSettingsGWT233857Sce01()
+{
+  //Configure SH and TCS settings 
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  
+//  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SQCVolumeWithoutArchive");
+
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false; 
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))//process all
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  return true;
+} 
+
+function WhenPatientSampleBelowThresholdLoadedGWT233857Sce01()
+{
+  //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario01"))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario01")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  //verify sample attribute is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped")
+}
+
+
+function WhenSortAreaConfiguredAndAvailableGWT233857Sce01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) // to verify hold area available
+    return false;
+    
+  //verify sample attribute is decapped
+  if(!StepWaitForSampleProperty(SampleIDs, "CapStatus", "Decapped", 60000))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) // to verify archive area available
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario01")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) // to verify vision volume error sort area available
+} 
+
+function ThenPatientAspiratedAndUnloadedGWT233857Sce01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //Wait for sample to status Aspirated;Complete
+  for(var i= 0;i<aSampleStatus["length"];i++)
+  {
+	  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[i]))
+	    return false;
+  }
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario01")// unload to hold area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    return false;  
+  }
+
+} 
+
+
+function GivenSHPanelAndTCSSettingsGWT233857Sce02()
+{
+ //Configure SH and TCS settings
+   
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false; 
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes")) // do not process samples with low volume
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  return true;
+  
+} 
+
+function GivenSHPanelAndTCSSettingsGWT233857_RegCharter_Sc03()
+{
+   //Configure SH and TCS settings
+   
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SQCVolumeWithoutArchive");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false; 
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SQCVolumeWithoutArchive"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes")) // do not process samples with low volume
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  return true;
+} 
+
+
+function WhenPatientSampleBelowThresholdLoadedGWT233857Sce02()
+{
+  //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario02"))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  //verify sample is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped")
+} 
+
+function WhenSortAreaConfiguredAndAvailableGWT233857Sce02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) //to verify vision volume error sort area available
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) // to verify hold area available
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) // to verify archive area available
+} 
+
+function ThenPatientSampleUnloadedGWT233857Sce02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("VisionError");
+  
+  //Wait for sample to status 
+	if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+	    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")// unload to vision sort area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+ // to verify test orders are flagged
+  var boolValue = StepVerifySampleTestHasVisionError(SampleID, Assay,SampleError)
+  
+  // add code to verfy event log entry indicating SQC sample volume detremination is below than the threshold value
+  
+  // Operator event log entry : Sample SampleGWT23385702 has error: Vision Volume Insufficient. Resolve the appropriate issue.
+//  var sEventParams = SampleID; Vision Errors
+//  sTime="2 Hours"
+//  var sModuleSerialNumber="All"
+//  sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue."
+  //StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent,sEventParams)  // NOTE : current step defintion of this method is not using the event params
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    return false;  
+  }
+} 
+
+function WhenPatientSampleUnloadedGWT238289_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("VisionError");
+  
+  //Wait for sample to status 
+	if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+	    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")// unload to vision sort area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+ // to verify test orders are flagged
+  return StepVerifySampleTestHasVisionError(SampleID, Assay,SampleError)
+} 
+
+
+function WhenPatientSampleBelowThresholdLoadedGWT233857Sce03()
+{
+  //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario03"))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario03")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  //To simulate vision sort area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+    //verify sample is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped")
+}
+
+
+function WhenSortAreaConfiguredAndNotAvailableGWT233857Sce03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario03")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) // to verify hold area available
+    return false;
+    
+    //verify sample is decapped
+  if(!StepWaitForSampleProperty(SampleIDs, "CapStatus", "Decapped", 60000))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario03")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) // to verify archive area available
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario03")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifySHAreaHasNoEmptySlots(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) // to verify vision volume error sort area not available
+} 
+
+function ThenPatientSampleAspiratedAndUnloadedGWT233857Sce03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario03")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //Wait for sample to status Aspirated;Complete
+  for(var i= 0;i<aSampleStatus["length"];i++)
+  {
+	  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[i]))
+	    return false;
+  }
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario03")// unload to hold area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    return false;  
+  }
+}
+
+function WhenPatientSampleBelowThresholdLoadedGWT233857Sce04()
+{
+  //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario04"))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario04")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+      
+  //To simulate vision sort area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+     //verify sample is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped")
+}
+
+function WhenSortAreaConfiguredAndNotAvailableGWT233857Sce04()
+{  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario04")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) // to verify hold area available 
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario04")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) //to verify archive area available 
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario04")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifySHAreaHasNoEmptySlots(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) //to verify vision volume error sort area not available
+}
+
+function ThenPatientSampleUnloadedGWT233857Sce04()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario04")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("VisionError");
+  
+  //Wait for sample to state
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario04")// unload to holding area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+
+ // to verify test orders are flagged
+  var boolValue = StepVerifySampleTestHasVisionError(SampleID, Assay,SampleError)
+  
+  // add code to verfy event log entry indicating SQC sample volume detremination is below than the threshold value
+  
+  // Operator event log entry : Sample SampleGWT23385704 has error: Vision Volume Insufficient. Resolve the appropriate issue.
+//  var sEventParams = SampleID; Vision Errors
+//  sTime="2 Hours"
+//  var sModuleSerialNumber="All"
+//  sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue."
+  //StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent,sEventParams)  // NOTE : current step defintion of this method is not using the event params
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    return false;  
+  }
+
+
+} 
+
+function GivenSHPanelAndTCSSettingsGWT233857Sce05()
+{
+  //Configure SH and TCS settings
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapWithHolding"); // holding and arching + output normal
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapWithHolding"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))// process samples with low volume
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  return true;
+} 
+
+function WhenPatientSampleBelowThresholdLoadedGWT233857Sce05()
+{
+  //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario05"))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario05")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+     //verify sample is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped")
+} 
+
+function WhenSortAreaNotConfiguredButHoldingAndArchiveAvailableGWT233857Sce05()
+{
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapWithHolding"); // holding and arching + output normal
+  var PanelName  = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+    return false; // to verify vision volume error sort area not configured
+  if(!StepIsHoldingAreaConfigured())
+    return false;
+  if(!StepIsArchiveAreaConfigured)
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario05")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) //holding available
+    return false;
+      
+    //verify sample is decapped
+  if(!StepWaitForSampleProperty(SampleIDs, "CapStatus", "Decapped", 60000))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario05")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) // archive available
+  
+} 
+function ThenPatientSampleAspiratedAndUnloadedGWT233857Sce05()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario05")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+
+  //Wait for sample to status Aspirated;Complete  // no need to check for complete - sample is aspirated means sample sent to analyser .. complete status takes time
+  for(var i= 0;i<aSampleStatus["length"];i++)
+  {
+	  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[i]))
+	    return false;
+  }
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario05")// unload to holding area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    return false;  
+  }
+}
+
+
+function GivenSHPanelAndTCSSettingsGWT233857Sce06()
+{
+  //Configure SH and TCS settings
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapWithHolding"); // holding and arching + output normal
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapWithHolding"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))// do not process the samples with low volume
+      return false;
+    
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("Yes"))
+      return false;
+  
+     if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  return true;
+
+} 
+
+function WhenPatientSampleLoadedGWT233857Sce06()
+{
+  //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario06"))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario06")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+      //verify sample is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped")
+
+} 
+
+function WhenSortAreaNotConfiguredButHoldingAndArchiveAvailableGWT233857Sce06()
+{
+    
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapWithHolding"); // holding and arching + output normal
+  var PanelName  = arrDrawers[0]["Item"]("Panel");
+  if (!StepVerifySortPanelActive(PanelName))
+    return false; // to verify vision volume error sort area not configured
+  if(!StepIsHoldingAreaConfigured())
+    return false;
+  if(!StepIsArchiveAreaConfigured)
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario06")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)) //holding available
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario06")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) // archive available
+} 
+
+function ThenPatientSampleUnloadedGWT233857Sce06()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario06")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("VisionError");
+  
+  //Wait for sample to status "Vision Volume Error"
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario06")// unload to output area
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  // to verify test orders are flagged
+  var boolValue = StepVerifySampleTestHasVisionError(SampleID, Assay,SampleError)
+  
+  // add code to verfy event log entry indicating SQC sample volume detremination is below than the threshold value
+  
+  // Operator event log entry : Sample SampleGWT23385706 has error: Vision Volume Insufficient. Resolve the appropriate issue.
+//  var sEventParams = SampleID; Vision Errors
+//  sTime="2 Hours"
+//  var sModuleSerialNumber="All"
+//  sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue."
+  //StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent,sEventParams)  // NOTE : current step defintion of this method is not using the event params
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    return false;  
+  }
+  
+} 
+
+function WhenTCSSettingsDoNotProcess()
+{
+  return StepVerifyTCSSettingsForSampleLowVolume("Yes")
+} 
+
+function WhenTCSSettingsProcessAll()
+{
+  return StepVerifyTCSSettingsForSampleLowVolume("No")
+} 
+
+function WhenSampleInDrawerGetsAnAddOnOrder()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02");
+  var dictColumn           = arrTestData[1];
+  //add on order
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  
+  return StepCreateAnAddOnPatientOrder(Assay, SampleId, Analyzer)
+} 
+
+function ThenSampleWillNotBeReloadedToTCS2()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02");
+  var dictColumn           = arrTestData[1];
+  
+  //add on order
+  var SampleId                = dictColumn["Item"]("SampleId");
+  var SampleLocation          = dictColumn["Item"]("SampleLocation");
+  
+  if(StepVerifySampleLocationInSampleList(SampleId, SampleLocation))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+   //Operator event log entry : Sample SampleGWT23385704 has error: Vision Volume Insufficient. Resolve the appropriate issue.
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");
+  
+  var sTime="2 Hours"
+  var sModuleSerialNumber="All"
+  var sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue."
+  var transEvent = GetTranslatedString(sEvent,"");
+  var transSampleProblem=GetTranslatedString(SampleProblem,"");
+  var transEventWithParam1 = ReplaceString(transEvent, "{0}", SampleId, true);
+  var transEventWithParam = ReplaceString(transEventWithParam1, "{1}", transSampleProblem, true);
+  var boolValue=StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,transEventWithParam)  // NOTE : current step defintion of this method is not using the event params
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT238289_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "GWT238289_01", "F");
+    return false;  
+  } 
+} 
+
+function ThenSampleWillNotBeReloadedToTCS2_RegCharter_Sc01()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02");
+  var dictColumn           = arrTestData[1];
+  
+  //add on order
+  var SampleId                = dictColumn["Item"]("SampleId");
+  var SampleLocation          = dictColumn["Item"]("SampleLocation");
+  
+  if(StepVerifySampleLocationInSampleList(SampleId, SampleLocation))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+   //Operator event log entry : Sample SampleGWT23385704 has error: Vision Volume Insufficient. Resolve the appropriate issue.
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario02");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");
+  
+  var sTime="2 Hours"
+  var sModuleSerialNumber="All"
+  var sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue."
+  var transEvent = GetTranslatedString(sEvent,"");
+  var transSampleProblem=GetTranslatedString(SampleProblem,"");
+  var transEventWithParam1 = ReplaceString(transEvent, "{0}", SampleId, true);
+  var transEventWithParam = ReplaceString(transEventWithParam1, "{1}", transSampleProblem, true);
+  var boolValue=StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,transEventWithParam)  // NOTE : current step defintion of this method is not using the event params
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    return false;  
+  } 
+} 
+
+
+function ThenPatientSampleUnloaded_RegCharter_Sc03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario04")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("VisionError");
+  
+  //Wait for sample to state
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario04")// unload to holding area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+
+ // to verify test orders are flagged
+  var boolValue = StepVerifySampleTestHasVisionError(SampleID, Assay,SampleError)
+  
+  // add code to verfy event log entry indicating SQC sample volume detremination is below than the threshold value
+  
+  // Operator event log entry : Sample SampleGWT23385704 has error: Vision Volume Insufficient. Resolve the appropriate issue.
+//  var sEventParams = SampleID; Vision Errors
+//  sTime="2 Hours"
+//  var sModuleSerialNumber="All"
+//  sEvent= "Sample {0} has error: {1}. Resolve the appropriate issue."
+  //StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent,sEventParams)  // NOTE : current step defintion of this method is not using the event params
+  
+  return boolValue;
+
+
+} 
+
+function WhenEmptySlotsAvailableInVisionVolumeErrorSortArea_RegCharter_Sc03()
+{
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857EmptySortArea";
+  if(!StepRemoveTray())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+     
+  return StepLoadSample();
+}
+
+function ThenSampleIsRelocatedToVisionVolumeErrorSortArea_RegCharter_Sc03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233857Scenario04")// unload to vision volume error sort area
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+    
+} 
+
+function WhenSampleIsReIntroducedIntoTheInputtray_RegCharter_Sc03()
+{
+  
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857RemoveSample";
+  
+  if(!StepRemoveTray())
+    return false;
+      
+   if(!StepLoadSample())
+    return false;
+    
+   //update analysis data for patient sample below threshold
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233857Scenario04"))
+    return false;
+  
+ NetworkSuite["Variables"]["SHScenario"] = "GWT233857PlaceSample"; 
+  
+  if(!StepPlaceOutputTray())
+    return false;
+      
+//  if(!StepPlaceSample("Capped"))
+//    return false;
+    
+  return StepLoadSample();
+    
+      
+    
+} 
+
+function ThenSampleIsRoutedToTheAnalyzerAndUnloadedToOutputArea_RegCharter_Sc03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario04")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+ 
+  
+  //Wait for sample to Aspirated state
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+    
+    
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario04");
+  var dictColumn           = arrTestData[0];
+  
+// 
+//  var SampleId                = dictColumn["Item"]("SampleId");
+//  var SampleLocation          = dictColumn["Item"]("SampleLocation");
+//  
+//  if(!StepVerifySampleLocationInSampleList(SampleId, SampleLocation))
+//    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","GWT233857ReIntreoduceSample")// unload to holding area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+  var boolValue=StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    return false;  
+  } 
+  
+} 
+
+function ThenPatientAspiratedAndUnloaded_RegCharter_Sc02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233857Scenario01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //Wait for sample to status Aspirated;Complete
+  for(var i= 0;i<aSampleStatus["length"];i++)
+  {
+	  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[i]))
+	    return false;
+  }
+    
+   var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SampleVolumeRegCharter_Sc02")// unload to hold area
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F");
+    return false;  
+  }
+
+} 
+
+function GivenSHPanelAndTCSSettingsRegCharter_Sc02()
+{
+  //Configure SH and TCS settings 
+ // var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume");
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SQCVolumeWithoutArchive");
+
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false; 
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SQCVolumeWithoutArchive"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))//process all
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     if(!GivenAtellicaInitialized())
+        return false;
+  }
+  
+  return true;
+} 

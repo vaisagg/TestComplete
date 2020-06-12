@@ -1,0 +1,1511 @@
+﻿//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispStateManagerFeatureSteps
+
+
+//******************************************************************************
+//          CI pipeline
+//******************************************************************************
+function CI_StateManagement_Scenarios()
+{
+  try
+  {
+     //Initialize Metadata
+     Log["AppendFolder"]("Initialize datafile and XML's")
+     InitializeMetaDataHYDRA();
+     Log["PopLogFolder"]();
+     
+     Log["AppendFolder"]("CI Pipeline :: State Management Scenarios");
+     
+     //Feature - 232812 - StateManagement
+     MIT_232812_StateManagement();
+     
+     //Feature - 232813 - StateManagement
+     MIT_232813_StateManagement();
+     
+     Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                                FEATURES  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+ 
+ 
+//******************************************************************************
+//                    FEATURE : 232812 : State Management
+//******************************************************************************
+function MIT_232812_StateManagement()
+{
+  try
+  {
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+      
+    Log["AppendFolder"]("Feature  232812 :: State Management");
+        
+    //MIT 329553
+    MIT_329553_UserRequestedTransitionReadyStateWithStoppingWithPausingTransientReady_01();
+        
+    //MIT 329558
+    MIT_329558_UserRequestedTransitionStoppedCheckHardwareToDiagnostics_01();
+    
+    //MIT 329559
+    MIT_329559_UserRequestedTransitionStoppedPausedDiagnostics_01()
+    
+    //MIT 329560
+    MIT_329560_UserRequestedTransitionsStoppedPausedReady_01();
+    
+    //MIT 329563
+    MIT_329563_UserRequestedTransitionsStoppedRapidStopStarupInitializing_01();
+  
+    //MIT 329564
+    MIT_329564_UserRequestedTransitionStoppedRapidStopDiagnostics_01();
+    
+    //MIT 329554
+    MIT_329554_UserRequestedTransitionProcessingStoppedPaused_01();
+    
+    //MIT 329552
+    MIT_329552_UserRequestedTransitionProcessingStateWithPausingTransientProcessing_01();
+    
+    //MIT 329562
+    MIT_329562_UserRequestedStoppedCheckSuppliesToReady_01();
+    
+    //MIT 329556
+    MIT_329556_UserRequestedStoppedCheckSuppliesToStoppedPaused_01();
+    
+    //MIT 392555
+    //MIT_392555_UserRequestedTransitionMaintenaceStartupInitializing_01();
+        
+    //MIT 329565
+    //MIT_329565_UserRequestedTransitionStoppedPausedMaintenance_01();
+
+	Log["PopLogFolder"]();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+//******************************************************************************
+//                    FEATURE : 232813 : State Management
+//******************************************************************************
+function MIT_232813_StateManagement()
+{
+  try
+  {
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+      
+    Log["AppendFolder"]("Feature  232813 :: State Management");
+      
+    //MIT 329566
+    MIT_329566_UserActionBasedTransitionDiagnosticsStartupResuming_01();
+    
+    //MIT 329567
+    //MIT_329567_UserActionBasedTransitionCurrentStateToShuttingDown_01();
+    
+    //MIT 329569
+    //MIT_329569_UserActionBasedTransitionStoppedRapidStopShuttingDown_01();
+
+	  Log["PopLogFolder"]();
+        
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//                                GWT's   
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 232812, 232813 - State Management ]
+//******************************************************************************
+
+function MIT_329552_UserRequestedTransitionProcessingStateWithPausingTransientProcessing_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329552_UserRequestedTransitionProcessingStateWithPausingTransientProcessing_01";
+    var testCaseId= "TC_329552";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329952");
+    Log["AppendFolder"]("MIT : 329552 - User requested transition - Processing state with pausing transient -> PROESSING")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: System Module Is In 'Processing' State With Transient Status 'Pausing'");
+    if(!GivenModuleIsInProcessingStateWithTransientStatusOfPausing(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Processing' with transient status of 'Pausing' ");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Raises 'Resume' Request");
+    if(!WhenUserRaiseResumeRequest(testCaseId))
+    {
+      Log["Error"]("Failed to Raise Resume Request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify System Module State Changed To 'Processing' After 'Resuming' completed")
+    if(!ThenVerifyModuleStateChangedToProcessing(testCaseId))
+    {
+      Log["Error"]("Failed to verify Module state as 'Processing' after 'Resuming' completed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change From 'Paused' To 'Processing'");
+    if(!ThenVerifyEventLogGeneratedForStateChangeFromPausedToProcessing(testCaseId))
+    {
+      Log["Error"]("Failed to Verify the Eventlog generated for the module state change From 'Paused' to 'Processing'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify System Module State Changed To 'Ready' After 'Processing' Completed")
+    if(!ThenVerifyModuleStateChangedtoReady(testCaseId))
+    {
+      Log["Error"]("Failed to verify module state as 'Ready' after 'Processing' completed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change to 'Ready'");
+    if(!ThenVerifyEventLogGeneratedForWarminupToReady())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329553_UserRequestedTransitionReadyStateWithStoppingWithPausingTransientReady_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329553_UserRequestedTransitionReadyStateWithStoppingWithPausingTransientReady_01";
+    var testCaseId= "TC_329553";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329553");
+    Log["AppendFolder"]("MIT : 329553 - User requested transition - Ready state with stopping/pausing transient -> READY")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: System Module Is In 'Ready' State With Transient Status Of 'Pausing'");
+    if(!GivenModuleIsInReadyStateWithTransientStatusOfPausing(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready' with transient status of 'Pausing'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Raises 'Resume' Request");
+    if(!WhenUserRaiseResumeRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Resume' Request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ResumeAndMakeItReadyState(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify 'Resuming' Transient Status");
+    if(!ThenVerifyTransientstateForResuming(testCaseId))
+    {
+      Log["Error"]("Failed to verify 'Resuming' transient state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log for System Module State change to 'Resuming'");
+    if(!ThenVerifyEventLogGeneratedForStoppedPausedToResuming())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the Module State change to 'Resuming'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify Module State Changed to 'Ready' After Resuming Completed")
+    if(!ThenVerifyModuleStateChangedtoReady(testCaseId))
+    {
+      Log["Error"]("Failed to verify Module state as 'Ready' after 'Resuming' completed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change To 'Ready'");
+    if(!ThenVerifyEventLogGeneratedForWarminupToReady())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329554_UserRequestedTransitionProcessingStoppedPaused_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329554_UserRequestedTransitionProcessingStoppedPaused_01";
+    var testCaseId= "TC_329554";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329554");
+    Log["AppendFolder"]("MIT : 329554 - User requested transition - PROCESSING-> STOPPED -Paused")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: System Module Is In 'Processing' State");
+    if(!GivenModuleIsInProcessingState(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Processing'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Pause' Request");
+    if(!WhenUserRaisePauseRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Pause' Request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Module State Changed to 'Stopped' after Sample processing completed")
+    if(!ThenVerifyModuleStateChangedToStoppedAfterSampleProcessingCompleted(testCaseId))
+    {
+      Log["Error"]("Failed to verify module state as 'Processing' until sample processing completes");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log For Syatem Module State Change From 'Processing' To 'Stopped'");
+    if(!ThenVerifyEventLogGeneratedForProcessingToStopped())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Releasing System Module From Stopped Mode");
+    if(!ResumeAndMakeItReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to perform the post run execution steps to change the Module state from 'Stopped' to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_392555_UserRequestedTransitionMaintenaceStartupInitializing_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_392555_UserRequestedTransitionMaintenaceStartupInitializing_01";
+    var testCaseId= "TC_392555";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329555");
+    Log["AppendFolder"]("MIT : 392555 - User requested transition - STOPPED - Paused-> MAINTENANCE")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Make The Module State Stopped By 'Pause' Action");
+    if(!GivenModuleIsInMaintenanceState(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log["AppendFolder"]("When :: User Raise Leave 'Maintenance' Request");
+    if(!WhenUserRaiseLeaveMaintenanceRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise leave 'Maintanence' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Module Is In 'startup' With transient state 'Resuming'");
+    if(!ThenVerifyModuleIsInStartupResuming(testCaseId))
+    {
+      Log["Error"]("Failed to verify module state as 'Startup' with transient state 'Resuming'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change To 'Startup'");
+    //TODO: yet to receive the event code and message for 
+    if((testCaseId))
+    {
+      Log["Error"]("Failed to raise leave maintanence request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329556_UserRequestedStoppedCheckSuppliesToStoppedPaused_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329556_UserRequestedStoppedCheckSuppliesToStoppedPaused_01";
+    var testCaseId= "TC_329556";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329556");
+    Log["AppendFolder"]("MIT : 329556 - User requested transition - STOPPED - Check Supplies -> Stopped Paused")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State as 'Stopped Check Supplies'");
+    if(!GivenModuleIsInStoppedCheckSuppliesState(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped Check Supplies'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Diagnostics' Request");
+    if(!WhenUserRaiseDiagnosticsRequestFromSystemHealthCheck(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Diagnostics' Request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify The Transient State Displayed As 'Pausing'");
+    if(!ThenVerifyPausingTransientstate(testCaseId))
+    {
+      Log["Error"]("Failed to verify the transient state as 'Pausing'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change to 'Stopped Paused'");
+    if(!ThenVerifyEventLogGeneratedForStateChangedToStoppedPaused())
+    {
+      Log["Error"]("Failed to Verify the Eventlog generated for the Module State change to 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Releasing System Module From 'Diagnostics' State");
+    if(!RefillDepletedSuppliesAndMakeSystemModuleReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to perform the post run execution steps to exit from diagnostics ans make system in 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"](); 
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329558_UserRequestedTransitionStoppedCheckHardwareToDiagnostics_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329558_UserRequestedTransitionStoppedCheckHardwareToDiagnostics_01";
+    var testCaseId= "TC_329558";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329558");
+    Log["AppendFolder"]("MIT: User requested transition - STOPPED - Check hardware -> DIAGNOSTICS")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: System Module State Is In 'Stopped Check Hardware' State");
+    if(!GivenModuleIsInStoppedCheckHardwareState(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped Check Hardware'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises Diagnostics Request");
+    if(!WhenUserRaiseDiagnosticsRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Diagnostics' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify System Module State Changes To 'Diagnostics'");
+    if(!ThenVerifyModuleStateChangedtoDiagnostics(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Event Log for Module State change to 'Diagnostics'");
+    if(!ThenVerifyEventLogGeneratedForStateChangeToDiagnostics())
+    {
+      Log["Error"]("Failed to verify the eventlog generated for the module state change to 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //Post-Run
+    Log["AppendFolder"]("Post :: Exit Diagnostics And Make It Ready State");
+    if(!ExitDiagnosticsAndMakeItReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to change the system state from 'Diagnostics' to 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329559_UserRequestedTransitionStoppedPausedDiagnostics_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329559_UserRequestedTransitionStoppedPausedDiagnostics_01";
+    var testCaseId= "TC_329559";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329559");
+    Log["AppendFolder"]("MIT : 329559 - User requested transition - STOPPED-Paused -> DIAGNOSTICS")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State Stopped By 'Pause' Action");
+    if(!GivenModuleIsInStoppedStateAfterPauseAction(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Diagnostics' Request");
+    if(!WhenUserRaiseDiagnosticsRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Diagnostics' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify System Module State Changes to 'Diagnostics'");
+    if(!ThenVerifyModuleStateChangedtoDiagnostics(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Event Log for Syatem Module State change to 'Diagnostics'");
+    if(!ThenVerifyEventLogGeneratedForStateChangeToDiagnostics())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Post-Run
+    Log["AppendFolder"]("Post :: Exit Diagnostics And Make It Ready State");
+    if(!ExitDiagnosticsAndMakeItReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to change the system state from 'Diagnostics' to 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329560_UserRequestedTransitionsStoppedPausedReady_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329560_UserRequestedTransitionsStoppedPausedReady_01";
+    var testCaseId= "TC_329560";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329560");
+    Log["AppendFolder"]("MIT : 329560 - User requested transitions - STOPPED-Paused -> READY")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State 'Stopped' By 'Pause' action");
+    if(!GivenModuleIsInStoppedStateAfterPauseAction(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    aqUtils["Delay"](4000,"Wait for the module to Stabilize the State");
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Resume' Request");
+    if(!WhenUserRaiseResumeRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Resume' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify 'Resuming' Transient Status");
+    if(!ThenVerifyTransientstateForResuming(testCaseId))
+    {
+      Log["Error"]("Failed to verify 'Resuming' transient state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log for System Module State change to 'Resuming'");
+    if(!ThenVerifyEventLogGeneratedForStoppedPausedToResuming())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Resuming'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HYDRA State Changes To 'Ready' State");
+    if(!ThenVerifyModuleStateChangedtoReady(testCaseId))
+    {
+      Log["Error"]("Failed to Verify the Ready state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State change to 'Ready'");
+    if(!ThenVerifyEventLogGeneratedForWarminupToReady())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329562_UserRequestedStoppedCheckSuppliesToReady_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329562_UserRequestedStoppedCheckSuppliesToReady_01";
+    var testCaseId= "TC_329562";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329562");
+    Log["AppendFolder"]("MIT : 329562 - User requested transition - STOPPED - Check Supplies -> Ready")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State 'Stopped Check Supplies'");
+    if(!GivenModuleIsInStoppedCheckSuppliesState(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: The required Supplies Are Replaced / Refilled From Supply Needs");
+    if(!WhenSuppliesAreReplaceFromSupplyNeedsScreen(testCaseId))
+    {
+      Log["Error"]("Failed to replace / refill the supplies");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Module State Changes To 'Ready' State");
+    if(!ThenVerifyModuleStateChangedtoReady(testCaseId))
+    {
+      Log["Error"]("Failed to verify the 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State change to 'Ready'");
+    if(!ThenVerifyEventLogGeneratedForWarminupToReady())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Releasing System Module From 'Diagnostics' State");
+    if(!RefillDepletedSuppliesAndMakeSystemModuleReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to perform the post run execution steps to exit from diagnostics ans make system in 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();     
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329563_UserRequestedTransitionsStoppedRapidStopStarupInitializing_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_TC329563_UserRequestedTransitionsStoppedRapidStopStarupInitializing_01";
+    var testCaseId="TC_329563";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329563");
+    Log["AppendFolder"]("MIT : 329563 - User requested transitions - STOPPED-Rapid stop -> STARTUP-Initializing")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State 'Stopped' By 'Rapid Stop' Action");
+    if(!GivenModuleIsInStoppedStateAfterRapidStopAction(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Resume' Request");
+    if(!WhenUserRaiseResumeRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Resume' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify System Module State Changes to 'Ready'");
+    if(!ThenVerifyModuleStateChangedtoReady(testCaseId))
+    {
+      Log["Error"]("Failed to verify the 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change To 'Ready'");
+    if(!ThenVerifyEventLogGeneratedForWarminupToReady())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329564_UserRequestedTransitionStoppedRapidStopDiagnostics_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329564_UserRequestedTransitionStoppedRapidStopDiagnostics_01";
+    var testCaseId="TC_329564";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329564");
+    Log["AppendFolder"]("MIT : 329564 - User requested transition - STOPPED-Rapid stop -> DIAGNOSTICS")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State As 'Stopped' By 'Rapid Stop' Action");
+    if(!GivenModuleIsInStoppedStateAfterRapidStopAction(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Diagnostics' Request");
+    if(!WhenUserRaiseDiagnosticsRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Diagnostics' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify HYDRA State Changes To 'Diagnostics'");
+    if(!ThenVerifyModuleStateChangedtoDiagnostics(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Event Log for System Module State Change to 'Diagnostics'");
+    if(!ThenVerifyEventLogGeneratedForStateChangeToDiagnostics())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module state change to 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Post-Run
+    Log["AppendFolder"]("Post :: Exit 'Diagnostics' And Make It 'Ready' State");
+    if(!ExitDiagnosticsAndMakeItReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to change the system state from 'Diagnostics' to 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329565_UserRequestedTransitionStoppedPausedMaintenance_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232812";
+    var testcaseName = "MIT_329565_UserRequestedTransitionStoppedPausedMaintenance_01";
+    var testCaseId= "TC_329565";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232812 :: State Management - 329565");
+    Log["AppendFolder"]("MIT : 329565 - User requested transition - STOPPED - Paused-> MAINTENANCE")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State 'Stopped' By 'Pause' Action");
+    if(!GivenModuleIsInStoppedStateAfterPauseAction(testCaseId))
+    {
+      Log["Error"]("Failed to change the module state to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: User Raises 'Maintenance' Request");
+    if(!WhenUserRaiseMaintenanceRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Maintenance' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify HYDRA State Changes To 'Maintenance'");
+    if(!ThenVerifyModuleStateChangedtoMaintenance(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Log Generated in Event Log For Module State Change to 'Maintenance'");
+    if(!ThenVerifyEventLogGeneratedForStateChangedToMaintenance())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the module State change to 'Maintenance'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329566_UserActionBasedTransitionDiagnosticsStartupResuming_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232813";
+    var testcaseName = "MIT_329566_UserActionBasedTransitionDiagnosticsStartupResuming_01";
+    var testCaseId="TC_329566";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232813 :: State Management - 329566");
+    Log["AppendFolder"]("MIT : 329566  User action based transition - DIAGNOSTICS-> STARTUP-Resuming")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+        
+    //GIVEN1
+    Log["AppendFolder"]("Given :: System Module Is In 'Diagnostics' State");
+    if(!GivenModuleIsInDiagnosticsState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Diagnostics'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Raises 'Exit Diagnostics' Request");
+    if(!WhenUserRaiseExitDiagnosticsRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Exit Diagnostic' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitDiagnosticsAndMakeItReadyState(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify System Module State Changed To 'Stopped'")
+    if(!ThenVerifyModuleStateChangedToStopped(testCaseId))
+    {
+      Log["Error"]("Failed to verify 'Stopped' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Change To 'Stopped'");
+    if(!ThenVerifyEventLogGeneratedForStoppedCheckHardwareState())
+    {
+      Log["Error"]("Failed to Verify the Eventlog generated for the module state change to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ResumeAndMakeItReadyState(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify System Module State Changed to 'Ready' After User Raises 'Resume' Requests");
+    if(!ThenVerifyModuleStateChangedToReadyAfterResumeRequest(testCaseId))
+    {
+      Log["Error"]("Failed to perform 'Resume' and verify 'Ready' state");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Event Log For System Module State Changed To 'Ready'");
+    if(!ThenVerifyEventLogGeneratedForWarminupToReady())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the Module State change to 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_329567_UserActionBasedTransitionCurrentStateToShuttingDown_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232813";
+    var testcaseName = "MIT_329567_UserActionBasedTransitionCurrentStateToShuttingDown";
+    var testCaseId="TC_329567" ;
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232813 :: State Management - 329567");
+    Log["AppendFolder"]("MIT : 329567 - User action based transition - Current State-> Shutting down")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    //GIVEN1
+    Log["AppendFolder"]("Given :: Module Is In Ready State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to Verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Raises 'Power Down' Request");
+    if(!WhenUserRaisePowerDownRequest(testCaseId))
+    {
+      Log["Error"]("Failed to Raise 'Power Down' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Module State As 'Power Down'");
+    if(!ThenVerifyModuleStateChangedtoPowerDown(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Power Down'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log for System Module State Change To 'Off'");
+    if(!ThenVerifyEventLogGeneratedForShuttingDownToOffState())
+    {
+      Log["Error"]("Failed to Verify the Eventlog generated for the module State change to 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function MIT_329569_UserActionBasedTransitionStoppedRapidStopShuttingDown_01()
+{
+  try
+  {
+    var featureName = "StateManagement_FT_232813";
+    var testcaseName = "MIT_329569_UserActionBasedTransitionStoppedRapidStopShuttingDown_01";
+    var testCaseId= "TC_329569";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 232813 :: State Management - 329569");
+    Log["AppendFolder"]("MIT : 329569 - User action based transition - STOPPED -Rapid stop -> Shutting down")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Make The Module State 'Stopped' By 'Rapid Stop'");
+    if(!GivenModuleIsInStoppedStateAfterRapidStopAction(testCaseId))
+    {
+      Log["Error"]("Failed to change the module State to 'Stopped'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Raises 'Power Down' Request");
+    if(!WhenUserRaisePowerDownRequest(testCaseId))
+    {
+      Log["Error"]("Failed to raise 'Power Down' request");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Module State As 'Power Down'");
+    if(!ThenVerifyModuleStateChangedtoPowerDown(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Power Down'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Event Log for System Module State change to 'Off'");
+    if(!ThenVerifyEventLogGeneratedForShuttingDownToOffState())
+    {
+      Log["Error"]("Failed to verify the Eventlog generated for the Module State change to 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

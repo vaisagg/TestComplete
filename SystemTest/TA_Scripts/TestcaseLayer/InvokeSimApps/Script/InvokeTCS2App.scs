@@ -1,0 +1,19 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT TCS2Library
+function InvokeTCS2App()
+{ 
+  try
+  {
+      Log.AppendFolder("Invoke TCS2 Application");
+      var strAppPath ="C:\\Siemens\\Bin\\TCS2.MainProject.exe"; 
+      var strProcessName = "TCS2.MainProject";
+
+      InvokeTCS2(strAppPath,strProcessName);
+      Log.PopLogFolder();
+      }
+   catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log.PopLogFolder();    
+  }
+}

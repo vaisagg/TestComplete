@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<child name="CommonUtilities" key="{911047CF-16B6-41E6-B7F7-7245B4B58720}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+		</child>
+		<child name="LocalizationUtilities" key="{E431F297-92FB-4EC0-B665-C3F932EB4B74}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+		</child>
+		<child name="NetworkSuiteLibrary" key="{CB219688-0FB0-4372-9531-3A15A01175EC}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\NetworkSuiteLibrary.scs" />
+		</child>
+		<child name="SQLUtilities" key="{5AA9D9EE-7175-494E-B716-79C245AA26A2}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+		</child>
+		<child name="ControlAccessLibrary" key="{1FE07CA2-FB5E-4E01-94E3-4069817D49E9}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+		</child>
+		<child name="TCNativeLibraries" key="{28B736A8-174F-4962-BED7-1F124D4E4CF8}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+		</child>
+		<child name="WorkflowNavigator" key="{F53BEE58-3C89-4D32-8E63-34B5E88E9399}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+		</child>
+		<child name="SealerLibrary" key="{8F69DF98-EA85-4654-B5F1-4E44745A0B81}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Sealer\SealerLibrary.scs" />
+		</child>
+	</children>
+	<folders>
+		<folder caption="TaskLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="CommonLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{911047CF-16B6-41E6-B7F7-7245B4B58720}" />
+						<ref key="{E431F297-92FB-4EC0-B665-C3F932EB4B74}" />
+						<ref key="{CB219688-0FB0-4372-9531-3A15A01175EC}" />
+						<ref key="{5AA9D9EE-7175-494E-B716-79C245AA26A2}" />
+					</references>
+				</folder>
+				<folder caption="GUIAccessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="ControlAcessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{1FE07CA2-FB5E-4E01-94E3-4069817D49E9}" />
+							</references>
+						</folder>
+						<folder caption="TCNativeLibraries" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{28B736A8-174F-4962-BED7-1F124D4E4CF8}" />
+							</references>
+						</folder>
+						<folder caption="WorkflowNavigator" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{F53BEE58-3C89-4D32-8E63-34B5E88E9399}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+				<folder caption="Modules" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="Sealer" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{8F69DF98-EA85-4654-B5F1-4E44745A0B81}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+			</folders>
+		</folder>
+		<folder caption="TestCaseLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="Scenarios" description="A logical folder that is used to organize project items and elements." moniker="" />
+			</folders>
+		</folder>
+	</folders>
+</Root>

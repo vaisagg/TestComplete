@@ -1,0 +1,224 @@
+﻿//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT TCNativeLibraries
+//USEUNIT NetworkSuiteLibrary
+
+function InvokeSealer(strAppPath,Testobj)
+{
+   Log["AppendFolder"]("SealerLibrary:InvokeSealer");
+   try
+   {
+   
+   ///var strAppPath = "C:\\Siemens\\Prepost\\SealerMM\\Bin\\Sealer.ModuleManagerApplication.exe"
+   if(!InvokeSealerSimulator())
+    return false;
+   
+    var oShell=Sys.OleObject("Shell.Application");
+    var bReturn = false;
+    // var Testobj=Aliases.Sealer_ModuleManagerApplication.SealerModulemanagerApplicationWindow
+    var SlrProcessobj = Testobj
+   
+       
+    var objWS = Sys["OleObject"]("WScript.Shell")    
+    var oShell=Sys["OleObject"]("Shell.Application");
+
+
+
+
+          
+    oShell.ShellExecute(strAppPath,"","C:\\Siemens\\Prepost\\SealerMM\\Bin","runas",5)
+    aqUtils.Delay(6000) 
+    var i=0
+ 
+    while(!((SlrProcessobj["Exists"])||i>60))
+    {
+      proc=Sys["WaitProcess"]("Sealer_ModuleManagerApplication");
+      aqUtils["Delay"](2000,"Waiting for Sealer ModuleManagerApplication to appear");
+      i=i+1;
+    }
+  
+    if(SlrProcessobj["Exists"])
+    {
+      Log.Message("Sealer module manager application launched successfully")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log.Warning("Unable to launch Sealer module manager application")
+      Log["PopLogFolder"]();
+      return false; 
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+} 
+
+
+function InvokeSealerSimulator()
+{
+  try
+  {
+    Log["AppendFolder"]("SealerLibrary:InvokeSealerSimulator");
+//    sProjPath=Project["Path"]
+//    var sPath= sProjPath["split"]("InvokeSimApps")
+//    var strControlXMLPath=sPath[0]+"Sealer\\TestData\\SealerControls.xml"
+//    Log.Message(strControlXMLPath)
+//	
+//    //InitializeWorkflowXML(strWorkflowXMLPath);
+//    InitializeControlXML(strControlXMLPath);  
+   
+    var objWS = Sys["OleObject"]("WScript.Shell")    
+    var oShell=Sys["OleObject"]("Shell.Application");
+    
+   
+     oShell.ShellExecute( "C:\\Siemens\\Prepost\\Tools\\SealerSimulator\\Sealer Simulator.exe","", "C:\\Siemens\\Prepost\\Tools\\SealerSimulator","runas",5)
+	  aqUtils.Delay("5000","waiting for sealer simulator")
+    var SealerSim=Sys["Process"]("Sealer Simulator")["WPFObject"]("HwndSource: MainWindow", "Sealer Simulator");
+    
+    if(SealerSim["Exists"])
+    {
+      Log.Message("Sealer simulator launched successfully")
+    }
+    else
+    {
+      Log.Error("Unable to launch Sealer simulator")
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    Log.Message("Setting Autoresponse checkbox")
+	
+    var objCtrl=Aliases.Sealer_Simulator.HwndSource_MainWindow.MainWindow.chkAutoResponse//GetControl("SealerSimulator","chkAutoResponse");
+	  SetWPFCheckBox(objCtrl,1);
+  
+    Log.Message("Setting Event Return Reboot combobox to Status_MODULE_STARTED")
+    var objCtrl=Aliases.Sealer_Simulator.HwndSource_MainWindow.MainWindow.cmbEventRetReboot//GetControl("SealerSimulator","cmbEventRetReboot");
+    SetComboText(objCtrl,"Status_MODULE_STARTED")
+    //Status_MODULE_STARTED
+    
+     Log.Message("Setting Event Return Sealtube combobox to STATUS_SEALER_SEALED_TUBE")
+    var objCtrl=Aliases.Sealer_Simulator.HwndSource_MainWindow.MainWindow.cmbEventRetSealTube//GetControl("SealerSimulator","cmbEventRetSealTube");
+    SetComboText(objCtrl,"STATUS_SEALER_SEALED_TUBE")
+    //Status_CAPPER_CAPPED_TUBE
+    
+   
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+} 
+
+function ShutdownSealer()
+{
+Log["AppendFolder"]("SealerLibrary;ShutdownSealer");
+  try
+  {
+
+
+     var SealerSim=Sys["Process"]("Sealer Simulator")["WPFObject"]("HwndSource: MainWindow", "Sealer Simulator");
+    SealerSim.Close();
+    aqUtils.Delay("5000","Closing Sealer simulator")
+    if(!SealerSim["Exists"])
+    {
+      Log.Message("Sealer simulator shutdown successfully")
+    }
+    else
+    {
+      Log.Warning("Unable to shutdown Sealer")
+      Log["PopLogFolder"]();
+      return false; 
+    }
+	
+	  var oShell=Sys["OleObject"]("Shell.Application");
+     var SlrProcessobj = Aliases.Sealer_ModuleManagerApplication.SealerModulemanagerApplicationWindow
+	  arrProcess = ["Sealer Simulator", "Sealer.ModuleManagerApplication"];
+    WaitToKillProcess(arrProcess, 10000);
+
+
+    
+    aqUtils["Delay"](3000,"Wait to stop the Simulator Service");     
+  
+    if(!SlrProcessobj["Exists"])
+    {
+      Log.Message("Sealer module manager shutdown successfully")
+	  Log["PopLogFolder"]();
+      return true; 
+    }
+    else
+    {
+      Log.Warning("Unable to shutdown Sealer")
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    
+   
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+  
+
+}
+function LaunchSealerSim()
+{
+  var arrSLRIP=GetInstrumentsIP("SEALER");
+  
+  //Run the configured SLR task
+  if(arrSLRIP[0]!=null)
+  {
+    blnRes = false;
+    blnRes = InvokeTaskFromNetworkSuite("StartSlr");
+    if(blnRes==true)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    Log["Warning"]("Sealer IP is not available in FederationConfig.xml")
+  } 
+   
+}
+
+
+function ShutDownSealerSim()
+{
+   var arrSLRIP=GetInstrumentsIP("SEALER");
+
+  //Run the configured DC task
+  if(arrSLRIP[0]!=null)
+  {
+    blnRes = false;
+    blnRes = InvokeTaskFromNetworkSuite("ShutdownSlr");
+    if(blnRes==true)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    Log["Warning"]("Sealer IP is not available in FederationConfig.xml")
+  } 
+}

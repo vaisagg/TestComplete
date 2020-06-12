@@ -1,0 +1,17 @@
+﻿
+
+//USEUNIT SealerLibrary
+function InvokeSealerSim()
+{
+   var strAppPath = "C:\\Siemens\\Prepost\\SealerMM\\Bin\\Sealer.ModuleManagerApplication.exe"
+   var Testobj=Aliases.Sealer_ModuleManagerApplication.SealerModulemanagerApplicationWindow
+   if(InvokeSealer(strAppPath,Testobj))
+   {
+     Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sealer is launched successfully");
+   }
+   else
+   {
+     Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to launch Sealer");
+   } 
+ 
+ }

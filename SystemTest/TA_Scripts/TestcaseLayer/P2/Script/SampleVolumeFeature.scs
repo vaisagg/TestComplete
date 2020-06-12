@@ -1,0 +1,2729 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT SampleVolumeFeatureSteps
+
+function SampleVolumeIntegration()
+{
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature: Sample Volume Determination");
+  
+  Log["AppendFolder"]("Feature setup: Sample Volume Determination");
+  if(!SampleVolume_Setup())
+  {
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F"); 
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  GWT181274_01();
+  GWT181274_02();
+  
+  Log["PopLogFolder"]();
+}
+
+function SampleVolumeRegression()
+{
+   InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature: Sample Volume Determination");
+  
+  Log["AppendFolder"]("Feature setup: Sample Volume Determination");
+  if(!SampleVolume_Setup())
+  {
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F"); 
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  //GWT238289_01();
+  SampleVolumeRegCharter_Sc01();
+  
+ // GWT233857_01();
+  SampleVolumeRegCharter_Sc02();
+  SampleVolumeRegCharter_Sc03();
+ // GWT233857_04();
+  
+  
+  
+  Log["PopLogFolder"]();
+} 
+function SampleVolumeDetermination()
+{
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature: Sample Volume Determination");
+  
+  Log["AppendFolder"]("Feature setup: Sample Volume Determination");
+  if(!SampleVolume_Setup())
+  {
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234377_Scenario01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+	 
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+
+
+  GWT233847_01();
+  GWT233847_03();
+  GWT233847_02();
+  GWT233847_04();
+  GWT233847_05();
+  GWT233847_06();
+ GWT234377_Scenario01();//testdata reading needs to be fixed
+
+  GWT233853_01_SQCVolumeDeterminationInvalid();
+  GWT233853_02_SQCVolumeDeterminationInvalid();
+  GWT233853_03_SQCVolumeDeterminationInvalid();
+  GWT233853_04_SQCVolumeDeterminationInvalid();
+  GWT233853_05_SQCVolumeDeterminationInvalid();
+  GWT233853_06_SQCVolumeDeterminationInvalid();
+
+  GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume();
+  
+  GWT193786_01();
+  GWT193786_02();
+  GWT193786_03();
+  
+  GWT181274_01();
+  GWT181274_02();
+  
+  GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser();
+  
+  GWT207724_01_SampleVolumeSufficiencyConfiguration();
+  GWT207724_02_SampleVolumeSufficiencyConfiguration();
+  GWT207724_03_SampleVolumeSufficiencyConfiguration();
+  GWT207724_04_SampleVolumeSufficiencyConfiguration();
+//GWT233859_01_SQCLicenseNotPurchased()// cannot be executed in tcs2 environment 
+
+
+
+GWT234378_01();//Passed
+  GWT233857_01();//Passed
+  GWT233857_02();//Passed
+  GWT233857_03();//Passed
+  GWT233857_04();//passed
+  GWT233857_05();//passed
+  GWT233857_06();//Passed
+  
+  ////////////////////////////////////////////////
+  GWT207722_01_SampleVolumeConfiguration()//Passed
+  GWT207723_01_SampleVolumeConfiguration()//Passed
+  Log["PopLogFolder"]();
+
+  
+  Log["PopLogFolder"]();
+} 
+
+function Volume()
+{
+  InitializeMetaData();  
+  Log["AppendFolder"]("Feature#263865:Volume");
+  Log["AppendFolder"]("Feature setup:Volume");
+  if(!SampleVolume_Setup())
+  {
+     ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");   
+     ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+     ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F"); 
+     ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F"); 
+     ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F"); 
+     ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F"); 
+     ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F"); 
+     Log["PopLogFolder"]();
+     return false;
+     
+  } 
+  Log["PopLogFolder"]();
+  GWT234378_01();
+  GWT233857_01();
+  GWT233857_02();
+  GWT233857_03();
+  GWT233857_04();
+  GWT233857_05();
+  GWT233857_06();
+  Log["PopLogFolder"]();
+}
+
+
+function SampleVolumeConfiguration()
+{
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263868: Configuration");
+  Log["AppendFolder"]("Feature setup:Volume");
+  if(!SampleVolume_Setup())
+  {
+     ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+	 ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+     Log["PopLogFolder"]();
+     return false;
+     
+  } 
+  Log["PopLogFolder"]();
+  GWT207722_01_SampleVolumeConfiguration()
+  GWT207723_01_SampleVolumeConfiguration()
+
+  Log["PopLogFolder"]();
+  
+}
+
+function GWT233847_01()
+{
+  Log["AppendFolder"]("Sample Volume GWT#233847 : Scenario 1");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233847_01";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC successfully performed sample volume check");
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination above/at sufficiency threshold And sort area configured and spot is available");
+  if(!WhenSortAreaConfiguredAndSpotAvailable_GWT233847_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Process All");
+  if(!WhenProcessingOptionIsSetToProcessAll_GWT233847_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Holding area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT233847_02()
+{
+  Log["AppendFolder"]("Sample Volume GWT#233847 : Scenario 2");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233847_02";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC successfully performed sample volume check");
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination above/at sufficiency threshold And sort area configured and spot is available");
+  if(!WhenSortAreaConfiguredAndSpotAvailable_GWT233847_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Donot Process");
+  if(!WhenProcessingOptionIsSetToDonotProcess_GWT233847_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Holding area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT233847_03()
+{
+  Log["AppendFolder"]("Sample Volume GWT#233847 : Scenario 3");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233847_03";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC successfully performed sample volume check");
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination above/at sufficiency threshold And sort area configured and spot is not available");
+  if(!WhenSortAreaConfiguredAndSpotNotAvailable_GWT233847_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Process All");
+  if(!WhenProcessingOptionIsSetToProcessAll_GWT233847_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Holding area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT233847_04()
+{
+  Log["AppendFolder"]("Sample Volume GWT#233847 : Scenario 4");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233847_04";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC successfully performed sample volume check");
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination above/at sufficiency threshold And sort area configured and spot is not available");
+  if(!WhenSortAreaConfiguredAndSpotNotAvailable_GWT233847_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Donot Process");
+  if(!WhenProcessingOptionIsSetToDonotProcess_GWT233847_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Holding area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT233847_05()
+{
+  Log["AppendFolder"]("Sample Volume GWT#233847 : Scenario 5");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233847_05";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC successfully performed sample volume check");
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination above/at sufficiency threshold and sort area not configured");
+  if(!WhenSortAreaNotConfigured_GWT233847_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Process All");
+  if(!WhenProcessingOptionIsSetToProcessAll_GWT233847_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Holding area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+
+function GWT233847_06()
+{
+  Log["AppendFolder"]("Sample Volume GWT#233847 : Scenario 6");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233847_06";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC successfully performed sample volume check");
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233847_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination above/at sufficiency threshold and sort area not configured");
+  if(!WhenSortAreaNotConfigured_GWT233847_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Donot Process");
+  if(!WhenProcessingOptionIsSetToDonotProcess_GWT233847_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and then unloaded to Holding area");
+  if(!ThenSampleSentToAnalyzerAndUnloadedToHoldingArea_GWT233847_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233847_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT233859_01_SQCLicenseNotPurchased()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Sample Volume GWT#233859 : SQC license not purchased");
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "I");
+  
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("When SQC license is not purchased for TCS2");
+  if(!WhenSQCLicenseNotPurchasedForTCS2())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Teardown : SQC License not purchased");
+    TearDownSQCLicenseNotPurchased();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then On UI, HIL configurations are not available");
+  if(!HILConfigurationsNotAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Teardown : SQC License not purchased");
+    TearDownSQCLicenseNotPurchased();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And On UI, volume configurations are not available");
+  if(!VolumeConfigurationsNotAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Teardown : SQC License not purchased");
+    TearDownSQCLicenseNotPurchased();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And On UI, Spin/Unspun configurations are not available");
+  if(!SpinConfigurationsNotAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Teardown : SQC License not purchased");
+    TearDownSQCLicenseNotPurchased();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And On UI, Vision sort error configurations are not available");
+  if(!VisionErrorConfigurationsNotAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233859_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Teardown : SQC License not purchased");
+    TearDownSQCLicenseNotPurchased();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Teardown : SQC License not purchased");
+  TearDownSQCLicenseNotPurchased();
+  Log["PopLogFolder"]();
+}
+
+function GWT222093_01_SampleVolumeHardwareFailure()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Sample Volume GWT#222093: SQC sample volume determination failure notification-Hardware-One SQC");
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT222093_01", "I");
+  
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT222093_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC is configured");
+  if(!GivenSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT222093_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And sample loaded to TCS2 station");
+  if(!GivenSQCLicenseNotPurchasedForTCS2())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT222093_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+
+function GWT233853_01_SQCVolumeDeterminationInvalid()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT233853_01:SQC volume determination Invalid with sort configured and TCS settings is process all");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233853_01";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "I");  
+  
+  Log["AppendFolder"]("Given SQC successfully performed sample volume check"); 
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sort area configured and configured processing option is set to process all"); 
+  if(!WhenSortAreaIsConfiguredAndProcessingOptionSetToProcessAll())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is invalid"); 
+  if(!WhenSQCVolumeDeterminationIsInvalid())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  
+  Log["AppendFolder"]("Then Sample Should Be Sent To Analyzer"); 
+  if(!ThenSampleShouldBeSentToAnalyzer())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample Should Be Unloaded To Hold Area"); 
+  if(!ThenSampleShouldBeUnloadedToHoldingArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_01_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+
+function GWT233853_02_SQCVolumeDeterminationInvalid()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT233853_02:SQC volume determination Invalid with sort configured and TCS settings is do not process");
+
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233853_02";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "I");  
+  
+  Log["AppendFolder"]("Given SQC successfully performed sample volume check"); 
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sort area configured and configured processing option is set to Do not process"); 
+  if(!WhenSortAreaIsConfiguredAndProcessingOptionSetToDoNotProcess_GWT233853_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is invalid"); 
+  if(!WhenSQCVolumeDeterminationIsInvalid_GWT233853_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  
+  Log["AppendFolder"]("Then Sample Should Be Sent To Analyzer"); 
+  if(!ThenSampleShouldBeSentToAnalyzer_GWT233853_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample Should Be Unloaded To Hold Area"); 
+  if(!ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_02_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+function GWT233853_03_SQCVolumeDeterminationInvalid()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT233853_03:SQC volume determination Invalid with sort configured with no spots available and TCS settings is process all");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233853_03";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "I");  
+  
+  Log["AppendFolder"]("Given SQC successfully performed sample volume check"); 
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sort area configured and configured processing option is set to process all"); 
+  if(!WhenSortAreaIsConfiguredAndProcessingOptionSetToProcessAll_GWT233853_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is invalid"); 
+  if(!WhenSQCVolumeDeterminationIsInvalid_GWT233853_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  
+  Log["AppendFolder"]("Then Sample Should Be Sent To Analyzer"); 
+  if(!ThenSampleShouldBeSentToAnalyzer_GWT233853_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample Should Be Unloaded To Hold Area"); 
+  if(!ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_03_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+function GWT233853_04_SQCVolumeDeterminationInvalid()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT233853_04:SQC volume determination Invalid with sort configured with no spots available and TCS settings is do not process");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233853_04";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "I");  
+  
+  Log["AppendFolder"]("Given SQC successfully performed sample volume check"); 
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sort area configured and configured processing option is set to Do not process"); 
+  if(!WhenSortAreaIsConfiguredAndProcessingOptionSetToDoNotProcess_GWT233853_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is invalid"); 
+  if(!WhenSQCVolumeDeterminationIsInvalid_GWT233853_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  
+  Log["AppendFolder"]("Then Sample Should Be Sent To Analyzer"); 
+  if(!ThenSampleShouldBeSentToAnalyzer_GWT233853_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample Should Be Unloaded To Hold Area"); 
+  if(!ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_04_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+} 
+
+function GWT233853_05_SQCVolumeDeterminationInvalid()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT233853_05:SQC volume determination Invalid with no sort area configured and TCS settings is process all");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233853_05";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "I");  
+  
+  Log["AppendFolder"]("Given SQC successfully performed sample volume check"); 
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sort area not configured and configured processing option is set to Process All"); 
+  if(!WhenSortAreaNotConfiguredAndProcessingOptionSetToProcessAll_GWT233853_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is invalid"); 
+  if(!WhenSQCVolumeDeterminationIsInvalid_GWT233853_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  
+  Log["AppendFolder"]("Then Sample Should Be Sent To Analyzer"); 
+  if(!ThenSampleShouldBeSentToAnalyzer_GWT233853_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample Should Be Unloaded To Hold Area"); 
+  if(!ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_05_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+
+function GWT233853_06_SQCVolumeDeterminationInvalid()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT233853_06:SQC volume determination Invalid with no sort area configured and TCS settings is do not process");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233853_06";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "I");  
+  
+  Log["AppendFolder"]("Given SQC successfully performed sample volume check"); 
+  if(!GivenSQCSuccessfullyPerformedSampleVolumeCheck_GWT233853_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sort area not configured and configured processing option is set to do not process"); 
+  if(!WhenSortAreaNotConfiguredAndProcessingOptionSetToDoNotProcess_GWT233853_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is invalid"); 
+  if(!WhenSQCVolumeDeterminationIsInvalid_GWT233853_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  
+  Log["AppendFolder"]("Then Sample Should Be Sent To Analyzer"); 
+  if(!ThenSampleShouldBeSentToAnalyzer_GWT233853_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample Should Be Unloaded To Hold Area"); 
+  if(!ThenSampleShouldBeUnloadedToHoldingArea_GWT233853_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233853_06_SQCVolumeDeterminationInvalid", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+function GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT234376_01:Sample Volume Determination Shows Insufficient Volume");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234376_01";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume", "I");  
+  
+  Log["AppendFolder"]("Given SQC sample volumw determination shows insufficient volume"); 
+  if(!GivenSQCSampleVolumeDeterminationShowsInsufficientVolume())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Configuration Is Set To DoNotProcess"); 
+  if(!AndConfigurationIsSetToDoNotProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Loaded sample type ids mpatient sample"); 
+  if(!WhenLoadedSampleTypeIspatientType())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+ 
+  Log["AppendFolder"]("Then Sample is not routed to analyzer for processing"); 
+  if(!ThenSampleIsNotRoutedToAnalyzer())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234376_01_SampleVolumeDeterminationShowsInsufficientVolume", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+ Log["PopLogFolder"]();
+}
+
+
+function GWT207722_01_SampleVolumeConfiguration()
+{
+
+  Log["AppendFolder"]("Sample Volume GWT207722 : Sample Volume sufficiency is configured to Process none of the tests");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207722Scenario01";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC identifies the sample volume");
+  if(!GivenSQCIdentifiesSampleVolumeGWT207722Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the sample volume is below the threshold and sample volume sufficiency is configured to Process none of the tests");
+  if(!WhenSampleBelowThresholdGWT207722Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample is not sent to analyzer for processing");
+  if(!ThenSampleNotSentToAnalyzerGWT207722Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207722_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+
+function GWT207723_01_SampleVolumeConfiguration()
+{
+  
+  Log["AppendFolder"]("Sample Volume GWT207723 : Sample Volume sufficiency is configured to Process all of the tests");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207723Scenario01";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And SQC identifies the sample volume");
+  if(!GivenSQCIdentifiesSampleVolumeGWT207723Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the sample volume is below the threshold and sample volume sufficiency is configured to Process all of the tests");
+  if(!WhenSampleBelowThresholdGWT207723Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample is sent to analyzer for processing");
+  if(!ThenSampleSentToAnalyzerGWT207723Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207723_01_SampleVolumeConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT193786_01()
+{
+  
+  Log["AppendFolder"]("Sample Volume GWT#193786 TC#193797 : Sorting samples with insufficient volume, sample volume above threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT193786_01";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And the configuration is set to process tests when volume is below threshold");
+  if(!GivenConfigureProcessTestsWhenVolumeIsBelowThresholdGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample volume is above threshold level");
+  if(!WhenSampleVolumeIsAboveThresholdGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area configured and spot available for insufficient volume");
+  if(!WhenSpotAvailableForInsufficientVolumeGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample gets processed in the system");
+  if(!ThenSampleGetsProcessedInTheSystemGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT193786_02()
+{
+
+  Log["AppendFolder"]("Sample Volume GWT#193786 TC#193795 : Sorting samples with insufficient volume, sample volume at threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT193786_02";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And the configuration is set to process tests when volume is below threshold");
+  if(!GivenConfigureProcessTestsWhenVolumeIsBelowThresholdGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample volume is at threshold level");
+  if(!WhenSampleVolumeIsAtThresholdGWT193786_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area configured and spot available for insufficient volume");
+  if(!WhenSpotAvailableForInsufficientVolumeGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample gets processed in the system");
+  if(!ThenSampleGetsProcessedInTheSystemGWT193786_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT193786_03()
+{
+
+  Log["AppendFolder"]("Sample Volume GWT#193786 TC#193795 : Sorting samples with insufficient volume, sample volume below threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT193786_03";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And the configuration is set to process tests when volume is below threshold");
+  if(!GivenConfigureProcessTestsWhenVolumeIsBelowThresholdGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample volume is below threshold level");
+  if(!WhenSampleVolumeIsBelowThresholdGWT193786_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area configured and spot available for insufficient volume");
+  if(!WhenSpotAvailableForInsufficientVolumeGWT193786_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample gets processed in the system");
+  if(!ThenSampleGetsProcessedInTheSystemGWT193786_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT193786_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT234377_Scenario01()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("GWT234377_Scenario01 : SQC sample volume determination shows insufficient volume - Do not override - Sample Type Control");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234377_01";
+    
+  ReportTestStatusToResultXML("Sample Volume ", "GWT234377_01", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Sample Volume ", "GWT234377_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And configuration set to Process sample with Sample volume to Do Not Process");
+    if(!GivenDoNotProcessSampleWithLowVolume_GWT234377_01())
+    {
+      Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Sample Volume ", "GWT234377_01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When NonException Capped Control sample loaded with volume lower than configured threshold");
+ 
+  if(!WhenNonExceptionControlSampleVolLowerThanThreshold_GWT234377_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Sample Volume ", "GWT234377_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample routed to Analyzer and unloaded to output tray");
+    if(!ThenSamplePrcessedAndUnloadedOutput_GWT234377_01())
+    {
+      Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Sample Volume ", "GWT234377_01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT207726_01:Sample Volume Determination Shows Insufficient Volume");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207726_01";
+  
+  ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "I");
+  
+  Log["AppendFolder"]("Given TCS2 is configured on the system"); 
+  if(!GivenTCS2IsConfiguredOnTheSystem_GWT207726_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+ 
+  Log["AppendFolder"]("When a siemensservice user logs into the system"); 
+  if(!WhenASiemensserviceuserLogsIntoTheSystem_GWT207726_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the user is able to configure the sample volume sufficiency behaviour"); 
+  if(!ThentheUserIsAbleToConfigureTheSampleVolumeSufficiencyBehaviour_GWT207726_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the user is allowed to configure the sample volume sufficiency threshold"); 
+  if(!ThenTheuserIsAllowedToConfigureTheSampleVolumeSufficiencyThreshold_GWT207726_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207726_01_ConfigureSampleVolumeProcessingOptionsSiemensUser", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+  
+} 
+
+ 
+
+function GWT207724_01_SampleVolumeSufficiencyConfiguration()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT207726_01:Sample Volume sufficiency is configured to process all oand sample volume is equal to the threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207724_01";
+  
+  ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "I");
+  
+  Log["AppendFolder"]("Given SQC identifies the sample volume"); 
+  if(!GivenSQCIdentifiesTheSampleVolume_GWT207724_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the sample volume is at the threshold and volume sufficiency is configured to Process All"); 
+  if(!WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is sent to the analyzer for processing"); 
+  if(!ThenTheSampleIsSentTotheAnalyzer_GWT207724_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_01_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+} 
+
+function GWT207724_02_SampleVolumeSufficiencyConfiguration()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT207724_02:Sample Volume sufficiency is configured to process all and sample volume is above the threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207724_02";
+  
+  ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "I");
+  
+  Log["AppendFolder"]("Given SQC identifies the sample volume"); 
+  if(!GivenSQCIdentifiesTheSampleVolume_GWT207724_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the sample volume is above the threshold and volume sufficiency is configured to Process All"); 
+  if(!WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is sent to the analyzer for processing"); 
+  if(!ThenTheSampleIsSentTotheAnalyzer_GWT207724_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_02_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+function GWT207724_03_SampleVolumeSufficiencyConfiguration()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT207726_03:Sample Volume sufficiency is configured to do not process and sample volume is equal to the threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207724_03";
+  
+  ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "I");
+  
+  Log["AppendFolder"]("Given SQC identifies the sample volume"); 
+  if(!GivenSQCIdentifiesTheSampleVolume_GWT207724_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the sample volume is at the threshold and volume sufficiency is configured to do not Process"); 
+  if(!WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is sent to the analyzer for processing"); 
+  if(!ThenTheSampleIsSentTotheAnalyzer_GWT207724_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_03_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+} 
+
+function GWT207724_04_SampleVolumeSufficiencyConfiguration()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT207724_04:Sample Volume sufficiency is configured to do not process and sample volume is above the threshold");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT207724_04";
+  
+   ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "I");
+  
+  Log["AppendFolder"]("Given SQC identifies the sample volume"); 
+  if(!GivenSQCIdentifiesTheSampleVolume_GWT207724_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the sample volume is above the threshold and volume sufficiency is configured to Process All"); 
+  if(!WhenSampleVolumeIsAtThresholdAndConfiguredtoProcessAll_GWT207724_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is sent to the analyzer for processing"); 
+  if(!ThenTheSampleIsSentTotheAnalyzer_GWT207724_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT207724_04_SampleVolumeSufficiencyConfiguration", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT181274_01()
+{
+
+  Log["AppendFolder"]("Sample Volume GWT#181274 TC#190126 : Sample volume at threshold level, sort area configured and spot available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT181274_01";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And the configuration is set to not process tests when volume is below threshold");
+  if(!GivenConfigureDonotProcessTestsWhenVolumeIsBelowThresholdGWT181274_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample volume is at threshold level");
+  if(!WhenSampleVolumeIsAtThresholdGWT181274_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area configured and spot available");
+  if(!WhenSpotAvailableForInsufficientVolumeGWT181274_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample gets processed in the system");
+  if(!ThenSampleGetsProcessedInTheSystemGWT181274_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT181274_02()
+{
+
+  Log["AppendFolder"]("Sample Volume GWT#181274 TC#190128 : Sample volume at threshold level, sort area configured and spot available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT181274_02";
+    
+  ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And the configuration is set to not process tests when volume is below threshold");
+  if(!GivenConfigureDonotProcessTestsWhenVolumeIsBelowThresholdGWT181274_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample volume is at threshold level");
+  if(!WhenSampleVolumeIsAtThresholdGWT181274_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area configured and spot available");
+  if(!WhenSpotAvailableForInsufficientVolumeGWT181274_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample gets processed in the system");
+  if(!ThenSampleGetsProcessedInTheSystemGWT181274_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT181274_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT234378_01()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT234378_01: SQC Sample Volume determination shows insufficient volume- Donot override- Sample Tyage Calibration");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234378Scenario01";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Given sample volume determination shows insufficient volume"); 
+  if(!GivenSHPanelAndTCSSettingsGWT234378Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configuration is set to Process samples with low volume -Unselected(means Do Not process) or system global configuration is set to Not override"); 
+  if(!VerifyTCSSettingsDoNotProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When loaded sample type is Calibration sample"); 
+  if(!WhenCalibrationCappedSampleLoadedGWT234378Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is routed to analyzer for processing"); 
+  if(!ThenCalSampleUnloadGWT234378Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT234378_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+
+function GWT233857_01()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT233857_01 : SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area configured and available and TCS settings-Process All");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario01";
+
+  ReportTestStatusToResultXML("Volume ", "GWT233857_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sort area configured and spot available and configured processing option is set to Process All"); 
+  if(!WhenSortAreaConfiguredAndAvailableGWT233857Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and unloading to holding area"); 
+  if(!ThenPatientAspiratedAndUnloadedGWT233857Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+
+}
+
+
+function GWT233857_02()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT233857_02 : SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area configured and available and TCS settings-Donot process");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario02";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sort area configured and spot available and configured processing option is set to Donot Process");
+  if(!WhenSortAreaConfiguredAndAvailableGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should not be sent to analyzer for processing and unloading to vision sort area"); 
+  if(!ThenPatientSampleUnloadedGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+
+}
+
+function GWT233857_03()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT233857_03 : SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area configured and spot not available and TCS settings-Process All");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario03";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce01()) // same as GivenGWT233857_01
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And when sort area configured and not available and configured processing option is set to Process All"); 
+  if(!WhenSortAreaConfiguredAndNotAvailableGWT233857Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and unloading to holding area"); 
+  if(!ThenPatientSampleAspiratedAndUnloadedGWT233857Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+
+}
+
+function GWT233857_04()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT233857_04:SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area configured and spot available and TCS settings-Donot Process");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario04";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Given SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce02())// same as scenario2 SH Panel and TCS settings
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And when sort area configured and not available"); 
+  if(!WhenSortAreaConfiguredAndNotAvailableGWT233857Sce04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should not be sent to analyzer for processing and unloading to holding area"); 
+  if(!ThenPatientSampleUnloadedGWT233857Sce04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+
+}
+
+function GWT233857_05()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT233857_05 : SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area not configured and TCS settings-Process All");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario05";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And when sort area not configured");  
+  if(!WhenSortAreaNotConfiguredButHoldingAndArchiveAvailableGWT233857Sce05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Process All"); 
+  if(!WhenTCSSettingsProcessAll())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and unloading to holding area"); 
+  if(!ThenPatientSampleAspiratedAndUnloadedGWT233857Sce05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+
+}
+
+function GWT233857_06()
+{
+//Setup : SC
+  //InitializeMetaData();
+  Log["AppendFolder"]("GWT233857_06 : SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area not configured and TCS settings-Donot Process");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario06";
+
+  ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Given SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleLoadedGWT233857Sce06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And when sort area not configured"); 
+  if(!WhenSortAreaNotConfiguredButHoldingAndArchiveAvailableGWT233857Sce06()) // same as for scenario 5
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And configured processing option is set to Do not Process"); 
+  if(!WhenTCSSettingsDoNotProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should not be sent to analyzer for processing and unload to output area"); 
+  if(!ThenPatientSampleUnloadedGWT233857Sce06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "GWT233857_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+    
+
+}
+
+//MessageBoxLabel
+//
+//The system failed to create a new cap color group.
+//
+//The colors already exist in another cap color group.
+//...
+
+
+//ComboBox
+//comboBoxCapColorType---controlname is Capcolortype
+
+//Class-ShellMessageBoxLabel
+//ctrlname-MessageBoxLabel
+//The system will update the existing color range for the selected color group with the new identified cap color range.
+
+//Continue?
+
+//class-ShellButton
+//winformscontrolname-Yes  and No button
+
+function SampleVolumeRegCharter_Sc01()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("SampleVolumeRegCharter_Sc01:GWT238289_01 - SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area configured and available and TCS settings-Donot process");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario02";
+
+  ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sort area configured and spot available and configured processing option is set to Donot Process");
+  if(!WhenSortAreaConfiguredAndAvailableGWT233857Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample should not be sent to analyzer for processing and unloading to vision sort area"); 
+  if(!WhenPatientSampleUnloadedGWT238289_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When sample in drawer gets an addon order"); 
+  if(!WhenSampleInDrawerGetsAnAddOnOrder())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then sample will not be reloaded to TCS2 for rescanning"); 
+ if(!ThenSampleWillNotBeReloadedToTCS2_RegCharter_Sc01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  
+  Log["PopLogFolder"]();
+} 
+
+//MessageBoxLabel
+//
+//The system failed to create a new cap color group.
+//
+//The colors already exist in another cap color group.
+//...
+
+
+//ComboBox
+//comboBoxCapColorType---controlname is Capcolortype
+
+//Class-ShellMessageBoxLabel
+//ctrlname-MessageBoxLabel
+//The system will update the existing color range for the selected color group with the new identified cap color range.
+
+//Continue?
+
+//class-ShellButton
+//winformscontrolname-Yes  and No button
+
+function SampleVolumeRegCharter_Sc02()
+{
+//Setup : SC
+  InitializeMetaData();
+  Log["AppendFolder"]("SampleVolumeRegCharter_Sc02 : GWT233857_01 - SQC Volume Determination-Below sufficient threshold- Vision Volume Error sort area configured and available and TCS settings-Process All");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario01";
+
+  ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsRegCharter_Sc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sort area configured and spot available and configured processing option is set to Process All"); 
+  if(!WhenSortAreaConfiguredAndAvailableGWT233857Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should be sent to analyzer for processing and unloading to holding area"); 
+  if(!ThenPatientAspiratedAndUnloaded_RegCharter_Sc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+
+}
+
+
+
+
+function SampleVolumeRegCharter_Sc03()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("SampleVolumeRegCharter_Sc03: GWT233857_04 - SQC Volume Determination");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT233857Scenario04";
+
+  ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+  
+  Log["AppendFolder"]("Given Atellica is initialized"); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Given SQC successfully performed sample volume check"); 
+  if(!GivenSHPanelAndTCSSettingsGWT233857_RegCharter_Sc03())// same as scenario2 SH Panel and TCS settings
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC volume determination is below sufficient threshold"); 
+  if(!WhenPatientSampleBelowThresholdLoadedGWT233857Sce04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And when sort area configured and not available"); 
+  if(!WhenSortAreaConfiguredAndNotAvailableGWT233857Sce04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample should not be sent to analyzer for processing and unloading to holding area"); 
+  if(!ThenPatientSampleUnloaded_RegCharter_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("When Empty slots available in vision volume error sort area"); 
+  if(!WhenEmptySlotsAvailableInVisionVolumeErrorSortArea_RegCharter_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then Sample is relocated to vision volume error sort area"); 
+  if(!ThenSampleIsRelocatedToVisionVolumeErrorSortArea_RegCharter_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is re introduced into the input tray"); 
+  if(!WhenSampleIsReIntroducedIntoTheInputtray_RegCharter_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("Then sample is routed to the analyzer and unloaded to output area"); 
+  if(!ThenSampleIsRoutedToTheAnalyzerAndUnloadedToOutputArea_RegCharter_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-Volume", "SampleVolumeRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["PopLogFolder"]();
+} 
+
+

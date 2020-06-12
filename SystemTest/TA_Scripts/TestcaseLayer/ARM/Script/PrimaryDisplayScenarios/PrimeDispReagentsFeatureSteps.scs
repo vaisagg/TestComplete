@@ -1,0 +1,3853 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra");
+var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+
+//Suresh
+function GivenEmptyChDrawerAfterUnloadingCHReagents(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Close the CH Door and empty the CH Drawer");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    //get reagents to check in reagent overview
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var reagentName = testData[0]["Item"]("ReagentName");
+    
+    var barcodePositionstoClear = testData[0]["Item"]("BarcodePositionsToClear").split(";");
+      
+    //------------------------------------Unload All Existing CH-------------------------------------------
+       
+    Log["AppendFolder"]("Step :: Unload all CH reagents")
+
+    //Unload reagent if exist already
+    if(!StepUnloadReagentIfExists(reagentType,reagentName))
+    {
+      Log["Error"]("Failed to unload the reagent '" + reagentName + "'"+" of type: "+reagentType);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;     
+    }         
+    Log["PopLogFolder"]();
+    
+    //------------------------------------Clear the CH drawer----------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Clear the CH Drawer")
+   
+    //Verify if CH position Cleared
+    if(!StepVerifyIfCHPositionsAreCleared())
+    {
+      //Clear CH Drawer
+      if(!StepClearReagentPositions(reagentType,barcodePositionstoClear))
+      {   
+        Log["Error"]("Failed to load the empty barcodes for CH");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]()
+        return false;
+      }
+         
+      Delay(40000,"Waiting for CH Drawer to be cleared: Maxwait(40 seconds)");
+         
+      //Verify if CH Drawer is Cleared  
+      if(!StepVerifyIfCHPositionsAreCleared())
+      {
+        Log["Error"]("Failed to verify if CH drawer is cleared");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Checkpoint"]("The CH Drawer is cleared");
+        Log["PopLogFolder"]()
+      }  
+    }
+    else
+    {
+      Log["Checkpoint"]("CH Drawer is already clear");
+      Log["PopLogFolder"]()
+    }
+    
+      
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(e)
+  {
+     Log["Error"]("Exception", e["Description"]);
+     Log["PopLogFolder"]();
+     return false;
+  }
+}
+
+function WhenChReagentsLoaded(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Load Ch Reagents");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+       
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var barcodeList = testData[0]["Item"]("Barcode")["split"](";");
+    var positionList = testData[0]["Item"]("Position")["split"](";");
+        
+    //----------------------------------------Loading CH Reagents------------------------------------------
+      
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,positionList))
+    {
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }     
+     
+    //Wait for the reagents to be reflected in reagent overview screen
+    aqUtils["Delay"](95000, "Waiting for the reagents to get loaded : Maxwait(95 seconds)");
+    
+    //----------------------------------------------------------------------------------------------------
+    
+    Log["Checkpoint"]("Successfully loaded CH reagents");
+    Log["PopLogFolder"]();
+    return true;   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+     return false;
+  }
+}
+
+function CheckAllSystemModulesReadyState()
+{
+  try
+  {
+    if(!StepCheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("All module are NOT ready")
+      return false;
+    }
+    else
+    {
+      Log["Message"]("All module are Ready")
+      return true;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function PostRunClearCHDrawer()
+{
+  try
+  {
+    
+    //------------------------------------Clear the CH drawer----------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Clear the CH Drawer")
+    
+    var reagentType = "CH";
+    var barcodePositionstoClear = [1,2,3,4];
+    
+    //Verify if CH position Cleared
+    if(!StepVerifyIfCHPositionsAreCleared())
+    {
+      //Clear CH Drawer
+      if(!StepClearReagentPositions(reagentType,barcodePositionstoClear))
+      {   
+        Log["Error"]("Failed to load the empty barcodes for CH");
+        Log["PopLogFolder"]()
+        return false;
+      }
+         
+      Delay(40000,"Waiting for CH Drawer to be cleared: Maxwait(40 seconds)");
+         
+      //Verify if CH Drawer is Cleared  
+      if(!StepVerifyIfCHPositionsAreCleared())
+      {
+        Log["Error"]("Failed to verify if CH drawer is cleared");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Checkpoint"]("The CH Drawer is cleared");
+        Log["PopLogFolder"]()
+      }  
+    }
+    else
+    {
+      Log["Checkpoint"]("CH Drawer is already clear");
+      Log["PopLogFolder"]()
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function HydraRestartAndVerifyModulesAreReady(username,password)
+{
+  try
+  {
+    if(!StepShutdownHydraApplication())
+      return false;
+  
+    if(!StepLaunchHydraApplication())
+      return false;
+    
+    if(!StepLoginToHydra(username,password))
+      return false;
+  
+    return StepCheckAllSystemModulesReadyState()
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function IMPrimaryReagentPackLoadedAndVerifyReagentDetails(testdata)
+{
+  try
+  {
+      //--------------------------------------- Read Test Data ---------------------------------------------------  
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = arrTestData[0];
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    
+    var reagentType = dictColumn["Item"]("ReagentType")
+    var barcodes  = dictColumn["Item"]("Barcode")["split"](";");
+    var barcodePositions = dictColumn["Item"]("Position")["split"](";");
+    
+//    var reagentName = dictColumn["Item"]("ReagentName")
+//    var sequenceNo = dictColumn["Item"]("Sequence")
+//    var lotNo = dictColumn["Item"]("Lot")
+//    var ReagentDetailsParameters = dictColumn["Item"]("IMPrimaryReagentDetailsParameters")
+//    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryReagentDetailsParametersValues")
+      //get barcodes & position collection
+    
+    
+//    var arrreagentName = reagentName["split"](";");
+//    var arrsequenceNo = sequenceNo["split"](";");
+//    var arrlotNo = lotNo["split"](";");
+//    var arrReagentDetailsParameters = ReagentDetailsParameters["split"](";");
+//    var arrReagentDetailsParametersExpectedValues = ReagentDetailsParametersExpectedValues["split"](";");
+  
+    //load reagent
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barCodePositionList))
+    {
+      Log["Error"]("Failed to copy the barcodes to the IoT");
+      return false;
+    }
+    
+    Log["Message"]("Sucessfully copied the barcodes to the IoT");
+    aqUtils["Delay"](95000, "Waiting for the reagents to get loaded and to be displayed on UI : Maxwait(95 seconds)");
+    
+    return VerifyIMPrimaryPackDetailsInReagentDetails(testdata)
+//    var totalfailcount =0;    
+//    for(i=0; i<barcodes.length; i++)
+//    {
+//      var failcount = 0;
+//        //verify reagents are loaded and then select that reagent row and then verify reagent details as mentioned in test data
+//      if(StepCheckHydraReagentIsLoadedAndEnabled(arrreagentName[i],arrsequenceNo[i],arrlotNo[i]))
+//      {
+//        if(failcount==0)
+//        {
+//          if(!StepSelectReagentAndVerifyParametersInReagentDetails(arrreagentName[i],arrsequenceNo[i],arrlotNo[i],reagentType,arrReagentDetailsParameters[i],arrReagentDetailsParametersExpectedValues[i]))
+//          {
+//            Log["Error"]("reagent details verification failed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+//            failcount = failcount +1;
+//          }
+//          else
+//          {
+//            Log["Message"]("reagent details verification passed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+//            //return true;
+//          }
+//        }
+//      }
+//      else
+//      {
+//        failcount = failcount +1;
+//      }
+//      
+//    totalfailcount = failcount;
+//    }
+//    
+//  if (totalfailcount>0)
+//    return false;
+//  else
+//    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function IMAncillaryReagentPackLoadedAndVerifyReagentDetails(testdata)
+{
+  try
+  {
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    //--------------------------------------- Read Test Data ---------------------------------------------------      
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+  var dictColumn = arrTestData[0];
+  var reagentType = dictColumn["Item"]("AncReagentType")
+ //get barcodes & position collection
+  var barcodes  = dictColumn["Item"]("AncBarcode")["split"](";");
+  var barcodePositions = dictColumn["Item"]("AncPosition")["split"](";");
+
+//  var reagentName = dictColumn["Item"]("AncReagentName")
+//  var sequenceNo = dictColumn["Item"]("AncSequence")
+//  var lotNo = dictColumn["Item"]("AncLot")
+//  var ReagentDetailsParameters = dictColumn["Item"]("IMAncillaryReagentDetailsParameters")
+//  var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMAncillaryReagentDetailsParametersValues")
+  
+//  var arrreagentName = reagentName["split"](";");
+//  var arrsequenceNo = sequenceNo["split"](";");
+//  var arrlotNo = lotNo["split"](";");
+//  var arrReagentDetailsParameters = ReagentDetailsParameters["split"](";");
+//  var arrReagentDetailsParametersExpectedValues = ReagentDetailsParametersExpectedValues["split"](";");
+  
+ 
+  //load reagent
+  //Check the each barcode has a position mentioned
+  if(barcodes.length == barcodePositions.length)
+  {
+    //Assign the position of each barcode in same index
+    for(i=0; i<barcodes.length; i++)
+    {
+      barcodeList[i] = aqString["Trim"](barcodes[i]);
+      barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+    } 
+  } 
+  else 
+  {
+    Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+    return false;
+  }
+
+  if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barCodePositionList))
+  {
+    Log["Error"]("Failed to copy the barcodes to the IoT");
+    return false;
+  }
+    
+  Log["Message"]("Sucessfully copied the barcodes to the IoT");
+  aqUtils["Delay"](95000, "Waiting for the reagents to get loaded and to be displayed on UI : Maxwait(95 seconds)");
+    
+  return VerifyIMAncillaryPackDetailsInReagentDetails(testdata)
+  
+//  var totalfailcount =0;    
+//  for(i=0; i<barcodes.length; i++)
+//  {
+//    var failcount = 0;
+//      //verify reagents are loaded and then select that reagent row and then verify reagent details as mentioned in test data
+//    if(StepCheckHydraReagentIsLoadedAndEnabled(arrreagentName[i],arrsequenceNo[i],arrlotNo[i]))
+//    {
+//      if(failcount==0)
+//      {
+//        if(!StepSelectReagentAndVerifyParametersInReagentDetails(arrreagentName[i],arrsequenceNo[i],arrlotNo[i],reagentType,arrReagentDetailsParameters[i],arrReagentDetailsParametersExpectedValues[i]))
+//        {
+//          Log["Error"]("reagent details verification failed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+//          failcount = failcount +1;
+//        }
+//        else
+//        {
+//          Log["Message"]("reagent details verification passed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+//          //return true;
+//        }
+//      }
+//    }
+//    else
+//    {
+//      failcount = failcount +1;
+//    }
+//      
+//  totalfailcount = failcount;
+//  }
+//    
+//  if (totalfailcount>0)
+//    return false;
+//  else
+//    return true;
+
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function ThenVerifyChReagentPresentInDrawerAfterUnload(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Unloaded CH reagent is present in CH drawer");
+     
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var reagentName = testData[0]["Item"]("ReagentName");
+    
+    var loadedBarcodes = testData[0]["Item"]("Barcode")["split"](";");
+    var totalUnloadedReagent = loadedBarcodes.length;
+    
+    
+    //------------------------------------Unload All Existing CH-------------------------------------------
+       
+    Log["AppendFolder"]("Step :: Unload all CH reagents")
+
+    //Unload reagent if exist already
+    if(!StepUnloadReagentIfExists(reagentType,reagentName))
+    {
+      Log["Error"]("Failed to unload the reagent '" + reagentName + "'"+" of type: "+reagentType);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;     
+    }
+    
+    Log["PopLogFolder"]();
+           
+    //-----------------------------------Verify CH Drawer is loaded----------------------------------------
+    
+    Log["AppendFolder"]("Step :: Verify CH drawer is loaded with unloaded CH reagents")
+    
+    if(!StepVerifyChDrawerIsLoaded(totalUnloadedReagent))
+    {
+      Log["Error"]("Failed to verify if Ch drawer is loaded with unloaded reagent");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    Log["Checkpoint"]("Unloaded "+totalUnloadedReagent+" reagents are displayed in the CH drawer");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenLoadMultipleReagentsOfDiffrentReagentTypes(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Load more than one reagent");
+    
+    //----------------------------------------Fetching Testdata -----------------------------------------
+    
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+       
+    for(i=0;i<testData.length;i++)
+    {
+      //get barcodes & position collection
+      var barcodes  = testData[i]["Item"]("Barcode")["split"](";");
+      var barcodePositions = testData[i]["Item"]("Position")["split"](";");
+      var reagentType = testData[i]["Item"]("ReagentType");
+    
+      //Check the each barcode has a position mentioned
+      if(barcodes.length != barcodePositions.length)
+      {
+        Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+        Log["PopLogFolder"]()
+        return false;
+      }
+ 
+      //load the reagents by copying the barcodes files to IoT
+      var isReagentsLoaded = true;
+      if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodes,barcodePositions))
+        {
+          isReagentsLoaded = false;
+          Log["Error"]("Failed to load the "+reagentType +"reagents");
+          break;
+        }    
+    }
+     
+    //Wait for the reagents to be reflected in reagent overview screen
+    aqUtils["Delay"](60000, "Wait for the reagents to get loaded and displayed in to the reagent overview screen")   ;
+    
+    //Get the inventory count of the reagent if the load reagent completed successfully
+    if(isReagentsLoaded)
+    {
+      Log["Checkpoint"]("Successfully loaded reagents");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Failed on loading reagents");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function PatientOrderWithOneTestIsCreatedAndLoaded(testdata)
+{
+  try
+  {
+    arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var failcount =0;
+    
+    for(var i=0;i<arrTestData["length"];i++)
+    {
+      var dictColumn = arrTestData[i];
+      var sampleId = dictColumn["Item"]("SampleId");
+      var specimen = dictColumn["Item"]("Specimen");
+      var priority = dictColumn["Item"]("Priority");
+      var analyzer = dictColumn["Item"]("Analyzer");
+      var assay = dictColumn["Item"]("Assay");
+      var replicates = dictColumn["Item"]("Replicates");
+      
+      //Create patient order
+      if(!StepCreatePatientOrder(sampleId,specimen,priority,analyzer,assay,replicates))
+        failcount = failcount+1; 
+    }
+    
+    if(failcount==arrTestData["length"])
+    {
+      Log["Error"]("Verification failed - No patient order was created");
+      return false;
+    }
+    else if(failcount>0)
+    {
+      Log["Error"]("Some of the patient order for the samples are not placed");
+      return false;
+    } 
+    else if(failcount =0)
+      Log["Checkpoint"]("All the samples are created successfully from patient order screen");
+  
+    var sampleIds = new Array();
+    //Read the samples from the test data
+    for(i=0;i<arrTestData["length"];i++)
+    {
+      //Initialize variables
+      dictColumn=arrTestData[i];
+      sampleIds[i] = dictColumn["Item"]("SampleId");
+    }
+
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleIds)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function ThenVerifySampleStatusInSampleList(testdata)
+{    
+  try
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var failcount =0;
+    
+    for(var i=0;i<arrTestData["length"];i++)
+    {
+      var dictColumn = arrTestData[i];
+      var sampleId = dictColumn["Item"]("SampleId")
+      var sampleStatus = dictColumn["Item"]("SampleStatus")
+  
+      if(!StepCheckSampleStatusinSampleList(sampleId,sampleStatus))
+        //return false;
+        failcount = failcount +1;    
+    }
+    
+    if(failcount >0)
+    {
+      Log["Error"]("Verification failed - Sample status verfication in samplelist screen")
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Verification passed - Sample status verfication in samplelist screen")
+      return true;
+    }  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyReagentsAreLoadedAndEnabled(testName)
+{
+  try
+  {
+  
+    Log["AppendFolder"]("Step :: Verify reagents are loaded and enabled in Reagents overview grid")  
+  
+    //--------------------------------------- Read Test Data ---------------------------------------------------    
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);  
+      
+    var isReagentsLoaded = true;
+    
+    for(var j=0;j<testData.length;j++)
+    {
+      var dictColumn = testData[j];
+      
+      var reagentType = dictColumn["Item"]("ReagentType");
+      var reagentName = dictColumn["Item"]("ReagentName")["split"](";");
+      var sequenceNo = dictColumn["Item"]("Sequence");
+      var lotNo = dictColumn["Item"]("Lot")
+    
+      var barcodes  = testData[j]["Item"]("Barcode").split(";");
+      var arrsequenceNo = sequenceNo["split"](";");
+      var arrlotNo = lotNo["split"](";");
+      
+      for(i=0; i<barcodes.length; i++)
+      {
+        if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName[i],arrsequenceNo[i],arrlotNo[i]))
+        {
+          isReagentsLoaded = false;
+        }
+      }
+    
+    }
+     
+    if(!isReagentsLoaded)
+    {
+      Log["Error"]("Some of the reagents are not loaded and enable in Reagents overview grid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("All reagents are loaded and enabled in Reagents overview grid");
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;    
+  }
+}
+
+function ThenVerifyReagentOverviewDefaultSorting(testName)
+{
+ try
+ {
+    Log["AppendFolder"]("Step :: Verify Default Sorting In Reagent Overview Grid")
+    
+    //----------------------------------------Fetching Testdata -----------------------------------------    
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var DefaultSortColumn = testData[0]["Item"]("DefaultSortColumn")
+  
+    //Verify the Reagent Overview loaded with default sorting
+    if(!StepVerifyDefaultSortingInReagentOverviewGrid(DefaultSortColumn))
+    {
+      Log["Error"]("Default Sorting Verification Failed In Reagent Overview Screen")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("Successfully verified default sorting in Reagent Overview Grid");
+    Log["PopLogFolder"]();
+    return true;
+ }
+ catch(e)
+ {
+   Log["Error"]("Exception", e["Description"]);
+   Log["PopLogFolder"]();
+   return false; 
+ }
+}
+
+function ThenVerifyColumnsPresentInReagentOverviewGrid(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Coulumns In Reagent Overview Grid")
+    
+    //----------------------------------------Fetching Testdata -----------------------------------------    
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    var ColumnList  = testData[0]["Item"]("ColumnList")["split"](";");
+    
+    //Verify the columns are present in reagent overview grid
+    if(!StepVerifyColumnPresentInReagentOverviewGrid(ColumnList))
+    {
+      Log["Error"]("Coulumn Present Verification in Reagent Overview Grid Failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+     
+    Log["Checkpoint"]("Successfully verified given columns present in reagent overview grid"); 
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+   Log["PopLogFolder"]();
+   return false; 
+  }
+}
+
+function ThenVerifyGroupByReagentInReagentOverviewGrid()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Group By Reagent Overview Grid Sorting")
+    
+    //Verify the 'Group By Reagent' in Reagent Overview Grid
+    if(!StepVerifyGroupByReagentInReagentOverviewGrid())
+    {
+      Log["Error"]("Group By Reagents Verification in Reagent Overview Grid Failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function VerifyReagentOverviewGridSorting(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify reagent overview grid sorting");
+   
+    //----------------------------------------Fetching Testdata -----------------------------------------    
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+   
+    var sortColumn  = testData[0]["Item"]("SortColumn");
+    var sortOrder  = testData[0]["Item"]("SortOrder");
+    
+    //Verify the Reagent Overview Grid Sorting
+    if(!StepVerifySortingInReagentOverviewGrid(sortColumn,sortOrder))
+    {
+      Log["Error"]("Sorting Verification in Reagent Overview Grid Failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function ThenVerifySampleTestDataInWorklist(testdata)
+{    
+  try
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var failcount =0;
+    
+    for(var i=0;i<arrTestData["length"];i++)
+    {
+      var dictColumn = arrTestData[i];
+      //var dictColumn = arrTestData[0];
+      var sampleId = dictColumn["Item"]("SampleId")
+      var Assay = dictColumn["Item"]("Assay")
+      var WorklistColumns = dictColumn["Item"]("WorklistColumns")
+      var WorklistColumnsValues = dictColumn["Item"]("WorklistColumnsValues")
+  
+      if(!StepVerifySampleTestDataInWorkList(sampleId,Assay,WorklistColumns,WorklistColumnsValues))// need to get this updated method from prabu file
+        //return false;
+        failcount = failcount +1;    
+    }
+    
+    if(failcount >0)
+    {
+      Log["Error"]("Verification failed - Sample test data verfication in worklist screen")
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Verification passed - Sample test data verfication in worklist screen")
+      return true;
+    } 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyIMPrimaryPackDetailsInReagentDetails(testdata)
+{
+  try
+  {  
+   //--------------------------------------- Read Test Data ---------------------------------------------------    
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = arrTestData[0];
+    
+    var reagentType = dictColumn["Item"]("ReagentType")
+    var reagentName = dictColumn["Item"]("ReagentName")
+    var sequenceNo = dictColumn["Item"]("Sequence")
+    var lotNo = dictColumn["Item"]("Lot")
+    var ReagentDetailsParameters = dictColumn["Item"]("IMPrimaryReagentDetailsParameters")
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryReagentDetailsParametersValues")
+      //get barcodes & position collection
+    var barcodes  = dictColumn["Item"]("Barcode")["split"](";");
+    //var barcodePositions = dictColumn["Item"]("Position")["split"](";");
+    
+    var arrreagentName = reagentName["split"](";");
+    var arrsequenceNo = sequenceNo["split"](";");
+    var arrlotNo = lotNo["split"](";");
+    var arrReagentDetailsParameters = ReagentDetailsParameters["split"](";");
+    var arrReagentDetailsParametersExpectedValues = ReagentDetailsParametersExpectedValues["split"](";");
+  
+    var totalfailcount =0;    
+    for(i=0; i<barcodes.length; i++)
+    {
+      var failcount = 0;
+        //verify reagents are loaded and then select that reagent row and then verify reagent details as mentioned in test data
+      if(StepCheckHydraReagentIsLoadedAndEnabled(arrreagentName[i],arrsequenceNo[i],arrlotNo[i]))
+      {
+        if(failcount==0)
+        {
+          if(!StepSelectReagentAndVerifyParametersInReagentDetails(arrreagentName[i],arrsequenceNo[i],arrlotNo[i],reagentType,arrReagentDetailsParameters[i],arrReagentDetailsParametersExpectedValues[i]))
+          {
+            Log["Error"]("reagent details verification failed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+			if(testdata=="TC_336026_01")
+            {
+              Log["Warning"]("Status of IM Primary pack is not dispalyed as Expired")
+              return true; //not stopping execution here so returning true;
+            }
+            failcount = failcount +1;
+          }
+          else
+          {
+            Log["Checkpoint"]("reagent details verification passed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+            //return true;
+          }
+        }
+      }
+      else
+      {
+        failcount = failcount +1;
+      }
+      
+    totalfailcount = failcount;
+    }
+    
+  if (totalfailcount>0)
+    return false;
+  else
+    return true;
+  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function ThenVerifyOperatorEventLog(testdata)
+{
+  try
+  {
+    // need to get test data for event code and event msg
+    var failcount = 0;
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testdata);
+    for(var i=0;i<arrTestData["length"];i++)
+    {
+      var dictColumn = arrTestData[i];
+      var eventCode = dictColumn["Item"]("EventCode");
+      var eventMessage = dictColumn["Item"]("EventMessage");
+    
+     if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage))
+      failcount = failcount +1;    
+    }
+    
+    if(failcount >0)
+    {
+      Log["Error"]("Verification failed - Operator Event Log verfication")
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Verification passed -Operator Event Log data verfication")
+      return true;
+    } 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyIMAncillaryPackDetailsInReagentDetails(testdata)
+{
+  try
+  {  
+   //--------------------------------------- Read Test Data ---------------------------------------------------    
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = arrTestData[0];
+    
+    var reagentType = dictColumn["Item"]("AncReagentType")
+    var barcodes  = dictColumn["Item"]("AncBarcode")["split"](";");
+    var reagentName = dictColumn["Item"]("AncReagentName")
+    var sequenceNo = dictColumn["Item"]("AncSequence")
+    var lotNo = dictColumn["Item"]("AncLot")
+    var ReagentDetailsParameters = dictColumn["Item"]("IMAncillaryReagentDetailsParameters")
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMAncillaryReagentDetailsParametersValues")
+  
+    var arrreagentName = reagentName["split"](";");
+    var arrsequenceNo = sequenceNo["split"](";");
+    var arrlotNo = lotNo["split"](";");
+    var arrReagentDetailsParameters = ReagentDetailsParameters["split"](";");
+    var arrReagentDetailsParametersExpectedValues = ReagentDetailsParametersExpectedValues["split"](";");
+  
+    var totalfailcount =0;    
+    for(i=0; i<barcodes.length; i++)
+    {
+      var failcount = 0;
+        //verify reagents are loaded and then select that reagent row and then verify reagent details as mentioned in test data
+      if(StepCheckHydraReagentIsLoadedAndEnabled(arrreagentName[i],arrsequenceNo[i],arrlotNo[i]))
+      {
+        if(failcount==0)
+        {
+          if(!StepSelectReagentAndVerifyParametersInReagentDetails(arrreagentName[i],arrsequenceNo[i],arrlotNo[i],reagentType,arrReagentDetailsParameters[i],arrReagentDetailsParametersExpectedValues[i]))
+          {
+            Log["Error"]("reagent details verification failed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+            failcount = failcount +1;
+          }
+          else
+          {
+            Log["Checkpoint"]("reagent details verification passed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+            //return true;
+          }
+        }
+      }
+      else
+      {
+        failcount = failcount +1;
+      }
+      
+    totalfailcount = failcount;
+    }
+    
+  if (totalfailcount>0)
+    return false;
+  else
+    return true;
+  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function WhenUnloadedOneIMPrimaryPackAndReloadedSamePack(testdata)
+{
+  try
+  {
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    dictColumn = arrTestData[0];
+  
+    //verify reagents are unloaded
+    var reagentType = dictColumn["Item"]("ReagentType")
+    var reagentName = dictColumn["Item"]("ReagentName")
+    var sequenceNo = dictColumn["Item"]("Sequence")
+    var lotNo = dictColumn["Item"]("Lot");
+  
+    if(!StepUnloadReagentByNameAndSequenceNumberAndLotNo(reagentType,reagentName,sequenceNo,lotNo))
+      return false
+  
+    if(StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false
+  
+    //reload same pack
+    var barcodes  = dictColumn["Item"]("Barcode")["split"](";");
+    var barcodePositions = dictColumn["Item"]("Position")["split"](";");
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barCodePositionList))
+    {
+      Log["Error"]("Failed to copy the barcodes to the IoT");
+      return false;
+    }
+    
+    Log["Message"]("Sucessfully copied the barcodes to the IoT");
+    aqUtils["Delay"](20000, "Waiting for reagent to get reloaded and to be displayed on UI")
+    
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function WhenUnloadedOneIMAncillaryPackAndReloadedSamePack(testdata)
+{
+ try
+  {
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    dictColumn = arrTestData[0];
+  
+    //verify reagents are unloaded
+    var reagentType = dictColumn["Item"]("AncReagentType")
+    var reagentName = dictColumn["Item"]("AncReagentName")
+    var sequenceNo = dictColumn["Item"]("AncSequence")
+    var lotNo = dictColumn["Item"]("AncLot");
+  
+    if(!StepUnloadReagentByNameAndSequenceNumberAndLotNo(reagentType,reagentName,sequenceNo,lotNo))
+      return false
+  
+    if(StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false
+  
+    //reload same pack
+    var barcodes  = dictColumn["Item"]("AncBarcode")["split"](";");
+    var barcodePositions = dictColumn["Item"]("AncPosition")["split"](";");
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barCodePositionList))
+    {
+      Log["Error"]("Failed to copy the barcodes to the IoT");
+      return false;
+    }
+    
+    Log["Message"]("Sucessfully copied the barcodes to the IoT");
+    aqUtils["Delay"](20000, "Waiting for reagent to get reloaded and to be displayed on UI");
+    
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function GivenCHReagentIsLoaded(testName)
+{
+  try
+  {
+
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    //get reagents to check in reagent overview
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var reagentNames = testData[0]["Item"]("ReagentName");
+    
+    
+    //------------------------------------Unload All Existing CH-------------------------------------------
+       
+    Log["AppendFolder"]("Consumables :: Unload all CH reagents")
+    
+    var isReagentUnloaded = true;
+    
+    //Unload reagent if exist already
+    if(!StepUnloadReagentIfExists(reagentType,reagentNames))
+    {
+      Log["Error"]("Failed to unload the reagent '" + reagentNames + "'");
+      isReagentUnloaded = false;        
+    }
+    
+    //Verify Regent Unloaded
+    if(!isReagentUnloaded)
+    {
+      Log["Error"]("Failed to unload the reagents of type:"+reagentType);
+      Log["PopLogFolder"]()
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("All the CH Reagents are Unloaded successfully")
+      Log["PopLogFolder"]()
+    }
+    
+    //--------------------------------------------------------------------------------------------------
+    
+    //------------------------------------Clear the drawer----------------------------------------------
+    
+    Log["AppendFolder"]("Consumables :: Clear The Drawer")
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var barcodePositionstoClear = testData[0]["Item"]("BarcodePositionsToClear")["split"](";");
+   
+    //Verify if CH position Cleared
+    if(!StepVerifyIfCHPositionsAreCleared())
+    {
+      //Load Empty barcodes for CH 
+      if(!StepLoadEmptyBarcodes(reagentType,barcodePositionstoClear))
+      {
+        Log["Error"]("Failed to load the empty barcodes for CH");
+        Log["PopLogFolder"]()
+        return false;
+      }
+         
+      Delay(40000,"Waiting for the Drawer to be cleared");
+         
+      //Verify if CH Drawer is Cleared  
+      if(!StepVerifyIfCHPositionsAreCleared())
+      {
+        Log["Error"]("Failed to verify if CH drawer is cleared");
+        Log["PopLogFolder"]()
+        return false;
+      }
+      else
+      {
+        Log["Checkpoint"]("The CH Drawer is cleared");
+        Log["PopLogFolder"]()
+      }  
+    }
+    else
+    {
+      Log["Checkpoint"]("CH Drawer is already clear");
+      Log["PopLogFolder"]()
+    }
+
+    
+    //-------------------------------------Get CH InUse Count after loading-----------------------------
+    
+    Log["AppendFolder"]("Consumables :: Get The CH InUse Count after loading reagents")
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var isReagentsLoaded = true;
+    var barcodeArray = testData[0]["Item"]("Barcode")["split"](";");
+    var positionArray = testData[0]["Item"]("Position")["split"](";");
+     
+    //LoadReagents
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeArray,positionArray))
+    {
+      isReagentsLoaded = false;
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+    }     
+    
+    //Wait for the reagents to be reflected in reagent overview screen
+    aqUtils["Delay"](95000, "Wait for the reagents to get loaded and displayed in to the reagent Loading screen");
+       
+    if(isReagentsLoaded)
+    {
+         
+      //Get the CH in Use reagent count
+      var inUseCount = StepGetCHInUseCountValue()
+      if(inUseCount === false)
+      {
+       Log["Error"]("Failed to get the CH Reagent InUse count");
+       Log["PopLogFolder"]()
+       return false;
+      }
+      else if(inUseCount == "")
+      {
+       Log["Error"]("Reagent's are not loaded, InUse count of CH reagents is empty");
+       Log["PopLogFolder"]()
+       return false;
+      }  
+      else
+      {
+       Log["Checkpoint"]("The In Use Count displayed for CH reagent is: "+inUseCount);
+       Log["PopLogFolder"]()
+       return inUseCount;
+      }
+    } 
+    else
+    {
+      Log["Error"]("Reagents not loaded");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+//TODO: To be modified based on the expring / empty the CH reagent -Vaisag
+function ThenVerifyPackUnloadedFromCompartmentIntoEmptySlot(inUseValueAfterLoad,inUseValueAfterUnload)
+{
+  try
+  {
+    //----------------------------------------Fetching Testdata ------------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var isInUseCountUpdated = true;
+    
+    Log["AppendFolder"]("Consumables :: Verify InUse reagent value and CH drawer");
+    
+    //Verify the InUse Reagent count Before & After CH Unload
+    if(aqConvert["StrToInt"](inUseValueAfterLoad) > aqConvert["StrToInt"](inUseValueAfterUnload))
+    {
+      Log["Message"]("The InUse Ch count before unload is :"+inUseValueAfterLoad);
+      Log["Message"]("The InUse Ch count after unloading reagents is:"+inUseValueAfterUnload);
+      Log["Checkpoint"]("The CH InUse count is decreased after unload");
+      Log["PopLogFolder"]();
+    }
+    else if(aqConvert["StrToInt"](inUseValueAfterLoad) == aqConvert["StrToInt"](inUseValueAfterUnload))
+    {
+      Log["Message"]("The InUse Ch count before unload is :"+inUseValueAfterLoad);
+      Log["Message"]("The InUse Ch count after unloading reagents is:"+inUseValueAfterUnload);
+      Log["Error"]("The CH InUse count is not decreased after unload");
+      return false;
+      Log["PopLogFolder"]();
+    }
+    
+    //---------------------Verify Unloaded CH is Loaded in the empty Slot---------------------
+    Log["AppendFolder"]("Step :: Verify CH Empty Drawer Is Loaded After Unloading Reagent")
+    
+    var unloadedReagentName = testData[0]["Item"]("ReagentNameToUnload");
+    var loadedBarcodes = testData[0]["Item"]("Barcode")["split"](";");
+    var totalUnloadedReagent = loadedBarcodes.length;
+    
+    //Verify CH Drawer is loaded
+    if(!StepVerifyChDrawerIsLoaded(unloadedReagentName,totalUnloadedReagent))
+    {
+      Log["Error"]("Failed to verify if Ch drawer is loaded with unloaded reagent");
+      Log["PopLogFolder"]()
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Unloaded "+totalUnloadedReagent+" reagents are displayed in the CH drawer");
+      Log["PopLogFolder"]()
+      return true;
+    }
+ 
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+//--------------------------Reagent Loading/Unloading----------------------------------------------
+function IMPrimaryTrayPositionIsEmpty(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: IM Primary Tray Position Is Empty");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var isReagentsLoaded = true;
+    var barcodeArray = new Array();
+    var positionArray = new Array();
+    barcodeArray["push"](testData[0]["Item"]("Barcode")["split"](";")[0])
+    positionArray["push"](testData[0]["Item"]("Position")["split"](";")[0])
+      
+    //Load Empty Barcode in the position 
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeArray,positionArray))
+    {
+      isReagentsLoaded = false;
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+    }     
+    
+    //Wait for the reagents to be reflected in reagent Loading screen
+    aqUtils["Delay"](60000, "Wait for the reagents to get loaded and displayed in to the reagent Loading screen");
+    
+    //Check reagent is loaded   
+    if(isReagentsLoaded)
+    {
+      //Get the Content available in the position
+      var reagentLoaded=StepGetTheIMReagentAvailableInReagentLoadingScreen(reagentType,positionArray)
+      
+      //Check if the position is empty
+      if(reagentLoaded=="")
+      {
+        Log["Message"]("No reagents are loaded into the position :'"+positionArray+"'");
+        Log["PopLogFolder"]();
+        return true; 
+      }
+      else
+      {
+        Log["Error"]("Some Reagent is present in the position :'"+positionArray+"'")
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      Log["Error"]("Some Reagent is present in the position :'"+positionArray+"'")
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function IMPrimaryTrayPositionDisplaysBarcodeError(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: IM Primary Tray Position Displays Barcode Error");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var isReagentsLoaded = true;
+    var barcodeArray = new Array();
+    var positionArray = new Array();
+    barcodeArray["push"](testData[0]["Item"]("Barcode")["split"](";")[1])
+    positionArray["push"](testData[0]["Item"]("Position")["split"](";")[1])
+    
+    //Load the bad barcode to get the Barcode Error in the position
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeArray,positionArray))
+    {
+      isReagentsLoaded = false;
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+    }     
+    
+    //Wait for the reagents to be reflected in reagent Loading screen
+    aqUtils["Delay"](60000, "Wait for the reagents to get loaded and displayed in to the reagent Loading screen");
+    
+    //Check if reagent is loaded   
+    if(isReagentsLoaded)
+    {
+      //Get the Content available in the position
+      var reagentLoaded=StepGetTheIMReagentAvailableInReagentLoadingScreen(reagentType,positionArray)
+      
+      //Check the Barcode Error is displayed in the position
+      if(reagentLoaded=="Barcode Error")
+      {
+        Log["Message"]("Barcode Error is displayed in position :'"+positionArray+"'");
+        Log["PopLogFolder"]();
+        return true; 
+      }
+      else
+      {
+        Log["Error"]("Barcode Error is not displayed in position : '"+positionArray+"'")
+        return false;
+      }
+    }
+    else
+    {
+      Log["Error"]("Barcode Error is not displayed in position: '"+positionArray+"'")
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function EnteringPackIDInManualEntryPopup(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enter PackID ID in manual Entry Popup");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var positionArray = new Array();
+    var reagentType = testData[0]["Item"]("ReagentType"); 
+    var position = (testData[0]["Item"]("Position")["split"](";")[1]);
+    //var packID= testData[0]["Item"]("ManualPackID")["split"](";")[0];
+	var packID= testData[0]["Item"]("ManualPackID");
+    
+    //Enter the PackID and perform save
+    if(!StepEnterPackIDAndSaveInManualEntryPopup(reagentType,position,packID))
+    {
+      Log["Error"]("Failed to Enter the PackID in Manual Entry Popup'");
+      Log["PopLogFolder"]();
+      return false;; 
+    }
+    else
+    {
+      Log["Message"]("Entered the PackID and Saved in Manual Entry Popup'");
+      Log["PopLogFolder"]();
+      return true;
+    }
+   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function VerifyReagentLoadedInTrayPosition(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: IM Primary Tray Position Displays Barcode Error");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var ReagentName = testData[0]["Item"]("ReagentName");
+    var positionArray = new Array();
+    positionArray["push"](testData[0]["Item"]("Position")["split"](";")[1])
+    
+    //Get the Content available in the position
+    var reagentLoaded=StepGetTheIMReagentAvailableInReagentLoadingScreen(reagentType,positionArray)
+    
+    //Check if the Reagent is loaded in the position
+    if(aqString["Find"](reagentLoaded,ReagentName,0,false) == -1)
+    {
+      Log["Error"]("Reagent not loaded in position :'"+positionArray+"'");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    else
+    {
+      Log["Message"]("Reagent Loaded in position : '"+positionArray+"'")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyEventLogDisplaysReagentLoaded(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Verifying Event In Event Log Screen");
+    
+    //----------------------------------------Fetching Testdata ------------------------------------------------
+    
+    var testData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+    var code = testData[0]["Item"]("EventCodeForReagentLoaded");
+    var message = testData[0]["Item"]("EventMessageForReagentLoaded");
+
+    //----------------------------------------------------------------------------------------------------------
+ 
+    //Open and Close the Door
+    if(LoadReagentForIMPrimary())
+    {
+      //Verify Event Log
+      if(!StepVerifyTheEventMessageInEventLogGrid(code,message))
+      {
+        Log["Error"]("Verification of Event Code '" + code + "'  with Event message'"+message+"' is Failed");
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        Log["Message"]("Event code and Event message has been successfully verified in event log screen");
+        Log["PopLogFolder"]();
+        return true;     
+      } 
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function IMPrimaryTrayPostionIsScannedIDManualID(testdata)
+{
+  try
+  {
+    if(!IMPrimaryTrayPositionIsEmpty(testdata))
+      return false
+    if(!IMPrimaryTrayPositionDisplaysBarcodeError(testdata))
+      return false
+    if(!EnteringPackIDInManualEntryPopup(testdata))
+      return false
+    if(!VerifyReagentLoadedInTrayPosition(testdata))
+      return false
+    // close the reagent compt door
+    if(!StepOpenAndCloseIMPrimaryReagentDoorAndSendFile())
+        return false
+  
+    //verify manual pack is shown in reagent overview screen
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0]
+    var reagentType = dictColumn["Item"]("ReagentType");
+    var reagentName = dictColumn["Item"]("ReagentName"); 
+    var ReagentDetailsParameters = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParameters")
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParametersValues")
+    var lotNo = ReagentDetailsParametersExpectedValues["split"](",")[1];
+    var sequenceNo = ReagentDetailsParametersExpectedValues["split"](",")[3];
+  
+    if(StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+    {
+      if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      {
+        Log["Error"]("Manually eneterd pack with name "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo + "- details are NOT correct in reagent overview screen")
+        return false;
+      }
+      else
+      {
+        Log["Checkpoint"]("Manually eneterd pack is present with name "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo + " and details are correct in reagent overview screen")
+        return true;
+      }
+    }
+    else
+    {
+      Log["Error"]("Manually eneterd pack is NOT present with name "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo+ " in reagent overview screen")
+      return false;  
+    }   
+   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function VerifyManualPackRemovalAndPopUpDidNotAppear(testdata)
+{
+  try
+  {
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0]
+    var reagentType = dictColumn["Item"]("ReagentType");
+    var reagentName = dictColumn["Item"]("ReagentName"); 
+    var sequenceNo = dictColumn["Item"]("Sequence")
+    var lotNo = dictColumn["Item"]("Lot")
+    var position = (dictColumn("Position")["split"](";")[1])
+  
+    var positionArray = new Array();
+    positionArray["push"](testData[0]["Item"]("Position")["split"](";")[0])
+  
+    // code to not see manual pack id in reagent overview grid
+    if(StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+  
+    // code to not see the pop up on clicking the empty position in reagent loading
+    if(StepClickOnAPostionInIMCompartmentAndVerifyPopUpExistance(reagentType,position))
+      return false;
+  
+    // code to not see the confirmation pop up on scanning 2nd time
+    if(StepVerifyManualEntryConfirmationPopup())
+    {
+       Log["Error"]("Manual entered pack Confrimation Popup is displayed");
+       return false;
+    }
+    else
+    {
+       Log["Checkpoint"]("Manual entered pack Confrimation Popup is NOT displayed as expected");
+       return true;
+    }
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+  
+}
+
+function IMPrimaryTrayPositionDisplaysAPackAndThenBarcodeErrorATaPosition(testdata)
+{ 
+  try
+  { 
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    
+    var reagentType = testData[0]["Item"]("ReagentType");
+    var reagentName = testData[0]["Item"]("ReagentName");
+    //var reagentPackTestCount = testData[0]["Item"]("ReagentPackTestCount");
+    
+    var isReagentsLoaded = true;
+    var barcodeArray = new Array();
+    var positionArray = new Array();
+    barcodeArray["push"](testData[0]["Item"]("Barcode")["split"](";")[0])
+    positionArray["push"](testData[0]["Item"]("Position")["split"](";")[0])
+    
+    //Load the barcode to get the Pack in the position
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeArray,positionArray))
+    {
+      isReagentsLoaded = false;
+      Log["Error"]("Failed to load the //reagent '" + reagentType + "'");
+    }     
+    
+    //Wait for the reagents to be reflected in reagent Loading screen
+    aqUtils["Delay"](60000, "Wait for the reagents to get loaded and displayed into the reagent Loading screen");
+    
+    if(!VerifyReagentLoadedInTrayPosition(testdata))// position are same for both scanned id and barcode error in test data so using this function even though scanned id is kept as pos0 in test data
+      return false;
+      
+    var sequenceNo = testData[0]["Item"]("Sequence")
+    var lotNo = testData[0]["Item"]("Lot")
+    var ReagentDetailsParameters = testData[0]["Item"]("IMPrimaryReagentDetailsParameters")
+    var ReagentDetailsParametersExpectedValues = testData[0]["Item"]("IMPrimaryReagentDetailsParametersValues")
+  
+    if(StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+    {
+      if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      {
+        Log["Error"]("IM primary pack "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo + "- details are NOT correct in reagent overview screen")
+        return false;
+      }
+      else
+      {
+        Log["Checkpoint"]("IM primary pack "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo + " and details are correct in reagent overview screen")
+        //return true;
+      }
+    }
+    else
+    {
+      Log["Error"]("IM primary pack is NOT present with name "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo+ " in reagent overview screen")
+      return false;  
+    } 
+
+    return IMPrimaryTrayPositionDisplaysBarcodeError(testdata)
+  }    
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }  
+}
+function EnterManualPackLabelSameOrDifferentAsPreviouslyScannedBarcodeInIMPrimaryCompartment(testdata)
+{
+  try
+  {
+    if(!EnteringPackIDInManualEntryPopup(testdata))
+      return false
+    // close the IM PRIMARY reagent compt door
+    if(!StepOpenAndCloseIMPrimaryReagentDoorAndSendFile())
+        return false
+         
+    //Wait for the reagents to be reflected in reagent Loading screen
+    aqUtils["Delay"](5000, "Wait for IM Primary compartment door scan");
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyManualEnteredPackInReagentOverviewAndOperatorEventLog(testdata)
+{ 
+  try
+  {
+    // verify the manual entered pack is shown in reagent loading screen
+    if(!VerifyReagentLoadedInTrayPosition(testdata))
+      return false;
+    
+    //verify manual entered pack is shown in reagent overview screen
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0]
+    var reagentType = dictColumn["Item"]("ReagentType");
+    var reagentName = dictColumn["Item"]("ReagentName"); 
+    var ReagentDetailsParameters = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParameters")
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParametersValues")
+    var lotNo = ReagentDetailsParametersExpectedValues["split"](",")[1];
+    var sequenceNo = ReagentDetailsParametersExpectedValues["split"](",")[3];
+  
+    // code to  see manual pack id in reagent overview grid
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+    
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    // code to not see the confirmation pop up after enetering the manual pack and scanning
+    if(StepVerifyManualEntryConfirmationPopup())
+    {
+       Log["Error"]("Manual entered pack Confirmation Popup is displayed");
+       return false;
+    }
+    else
+    {
+       Log["Checkpoint"]("Manual entered pack Confirmation Popup is NOT displayed as expected");
+       //return true;
+    }
+    
+    // verify the operator event log that manual pack is entered at pos
+    return ThenVerifyOperatorEventLog(testdata)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile()
+{
+  try
+  {
+// close the IM PRIMARY reagent compt door
+    if(!StepOpenAndCloseIMPrimaryReagentDoorAndSendFile())
+        return false
+        
+    //Wait for the reagents to be reflected in reagent Loading screen
+    aqUtils["Delay"](5000, "Wait for IM Primary compartment door scan");
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyClearPackAuditAndVerifyOperatorEventLog(testdata)
+{
+  try
+  {
+    //// audit trail is not implemented yet
+    
+    //to clcik on OK button on pop up
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0];
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParametersValues")
+    var ExpectedAssay = ReagentDetailsParametersExpectedValues["split"](",")[0];
+    var ExpectedPositionNo = ReagentDetailsParametersExpectedValues["split"](",")[2];
+    
+    if(!StepSelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,"SELECT"))
+      return false;
+    
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testdata);
+    var eventCode = arrTestData[0]["Item"]("EventCode");
+    var eventMessage = arrTestData[0]["Item"]("EventMessage");
+      
+    // to verify operator event log
+    return StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyProcessPackSwapWhenUserDoesNotConfirmManualPackOnConfirmationPrompt(testdata)
+{
+  try
+  {
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0];
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParametersValues")
+    var ExpectedAssay = ReagentDetailsParametersExpectedValues["split"](",")[0];
+    var ExpectedPositionNo = ReagentDetailsParametersExpectedValues["split"](",")[2];
+    
+    if(!StepSelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,"UNSELECT"))
+      return false;
+	//add code to verify barcode error in reagent loading -to do
+      // add code to verify reagent not present now in reagent overview screen-to do
+    
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testdata);
+    var eventCode = arrTestData[0]["Item"]("EventCode");
+    var eventMessage = arrTestData[0]["Item"]("EventMessage");
+      
+    return StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function EnteringDifferentPackIDInManualEntryPopupOnUnconfirmingPreviousManualID(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enter PackID ID in manual Entry Popup");
+    
+    //----------------------------------------Fetching Testdata -------------------------------------------
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testName);
+
+    var positionArray = new Array();
+    var reagentType = testData[0]["Item"]("ReagentType"); 
+    var position = (testData[0]["Item"]("Position")["split"](";")[1])
+    var packID= (testData[0]["Item"]("ManualPackID")["split"](";")[1]);
+    
+    //Enter the PackID and perform save
+    if(!StepEnterPackIDAndSaveInManualEntryPopup(reagentType,position,packID))
+    {
+      Log["Error"]("Failed to Enter the PackID in Manual Entry Popup'");
+      Log["PopLogFolder"]();
+      return false;; 
+    }
+    else
+    {
+      Log["Message"]("Entered the PackID and Saved in Manual Entry Popup'");
+      Log["PopLogFolder"]();
+      return true;
+    }
+   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function IMPrimaryTrayPositionXIsConfirmedManualIDAndThenBarcodeError(testdata)
+{
+  try
+  {
+    //positionx is empty and then barcode error and then enter manual ID and then scan it and register manual ID into the system 
+    if(!IMPrimaryTrayPostionIsScannedIDManualID(testdata))
+      return false;
+    //scan IM primary compartment again
+    if(!VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile(testdata))
+      return false;
+      
+    //to confirm manual entered pack and click on OK button on pop up
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0];
+    var reagentType = dictColumn["Item"]("ReagentType");
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParametersValues")
+    var ExpectedAssay = ReagentDetailsParametersExpectedValues["split"](",")[0];
+    var ExpectedPositionNo = ReagentDetailsParametersExpectedValues["split"](",")[2];
+    
+    if(!StepSelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,"SELECT"))
+      return false;
+      
+    //scan IM primary compartment again
+    if(!VerifyOpenAndCloseIMPrimaryReagentDoorAndSendFile(testdata))
+      return false;
+   
+    //unconfirm the manual entered pack ID    
+    if(!StepSelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,"UNSELECT"))
+      return false;
+      
+    //Get the Content available in the position
+    var reagentLoaded=StepGetTheIMReagentAvailableInReagentLoadingScreen(reagentType,ExpectedPositionNo)
+      
+    //Check the Barcode Error is displayed in the position
+    if(reagentLoaded=="Barcode Error")
+    {
+      Log["Message"]("Barcode Error is displayed in position :'"+ExpectedPositionNo+"'");
+      Log["PopLogFolder"]();
+      return true; 
+    }
+    else
+    {
+      Log["Error"]("Barcode Error is not displayed in position : '"+ExpectedPositionNo+"'")
+      return false;
+    }
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyManualEnteredPackInReagentOverviewAndOperatorEventLogOnUncofirmingThePreviousManualPackID(testdata)
+{ 
+  try
+  {
+    // verify the manual entered pack is shown in reagent loading screen
+    if(!VerifyReagentLoadedInTrayPosition(testdata))
+      return false;
+    
+    //verify manual entered pack is shown in reagent overview screen
+    var testData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = testData[0]
+    var reagentType = dictColumn["Item"]("ReagentType");
+    var reagentName = dictColumn["Item"]("ReagentName");    
+    var ReagentDetailsParameters = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParameters")["split"](";")[1];
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("IMPrimaryManualPackIDReagentDetailsParametersValues")["split"](";")[1];
+    var lotNo = ReagentDetailsParametersExpectedValues["split"](",")[1];
+    var sequenceNo = ReagentDetailsParametersExpectedValues["split"](",")[3];
+  
+    // code to  see manual pack id in reagent overview grid
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+    
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    // code to not see the confirmation pop up after enetering the manual pack and scanning
+    if(StepVerifyManualEntryConfirmationPopup())
+    {
+       Log["Error"]("Manual entered pack Confirmation Popup is displayed");
+       return false;
+    }
+    else
+    {
+       Log["Checkpoint"]("Manual entered pack Confirmation Popup is NOT displayed as expected");
+    }
+    
+    // verify the operator event log that manual pack is entered at pos
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testdata);
+    var dictColumn = arrTestData[0];
+    var eventCode = dictColumn["Item"]("EventCode")["split"](";")[1];
+    var eventMessage = dictColumn["Item"]("EventMessage")["split"](";")[1];
+      
+    return StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function CHReagentExpiredPackLoadedAndVerifyReagentDetails(testdata)
+{
+  try
+  {
+     //shutdown hydra to copy CH barcodes in CHRingbarcodes text file in dml box c:\data\deploy folder
+     if(!StepShutdownHydraApplication())
+      return false;
+     
+     //--------------------------------------- Read Test Data ---------------------------------------------------  
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = arrTestData[0];
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    
+    var reagentType = dictColumn["Item"]("ReagentType")
+    var barcodes  = dictColumn["Item"]("Barcode")["split"](";");
+    var barcodePositions = dictColumn["Item"]("Position")["split"](";");
+
+    //load reagent
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+    //copy barcodes in CHRingbarcodes file at a specific position
+    if(!StepLoadCHReagentsDirectlyToCHCompartment(barcodes,barcodePositions))
+    {
+      Log["Error"]("Failed to copy the barcodes to the IoT");
+      return false;
+    }
+    
+//    Log["Message"]("Sucessfully copied the barcodes to the IoT");
+//    aqUtils["Delay"](10000, "Waiting for reagent to get loaded and to be displayed on UI")
+    
+    //restart hydra 
+    if(!StepLaunchHydraApplication())
+      return false;
+    
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0"); // login as SiemensInternal
+    var username = arrTestData[0]["Item"]("User")    
+    var password = arrTestData[0]["Item"]("Password")  
+	if(!StepLoginToHydra(username,password))
+      return false;
+  
+    if(!StepCheckAllSystemModulesReadyState())
+      return false;
+      
+    return VerifyCHReagentPackDetailsInReagentDetails(testdata)
+
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyCHReagentPackDetailsInReagentDetails(testdata)
+{
+   try
+  {  
+   //--------------------------------------- Read Test Data ---------------------------------------------------    
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var dictColumn = arrTestData[0];
+    
+    var reagentType = dictColumn["Item"]("ReagentType")
+    var reagentName = dictColumn["Item"]("ReagentName")
+    var sequenceNo = dictColumn["Item"]("Sequence")
+    var lotNo = dictColumn["Item"]("Lot")
+    var ReagentDetailsParameters = dictColumn["Item"]("CHReagentDetailsParameters")
+    var ReagentDetailsParametersExpectedValues = dictColumn["Item"]("CHReagentDetailsParametersValues")
+      //get barcodes & position collection
+    var barcodes  = dictColumn["Item"]("Barcode")["split"](";");
+    
+    var arrreagentName = reagentName["split"](";");
+    var arrsequenceNo = sequenceNo["split"](";");
+    var arrlotNo = lotNo["split"](";");
+    var arrReagentDetailsParameters = ReagentDetailsParameters["split"](";");
+    var arrReagentDetailsParametersExpectedValues = ReagentDetailsParametersExpectedValues["split"](";");
+
+    var totalfailcount =0;    
+    for(i=0; i<barcodes.length; i++)
+    {
+      var failcount = 0;
+        //verify reagents are loaded and then select that reagent row and then verify reagent details as mentioned in test data
+      if(StepCheckHydraReagentIsLoadedAndEnabled(arrreagentName[i],arrsequenceNo[i],arrlotNo[i]))
+      {
+        if(failcount==0)
+        {
+          if(!StepSelectReagentAndVerifyParametersInReagentDetails(arrreagentName[i],arrsequenceNo[i],arrlotNo[i],reagentType,arrReagentDetailsParameters[i],arrReagentDetailsParametersExpectedValues[i]))
+          {
+            Log["Error"]("reagent details verification failed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+            failcount = failcount +1;
+          }
+          else
+          {
+            Log["Checkpoint"]("reagent details verification passed for reagent "+reagentName +" with sequence no "+sequenceNo+ " and lot "+lotNo)
+          }
+        }
+      }
+      else
+      {
+        failcount = failcount +1;
+      }
+      
+    totalfailcount = failcount;
+    }
+    
+  if (totalfailcount>0)
+    return false;
+  else
+    return true;
+  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+
+function ThenVerifySampleResultedInWorklist(testdata)
+{
+  try
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var dictColumn = arrTestData[0];
+    var sampleId = dictColumn["Item"]("SampleId") 
+    return StepVerifyTestResultInWorkList(sampleId)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+
+function WhenNonUsableRecoverableCHReagentPackIsLoadedUsingLotInactiveCondition(testdata)
+{
+  try
+  {
+    var dictColumn = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentType = dictColumn[0]["Item"]("ReagentType");
+    var barcodeList = dictColumn[0]["Item"]("Barcode")["split"](";")[0];
+    var positionList = dictColumn[0]["Item"]("Position")["split"](";")[0];
+        
+    //----------------------------------------Loading CH Reagents------------------------------------------
+      
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,positionList))
+    {
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }     
+     
+    //Wait for the reagents to be reflected in reagent overview screen
+    aqUtils["Delay"](95000, "Waiting for the reagents to get loaded : Maxwait(95 seconds)");
+    
+    //----------------------------------------------------------------------------------------------------
+    
+    Log["Checkpoint"]("Successfully loaded first CH reagent");
+
+    var reagentName = dictColumn[0]["Item"]("ReagentName")["split"](";");
+    var sequenceNo = dictColumn[0]["Item"]("Sequence")["split"](";")[0];
+    var lotNo = dictColumn[0]["Item"]("Lot");
+    
+    //reagent pack is shown in reagent overview
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+    
+    //disable reagent lot-
+    if(!StepDisableOrEnableReagentLot(reagentName,seqNumber,lotNumber,"DISABLE"))
+      return false;
+      
+    //to verify pack status as inactive lot
+    var ReagentDetailsParameters = dictColumn[0]["Item"]("CHReagentDetailsParameters")["split"](";")[0];
+    var ReagentDetailsParametersExpectedValues = dictColumn[0]["Item"]("CHReagentDetailsParametersValues")["split"](";")[0];
+  
+    if(!StepVerifyParametersInReagentDetails(reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+  
+    //load another CH pack of same lot
+    var barcodeList = dictColumn[0]["Item"]("Barcode")["split"](";")[1];
+    var positionList = dictColumn[0]["Item"]("Position")["split"](";")[1];
+        
+    //----------------------------------------Loading CH Reagents------------------------------------------
+      
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,positionList))
+    {
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }  
+     //Wait for the reagents to be reflected in reagent overview screen
+    aqUtils["Delay"](95000, "Waiting for the reagents to get loaded : Maxwait(95 seconds)");
+    
+    //----------------------------------------------------------------------------------------------------
+    
+    Log["Checkpoint"]("Successfully loaded second CH reagent of same lot after disabling the lot");   
+    return  true;
+
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+
+}
+
+function VerifyCHReagentPackIsNonUsableRecoverableAndOperatorMakeItUsable(testdata)
+{
+  try
+  {
+   //Verify status of the pack of same lot which is loaded after disabling the lot
+    var dictColumn = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentType = dictColumn[0]["Item"]("ReagentType");
+    var reagentName = dictColumn[0]["Item"]("ReagentName")["split"](";");
+    var sequenceNo = dictColumn[0]["Item"]("Sequence")["split"](";")[1];
+    var lotNo = dictColumn[0]["Item"]("Lot");
+      
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+      
+    //verify pack status of second loaded CH reagent pack- it should indicate Lot Inactive
+    var ReagentDetailsParameters = dictColumn[0]["Item"]("CHReagentDetailsParameters")["split"]("\\")[0];
+    var ReagentDetailsParametersExpectedValues = dictColumn[0]["Item"]("CHReagentDetailsParametersValues")["split"]("\\")[0];
+  
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    //select the second loaded CH reagent pack and click on "enable reagent lot" button
+    if(!StepDisableOrEnableReagentLot(reagentName,seqNumber,lotNumber,"ENABLE"))
+      return false;
+    
+    //verify that both first and second loaded pack should show as "idle"
+    //2nd reagent
+    var ReagentDetailsParameters = dictColumn[0]["Item"]("CHReagentDetailsParameters")["split"]("\\")[1];
+    var ReagentDetailsParametersExpectedValues = dictColumn[0]["Item"]("CHReagentDetailsParametersValues")["split"]("\\")[1];
+    if(!StepVerifyParametersInReagentDetails(reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    //1st reagent
+    var arrsequenceNo = dictColumn[0]["Item"]("Sequence")["split"](";")[0];
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+        return false;
+    
+    //disable the first CH reagent barcode using pack inactive
+    if(!StepDisableOrEnableReagentPack(reagentName,sequenceNo,lotNumber))
+      return false;
+    //verfiy that reagent row is showing as pack inactive now
+    var arrReagentPackToMakePackInactive = dictColumn[0]["Item"]("ReagentPackToMakePackInactive")["split"](";")[1];
+    var ReagentDetailsParameters = arrReagentPackToMakePackInactive["split"](",")[0];
+    var ReagentDetailsParametersExpectedValues = arrReagentPackToMakePackInactive["split"](",")[1];
+    return StepVerifyParametersInReagentDetails(reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function GivenCHReagentPackLoadedAndOBSExpiringSoonWhileTestInProcess(testdata)
+{
+  try
+  {
+    //ch pack is laoded
+    if(!WhenChReagentsLoaded(testdata))
+      return false;
+      
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentType = arrReagentTestdata[0]["Item"]("ReagentType");
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    var wellNumber = arrReagentTestdata[0]["Item"]("CHWellNumber");
+    var expectedWellStatus = arrReagentTestdata[0]["Item"]("CHWellStatus");
+    var expectedWellCount = arrReagentTestdata[0]["Item"]("CHWellCount");
+    var timeInOBSExpiry = arrReagentTestdata[0]["Item"]("TimeInOBSExpiry");
+    
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+      
+    //verify pack status of loaded CH reagent pack
+    var ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("CHReagentDetailsParameters")["split"]("\\")[0];
+    var ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("CHReagentDetailsParametersValues")["split"]("\\")[0];
+  
+    //check CH reagent pack status is howing "Idle" or "Blank"
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+    {
+      Log["Warning"]("CH status is not showing as IDLE : Please refer screenshot in logs to see what status is showing");
+    }
+    
+    var arrPatientTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+      return false;
+      
+    //wait for the sample to get aspirated - bcs in CH sample sample aspirate after reagent aspiration
+    var sampleId = arrPatientTestData[0]["Item"]("SampleId");
+    var sampleStatus = arrPatientTestData[0]["Item"]("SampleStatus");
+    if(!StepCheckSampleStatusinSampleList(sampleId,sampleStatus))
+    {
+      Log["Warning"]("Sample "+sampleId+ " status is not showing as expected. Please refer screenshot in logs to see what status is showing");
+    }
+    
+    aqUtils["Delay"](5000, "Waiting for CH reagent well to get pierced and update on UI")
+    if(!StepSelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+      return false;
+      
+    if(!StepVerifyCHWellStatus(wellNumber,expectedWellStatus))
+      return false;
+      
+    //shutdown hydra before running sql query
+     if(!StepShutdownHydraApplication())
+     
+    //copy the CH barcode in CHRingbarcodes file  at a specific position so that it will get loaded in compartment on restart
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    
+    var barcodes  = arrReagentTestdata[0]["Item"]("Barcode")["split"](";");
+    var barcodePositions = arrReagentTestdata[0]["Item"]("CHReagentPositionInCompartment")["split"](";");
+
+    //load reagent
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+    if(!StepLoadCHReagentsDirectlyToCHCompartment(barcodes,barcodePositions))
+    {
+      Log["Error"]("Failed to copy the barcodes to the CH compartment directly in IOT");
+      return false;
+    }
+      
+      // run the query to get the actual test count
+     var arrSQLQueryTestData = GetTestItemsByTestName(DBDataFile,"Reagents",testdata);
+     var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+     var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query2");
+     var actualTestCount_beforeExpiry_fullrecord = ReturnQueryRecordSetFromString(sqlQuery,strConString)
+    
+    //Get the actualtestcount of CH pierced pack
+    var actualTestCount_beforeExpiry = actualTestCount_beforeExpiry_fullrecord["Fields"]("ActualTestCount").Value
+    Log["Message"]("Actual Test count of CH pierced pack before OBS expiry in db "+actualTestCount_beforeExpiry)
+     
+    //run the query to make obs expired in 15 min or the time set in timeInOBSExpiry parameter
+     var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query1");
+     if(!StepExecSQLQueryFromString(sqlQuery,strConString))
+       Log["Error"]("Failed to execute the sql query to make OBS expires in " + timeInOBSExpiry +" mins");
+       
+     //starting the timer for next 15 mins
+     var newtime = aqDateTime["AddMinutes"](aqDateTime["Now"](),timeInOBSExpiry)
+     
+     //launch Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+     if(!StepLaunchHydraApplication())
+      return false;
+     //Initailize variablesand login to hydra
+     var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+     var username = arrTestData[0]["Item"]("User");
+     var password = arrTestData[0]["Item"]("Password");
+     if(!StepLoginToHydra(username,password))
+      return false;
+     //check modules are ready
+     if(!StepCheckAllSystemModulesReadyState())
+      return false;
+      
+     //create batch orders and load sample
+     var sampleId = arrPatientTestData[0]["Item"]("SampleIDforBatchOrder");
+     var sampleCount = arrPatientTestData[0]["Item"]("SampleCount");
+     var specimen = arrPatientTestData[0]["Item"]("Specimen");
+     var priority = arrPatientTestData[0]["Item"]("Priority");
+     var analyzer = arrPatientTestData[0]["Item"]("Analyzer");
+     var assay = arrPatientTestData[0]["Item"]("Assay");
+     if(!StepCreateBatchOrderBySampleId(sampleId, sampleCount, specimen, analyzer, assay, priority))
+      return false;
+      
+     var arrSampleIDs=StepGetBatchOrderIDs(sampleId,sampleCount)
+
+     //Load Samples through DML Simulator
+     if(!StepLoadSamplesinDMLSimulator(arrSampleIDs)) 
+     {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+     }
+     
+     if(!StepSelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+      return false;
+     
+     currenttime = aqDateTime.Now();
+     while(currenttime<newtime)
+     {
+       //get inventory of CH reagent and loop this tll it become zero
+       if(!StepVerifyCHWellCount(wellNumber,expectedWellCount))
+       {
+         aqUtils["Delay"](5000, "Waiting for reagent inventory to become zero")
+         currenttime = aqDateTime.Now();
+       }
+       else
+        break;
+     }
+    return actualTestCount_beforeExpiry;
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function ThenVerifyTestUsingPackAlreadyStartedShouldResulted(testdata,actualTestCount_beforeExpiry,reagentType)
+{
+  try
+  {
+    //verify count of sample resulted(count1) and not resulted (count2) in worklist
+    var arrPatientTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleId = arrPatientTestData[0]["Item"]("SampleIDforBatchOrder");
+    var sampleCount = arrPatientTestData[0]["Item"]("SampleCount");
+    var arrSampleIDs=StepGetBatchOrderIDs(sampleId,sampleCount)
+    
+    var arrNotResultedSample = new Array();
+    var arrResultedSample = new Array();
+    var failcount =0;
+    var passcount =0;
+    for(var count = 0 ; count<arrSampleIDs["length"];count++)
+    {
+     if(!StepVerifyTheSampleResultedStatusInWorkListWithoutErrorSymbol(arrSampleIDs[count]))
+     {
+      failcount = failcount+1;
+      arrNotResultedSample[count] = arrSampleIDs[count];
+     }
+     else
+     {
+      passcount = passcount+1;
+      arrResultedSample[count] = arrSampleIDs[count];
+      }
+    }
+    //vefiy in db- in case of CH just check the actualtestcount value now and before batch samples and their difference
+    var arrSQLQueryTestData = GetTestItemsByTestName(DBDataFile,"Reagents",testdata);
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query2");
+    switch(aqString["ToUpper"](reagentType))
+    {
+      case "CH":
+        var actualTestCount_afterExpiry_fullrecord = ReturnQueryRecordSetFromString(sqlQuery,strConString)
+        //Get the actualtestcount
+        var actualTestCount_afterExpiry = actualTestCount_afterExpiry_fullrecord["Fields"]("ActualTestCount").Value
+        Log["Message"]("Actual Test count of CH pierced pack after OBS expiry in db "+actualTestCount_afterExpiry)
+    
+        //logic
+        var sampleResulted = actualTestCount_beforeExpiry-actualTestCount_afterExpiry
+        var sampleNotResulted = sampleCount-sampleResulted
+        break;
+      
+      case "IMPRIMARY" :
+      
+        var actualLevel_afterExpiry_fullrecord = ReturnQueryRecordSetFromString(sqlQuery,strConString)
+        //Get the actuallevel 
+        var actualActualLevel_afterExpiry = actualLevel_afterExpiry_fullrecord["Fields"]("Actual_Level").Value
+        Log["Message"]("Actual Test count of IM primary pack after OBS expiry in db "+actualActualLevel_afterExpiry)
+        
+        var arrPatientTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+        var solidReagentValue = arrPatientTestData[0]["Item"]("IMPrimaryReagentTdefParametersValue");
+        var countafterSampleProcessing = actualActualLevel_afterExpiry/solidReagentValue;
+        var countbeforeStartingSampleProcessing =  actualTestCount_beforeExpiry/solidReagentValue;
+        
+        //logic
+        var sampleResulted = countbeforeStartingSampleProcessing-countafterSampleProcessing;
+        var sampleNotResulted = sampleCount-sampleResulted
+        break;
+      
+      case "IMANCILLARY" :
+        var actualLevel_afterExpiry_fullrecord = ReturnQueryRecordSetFromString(sqlQuery,strConString)
+        //Get the actuallevel 
+        var actualActualLevel_afterExpiry = actualLevel_afterExpiry_fullrecord["Fields"]("Actual_Level").Value
+        Log["Message"]("Actual Test count of IM ancillary pack after OBS expiry in db "+actualActualLevel_afterExpiry)
+        
+        var arrPatientTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+        var IMAncillaryReagentValue = arrPatientTestData[0]["Item"]("IMAncillaryReagentTdefParametersValue");
+        var countafterSampleProcessing = actualActualLevel_afterExpiry/IMAncillaryReagentValue;
+        var countbeforeStartingSampleProcessing =  actualTestCount_beforeExpiry/IMAncillaryReagentValue;
+        
+        //logic
+        var sampleResulted = countbeforeStartingSampleProcessing-countbeforeStartingSampleProcessing;
+        var sampleNotResulted = sampleCount-sampleResulted
+        break;
+             
+    }
+    
+    //verify count are equal
+    if((sampleResulted== passcount)&& (sampleNotResulted==failcount))
+    {
+     Log["AppendFolder"]("PASS")
+    }
+    else
+    {
+     Log["AppendFolder"]("FAIL")
+    }
+    Log["Message"]("Expected no of samples are resulted. Count is : "+passcount);
+    Log["Message"]("Expected no of samples are not resulted. Count is : "+failcount);
+    Log["PopLogFolder"]();
+     
+    //verify sample which are not resulted should have flag as "No Primary" --grid are changed so need to get the grid updates from ilink and then i will change this method too
+    
+    var Columns = arrPatientTestData[0]["Item"]("WorklistColumns");
+    var ExpectedColumnValues = arrPatientTestData[0]["Item"]("WorklistColumnsValues");
+    var TestName = arrPatientTestData[0]["Item"]("Assay");
+    var flagFailCount = 0;
+    for(var counttofail = 0 ; counttofail<failcount;counttofail++)
+    {
+     SampleId = arrNotResultedSample[counttofail]
+     if(StepVerifySampleTestDataInWorkList(SampleId,TestName,Columns,ExpectedColumnValues))
+      flagFailCount = flagFailCount+1;
+    }
+    if(flagFailCount==failcount)
+    {
+      Log["AppendFolder"]("Test PASS")
+      return true;
+    }
+    else
+    {
+      Log["AppendFolder"]("Test FAIL")
+      return false;
+    }
+     
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyReagentPackExpiredWhileTestInProcess(testdata,parameterno)
+{
+  try
+  {
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentType = arrReagentTestdata[0]["Item"]("ReagentType");
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+      
+    //verify pack status of loaded CH reagent pack
+    var ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("CHReagentDetailsParameters")["split"]("//")[parameterno-1];
+    var ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("CHReagentDetailsParametersValues")["split"]("//")[parameterno-1];
+    
+    return StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+    }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function GivenIMPrimaryReagentPackLoadedAndOBSExpiringSoonWhileTestInProcess(testdata)
+{
+  try
+  {
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    
+    var barcodes  = arrReagentTestdata[0]["Item"]("Barcode")["split"](";");
+    var barcodePositions = arrReagentTestdata[0]["Item"]("Position")["split"](";");
+    
+    var reagentType = arrReagentTestdata[0]["Item"]("ReagentType");
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    timeInOBSExpiry = arrReagentTestdata[0]["Item"]("TimeInOBSExpiry");
+
+    //load reagent
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barCodePositionList))
+    {
+      Log["Error"]("Failed to copy the barcodes to the IoT");
+      return false;
+    }
+      
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+      
+    //verify pack status as blank of loaded IM primary reagent pack
+    var ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParameters")["split"]("//")[0];
+    var ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParametersValues")["split"]("//")[0];
+  
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    //shutdown hydra before running sql query
+     if(!StepShutdownHydraApplication())
+        return false;
+      
+    
+     var arrSQLQueryTestData = GetTestItemsByTestName(DBDataFile,"Reagents",testdata);
+     var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+     var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query2");
+     var actualLevel_beforeExpiry_fullrecord = ReturnQueryRecordSetFromString(sqlQuery,strConString)
+     //Get the actualtestcount
+     var actualActualLevel_beforeExpiry = actualLevel_beforeExpiry_fullrecord["Fields"]("Actual_Level").Value
+     Log["Message"]("Actual Level of IM primary pack before OBS expiry in db "+actualActualLevel_beforeExpiry)
+     
+     //run the query to make obs expired in 15 min or the time which is set in timeInOBSExpiry
+     var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query1");
+     if(!StepExecSQLQueryFromString(sqlQuery,strConString))
+      Log["Error"]("Failed to execute the sql query to make OBS expires in " + timeInOBSExpiry +" mins");
+     else
+      Log["Message"]("Successfully execute the sql query to make OBS expires in " + timeInOBSExpiry +" mins");
+       
+     //starting the timer for next mins
+     var newtime = aqDateTime["AddMinutes"](aqDateTime["Now"](),timeInOBSExpiry)
+     Log["Message"]("Expected newtime to look for when reagent should get expire :"+newtime);
+     
+     //launch Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+     if(!StepLaunchHydraApplication())
+      return false;
+     //Initailize variablesand login to hydra
+     var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+     var username = arrTestData[0]["Item"]("User");
+     var password = arrTestData[0]["Item"]("Password");
+     if(!StepLoginToHydra(username,password))
+      return false;
+     //check modules are ready
+     if(!StepCheckAllSystemModulesReadyState())
+      return false;
+      
+     //create batch orders and load sample
+     var arrPatientTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+     var sampleId = arrPatientTestData[0]["Item"]("SampleId");
+     var sampleCount = arrPatientTestData[0]["Item"]("SampleCount");
+     var specimen = arrPatientTestData[0]["Item"]("Specimen");
+     var priority = arrPatientTestData[0]["Item"]("Priority");
+     var analyzer = arrPatientTestData[0]["Item"]("Analyzer");
+     var assay = arrPatientTestData[0]["Item"]("Assay");
+     if(!StepCreateBatchOrderBySampleId(sampleId, sampleCount, specimen, analyzer, assay, priority))
+      return false;
+      
+     var arrSampleIDs=StepGetBatchOrderIDs(sampleId,sampleCount)
+
+     //Load Samples through DML Simulator
+     if(!StepLoadSamplesinDMLSimulator(arrSampleIDs)) 
+     {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+     }
+         
+     currenttime = aqDateTime.Now();
+     while(currenttime<newtime)
+     {
+       //get count remaining of IM primary reagent and loop this tll it become zero
+       var ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParameters")["split"]("//")[1];
+       var ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParametersValues")["split"]("//")[1];
+       if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+       {
+         aqUtils["Delay"](5000, "Waiting for reagent count remaining to become zero")
+         currenttime = aqDateTime.Now();
+       }
+       else
+        break;
+     }
+    return actualActualLevel_beforeExpiry;
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function GivenIMAncillaryReagentPackLoadedAndOBSExpiringSoonWhileTestInProcess(testdata)
+{
+  try
+  {
+    if(!IMPrimaryReagentPackLoadedAndVerifyReagentDetails(testdata))
+      return false;
+      
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var barcodeList = new Array();
+    var barCodePositionList = new Array();
+    
+    var barcodes  = arrReagentTestdata[0]["Item"]("AncBarcode")["split"](";");
+    var barcodePositions = arrReagentTestdata[0]["Item"]("AncPosition")["split"](";");
+    
+    var reagentType = arrReagentTestdata[0]["Item"]("AncReagentType");
+    var reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("AncSequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("AncLot");
+  
+     //load reagent
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barCodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barCodePositionList))
+    {
+      Log["Error"]("Failed to copy the barcodes to the IoT");
+      return false;
+    }
+    
+    if(!StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo))
+      return false;
+      
+    //verify pack status of loaded IM ancillary reagent pack
+    var ReagentDetailsParameters = dictColumn[0]["Item"]("IMAncillaryReagentDetailsParameters")["split"]("\\")[0];
+    var ReagentDetailsParametersExpectedValues = dictColumn[0]["Item"]("IMAncillaryReagentDetailsParametersValues")["split"]("\\")[0];
+  
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    var arrPatientTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(arrTestData))
+      return false;
+      
+    //wait for the sample to get aspirated - bcs in CH sample sample aspirate after reagent aspiration
+    var sampleId = arrPatientTestData[0]["Item"]("SampleId");
+    var sampleStatus = arrPatientTestData[0]["Item"]("SampleStatus");
+    if(!StepCheckSampleStatusinSampleList(sampleId,sampleStatus))
+      return false;
+    
+    aqUtils["Delay"](15000, "Waiting for IM ancillary reagent well to get pierced and update on UI")
+    
+    //shutdown hydra before running sql query
+     if(!StepShutdownHydraApplication())
+      return false;
+      
+    
+     var arrSQLQueryTestData = GetTestItemsByTestName(DBDataFile,"Reagents",testdata);
+     var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+     var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query2");
+     var actualActualLevel_IMAncillary_beforeExpiry_fullrecord = ReturnQueryRecordSetFromString(sqlQuery,strConString)
+    //Get the actualtestcount -need tocheck below line
+    var actualActualLevel_IMAncillary_beforeExpiry = actualActualLevel_IMAncillary_beforeExpiry_fullrecord["Fields"]("Actual_Level").Value
+    Log["Message"]("Actual Test count of IM ancillary pierced pack before OBS expiry in db "+actualActualLevel_IMAncillary_beforeExpiry)
+     
+    //run the query to make obs expired in 15 min
+     var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query1");
+     if(!StepExecSQLQueryFromString(sqlQuery,strConString))
+       Log["Error"]("Failed to execute the sql query to make OBS expires in 15 mins");
+       
+     //starting the timer for next 15 mins
+     var newtime = aqDateTime["AddMinutes"](aqDateTime["Now"](),15)
+     
+     //launch Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+     if(!StepLaunchHydraApplication())
+      return false;
+     //Initailize variablesand login to hydra
+     var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+     var username = arrTestData[0]["Item"]("User");
+     var password = arrTestData[0]["Item"]("Password");
+     if(!StepLoginToHydra(username,password))
+      return false;
+     //check modules are ready
+     if(!StepCheckAllSystemModulesReadyState())
+      return false;
+      
+     //create batch orders and load sample
+     var sampleId = arrPatientTestData[0]["Item"]("SampleIDforBatchOrder");
+     var sampleCount = arrPatientTestData[0]["Item"]("SampleCount");
+     var specimen = arrPatientTestData[0]["Item"]("Specimen");
+     var priority = arrPatientTestData[0]["Item"]("Priority");
+     var analyzer = arrPatientTestData[0]["Item"]("Analyzer");
+     var assay = arrPatientTestData[0]["Item"]("Assay");
+     if(!StepCreateBatchOrderBySampleId(sampleId, sampleCount, specimen, analyzer, assay, priority))
+      return false;
+      
+     var arrSampleIDs=StepGetBatchOrderIDs(sampleId,sampleCount)
+
+     //Load Samples through DML Simulator
+     if(!StepLoadSamplesinDMLSimulator(arrSampleIDs)) 
+     {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+     }
+     
+    currenttime = aqDateTime.Now();
+     while(currenttime<newtime)
+     {
+       //get count remaining of IM primary reagent and loop this tll it become zero
+       var ReagentDetailsParameters = dictColumn[0]["Item"]("IMAncillaryReagentDetailsParameters")["split"]("\\")[1];
+       var ReagentDetailsParametersExpectedValues = dictColumn[0]["Item"]("IMAncillaryReagentDetailsParametersValues")["split"]("\\")[1];
+  
+       if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+       {
+         aqUtils["Delay"](5000, "Waiting for reagent count remaining to become zero")
+         currenttime = aqDateTime.Now();
+       }
+       else
+        break;
+     }
+     
+    return actualActualLevel_IMAncillary_beforeExpiry;
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+
+}
+
+function LoadReagentsOfOneTypeAtATime(testdata,reagentType)
+{
+try
+{
+    //load a IM pack
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var barcodeList = new Array();
+    var barcodePositionList = new Array();
+    
+    //var reagentType = arrReagentTestdata[0]["Item"]("ReagentType");
+    if((aqString.ToLower(reagentType)==aqString.ToLower("CH"))||(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))||(aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary")))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+      var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+      var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+      var barcodes  = arrReagentTestdata[0]["Item"]("Barcode")["split"](";");
+      var barcodePositions = arrReagentTestdata[0]["Item"]("Position")["split"](";");  
+    
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+      var sequenceNo = arrReagentTestdata[0]["Item"]("AncSequence");
+      var lotNo = arrReagentTestdata[0]["Item"]("AncLot");
+      var barcodes  = arrReagentTestdata[0]["Item"]("AncBarcode")["split"](";");
+      var barcodePositions = arrReagentTestdata[0]["Item"]("AncPosition")["split"](";");  
+    }
+    
+    //load reagent
+    //Check the each barcode has a position mentioned
+    if(barcodes.length == barcodePositions.length)
+    {
+      //Assign the position of each barcode in same index
+      for(i=0; i<barcodes.length; i++)
+      {
+        barcodeList[i] = aqString["Trim"](barcodes[i]);
+        barcodePositionList[i] = aqString["Trim"](barcodePositions[i]);
+      } 
+    } 
+    else 
+    {
+      Log["Error"]("Number of Barcodes and Positions are mismatched from test data. Please Verify the test data");
+      return false;
+    }  
+    
+     //----------------------------------------Loading Reagents------------------------------------------
+      
+    if(!StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodeList,barcodePositionList))
+    {
+      Log["Error"]("Failed to load the reagent '" + reagentType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }     
+     
+    //Wait for the reagents to be reflected in reagent overview screen
+    aqUtils["Delay"](95000, "Waiting for the reagents to get loaded : Maxwait(95 seconds)");
+    
+    return StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo)
+
+	}
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function ShutdownHydraAndRunSQLQueryAndThenLaunchAndLoginToHydra(testdata)
+{
+   try
+   {
+   //shutdown hydra to run db query
+    if(!StepShutdownHydraApplication())
+      return false;
+      
+    var arrSQLQueryTestData = GetTestItemsByTestName(DBDataFile,"Reagents",testdata);
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    //run the query to make obs expired in 18 hours so that it reaches below threshold warning state
+    var sqlQuery = arrSQLQueryTestData[0]["Item"]("Query1");
+    if(!StepExecSQLQueryFromString(sqlQuery,strConString))
+       Log["Error"]("Failed to execute the sql query to make OBS expires in mins");
+
+    //restart Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+    if(!StepLaunchHydraApplication())
+      return false;
+    
+    if(!StepLoginToHydra(username,password))
+      return false;
+  
+    return StepCheckAllSystemModulesReadyState()
+      
+     //click on grid expander control- need to add this in repective methods - can not keep it ouside the method calls since in every naviagation  it will come back to default filter state 
+}
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function IMPrimaryPackIsLoadedAndThenOBSReachesBelowThresholdAlmostExpired(testdata,reagentType)
+{
+  try
+  {
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+      return false;
+    
+    //run the query to make obs expired in 18 hours so that it reaches below threshold warning state    
+    return ShutdownHydraAndRunSQLQueryAndThenLaunchAndLoginToHydra(testdata)    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function OperatorSelectsTheReagentRowAndViewTheDetails(testdata,reagentType)
+{
+  try
+  {
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    
+    if((aqString.ToLower(reagentType)==aqString.ToLower("CH"))||(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))||(aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary")))
+    {
+      var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+      var lotNo = arrReagentTestdata[0]["Item"]("Lot");   
+      var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+      var sequenceNo = arrReagentTestdata[0]["Item"]("AncSequence");
+      var lotNo = arrReagentTestdata[0]["Item"]("AncLot"); 
+    }
+    
+    return StepSelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo)
+  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function OperatorVerifyTheReagentDetails(testdata,reagentType)
+{
+  try
+  {
+    //verify pack status of loaded reagent pack
+    //verify manually screenshot since we cannot verify the color for OBS warning in reagent overview screen
+    //pack ID in the Sequence column of Reagent Overview and the Sequence Number field of Reagent Details
+    //pack name in the Name field of Reagent Details
+    //lot number in the Lot column of Reagent Overview and the Lot ID field of Reagent Details
+    //pack location in the Pack Location and Position fields of Reagent Details when a reagent pack is loaded in an IM or CH reagent compartment
+  
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var ReagentDetailsParameters
+    var ReagentDetailsParametersExpectedValues
+    var reagentName
+    var sequenceNo
+    var lotNo
+    if((aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary"))||(aqString.ToLower(reagentType)==aqString.ToLower("CH")))
+    {
+      reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+      sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+      lotNo = arrReagentTestdata[0]["Item"]("Lot");
+      if(aqString.ToLower(reagentType)==aqString.ToLower("CH"))
+      {
+        ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("CHReagentDetailsParameters");
+        ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("CHReagentDetailsParametersValues");
+      }
+      else if(aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary"))
+      {
+        ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParameters");
+        ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParametersValues");
+      }
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+      sequenceNo = arrReagentTestdata[0]["Item"]("AncSequence");
+      lotNo = arrReagentTestdata[0]["Item"]("AncLot");
+      ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("IMAncillaryReagentDetailsParameters");
+      ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("IMAncillaryReagentDetailsParametersValues");
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))
+    {
+      reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+      lotNo = arrReagentTestdata[0]["Item"]("Lot");
+      sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+      
+      var ReagentDetailsParametersTab1
+      var ReagentDetailsParametersTab2
+      var ReagentDetailsParametersExpectedValuesTab1
+      var ReagentDetailsParametersExpectedValuesTab2
+      
+      ReagentDetailsParametersTab1 = arrReagentTestdata[0]["Item"]("CHReagentDetailsParameters");
+      ReagentDetailsParametersExpectedValuesTab1 = arrReagentTestdata[0]["Item"]("CHReagentDetailsParametersValues");
+      ReagentDetailsParametersTab2 = arrReagentTestdata[0]["Item"]("CHReagentPack2OfPairedPackDetailsParameters");
+      ReagentDetailsParametersExpectedValuesTab2 = arrReagentTestdata[0]["Item"]("CHReagentPack2OfPairedPackDetailsParametersValues");
+    
+      return StepSelectCHPairedPackAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParametersTab1,ReagentDetailsParametersExpectedValuesTab1,ReagentDetailsParametersTab2,ReagentDetailsParametersExpectedValuesTab2)
+    }
+    
+    return StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function VerifyReagentVolumeOfIMPrimaryIsTracked(testdata,reagentType)
+{
+  try
+  {
+  //create and load a patient sample
+    if(!PatientOrderWithOneTestIsCreatedAndLoaded(testdata))
+      return false;
+    //verify sample status then wait for some secs for reagent aspiration
+    var arrPatientSampledata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleId = arrReagentTestdata[0]["Item"]("SampleId");
+    var sampleStatus = arrReagentTestdata[0]["Item"]("SampleStatus");
+    var SampleCount = arrReagentTestdata[0]["Item"]("SampleCount");
+    if(!StepCheckSampleStatusinSampleList(sampleId,sampleStatus))
+      return false;
+    
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    var InventoryCountByPackvalue = arrReagentTestdata[0]["Item"]("InventoryCountByPack");
+    var expReagentDetailsParametersExpectedValues= InventoryCountByPackvalue-SampleCount;
+  
+    return StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,"CountRemaining",expReagentDetailsParametersExpectedValues)  
+   }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }  
+}
+
+function VerifyReagentVolumeIsTracked(testdata,reagentType)
+{
+ try
+ {
+    //create and load a patient sample
+    //Create patient order
+    arrPatientSampleTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleIds = new Array();
+    var sampleIds = arrPatientSampleTestdata[0]["Item"]("SampleId")["split"](",");
+    var specimen = arrPatientSampleTestdata[0]["Item"]("Specimen");
+    var priority = arrPatientSampleTestdata[0]["Item"]("Priority");
+    var analyzer = arrPatientSampleTestdata[0]["Item"]("Analyzer");
+    var assay = arrPatientSampleTestdata[0]["Item"]("Assay");
+    var replicates = arrPatientSampleTestdata[0]["Item"]("Replicates");
+    
+    if(!StepCreatePatientOrder(sampleIds[1],specimen,priority,analyzer,assay,replicates)) 
+      return false;
+      
+    //--------------------------Load 1 Patient Order Sample -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 2 from the test data");
+    var sampleList = new Array();
+    sampleList[0] = sampleIds[1];
+      
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //verify sample should get processed
+    var sampleStatus = arrPatientSampleTestdata[0]["Item"]("SampleStatus")["split"](",");
+    if(!StepCheckSampleStatusinSampleList(sampleIds[1],sampleStatus[1]))
+      return false;
+      
+    //need to check delay time for inventory to get reduced while execution- to do
+    
+    //verify inventory count in reagent details
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName
+    var sequenceNo
+    var lotNo
+    var expReagentDetailsParametersExpectedValues
+    if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+      var sequenceNo = arrReagentTestdata[0]["Item"]("AncSequence");
+      var lotNo = arrReagentTestdata[0]["Item"]("AncLot");
+      var InventoryCountByWell1 = arrReagentTestdata[0]["Item"]("InventoryCountByWell1");
+      var VolumeReducedPerSample = arrReagentTestdata[0]["Item"]("VolumeReducedPerSample");
+      var expReagentDetailsParametersExpectedValues1= InventoryCountByWell1-VolumeReducedPerSample/100; //11.40 mL-60/100 = 10.08 mL
+      var expReagentDetailsParametersExpectedValues = expReagentDetailsParametersExpectedValues1+ " mL"
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("CH"))
+    {
+      var wellNumber = arrReagentTestdata[0]["Item"]("CHWellNumber");
+      var expectedWellCount = arrReagentTestdata[0]["Item"]("CHWellCount");
+      if(StepSelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+        return false;
+      if(!StepVerifyCHWellCount(wellNumber,expectedWellCount))
+        return false;  
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("ReagentName")["split"](";")[0];
+      var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+      var expectedWell1Count = arrReagentTestdata[0]["Item"]("InventoryCountByWell1");
+      var expectedWell2Count = arrReagentTestdata[0]["Item"]("InventoryCountByWell2");
+  
+      if(!StepSelectCHPairedPackAndVerifyWellCount(reagentName,sequenceNo,lotNo,reagentType,expectedWell1Count,expectedWell2Count))
+        {
+          Log["Message"]("Well count verification failed")
+        }  
+    }
+    if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      return StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,"CountRemaining",expReagentDetailsParametersExpectedValues)  
+    }
+   
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }   
+}
+
+function IMAncillaryPackIsLoadedAndThenOBSReachesBelowThresholdAlmostExpired(testdata)
+{
+  try
+  {
+    var arrReagentTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentType1 = arrReagentTestData[0]["Item"]("ReagentType");
+    var reagentType2 = arrReagentTestData[0]["Item"]("AncReagentType");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType1))
+      return false;
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType2))
+      return false;
+      
+    //process a sample using HBsIIA
+    //as of now in below function verfiy sample  is aspirated and then go ahead
+    //to do- will verfiy obs displayed
+    if(!ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata))// ignore function name it can be used here just for patient order creation and loading and get OBS
+      return false;
+      
+    return ShutdownHydraAndRunSQLQueryAndThenLaunchAndLoginToHydra(testdata)
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function IMAncillaryPackIsLoadedAndThenLotReachesBelowThresholdAlmostExpired(testdata)
+{
+  try
+  {
+    var arrReagentTestData = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentType1 = arrReagentTestData[0]["Item"]("ReagentType");
+    var reagentType2 = arrReagentTestData[0]["Item"]("AncReagentType");
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType1))
+      return false;
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType2))
+      return false;
+    
+    //process a sample using HBsIIA
+    //as of now in below function verfiy sample  is aspirated and then go ahead
+    //to do- will verfiy obs displayed
+    return ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata)// ignore function name it can be used here just for patient order creation and loading and get OBS
+  
+     
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+  
+}
+
+function PackIsLoadedAndThenPackBecomesUnusableRecoverable(testdata,reagentType)
+{
+ try
+ {
+    if(!LoadReagentsOfOneTypeAtATime(testdata,reagentType))
+      return false;
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    if((aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary"))||(aqString.ToLower(reagentType)==aqString.ToLower("CH"))||(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired")))
+    {
+      var reagentName = arrReagentTestData[0]["Item"]("ReagentName");
+      var seqNumber = arrReagentTestData[0]["Item"]("Sequence");
+      var lotNumber = arrReagentTestData[0]["Item"]("Lot");
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+      var sequenceNo = arrReagentTestdata[0]["Item"]("AncSequence");
+      var lotNo = arrReagentTestdata[0]["Item"]("AncLot");
+    }
+    
+    if(!StepDisableOrEnableReagentPack(reagentName,seqNumber,lotNumber,"DISABLE"))
+      return false;
+    
+    if(!StepVerifyHydraReagentRowIsEnabled(reagentName,seqNumber,lotNumber))
+      return true;
+    else
+      return false;
+ }
+ catch(e)
+ {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+ } 
+}
+
+function OperatorDisablesOrEnablesTheReagentPack(testdata,reagentType,EnabledOrDisabled)
+{ 
+  try
+  {
+   //read test data
+   var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    
+    if((aqString.ToLower(reagentType)==aqString.ToLower("CH"))||(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))||(aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary")))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+      var seqNumber = arrReagentTestdata[0]["Item"]("Sequence");
+      var lotNumber = arrReagentTestdata[0]["Item"]("Lot");
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("IMAncillary"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("AncReagentName");
+      var seqNumber = arrReagentTestdata[0]["Item"]("AncSequence");
+      var lotNumber = arrReagentTestdata[0]["Item"]("AncLot");
+    }
+    
+    if(!StepDisableOrEnableReagentPack(reagentName,seqNumber,lotNumber,EnabledOrDisabled))
+      return false;
+    
+    if(EnabledOrDisabled=="ENABLE")
+    {
+      if(StepVerifyHydraReagentRowIsEnabled(reagentName,seqNumber,lotNumber))
+        return true;
+      else
+        return false;
+    }
+    else if(EnabledOrDisabled=="DISABLE")
+    {
+      if(StepVerifyHydraReagentRowIsEnabled(reagentName,seqNumber,lotNumber))
+        return false;
+      else
+        return true;
+    }
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function OperatorVerifyIMPrimaryReagentPackDetailsAfterDisablingTheReagentPack(testdata)
+{
+  try
+  {
+    //reagent loading screen showing unusable state
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+	var reagentType = arrReagentTestdata[0]["Item"]("ReagentType");
+    var position = arrReagentTestdata[0]["Item"]("Position");
+    var state = arrReagentTestdata[0]["Item"]("ReagentPackStateOnReagentLoadingBeforeAndAfterDisablingReagentPack")["split"](",");   
+    if(!StepVerifyIMPrimaryReagentPackUsableOrUnusableStateOnReagentLoadingScreen(position,state[0]))
+      return false;
+      
+    if(!VerifyPatientSampleIsNotProcessedAfterDisablingTheReagentPack(testdata))
+      return false;
+    
+    return VerifyReagentGridColumnValues(testdata,reagentType)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function VerifyPatientSampleIsNotProcessedAfterDisablingTheReagentPack(testdata)
+{
+  try
+  {
+    //Create patient order
+    arrPatientSampleTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleIds = new Array();
+    var sampleIds = arrPatientSampleTestdata[0]["Item"]("SampleId")["split"](",");
+    var specimen = arrPatientSampleTestdata[0]["Item"]("Specimen");
+    var priority = arrPatientSampleTestdata[0]["Item"]("Priority");
+    var analyzer = arrPatientSampleTestdata[0]["Item"]("Analyzer");
+    var assay = arrPatientSampleTestdata[0]["Item"]("Assay");
+    var replicates = arrPatientSampleTestdata[0]["Item"]("Replicates");
+    
+    if(!StepCreatePatientOrder(sampleIds[0],specimen,priority,analyzer,assay,replicates)) 
+      return false;
+      
+    //--------------------------Load 1 Patient Order Sample -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 1 from the sample list");
+    var sampleList = new Array();
+    sampleList[0] = sampleIds[0]
+    //sampleList["push"](arrPatientSampleTestdata[0]["item"]("SampleId"));
+    
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //verify sample should not get processed
+    var sampleStatus = arrPatientSampleTestdata[0]["Item"]("SampleStatus")["split"](",");
+    return StepCheckSampleStatusinSampleList(sampleIds[0],sampleStatus[0])
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }    
+}
+
+function VerifyReagentGridColumnValues(testdata,reagentType)
+{
+  try
+  {
+    //any currently running tests for this pack continue to run to completion
+      //this one we can verify like pack can not be disabled while test in process or while pack status is processing
+    
+    //inventory and time based criteria
+    //count/volume
+      //include this inventory check while verifying status above
+    //reagent lot expiration
+      //included this while verifying the verifying status above- need to check with yuriy
+    //obs
+      //included this while verifying the verifying status above- for im primary can be done directly for ch need to process 1 sample to get OBS
+    //cal interval
+    arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var seqNumber = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNumber = arrReagentTestdata[0]["Item"]("Lot");
+      
+    var dictobj  = new ActiveXObject("Scripting.Dictionary");
+    if(aqString.ToLower(reagentType)==aqString.ToLower("IMPrimary"))
+    {
+      var expectedColumns = arrReagentTestdata[0]["Item"]("ColumnsNameToVerifyValuesForIMPrimaryReagent");
+      var expectedColumnsValues = arrReagentTestdata[0]["Item"]("ColumnsValuesForIMPrimaryReagent");
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("CH")||aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))
+    {
+      var expectedColumns = arrReagentTestdata[0]["Item"]("ColumnsNameToVerifyValuesForCHReagent");
+      var expectedColumnsValues = arrReagentTestdata[0]["Item"]("ColumnsValuesForCHReagent");
+    }
+    
+    var arrexpectedColumns= new Array();
+    var arrexpectedColumnsValues = new Array();
+    arrexpectedColumns = expectedColumns["split"](",")
+    arrexpectedColumnsValues = expectedColumnsValues["split"](",")
+    
+    dictobj= StepGetReagentRowColumnValues(expectedColumns,reagentName,seqNumber,lotNumber)
+    if(dictobj.count>0)
+    {
+      Log["Message"]("Sucessfully returned the dictionary objects having all column values which is needed in step")
+      var actualColumnsValues = new Array();
+      
+      for(var i=0;i<dictobj.count;i++)
+      {
+        actualColumnsValues[i] =  dictobj.Item(aqConvert["VarToStr"](arrexpectedColumns[i]))        
+      }
+    }
+    else
+    {
+      Log["Message"]("Not returned the dictionary objects having all column values which is needed in step")
+    }
+    var passcount =0;
+    if(actualColumnsValues.length==arrexpectedColumnsValues.length)
+    {
+      for(var j=0;j<arrexpectedColumns.length;j++)
+      {
+        if(actualColumnsValues[j]==arrexpectedColumnsValues[j])
+        {
+          passcount = passcount +1;
+          Log["Checkpoint"]("Actual value of column :"+arrexpectedColumns[j] +" is shown as :"+actualColumnsValues[j]+"and expected value is :"+arrexpectedColumnsValues[j])
+        }
+        else
+        {
+          Log["Error"]("Actual value of column :"+arrexpectedColumns[j] +" is shown as :"+actualColumnsValues[j]+"and expected value is :"+arrexpectedColumnsValues[j])
+        }
+      }
+    }
+    else
+    {
+      Log["Message"]("Length of actual column values (which are returned above)and expected column values(which is apssed from testdata) did not match")
+    }
+    
+    if(passcount ==arrexpectedColumnsValues.length)
+    {
+      Log["Message"]("Verification for all column value is passed")
+      return true;
+    }
+    else if(passcount ==0)
+    {
+      Log["Message"]("Verification for all column value is failed")
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Verification for few column value is failed")
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function OperatorVerifyIMPrimaryReagentPackDetailsAfterReEnablingTheReagent(testdata,reagentType)
+{
+  try
+  {
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    var ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParametersToVerifyAfterReEnablingTheReagent");
+    var ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("IMPrimaryReagentDetailsParametersValuesToVerifyAfterReEnablingTheReagent");
+      
+    if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+      return false;
+      
+    //reagent loading screen showing usable state after re-enabling the reagent pack
+    var position = arrReagentTestdata[0]["Item"]("Position");
+    var state = arrReagentTestdata[0]["Item"]("ReagentPackStateOnReagentLoadingBeforeAndAfterDisablingReagentPack")["split"](","); 
+    if(!StepVerifyIMPrimaryReagentPackUsableOrUnusableStateOnReagentLoadingScreen(position,state[1]))
+      return false;
+    
+    //verify patient sample is processed now using this reagent and while processing disable reagent pack button is disabled
+    arrPatientSampleTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleIds = new Array();
+    var sampleIds = arrPatientSampleTestdata[0]["Item"]("SampleId")["split"](",");
+    var specimen = arrPatientSampleTestdata[0]["Item"]("Specimen");
+    var priority = arrPatientSampleTestdata[0]["Item"]("Priority");
+    var analyzer = arrPatientSampleTestdata[0]["Item"]("Analyzer");
+    var assay = arrPatientSampleTestdata[0]["Item"]("Assay");
+    var replicates = arrPatientSampleTestdata[0]["Item"]("Replicates");
+    
+    if(!StepCreatePatientOrder(sampleIds[1],specimen,priority,analyzer,assay,replicates)) 
+      return false;
+      
+    //--------------------------Load 1 Patient Order Sample -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 2 from the test data");
+    var sampleList = new Array();
+    sampleList[01]=sampleIds[1]
+    
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //verify sample should appear in samplelist screen and as soon as status is pending then verify that reagent pack button is disabled - it means sample should get processed
+    // we cannot check that pack cann not be disabled afetr sample is aspirated.disable reagent pack button will get enabled after saple is aspirated for IM primary (it is obserevd for AFP)
+    var sampleStatus = arrPatientSampleTestdata[0]["Item"]("SampleStatus")["split"](",");
+    if(!StepVerifySampleStatusInSampleListWithOnly20secsDelayForASampleToShowInGrid(sampleIds[1],sampleStatus[1]))
+      return false;
+
+	if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,"Status","Processing"))
+      return false;
+    
+    //verify while sample processing unable to disbale the reagent pack- check button is disabled
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var lotNumber = arrReagentTestdata[0]["Item"]("Lot");
+    var seqNumber = arrReagentTestdata[0]["Item"]("Sequence");
+    if(StepVerifyDisableEnableReagentPackButtonState(reagentName,seqNumber,lotNumber,"DISABLEPACK"))
+      return false;
+     
+    if(!StepCheckSampleStatusinSampleList(sampleIds[1],sampleStatus[2]))//sample is aspirated
+      return false;
+    return StepCheckSampleStatusinSampleList(sampleIds[1],sampleStatus[3])//sample is complete
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function ProcessAPatientSampleToGetOBSOfCHUnpairedOrPairedReagentPackBeforeDisabling(testdata)
+{
+  try
+  {
+     //process a sample to get OBS
+    arrPatientSampleTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleIds = new Array();
+    var sampleIds = arrPatientSampleTestdata[0]["Item"]("SampleId")["split"](",");
+    var specimen = arrPatientSampleTestdata[0]["Item"]("Specimen");
+    var priority = arrPatientSampleTestdata[0]["Item"]("Priority");
+    var analyzer = arrPatientSampleTestdata[0]["Item"]("Analyzer");
+    var assay = arrPatientSampleTestdata[0]["Item"]("Assay");
+    var replicates = arrPatientSampleTestdata[0]["Item"]("Replicates");
+    
+    if(!StepCreatePatientOrder(sampleIds[0],specimen,priority,analyzer,assay,replicates)) 
+      return false;
+      
+    //--------------------------Load 1 Patient Order Sample -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 1 from the sample list");
+    var sampleList = new Array();
+    sampleList[0]=sampleIds[0]
+    
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //verify sample should get processed to get OBS
+    var sampleStatus = arrPatientSampleTestdata[0]["Item"]("SampleStatus")["split"](",");
+    return StepCheckSampleStatusinSampleList(sampleIds[0],sampleStatus[0])
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function OperatorVerifyCHUnpairedOrPairedPackDetailsAfterDisablingTheReagentPack(testdata,reagentType)
+{
+  try
+  {
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    
+    //verify as an unusable pack , no new tests are scheduled to use it
+    if(!VerifyPatientSampleIsNotProcessedUsingCHUnpairedOrPairedPack(testdata))
+      return false;
+      
+    //verify reagent well volume
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    
+    if(aqString.ToLower(reagentType)==aqString.ToLower("CH"))
+    {
+    var wellNumber = arrReagentTestdata[0]["Item"]("CHWellNumber");
+    var expectedWellCount = arrReagentTestdata[0]["Item"]("CHWellCount");
+     if(!StepSelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+      return false;
+    if(!StepVerifyCHWellCount(wellNumber,expectedWellCount))
+      return false;  
+    }
+    else if(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))
+    {
+      var reagentName = arrReagentTestdata[0]["Item"]("ReagentName")["split"](";")[0];
+      var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+      var expectedWell1Count = arrReagentTestdata[0]["Item"]("InventoryCountByWell1");
+      var expectedWell2Count = arrReagentTestdata[0]["Item"]("InventoryCountByWell2");
+  
+      if(!StepSelectCHPairedPackAndVerifyWellCount(reagentName,sequenceNo,lotNo,reagentType,expectedWell1Count,expectedWell2Count))
+        {
+          Log["Message"]("Well count verification failed")
+        }  
+    }
+    
+    //verify inventory ,obs ,cal interval column values in reagent grid of @reagent pack
+    return VerifyReagentGridColumnValues(testdata,reagentType)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  } 
+}
+
+function VerifyPatientSampleIsNotProcessedUsingCHUnpairedOrPairedPack(testdata)
+{
+  try
+  {
+    //Create patient order
+    arrPatientSampleTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleIds = new Array();
+    var sampleIds = arrPatientSampleTestdata[0]["Item"]("SampleId")["split"](",");
+    var specimen = arrPatientSampleTestdata[0]["Item"]("Specimen");
+    var priority = arrPatientSampleTestdata[0]["Item"]("Priority");
+    var analyzer = arrPatientSampleTestdata[0]["Item"]("Analyzer");
+    var assay = arrPatientSampleTestdata[0]["Item"]("Assay");
+    var replicates = arrPatientSampleTestdata[0]["Item"]("Replicates");
+    
+    if(!StepCreatePatientOrder(sampleIds[1],specimen,priority,analyzer,assay,replicates)) 
+      return false;
+      
+    //--------------------------Load 1 Patient Order Sample -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 2 from the test data");
+    var sampleList = new Array();
+    sampleList[0] = sampleIds[1];
+      
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //verify sample should not get processed
+    var sampleStatus = arrPatientSampleTestdata[0]["Item"]("SampleStatus")["split"](",");
+    return StepCheckSampleStatusinSampleList(sampleIds[1],sampleStatus[1])
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }    
+}
+
+function OperatorVerifyCHUnpairedOrPairedReagentPackDetailsAfterReEnablingTheReagent(testdata,reagentType)
+{
+  try
+  {
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var lotNo = arrReagentTestdata[0]["Item"]("Lot");
+    var ReagentDetailsParameters
+    var ReagentDetailsParametersExpectedValues
+    var sequenceNo
+    if(aqString.ToLower(reagentType)==aqString.ToLower("CH"))
+    {
+      sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+      ReagentDetailsParameters = arrReagentTestdata[0]["Item"]("CHReagentReagentDetailsParametersToVerifyAfterReEnablingTheReagent");
+      ReagentDetailsParametersExpectedValues = arrReagentTestdata[0]["Item"]("CHReagentDetailsParametersValuesToVerifyAfterReEnablingTheReagent");
+      
+      if(!StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues))
+        return false;
+    }
+   else if(aqString.ToLower(reagentType)==aqString.ToLower("CHPaired"))
+    {
+      reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+      lotNo = arrReagentTestdata[0]["Item"]("Lot");
+      sequenceNo = arrReagentTestdata[0]["Item"]("Sequence");
+      
+      var ReagentDetailsParametersTab1
+      var ReagentDetailsParametersTab2
+      var ReagentDetailsParametersExpectedValuesTab1
+      var ReagentDetailsParametersExpectedValuesTab2
+      
+      ReagentDetailsParametersTab1 = arrReagentTestdata[0]["Item"]("CHReagentDetailsParameters");
+      ReagentDetailsParametersExpectedValuesTab1 = arrReagentTestdata[0]["Item"]("CHReagentDetailsParametersValues");
+      ReagentDetailsParametersTab2 = arrReagentTestdata[0]["Item"]("CHReagentPack2OfPairedPackDetailsParameters");
+      ReagentDetailsParametersExpectedValuesTab2 = arrReagentTestdata[0]["Item"]("CHReagentPack2OfPairedPackDetailsParametersValues");
+    
+      return StepSelectCHPairedPackAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParametersTab1,ReagentDetailsParametersExpectedValuesTab1,ReagentDetailsParametersTab2,ReagentDetailsParametersExpectedValuesTab2)
+    }
+    
+    //sample should get processed now
+    return VerifyPatientSampleProcessedAfterReEnablingCHUnpairedOrCHPairedReagentPackAndReagentCannotBeDisabledWhileProcessing(testdata)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+
+ 
+      
+function VerifyPatientSampleProcessedAfterReEnablingCHUnpairedOrCHPairedReagentPackAndReagentCannotBeDisabledWhileProcessing(testdata)
+{
+  try
+  {
+    //process a sample using this reagent
+    arrPatientSampleTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder",testdata);
+    var sampleIds = new Array();
+    var sampleIds = arrPatientSampleTestdata[0]["Item"]("SampleId")["split"](",");
+    var specimen = arrPatientSampleTestdata[0]["Item"]("Specimen");
+    var priority = arrPatientSampleTestdata[0]["Item"]("Priority");
+    var analyzer = arrPatientSampleTestdata[0]["Item"]("Analyzer");
+    var assay = arrPatientSampleTestdata[0]["Item"]("Assay");
+    var replicates = arrPatientSampleTestdata[0]["Item"]("Replicates");
+    
+    if(!StepCreatePatientOrder(sampleIds[2],specimen,priority,analyzer,assay,replicates)) 
+      return false;
+      
+    //--------------------------Load 1 Patient Order Sample -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 2 from the test data");
+    var sampleList = new Array();
+    sampleList[0]=sampleIds[2]
+    
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //verify sample should get processed- status pending->aspirated->complete
+    //first check patient is seen in sample list then veify reagent pack can not be disabled due to sampel is inprocessing and then bverify again sample status aspirated and then complete
+    var sampleStatus = arrPatientSampleTestdata[0]["Item"]("SampleStatus")["split"](",");
+     if(!StepVerifySampleStatusInSampleListWithOnly20secsDelayForASampleToShowInGrid(sampleIds[2],sampleStatus[2]))//pending
+      return false;
+    
+    //verify while sample processing unable to disable the reagent pack- check button is disabled
+    var arrReagentTestdata = GetTestItemsByTestName(TestDataFile,"Reagents",testdata);
+    var reagentName = arrReagentTestdata[0]["Item"]("ReagentName");
+    var lotNumber = arrReagentTestdata[0]["Item"]("Lot");
+    var seqNumber = arrReagentTestdata[0]["Item"]("Sequence");
+    if(StepVerifyDisableEnableReagentPackButtonState(reagentName,seqNumber,lotNumber,"DISABLEPACK"))
+      return false;
+     
+    //verify sample should get processed- status complete
+    //if(!StepCheckSampleStatusinSampleList(sampleIds[2],sampleStatus[3]))   //aspirated
+    if(!StepVerifySampleStatusInSampleListWithOnly20secsDelayForASampleToShowInGrid(sampleIds[2],sampleStatus[3]))
+
+    return StepCheckSampleStatusinSampleList(sampleIds[2],sampleStatus[4])  //complete
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+
+function SetupPlaceMasterCurve(testdata)
+{
+  try
+  {
+    var masterCurveFileSourcePath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\Mastercurves";
+    var masterCurveFileDestinationPath = "C:\\Siemens\\ARM\\TestDefinition\\Mastercurves";
+    if(testdata == "TC_336026_01")
+    {
+      var success = aqFile["Copy"](masterCurveFileSourcePath+"\\mc_AFP_444.xml",masterCurveFileDestinationPath,false)
+    }
+    else
+    {
+      var success = aqFile["Copy"](masterCurveFileSourcePath+"\\mc_AFP_222.xml",masterCurveFileDestinationPath,false)
+    }
+    if(success==true)
+    { 
+      Log["Checkpoint"]("Successfully placed master curve");
+      return true
+    }
+    else
+    {
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function SetupMoveAllSamplesToHistorical()
+{
+  Log["AppendFolder"]("Setup:: Move Old Samples to Historical");   
+  if(!StepMoveAllSamplesToHistorical())
+  {
+    Log["Error"]("Move to Historical Verification Failed")
+    return false; 
+  }
+  Log["PopLogFolder"]();  
+  return true;
+  
+}

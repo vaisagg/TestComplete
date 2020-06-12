@@ -1,0 +1,27 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT CommonUtilities
+//USEUNIT DVSSimulator
+
+var strPath = "C:\\Siemens\\DVSsimulator\\Bin\\PCM.DrawerVisionSystemSimulator.exe"   // for DVS old UI
+//var strPath = "C:\\hydra.dev\\drop\\Bin\\PCM.DrawerVisionSystemSimulator.exe" // for DVS new UI
+
+function LaunchDVS()
+{
+  try
+  {
+    //Launch Drawer Simulator Exe
+    Log["AppendFolder"]("Launching the Drawer Simulator Application");  
+    if(LaunchApplication(strPath))
+      NetworkSuite["Variables"]["TaskStatus"] = "True";
+    else
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+  
+}

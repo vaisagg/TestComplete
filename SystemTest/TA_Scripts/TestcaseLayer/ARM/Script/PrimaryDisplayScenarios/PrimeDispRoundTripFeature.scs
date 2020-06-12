@@ -1,0 +1,395 @@
+﻿//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispRoundTripFeatureSteps
+
+
+function PrimaryDisplay_RoundTripE2E() 
+{
+  try
+  {
+      //---------------------------------------Initialize Metadata----------------------------------------------
+      Log["AppendFolder"]("Initialize datafile and XML's")
+      InitializeMetaDataHYDRA();
+      Log["PopLogFolder"]();
+      //-------------------------------------------------------------------------------------------------------- 
+      
+      //--------------------------Project file Paths & variables------------------------------------------------
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      var arrTestData1 = GetTestItemsByTestName(TestDataFile,"RoundTrip","CreatePO");
+      var arrTestData2 = GetTestItemsByTestName(TestDataFile,"RoundTrip","LoadReagent");
+      var pqcvTestData = GetTestItemsByTestName(TestDataFile,"RoundTrip","PQCVTest");
+      var imtTestData = GetTestItemsByTestName(TestDataFile,"RoundTrip","IMTTest");
+      var inventoryCountBeforeAspiration = 0;
+      var inventoryCountAfterAspiration = 0;
+      //--------------------------------------------------------------------------------------------------------        
+  
+          
+      //--------------------------------Move Old Samples to Historical from Primary UI--------------------------
+      Log["AppendFolder"]("RoundTrip :: Move Old Samples to Historical");
+    
+      //Result.xml - Move Old Samples to Historical -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "I");
+      
+      //Removeing old samples
+      if(!MoveAllSamplesToHistoricalforRT())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "F");   
+      }
+      else
+	  {
+		//Result.xml - Move Old Samples to Hstorical -Pass
+		ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "P");
+	  }
+      
+      Log["PopLogFolder"]();  
+      //--------------------------------------------------------------------------------------------------------
+      
+      
+      //--------------------------------Get Reagent Inventory Before Aspiration --------------------------------
+      
+      Log["AppendFolder"]("RoundTrip :: Check Reagent Inventory Count Before Aspiration");
+      
+      //Result.xml - Reagent Inventory Count Before Aspiration -InProgress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_Aspiration", "I");
+      
+      //Verify the Reagent availability and its Inventory Count value
+      inventoryCountBeforeAspiration = VerifyReagentsInventoryCountForRT(arrTestData1);
+      var counter = arrTestData1["length"]
+      if(inventoryCountBeforeAspiration.length == 0)
+      {
+        Log["Error"]("Reagents Inventory Count Verification Failed");
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_Aspiration", "F");
+        Log["PopLogFolder"]();
+      }
+      else if(inventoryCountBeforeAspiration.length < counter)
+      {
+        Log["Error"]("Reagents Inventory Count Verification Failed");
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_Aspiration", "F");
+      }
+      else
+      {
+        //Result.xml - Reagent Inventory Count Before Aspiration -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_Aspiration", "P");
+      }
+      
+      Log["PopLogFolder"]();
+      //--------------------------------------------------------------------------------------------------------
+      
+
+      //------------------------------Create Patient Order in Primary Display-----------------------------------
+      Log["AppendFolder"]("RoundTrip :: Create Patient Order");
+      
+      //Result.xml - Create Patient Order -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_CH_IM", "I");
+      
+      //Create Patient Order
+      if(!CreatePatientOrderForRT(arrTestData1))
+      {
+        Log["Error"]("Create Patient Order Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_CH_IM", "F");
+      }
+	  else
+	  {
+        //Result.xml - Create Patient Order -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_CH_IM", "P");
+      }
+      Log["PopLogFolder"]();
+      //--------------------------------------------------------------------------------------------------------
+  
+      //--------------------------Load Samples in HYDRA DML Simulator Application-------------------------------
+  
+      Log["AppendFolder"]("RoundTrip :: Load Samples Using Hydra DML Simulator");
+      
+      //Result.xml - Load Samples -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples_CH_IM", "I");
+          
+      if(!LoadSamplesFromHydraDMLSimulator(arrTestData1))
+      {
+        Log["Error"]("Sample Loading Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples_CH_IM", "F");
+      }
+      else
+	  {
+		//Result.xml - Load Samples -Pass
+		ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples_CH_IM", "P");
+	  }
+      
+      //Adding delay
+      aqUtils["Delay"](60000,"Waiting for sample to load and listed in sample list screen")
+      
+      Log["PopLogFolder"]();
+      //--------------------------------------------------------------------------------------------------------
+  
+  
+      //----------------------------Check Sample Status in Primary Display Sample Screen------------------------
+  
+      Log["AppendFolder"]("RoundTrip :: Sample Status in Sample List screen");
+      
+      //Result.xml - Sample Aspiration -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Check_Sample_Aspiration_CH_IM", "I");
+      
+      //Verify if Sample is aspirated -Shahana
+      if(!VerifySampleStatusForRT(arrTestData1))
+      {
+        Log["Error"]("Sample Aspiration Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Check_Sample_Aspiration_CH_IM", "F");
+      }
+      else
+	  {
+		//Result.xml - Sample Aspiration -Pass
+		ReportTestStatusToResultXML("RoundTripWorkflow", "Check_Sample_Aspiration_CH_IM", "P");
+      }
+	  
+      Log["PopLogFolder"]();      
+      //--------------------------------------------------------------------------------------------------------
+  
+      
+      //---------------------------Check Sample Result in Primary Display Worklist Screen-----------------------
+  
+      Log["AppendFolder"]("RoundTrip :: Sample Result in worklist screen");
+      
+      //Result.xml - Sample Result -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Check_Sample_Result_CH_IM", "I");
+         
+      //WorkList Sample Result Verification 
+      if(!VerifyResultsForRT(arrTestData1))
+      {
+        Log["Error"]("Sample Result Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Check_Sample_Result_CH_IM", "F");
+      }
+      else
+	  {
+		//Result.xml - Sample Result -Pass
+		ReportTestStatusToResultXML("RoundTripWorkflow", "Check_Sample_Result_CH_IM", "P");
+      }
+	  
+      Log["PopLogFolder"]();
+      //--------------------------------------------------------------------------------------------------------
+  
+      //---------------------------------Get Reagent Inventory After Aspiration --------------------------------
+      
+      Log["AppendFolder"]("RoundTrip :: Check Reagent Inventory Count After Aspiration");
+      
+      //Result.xml - Reagent Inventory Count After Aspiration -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_After_Aspiration", "I");
+      
+      //Verify the Reagent availability and its Inventory Count value
+      inventoryCountAfterAspiration = VerifyReagentsInventoryCountForRT(arrTestData1);
+      var counter = arrTestData1["length"]
+      if(inventoryCountAfterAspiration.length == 0)
+      {
+        Log["Error"]("Reagents Inventory Count Verification Failed");
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_After_Aspiration", "F");
+      }
+      else if(inventoryCountAfterAspiration.length < counter)
+      {
+        Log["Error"]("Reagents Inventory Count Verification Failed");
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_After_Aspiration", "F");
+      }
+      else
+      {
+        //Result.xml - Reagent Inventory Count After Aspiration -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_After_Aspiration", "P");
+      }
+      
+      Log["PopLogFolder"]();
+      //--------------------------------------------------------------------------------------------------------
+      
+      //----------------------Check Reagent Inventory Count Before & After Aspiration --------------------------
+      
+      Log["AppendFolder"]("RoundTrip :: Check Reagents Inventory Count Before & After Aspiration");
+      
+      //Result.xml - Reagent Inventory Count Before & After Aspiration -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_And_After_Aspiration", "I");
+      
+      if(!VerifyReagentInventoryCountBeforeAndAfterAspiration(inventoryCountBeforeAspiration,inventoryCountAfterAspiration))
+      {
+        Log["Error"]("Reagents Inventory Count Verification Failed on Before and After Sample Process");
+        Log["PopLogFolder"]();
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_And_After_Aspiration", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+	  {
+      //Result.xml - Reagent Inventory Count Before & After Aspiration -Pass
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_InventoryCount_Before_And_After_Aspiration", "P");
+      Log["PopLogFolder"]();
+	  }
+      //--------------------------------------------------------------------------------------------------------
+    
+        
+      //---------------------------------------Perform & Verify IMT Calibration-----------------------------------
+      Log["AppendFolder"]("RoundTrip :: IMT Calibration Status Verification From Primary UI");
+      
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_IMTCalibration_Status", "I");
+      
+      //Perform IMTCalibration
+      if(!PerformIMTCalibrationAndVerifyStatusForRT())
+      {
+        Log["Error"]("Performing IMT Calibration Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_IMTCalibration_Status", "F");
+      } 
+      else 
+      {
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_IMTCalibration_Status", "P");
+      }       
+      
+      Log["PopLogFolder"]();
+      //----------------------------------------------------------------------------------------------------------
+ 
+           
+      //-------------------------------Create Patient Order in Primary UI for IMT Test----------------------------
+      Log["AppendFolder"]("RoundTrip :: IMT Tests Patient Order Creation From Primary UI");
+      
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_IMT", "I");
+      
+      //Create Patient Order for IMT Tests
+      if(!CreatePatientOrderForRT(imtTestData))
+      {
+        Log["Error"]("Create Patient Order for IMT Tests Failed");
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_IMT", "F");      
+      } 
+      else 
+      {
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_IMT", "P");  
+      }
+
+      Log["PopLogFolder"]();
+      //----------------------------------------------------------------------------------------------------------
+  
+      //----------------------------Load IMT Test Samples in HYDRA DML Simulator Application----------------------
+  
+      Log["AppendFolder"]("RoundTrip :: IMt Test Samples Loading Using Hydra DML Simulator");
+      
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples_IMT", "I");
+          
+      //Load Samples using DML Simulator
+      if(!LoadSamplesFromHydraDMLSimulator(imtTestData))
+      {
+        Log["Error"]("IMT Test Samples Loading Using DML Simulator Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples_IMT", "F");
+      } 
+      else 
+      {
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples_IMT", "P");  
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](60000,"Waiting for sample to load and listed in sample list screen")
+      
+      Log["PopLogFolder"]();
+      //----------------------------------------------------------------------------------------------------------
+ 
+       
+      //---------------------Check IMT Sample Aspiration Status in Primary UI Sample List Screen------------------
+      Log["AppendFolder"]("RoundTrip :: IMT Sample Aspiration Status Verification In Sample List Screen From Primary UI");
+      
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Aspiration_IMT", "I");
+      
+      //Verify if Sample is aspirated from Sample list Screen
+      if(!VerifySampleStatusForRT(imtTestData))
+      {
+        Log["Error"]("IMT Test Samples Aspiration Verification Failed");
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Aspiration_IMT", "F");        
+      } 
+      else 
+      {
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Aspiration_IMT", "P");  
+      }
+      
+      Log["PopLogFolder"]();    
+      //----------------------------------------------------------------------------------------------------------
+  
+      
+      //-------------------------------Check IMT Sample Result in Primary UI Worklist Screen----------------------
+  
+      Log["AppendFolder"]("RoundTrip :: IMT Test Samples Result Verification In Worklist Screen From Primary UI");
+      
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Result_IMT", "I");
+         
+      //WorkList
+      if(!VerifyResultsForRT(imtTestData)) 
+      {
+        Log["Error"]("IMT Test Samples Result Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Result_IMT", "F");
+      } 
+      else 
+      {
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Result_IMT", "P");  
+      }
+      
+      Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+
+   
+    //--------------------------------Create Patient Order for PQCV From Primary UI-----------------------------
+    
+    Log["AppendFolder"]("RoundTrip :: PQCV Patient Order Creation From Primary UI");
+      
+    ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_PQCV", "I");
+      
+    //Create Patient Order for PQCV Sample
+    if(!CreatePatientOrderForRT(pqcvTestData))
+    {
+      Log["Error"]("Create Patient Order Failed for PQCV Sample");
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_PQCV", "F");
+    } 
+    else 
+    {
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order_PQCV", "P");      
+    }
+
+    Log["PopLogFolder"]();      
+    //----------------------------------------------------------------------------------------------------------
+      
+    
+//    //---------------------------Check the ETA Time Displayed in WorkList Grid for PQCV Sample------------------
+//      
+//    Log["AppendFolder"]("RoundTrip :: PQCV Sample ETA Time Verification In Worklist Screen From Primary UI");
+//      
+//    ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_ETATime_PQCV", "I");
+//      
+//    if(!VerifyTheETATimeForRT(pqcvTestData))
+//    {
+//      Log["Error"]("ETA time not displayed for the PQCV sample in worklist screen");
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_ETATime_PQCV", "F");
+//    } 
+//    else 
+//    {
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_ETATime_PQCV", "P");  
+//    }
+//      
+//    Log["PopLogFolder"]();
+//    //----------------------------------------------------------------------------------------------------------
+      
+ 
+	  //-----------------------------Check Sample Result in Primary Display Worklist Screen-----------------------
+  
+    Log["AppendFolder"]("RoundTrip :: PQCV Sample Result Verification In Worklist Screen From Primary UI");
+      
+    ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Result_PQCV", "I");
+         
+    //WorkList
+    if(!VerifyResultsForRT(pqcvTestData))
+    {
+      Log["Error"]("Sample Result Verification Failed")
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Result_PQCV", "F");
+    }
+	else
+    {
+		ReportTestStatusToResultXML("RoundTripWorkflow", "Verify_Sample_Result_PQCV", "P");
+    }  
+    Log["PopLogFolder"]();
+      
+    //----------------------------------------------------------------------------------------------------------       
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+

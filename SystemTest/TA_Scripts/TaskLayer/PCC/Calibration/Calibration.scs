@@ -1,0 +1,347 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+
+function CalibrationDefinitionExists(MaterialName)
+{
+  Log["AppendFolder"]("PCC::CalibrationDefinitionExists");
+  var objctrl = GetControl("Calibration_CalibratorDefinitions","grdCalibratorView")
+
+  var Row=GetGridRowNo(objctrl,"ProductName",MaterialName)
+  if (Row >= 0)
+  {
+    Log["Message"]("Calibration definition exists for MaterialName: "+MaterialName);
+    Log["PopLogFolder"]();
+    return true;
+  }
+  else
+  {
+    Log["Message"]("Calibration definition does not exists for MaterialName: "+MaterialName);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+
+}
+
+function AddCalibratorDefinition(CalInfo,sSeparator)
+{
+    
+  try
+  {
+    Log["AppendFolder"]("PCC::Calibration::AddCalibratorDefinition");
+    Log["Message"]("Setting the Assay Type as : " + CalInfo["Item"]("AssayType") );
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","cmbAssaytype");
+    setWPFComboText(objctrl,CalInfo["Item"]("AssayType"))
+    
+     Log["Message"]("Selecting the assay : " +  CalInfo["Item"]("Assay"));
+     if(!SelectATestForCalibrationDefinition(CalInfo["Item"]("Assay")))
+     {
+      Log["Error"]("Unable to find the assay "+CalInfo["Item"]("Assay"))
+      Log.PopLogFolder();
+      return false;
+     }
+    //    objctrl = GetControl("Calibration_CreateCalibrationOrder","lstAssay");
+    //    SelectListBoxItem(objctrl, Assay)
+    
+    
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","txtBoxMaterialName");
+    SetText(objctrl, CalInfo["Item"]("Material"));
+    
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","txtBoxMaterialID");
+    SetText(objctrl, CalInfo["Item"]("MaterialID"));
+    
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","txtBoxLot");
+    SetText(objctrl, CalInfo["Item"]("Lot"));
+    
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","dpLotExpiration");
+    SetDatePickerValue(objctrl, CalInfo["Item"]("LotExpiration"));
+    var lotexpirydate;
+    systemDate = aqDateTime["Today"]();
+    lotexpirydate = aqDateTime["AddMonths"](systemDate,6);
+    SetDatePickerValue(objctrl,lotexpirydate)
+    
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","txtBoxRevision");
+    SetText(objctrl, CalInfo["Item"]("Revision"));
+    
+    if( CalInfo["Item"]("StoreOnboard") == "Yes")
+    {
+      objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","chkBoxStoreOnboard");
+      SetWPFCheckBox(objctrl, 1);
+    }
+   
+    //Enter calibration level values
+    
+    if(!SetLevelValuesForCalibration(CalInfo["Item"]("CalValue"),sSeparator))
+    {
+      Log.PopLogFolder();
+      return false;
+    }    
+    
+    var objctrl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","btnCalDefSave");
+    ClickControl(objctrl)
+     
+    Log.PopLogFolder();
+    return true;
+   }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log.PopLogFolder();
+    return false;
+  }
+}
+
+function SelectATestForCalibrationDefinition(Assay)
+{
+  objControl=GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","itemsCtrlSelectTests")
+  
+  var Proparray1=["clrClassName","WPFControlOrdinalNo"]
+  var PropValue1=["CheckBox",1]
+  
+  var count=objControl["Items"]["Count"]
+ 
+  for(var i=0;i<count;i++)
+  {
+    var Proparray=["clrClassName","WPFControlOrdinalNo"]
+    var PropValue=["ContentPresenter",i+1]
+    if (objControl["Items"]["Item"](i)["CalibratorTest"]["Name"]["OleValue"]==Assay)
+    {
+      var obj=objControl["Find"](Proparray,PropValue,35)
+      if (obj["Exists"]==true)
+      {
+        var Test=obj["Find"](Proparray1,PropValue1,35)
+        if (Test["Exists"]==true)
+        {
+         Test["Click"]()
+         return true;
+        }
+    
+      }
+    }
+    if(i==count)
+    {
+      return false;
+    }
+  
+  }
+ }
+ 
+ function SetLevelValuesForCalibration(Value,sSeparator)
+{
+  
+  newValue = ReplaceDecimalSeparator(Value,sSeparator)
+    var objControl = GetControl("Calibration_CalibratorDefinitions_AddCalibratordefinition","scrvAssignedValues"); 
+    var Proparray=["ClrClassName","WPFControlName"]
+    var PropValue=["TextBox","VolumeBox"]
+    
+    var obj=objControl["Find"](Proparray,PropValue,35)
+    if (obj["Exists"])
+    {
+      SendKeys(obj,newValue)
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Unable to set values for calibration")
+      return false;
+    }
+ }
+
+
+function PlaceCalibrationOrder(Assay, Analyzer, CalMaterialName)
+{
+  try
+  {
+    Log["AppendFolder"]("PCC::Calibration::PlaceCalibrationOrder");
+    Log["Message"]("Setting the analyzer name as : " + Analyzer );
+    var objctrl = GetControl("Calibration_CreateCalibrationOrder","cmbAnalyzer");
+    //setWPFComboText(objctrl, Analyzer)
+	SelectAnalyzerComboValue(objctrl,Analyzer);
+    Log["Message"]("Selecting the assay : " + Assay);
+    objctrl = GetControl("Calibration_CreateCalibrationOrder","lstAssay");
+    SelectListBoxItem(objctrl, Assay)
+  
+    Log["Message"]("Selecting the calibrator material");
+    objctrl = GetControl("Calibration_CreateCalibrationOrder","grdCalMaterial");
+    intRowNum = GetGridRowNo(objctrl, "ProductName", CalMaterialName) //ProductName is the column name
+    if (intRowNum>=0)
+      ClickCellInGrid(objctrl, intRowNum, 0);
+  
+    Log["Message"]("Verifying whether the calibrator material " +CalMaterialName+ " is added to the order list");
+    objctrl = GetControl("Calibration_CreateCalibrationOrder","grdOrders");
+    CheckTextonGrid(objctrl, "ProductName", CalMaterialName)
+  
+    Log["Message"]("Clicking on Place Order button");
+    objctrl = GetControl("Calibration_CreateCalibrationOrder","btnPlaceOrder");
+    ClickControl(objctrl);
+  
+    Log["Message"]("Confirming Order");
+    objctrl = GetControl("Calibration_CreateCalibrationOrder","btnOrder");
+    ClickControl(objctrl);
+
+    Log["Message"]("Verifying whether the order status is ORDERED");
+    objctrl = GetControl("Calibration_CalibrationResults","btnCalResults");
+    ClickControl(objctrl);
+    
+//    objctrl = GetControl("Calibration_CalibrationResults","grdResults");
+    //VerifyCalOrderInCalResults(objctrl,"Assay",Assay)
+    //VerifyCalStatusInCalResults("Assay",Assay,"Ordered")
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//function VerifyCalOrderInCalResults(objctrl,ItemHeader,Assay)
+//{
+//  
+//      var Row=GetGridRowNo(objctrl,ItemHeader,Assay)
+//      var CellText=GetGridCellText(objctrl,Row,"Cal Status")
+//      Log["Message"]("Order status of the assay "+Assay+"is "+CellText);
+//
+//}
+
+function VerifyCalStatusInCalResults(ItemHeader,Assay,Status)
+{
+  try
+  {
+      Log["AppendFolder"]("Calibration::VerifyCalStatusInCalResults");
+      objGridctrl = GetControl("Calibration_CalibrationResults","grdResults");
+      switch(Status)
+      {
+      case "Ordered" :
+        objctrl = GetControl("Calibration_CalibrationResults","chkbxOrdered");
+        if (CheckboxStatus(objctrl) ==  false)
+        {
+          SelectCheckbox(objctrl)
+        }
+
+        var objCmbAssay = GetControl("Calibration_CalibrationResults","cmbAssay");
+        Log["Message"]("Selecting the assay : " +  Assay);
+        SelectListBoxItem(objCmbAssay, Assay);
+        
+        var Row = GetGridRowNo(objGridctrl,ItemHeader,Assay)
+        if (Row!=null)
+        {
+          transStatus = GetTranslatedString(Status, "");
+          transColName = GetTranslatedString("Cal Status", "");
+          var CellText=GetGridCellText(objGridctrl,Row, transColName)
+          Log["Message"]("Order status of the assay "+Assay+ " is "+CellText);
+          if (CellText == transStatus)
+          { 
+            Log["Message"]("Calibration order is successfully placed");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Error"]("Calibration order status for assay "+Assay+ " is not coming as: " + Status );
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+        else
+        {
+          Log["Error"]("Assay " +Assay+ "record is not present in grid");
+          Log["Error"]("Calibration order is not successfully placed for assay "+Assay);
+          Log["PopLogFolder"]();
+          return false;
+        }
+      break;
+            
+      case  "Valid" :
+        //To be added;
+        break;
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SamplePresentInSortArea(DrawerNumber, DrawerZone, RowNumber)
+{
+  Log["AppendFolder"]("PCC::SamplePresentInSortArea");
+  Log.Message("Method yet to be implemented");
+  Log["PopLogFolder"]();
+}
+
+//Get calibration status from Calibration overview page
+function GetCalibrationStatus(Assay)
+{
+  try
+  {
+     objGridctrl = GetControl("Calibration_CalibrationOverview","grdCalibrationOverview");
+     // var Row = GetGridRowNo(objGridctrl,"Assay",Assay)
+      
+       var TotalRows = objGridctrl["Items"]["Count"]//["wRowCount"];
+        for(Row=0;Row<TotalRows;Row++)
+        {
+          strCellValue = eval("objGridctrl.Items.Item("+Row+")."+"Method.Name.OleValue");
+          if(strCellValue == Assay)
+          {
+            break;
+          }  
+        }
+          
+      if (Row!=null)
+      {
+        transColName = GetTranslatedString("Overall Cal Status", ""); 
+        var CellText=eval("objGridctrl.Items.Item("+Row+")."+"Status.OleValue");
+        //GetGridCellText(objGridctrl,Row, transColName)
+        Log["Message"]("Order status of the assay "+Assay+ " is "+CellText);
+        return CellText;
+      }
+      else
+      {
+        Log["Warning"]("Unable to find the assay in calibration overview page");
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+  }
+}
+
+
+function GetCalibrationStatusFromCalResults(Assay)
+{
+  try
+  {
+    Log["AppendFolder"]("Calibration::GetCalibrationStatusFromCalResults");
+    var strCalStatus;
+    var objCmbAssay = GetControl("Calibration_CalibrationResults","cmbAssay");
+    Log["Message"]("Selecting the assay : " +  Assay);
+    SelectListBoxItem(objCmbAssay, Assay);
+    var objResultGrid = GetControl("Calibration_CalibrationResults","grdResults");
+    var intRowCount = GetGridRowCount(objResultGrid)
+    Log["Message"]("Total number of calibration orders placed for " +Assay+ " is : " + intRowCount);
+    if(intRowCount == 0)
+    {
+      strCalStatus = "NotCalibrated";
+    }
+    else if(intRowCount > 0)
+    {
+      strCalStatus = aqString["Trim"](objResultGrid["Items"]["Item"](0)["OverallCalibrationStatus"]["OleValue"]);
+    }
+    Log["Message"]("Overall calibration status for " + Assay + " is : " + strCalStatus);
+    Log["PopLogFolder"]();
+    return strCalStatus ;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

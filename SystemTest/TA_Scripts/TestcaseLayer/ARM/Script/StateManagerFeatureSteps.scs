@@ -1,0 +1,689 @@
+﻿//USEUNIT Authentication
+//USEUNIT StepDefinitionHydra
+//USEUNIT CommonUtilities
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+//USEUNIT CommonFeatureUtils
+
+/*-------
+ BHAWYA 
+ -------*/
+//**********************************************************************************
+//         FEATURE 1 : FEATURE : 232812 - UserRequestedStateTransition
+//**********************************************************************************
+
+function GIVENModuleInStoppedPausedState(){
+    try
+    { 
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+
+        //StepDefinition - Pause the HYDRA Module
+        res =StepStopPauseOrResumeModule("PAUSE");
+        if(!res){
+            Returnval = false;}
+            
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function WHENModuleReceivesEnterDiagnosticsRequest(){
+    try
+    { 
+         //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+            
+        //StepDefinition - Enter Diagnostics
+        res =StepEnterDiagnostics();
+        if(!res){
+            Returnval = false;}
+            
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENModuleTransitionsToExpectedState(sScenarioName){
+    try
+    { 
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+           
+        //Read Test data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",sScenarioName);
+        var dictColumnNew=arrTestData[0];
+        var ExpectedState=dictColumnNew["Item"]("ExpectedState");
+        
+        //StepDefinition - Verify System State
+        res =StepVerifyModuleStatus("HYDRA",ExpectedState);
+        if(!res){
+            Returnval = false;}
+        
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function WHENModuleReceivesTransitionRequest(sScenarioName){
+    try
+    { 
+         //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+          
+        //Read Test data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",sScenarioName);
+        var dictColumnNew=arrTestData[0];
+        var TransitionRequest=dictColumnNew["Item"]("TransitionRequest");
+          
+        //StepDefinition - RESUME_Stratup Hydra
+        res =StepStopPauseOrResumeModule(TransitionRequest);
+        if(!res){
+            Returnval = false;}
+            
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+
+function GIVENModuleInStoppedRapidStopState(){
+    try
+    { 
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //StepDefinition - Stop the HYDRA Module
+        res =StepStopPauseOrResumeModule("STOP");
+        if(!res){
+            Returnval = false;}
+            
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+
+function THENVerifyEventLogForNewState(sScenarioName){
+    try
+    { 
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read Test data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",sScenarioName);
+        var dictColumnNew=arrTestData[0];
+        var EventLog=dictColumnNew["Item"]("EventLogFinalState");
+        
+        //StepDefinition - Navigate to Operator EventLog screen
+        if(!StepNavigateToOperatorEventLog())
+          return false;
+        
+        //Verify the EventLog   
+        if(!StepVerifyEventLogForStateTransition(EventLog))
+        {
+          Log["Error"]("Event Log is not generated");
+          Log["PopLogFolder"]();   
+          return false;
+        }
+        else
+        {
+          Log["Checkpoint"]("Event Log generated") 
+          Log["PopLogFolder"]();
+          return true;
+        }
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+
+function PREReq_EmptySupplies(sScenarioName){
+    try
+    { 
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read Test data
+        //Read Test Data - DB query
+        arrTestData1 = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra",sScenarioName);
+        dictColumn1=arrTestData1[0];
+        strQuery = dictColumn1["Item"]("Query")
+        strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+        
+        //Empty Supplies Query
+        strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+        if(ExecSQLQueryFromString(strQuery,strConString)!=-1)   
+          Log["Checkpoint"]("Sucessfully unloaded all Consumables")
+        else
+          return false
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+    return true;
+}
+
+function WHENSuppliesErrorConditionCleared(sScenarioName){
+    try
+    { 
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read Test data
+        arrTestData = GetTestItemsByTestName(DBDataFile,"StateManager",sScenarioName);
+        dictColumn=arrTestData[0];
+        strQuery = dictColumn["Item"]("Query2")
+        
+        //Empty Supplies Query
+        strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+        if(ExecSQLQueryFromString(strQuery,strConString)!=-1)   
+          Log["Checkpoint"]("Sucessfully Loaded all Consumables")
+        else
+          return false
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+    return true;
+}
+
+
+function GIVENModuleInExpectedState(sScenarioName){
+    try
+    { 
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+           
+        //Read Test data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",sScenarioName);
+        var dictColumnNew=arrTestData[0];
+        var InitialState=dictColumnNew["Item"]("InitialState");
+        
+        //StepDefinition - Verify Initial System State
+        res =StepVerifyModuleStatus("HYDRA",InitialState);
+        if(!res)
+            Returnval = false;
+        
+        //Read DB Test data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",sScenarioName);
+        dictColumnNew=arrTestData[0];
+        EventLog=dictColumnNew["Item"]("EventLogFinalState");
+        
+        //StepDefinition - Navigate to Operator EventLog screen
+        if(!StepNavigateToOperatorEventLog())
+          return false;
+        
+        //Verify the EventLog   
+        if(!StepVerifyEventLogForStateTransition(EventLog))
+        {
+          Log["Error"]("Event Log is not generated");
+          Log["PopLogFolder"]();   
+          return false;
+        }
+        else
+        {
+          Log["Checkpoint"]("Event Log generated") 
+          Log["PopLogFolder"]();
+          return true;
+        }
+        
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function POSTRUN_StopPauseOrResumeModule(strAction){
+    try
+    { 
+         //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+          
+        //StepDefinition - RESUME_Stratup Hydra
+        res =StepStopPauseOrResumeModule(strAction);
+        if(!res){
+            Returnval = false;}
+            
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+
+function WhenModuleReceivesPauseRequestFromUser()
+{
+  return StepStopPauseOrResumeModule("PAUSE")
+}
+
+function ThenVerifyModuleStateAndOperatorEventLog()
+{
+      
+//  var sModuleStatus = "Pausing"
+//  var sModuleName ="Hydra"
+//  if(!StepVerifyModuleStatus(sModuleName,sModuleStatus))
+//    Log["Error"]("SM does not transition to Pausing Transient Status on system->status tab")
+  
+  if(!StepVerifyEventLogHydraReadyToPausing())
+    Log["Error"]("SM does not transition to Pausing Transient Status on system->status tab")
+    
+  var sModuleStatus = "Stopped"
+  var sModuleName ="Hydra"
+  if(!StepVerifyModuleStatus(sModuleName,sModuleStatus))
+    return false
+  
+  return StepVerifyEventLogHydraPausingToStopped_Paused()
+}
+
+
+function WhenUserPerformMaintenanceActivity()
+{
+  return StepSetMaintenanceActivitiesAsPerform("IM Daily Maintenance")
+//    return false
+//  else
+//  {
+//    aqUtils["Delay"](60000,"Wait for IM Daily maintenance activity to start showing progres")
+//    return true
+//  }
+  
+}
+
+function ThenVerifyModuleMaintenanceStateThenStartupStateAndOperatorEventLog()
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager","ReadyToMaintenance");
+  dictColumn = arrTestData[0];
+  var sState = dictColumn["Item"]("ExpectedState")
+  var sTime = dictColumn["Item"]("OperatorEventLogTimeFilter");
+  var sEvent = dictColumn["Item"]("EventLogFinalState")
+  var sModuleSerialNumber = dictColumn["Item"]("ModuleSerialNumber"); 
+  
+  if(!StepVerifyModuleStatus("Hydra",sState))
+    return false
+   
+  if(!StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent))
+    return false
+    
+//  var Navigation = InvokeWorkflow("Maintenance_Schedule");
+//  if (!Navigation)
+//    return false
+//    
+//  aqUtils["Delay"](480000,"Wait for IM Daily maintenance activity to finish")
+  
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager","MaintenenceToStartup_Warmingup");
+  dictColumn = arrTestData[0];
+  var sState = dictColumn["Item"]("ExpectedState")
+  var sTime = dictColumn["Item"]("OperatorEventLogTimeFilter");
+  var sModuleSerialNumber = dictColumn["Item"]("ModuleSerialNumber"); 
+  var sEvent = dictColumn["Item"]("EventLogFinalState")
+  
+  if(!StepVerifyModuleStatus("HYDRA",sState))
+    return false
+   
+  if(!StepVerifyEventLogHydra(sTime,sModuleSerialNumber,"ARM Module State Changed from Maintenance to Resuming."))
+    return false
+  
+  if(!StepVerifyEventLogHydra(sTime,sModuleSerialNumber,"ARM Module State Changed from Resuming to StartUp_Homing."))
+    return false
+    
+  return StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent)
+  
+}
+
+function GivenHydraModuleIsInStoppedCheckHardware()
+{ 
+  if(!StepStartServiceAndInitializeDiagnosticsClient())
+    return false
+  
+  if(!StepClickOnEnterDiagnostics())
+    return false
+    
+  if(!ClickOnExitDiagnostics())
+    return false
+  
+  if(!StepVerifyModuleStatus("HYDRA","Stopped"))
+    return false
+  
+  return StepVerifyEventLogHydra("15 Minutes","HYDRA1","ARM Module State Changed from Diagnostics to Stopped_CheckHardware.")
+}
+
+function WhenOperatorEntersDiagnostics()
+{
+  return StepClickOnEnterDiagnostics()
+}
+
+function ThenVerifyHydraDiagnosticsStateAndOperatorEventLog()
+{
+  var sModuleStatus = "Diagnostics"
+  var sModuleName ="Hydra"
+  if(!StepVerifyModuleStatus(sModuleName,sModuleStatus))
+    return false
+  
+  return StepVerifyEventLogHydra("15 Minutes","HYDRA1","ARM Module State Changed from Stopped_CheckHardware to EnteringDiagnostics.")
+}
+
+function GivenHydraModuleIsInProcessing()
+{
+  if(!StepCheckModuleStatusHydra())
+    return false
+    
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager","MIT329556ProcessingToMaintenance");
+  dictColumn = arrTestData[0];
+  var SID = dictColumn["Item"]("SampleId");
+  var Specimen = dictColumn["Item"]("Specimen"); 
+  var Priority = dictColumn["Item"]("Priority");
+  var Analyzer = dictColumn["Item"]("Analyzer");
+  var Assay = dictColumn["Item"]("Assay");
+  
+  if(!StepCreatePatientOrderHydra(SID,Specimen,Priority,Analyzer,Assay))
+    return false
+    
+  if(!StepLoadSamples(SID))
+    return false
+    
+  return StepVerifyModuleStatus("HYDRA","Processing")
+  
+}
+
+function WhenOperatorEntersMaintenanceFromProcessing()
+{
+  if(!StepStopPauseOrResumeModule("Pause"))
+    return false
+  
+  return StepSetMaintenanceActivitiesAsPerform("IM Daily Maintenance")
+}
+
+function GivenHydraModuleIsInProcessingForATest()
+{
+  if(!StepCheckModuleStatusHydra())
+    return false
+    
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager","MIT329557ProcessingToMaintenance");
+  dictColumn = arrTestData[0];
+  var SID = dictColumn["Item"]("SampleId");
+  var Specimen = dictColumn["Item"]("Specimen"); 
+  var Priority = dictColumn["Item"]("Priority");
+  var Analyzer = dictColumn["Item"]("Analyzer");
+  var Assay = dictColumn["Item"]("Assay");
+  
+  if(!StepCreatePatientOrderHydra(SID,Specimen,Priority,Analyzer,Assay))
+    return false
+    
+  if(!StepLoadSamples(SID))
+    return false
+    
+  return StepVerifyModuleStatus("HYDRA","Processing")
+  
+}
+
+function WhenOperatorEntersMaintenanceFromProcessingRunningATest()
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager","MIT329557ProcessingToMaintenance");
+  dictColumn = arrTestData[0];
+  var SID = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus"); 
+  
+  if(!StepCheckSampleStatus(SID,SampleStatus))
+    return false
+    
+  if(!StepStopPauseOrResumeModule("Pause"))
+    return false
+  
+  return StepSetMaintenanceActivitiesAsPerform("IM Daily Maintenance")
+}
+
+function ThenVerifyHydraMaintenanceStateFromProcessingAndOperatorEventLog()
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",ScenarioName);
+  dictColumn = arrTestData[0];
+  
+  var sModuleName = dictColumn["Item"]("ModuleName");
+  var sModuleStatus = dictColumn["Item"]("ExpectedState");
+  var sTime = dictColumn["Item"]("OperatorEventLogTimeFilter");
+  var sModuleSerialNumber = dictColumn["Item"]("ModuleSerialNumber"); 
+  var sEvent2 = dictColumn["Item"]("EventLogFinalState");
+  var sEvent1 = dictColumn["Item"]("EventLogTransientState");
+  
+  if(!StepVerifyModuleStatus(sModuleName,sModuleStatus))
+    return false
+  
+  if(!StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent1))
+    return false
+  
+  if(!StepVerifyEventLogHydra("15 Minutes","HYDRA1","ARM Module State Changed from Stopped_Paused to EnteringMaintenance."))
+    return false
+    
+  return StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent2)
+}
+
+function GivenHydraModuleIsInStoppedCheckSupplies()
+{ 
+  var sModuleStatus = "Stopped"
+  var sModuleName ="Hydra"
+  //if(!StepVerifyModuleStatus(sModuleName,sModuleStatus))
+    //return false
+  
+  return StepVerifyEventLogHydra("15 Minutes","HYDRA1","ARM Module State Changed from Ready to Stopped_CheckSupplies.")
+}
+
+function ThenVerifyHydraDiagnosticsStateFromMaintenanceAndOperatorEventLog()
+{
+  
+  var sModuleStatus = "Diagnostics"
+  var sModuleName ="Hydra"
+  if(!StepVerifyModuleStatus(sModuleName,sModuleStatus))
+    return false
+    
+   return StepVerifyEventLogHydra("15 Minutes","HYDRA1","ARM Module State Changed from EnteringDiagnostics to Diagnostics.")
+}
+
+function StoppedCheckSupplies()
+{    
+  //Read Test Data - DB query
+  arrTestData1 = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra","StoppedCheckSuppliesReady");
+  dictColumn1=arrTestData1[0];
+  strQuery = dictColumn1["Item"]("Query")
+  strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+        
+  //Empty Supplies Query
+  strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+  if(ExecSQLQueryFromString(strQuery,strConString)!=-1)
+  {
+    Log["Checkpoint"]("Sucessfully cleared all supplies")
+    //Restart hydra after db query
+    if(!InitializeHydraWithoutModuleStatusCheck()) 
+      return false
+    //if(!StepCheckModuleStatusHydra())
+    if(!StepVerifyModuleStatus("HYDRA","Stopped"))
+      return false
+    else
+      return true
+  }
+  else
+    return false
+    
+}
+
+function VerifyEventLogForTransientStateWithTimeModuleParameters(ScenarioName)
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",ScenarioName);
+  dictColumn = arrTestData[0];
+  var sTime = dictColumn["Item"]("OperatorEventLogTimeFilter");
+  var sModuleSerialNumber = dictColumn["Item"]("ModuleSerialNumber"); 
+  var sEvent = dictColumn["Item"]("EventLogTransientState");
+  arrsEvent = sEvent["split"](";")
+  var failcount = 0;
+  for(var i = 0;i<arrsEvent["length"];i++)
+  {
+    //return StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent)
+    var boolvalue = StepVerifyEventLogHydra(sTime,sModuleSerialNumber,arrsEvent[i])
+    if(boolvalue==false)
+    {
+      failcount = failcount+1;
+    }
+  }
+  if(failcount>0)
+    return false
+  else
+    return true
+}
+
+function VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName)
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager",ScenarioName);
+  dictColumn = arrTestData[0];
+  var sTime = dictColumn["Item"]("OperatorEventLogTimeFilter");
+  var sModuleSerialNumber = dictColumn["Item"]("ModuleSerialNumber"); 
+  var sEvent = dictColumn["Item"]("EventLogFinalState");
+  arrsEvent = sEvent["split"](";")
+  var failcount = 0;
+  
+  for(var i = 0;i<arrsEvent["length"];i++)
+  {
+    //return StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent)
+    var boolvalue = StepVerifyEventLogHydra(sTime,sModuleSerialNumber,arrsEvent[i])
+    if(boolvalue==false)
+    {
+      failcount = failcount+1;
+    }
+  }
+  if(failcount>0)
+    return false
+  else
+    return true
+}
+function WhenHydraModuleTransitionsFromExitDiagnosticsToResume()
+{
+  if(!ClickOnExitDiagnostics())
+  return false
+  
+  arrTestData = GetTestItemsByTestName(TestDataFile,"StateManager","DiagnosticsToStartup_WarmingUp");
+  dictColumn = arrTestData[0];
+  
+  var sModuleName = dictColumn["Item"]("ModuleName");
+  var sTransientState = dictColumn["Item"]("TransientState");
+  var sTime = dictColumn["Item"]("OperatorEventLogTimeFilter");
+  var sModuleSerialNumber = dictColumn["Item"]("ModuleSerialNumber"); 
+  var sEvent = dictColumn["Item"]("EventLogTransientState");
+  var arrsEvent = sEvent["split"](";")
+   
+  if(!StepVerifyEventLogHydra(sTime,sModuleSerialNumber,arrsEvent[0]))
+    return false
+    
+  if(!StepResumeModule(sModuleName))
+    return false
+    
+//  if(!StepStopPauseOrResumeModule("RESUME"))
+//    return false
+    
+  return StepVerifyModuleStatus("HYDRA",sTransientState)    
+  
+//  if(!StepVerifyEventLogHydra(sTime,sModuleSerialNumber,arrsEvent[1]))
+//    return false
+//  
+//  return StepVerifyEventLogHydra(sTime,sModuleSerialNumber,arrsEvent[2])
+    
+}
+
+function WhenOperatorShutdownHydra(sState)
+{
+  return ShutdownModule("HYDRA",sState,"Yes")
+}
+
+function GIVENModuleInProcessingState(ScenarioName)
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",ScenarioName);
+  dictColumn = arrTestData[0];
+  var SID = dictColumn["Item"]("SampleId");
+  var Specimen = dictColumn["Item"]("Specimen"); 
+  var Priority = dictColumn["Item"]("Priority");
+  var Analyzer = dictColumn["Item"]("Analyzer");
+  var Assay = dictColumn["Item"]("Assay");
+  
+  if(!StepCreatePatientOrderHydra(SID,Specimen,Priority,Analyzer,Assay))
+    return false
+    
+  //TO DO - verify test affinites greater than zero or IM subsystem are online if needed
+  if(!checkTestAffinities())
+    return false
+  if(!StepLoadSamples(SID))
+    return false
+  return StepVerifyModuleStatus("HYDRA","Processing")
+
+}
+
+function WhenOperatorShutdownHydraWhenUserSelectsNo(sState)
+{
+  if(!ShutdownModule("HYDRA",sState,"No"))
+    return false
+  //verify sample is complete since user selects no on hydra shutdown confirmation pop up
+  arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","US237723_GWT_04_ProcessingToOff");
+  dictColumn = arrTestData[0];
+  var SID = dictColumn["Item"]("SampleId");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  
+  return StepCheckSampleStatus(SID,SampleStatus)
+}
+
+function WhenOperatorShutdownHydraWhenUserSelectsCancel(sState)
+{
+  return ShutdownModule("HYDRA",sState,"Cancel")
+}

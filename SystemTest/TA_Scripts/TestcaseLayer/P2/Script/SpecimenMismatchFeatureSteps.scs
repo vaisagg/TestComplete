@@ -1,0 +1,714 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+//USEUNIT CapcolorTrainingFeatureSteps
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+function SpecimenMismatchSetup()
+{
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_TC290513_01";
+  
+	 var strTrainedCapColorGroup  = "WhiteSerum";
+   
+  if(StepVerifyTrainedCapcolorGroupAvailable(strTrainedCapColorGroup))
+    return true;
+  if(!StepUpdateCapColorTrainingConfigFiles("2"))
+    return false;
+
+  if(!GivenTCSInDiagnosticMode())
+    return false;
+
+  if(!WhenTCSOperatorPerformCapColorTraining())
+    return false;
+
+  if(!ThenCapColorTrainingOutcomeIsSuccess())
+    return false;
+
+  if(!StepCloseCapColorConfigWindow())
+    return false;
+    
+  if(!StepExitDiagnosticsMode())
+    return false;
+
+  return StepStartAnalyzer("SH");
+}
+
+function GivenProcessingOfSampleWithSpecimenMismatchIsSetToProcess()
+{
+
+    //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpecimenMismatch");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+    
+  var strCapColor  = "WhiteSerum";
+  var strCapSortGroupName ="WhiteSerumCapsSort"
+  var strDecapTubes = "Always"
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+    
+    if(!StepAddCapSortGroup(strCapSortGroupName, strCapColor, strDecapTubes))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpecimenMismatch"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSpecimenMismatch("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     return GivenAtellicaInitialized();
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for specimen mismatch has to be performed
+  if(!StepVerifyTCSSettingsForSpecimenMismatch("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSpecimenMismatch("No"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+    return GivenAtellicaInitialized();
+  }
+  return true;
+} 
+
+function WhenCappedSampleTubeOfSpecimenTypeNotMatchingWithCapColorGroupIsLoaded_RegSc02()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc02");
+  var dictColumn           = arrTestData[0];
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+    //Update AnalysisData xml with sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SpecimenMismatchRegCharter_Sc02"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function ThenSampleIsSentToAnalyzer()
+{
+  //Verification of Cap status and sample status as Aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc02")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  return StepWaitForSampleStatus(SampleID, SampleStatus)
+   
+}
+
+function ThenSampleIsUnloadedToCapColorSortArea()
+{
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SpecimenMismatchRegCharter_Sc02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    return false;  
+  } 
+}
+
+function GivenProcessingOfSampleWithSpecimenMismatchIsSetToDoNotProcess()
+{
+  //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpecimenMismatch");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+    
+  var strCapColor  = "WhiteSerum";
+  var strCapSortGroupName ="WhiteSerumCapsSort"
+  var strDecapTubes = "Always"
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+    
+    if(!StepAddCapSortGroup(strCapSortGroupName, strCapColor, strDecapTubes))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpecimenMismatch"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSpecimenMismatch("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+
+
+     return GivenAtellicaInitialized();
+      
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for specimen mismatch has to be performed
+  if(!StepVerifyTCSSettingsForSpecimenMismatch("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSpecimenMismatch("Yes"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+
+
+    return GivenAtellicaInitialized();
+        
+  } 
+  return true;
+}
+
+function WhenCappedSampleTubeOfSpecimenTypeNotMatchingWithCapColorGroupIsLoaded()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc01");
+  var dictColumn           = arrTestData[0];
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+    //Update AnalysisData xml with sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SpecimenMismatchRegCharter_Sc01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function ThenSampleIsMarkedWithSpecimemMismatchError()
+{
+   //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+    
+
+
+  return StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 45000)
+}
+
+function ThenSampleIsUnloadedToSpecimenMismatchErrorSortArea()
+{
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SpecimenMismatchRegCharter_Sc01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+  
+}
+
+function ThenFlagsAndLogEntriesAreDisplayed()
+{
+  InitializeMetaData()
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc01");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("SampleProblem");//Specimen Mismatch
+
+  var sTime="2 Hours"
+  var sModuleSerialNumber="All"
+  var sEvent= "Sample with unique identifer {0}, sample ID {1} has cap color specimen type mismatch."
+//  var transEvent = GetTranslatedString(sEvent,"");
+// // var transSampleProblem=GetTranslatedString(SampleProblem,"");
+//  var transEventWithParam1 = ReplaceString(transEvent, "{1}", SampleId, true);
+//  var transEventWithParam = ReplaceString(transEventWithParam1, "{1}", transSampleProblem, true);
+  
+  if(!StepVerifyOperatorEventLogForCapColorSpecimenTypeMismatch(sTime, sModuleSerialNumber, sEvent, SampleId))
+    return false;
+  
+  return StepVerifySampleTestHasSpecimenMismatchError(SampleId,Assay,SampleError)
+    
+}
+
+
+function ThenProvideAnAddOnOrderToTheSample()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc01");
+  var dictColumn           = arrTestData[1];
+  //add on order
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  
+  return StepCreateAnAddOnPatientOrder(Assay, SampleId, Analyzer)
+
+}
+
+function ThenSampleIsNotReloadedFromSpecimenMismatchErrorSortArea()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc01");
+  var dictColumn           = arrTestData[1];
+  
+  //add on order
+  var SampleId                = dictColumn["Item"]("SampleId");
+  var SampleLocation          = dictColumn["Item"]("SampleLocation");
+  
+  if(StepVerifySampleLocationInSampleList(SampleId, SampleLocation))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SpecimenMismatchRegCharter_Sc01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var bBoolValue=StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    return false;  
+  } 
+}
+
+function GivenProcessingOfSampleWithSpecimenMismatchIsSetToDoNotProcess_SC03()
+{
+  //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpMismatchWithHold");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+    
+  var strCapColor  = "WhiteSerum";
+  var strCapSortGroupName ="WhiteSerumCapsSort"
+  var strDecapTubes = "Always"
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+    
+    if(!StepAddCapSortGroup(strCapSortGroupName, strCapColor, strDecapTubes))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpMismatchWithHold"))
+      return false;
+    
+    if(!StepSetTCSSettingsForSpecimenMismatch("Yes"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+     return GivenAtellicaInitialized();
+      
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for specimen mismatch has to be performed
+  if(!StepVerifyTCSSettingsForSpecimenMismatch("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForSpecimenMismatch("Yes"))
+      return false;
+  
+    if(!StepStartAnalyzer("SH"))
+        return false;
+        
+    return GivenAtellicaInitialized();
+        
+  } 
+  return true;
+}
+
+function WhenCappedSampleTubeOfSpecimenTypeNotMatchingWithCapColorGroupIsLoaded_Sc03()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc03");
+  var dictColumn           = arrTestData[0];
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+    //Update AnalysisData xml with sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SpecimenMismatchRegCharter_Sc03"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function ThenSampleIsMarkedWithSpecimemMismatchError_Sc03()
+{
+   //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc03")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+    
+  return StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 45000)
+}
+
+function ThenSampleIsUnloadedToHoldArea_Sc03()
+{
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SpecimenMismatchRegCharter_Sc03")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+  
+}
+
+function ThenFlagsAndLogEntriesAreDisplayed_Sc03()
+{
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc03");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleError          = dictColumn["Item"]("SampleProblem");//Specimen Mismatch
+
+  var sTime="2 Hours"
+  var sModuleSerialNumber="All"
+  var sEvent= "Sample with unique identifer {0}, sample ID {1} has cap color specimen type mismatch."
+//  var transEvent = GetTranslatedString(sEvent,"");
+// // var transSampleProblem=GetTranslatedString(SampleProblem,"");
+//  var transEventWithParam1 = ReplaceString(transEvent, "{1}", SampleId, true);
+//  var transEventWithParam = ReplaceString(transEventWithParam1, "{1}", transSampleProblem, true);
+  
+if(!StepVerifyOperatorEventLogForCapColorSpecimenTypeMismatch(sTime, sModuleSerialNumber, sEvent, SampleId))
+    return false;
+  
+  return StepVerifySampleTestHasSpecimenMismatchError(SampleId,Assay,SampleError)
+    
+}
+
+function ThenSampleIsUnloadedToSpecimenMismatchSortAreaWhenSlotIsAvailable_Sc03()
+{
+
+NetworkSuite["Variables"]["SHScenario"] = "SpMismatchRegCharter_Sc03_1";
+//Make empty slots in Sort Area
+ if(!StepRemoveTray())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SpecimenMismatchRegCharter_Sc03")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var bBoolValue=StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    return false;  
+  } 
+  
+}
+
+
+function WhenCappedSampleTubeOfSpecimenTypeMatchingWithCapColorGroupIsLoaded()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc04");
+  var dictColumn           = arrTestData[0];
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+    //Update AnalysisData xml with sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SpecimenMismatchRegCharter_Sc04"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+
+
+
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample();
+
+}
+
+
+function ThenSampleIsDecappedAndSentToTheAnalyzerForProcessing()
+{
+    //Verification of Cap status and sample status as Aspirated for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc04")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+
+  //if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+
+
+
+
+  return StepWaitForSampleStatus(SampleID, SampleStatus);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function ThenSampleIsUnloadedToMatchingCapColorSortArea()
+{
+
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpecimenMismatchRegCharter_Sc04");
+  var dictColumn           = arrTestData[0];
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+  //add on order
+  var SampleId                = dictColumn["Item"]("SampleId");
+  var SampleLocation          = dictColumn["Item"]("SampleLocation");
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if(!StepVerifySampleLocationOnTrack(SampleId, SampleLocation))
+    return false;
+
+
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SpecimenMismatchRegCharter_Sc04")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+
+  
+  var bBoolValue=StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    return false;  
+  } 
+
+}

@@ -1,0 +1,1 @@
+start shell:appsFolder\DiagnosticsClient_byy8dcmdf21wa!App  [Enter]

@@ -1,0 +1,226 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT TCCSConfigLibrary
+/*
+Feature Setup
+IsTrinidadInitialize
+Feature teardown
+*/
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function ClearApplicationData()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  return StepClearAllData(TestDataFile,DeploymentType)
+}
+
+//function TrinidadIsInitialized()
+//{
+//  ProjPath = ProjectSuite["Path"];
+//  arrPath  = ProjPath["split"]("Atellica")
+//  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+//  var DeploymentType = GetDeploymentType(sConfigPath)
+//  
+//  StepIsTrinidadInitialized(DeploymentType);
+//}
+
+function GivenAtellicaInitialized()
+{
+//  ProjPath = ProjectSuite["Path"];
+//  arrPath  = ProjPath["split"]("Atellica")
+//  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+//    var DeploymentType = GetDeploymentType(sConfigPath)
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  if (StepIsTrinidadInitialized(DeploymentType))
+  {
+    return true;
+   }
+  else
+  {
+    if(!StepShutdownAllApps())
+      return false;
+                      
+    if(!StepInvokeAllApps()) 
+      return false;
+    else
+      return true;
+  }
+}
+
+function DecapperConfiguredAndStatus()
+{
+  if(!StepDetectDecapperConfiguration())
+    return false;
+    
+  var Expectedstatus = "Ready/Processing/Standby/Stopped"
+  return StepVerifyModuleStatus("Decapper",Expectedstatus)
+  
+}
+
+function CHAnalyzerIsAvailable()
+{
+
+  if(!StepCheckCCExists())
+    return false;
+
+  var Expectedstatus = "Ready/Processing/Standby"
+    return StepVerifyModuleStatus("CC",Expectedstatus)
+}
+
+
+function CHAnalyzerIsNotAvailable()
+{
+
+  return StepStopAnalyzer("CC")
+
+}
+
+
+function OneSQCIsConfigured()
+{
+  return StepVerifyAvailableSQC(1,2);
+}
+
+
+function DecapperConfiguredButStopped()
+{
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  if(!StepStopAnalyzer("DECAPPER"))
+    return false; 
+  
+  return StepVerifyModuleStatus("DECAPPER","Stopped")
+
+}
+
+
+function TearDownEnableDecapper()
+{
+  Log["AppendFolder"]("CommonFeatureUtils::TearDownEnableDecapper");
+
+    var DeploymentType = GetDeploymentTypeFromFederationConfig();
+    
+    if(!StepShutdownAnalyzer("SH"))
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+      
+    if(!StepShutdownTrinidad())
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepEnableDecapper())
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepLaunchAnalyzer("SH"))
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("TearDown-Enabling Decapper Module-Passed")
+      Log["PopLogFolder"]();
+      return true;
+    } 
+}
+function VerifyTCSSettingsDoNotProcess()
+{
+  return StepVerifyTCSSettingsForSampleLowVolume("No")
+} 
+
+function VerifyTCSSettingsProcessAll()
+{
+  return StepVerifyTCSSettingsForSampleLowVolume("Yes")
+}
+
+
+function TearDownEnableCHAnalyzer()
+{
+  Log["AppendFolder"]("CommonFeatureUtils::TearDownEnableCH");
+
+    var DeploymentType = GetDeploymentTypeFromFederationConfig();
+    
+    if(!StepShutdownAnalyzer("SH"))
+    {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+      
+    if(!StepShutdownTrinidad())
+    {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepEnableCC())
+    {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepLaunchAnalyzer("SH"))
+    {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+    {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("TearDown-Enabling Decapper Module-Passed")
+      Log["PopLogFolder"]();
+      return true;
+    } 
+}
+
+function TearDownFullyPopulatedTray(strNWSuiteVariable)
+{
+// This Tear-Down is needed for scenarios where a fully populated tray is placed in one of the drawers.
+  try
+  {
+    Log["AppendFolder"]("Tear-Down for fully populated scenario");
+    NetworkSuite["Variables"]["SHScenario"] = strNWSuiteVariable;
+    StepRemoveTray();
+    StepLoadSample();
+    Log["PopLogFolder"]()
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: ", +exp["description"]);
+    Log["PopLogFolder"]();
+  }
+}

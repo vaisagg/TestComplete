@@ -1,0 +1,107 @@
+<Controls>
+	<Category Name="Sealer">
+	<Workflow Code="SealerSimulator">
+			<Control Class="ComboBox">
+				<Text>Success</Text>
+				<ControlName>cmbConnect</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text>Success</Text>
+				<ControlName>cmbAPIRetReboot</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox5</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text>Success</Text>
+				<ControlName>cmbAPIRetSealTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox2</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text>Success</Text>
+				<ControlName>cmbAPIRetDisconnect</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox1</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text>Status_OK</Text>
+				<ControlName>cmbStatusRetSealTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox3</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text>Status_OK</Text>
+				<ControlName>cmbEventRetReboot</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox6</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text>Status_OK</Text>
+				<ControlName>cmbEventRetSealTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>comboBox4</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Button">
+				<Text>Apply</Text>
+				<ControlName>btnApply</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>button</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Auto Response</Text>
+				<ControlName>chkAutoResponse</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			</Workflow>
+		<Workflow Code="SealerModuleManager">
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtCurrentActivity</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtCurrentActivity</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ListBox">
+				<Text></Text>
+				<ControlName>lstMessage</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lstMessage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+		</Workflow>	
+	</Category>
+</Controls>

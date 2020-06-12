@@ -1,0 +1,2886 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+
+//***************************************************************************************
+//*   Function Name       : GetInventoryCountByReagent()
+//*   Function Description: This function is used to get the inventory count for each reagent listed in the reagent overview datagrid
+//*   Input               : ReagentName
+//*   Output              : list of reagent name and its count
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 08 July 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function GetInventoryCountByReagent(reagentName)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview::Check the inventory count value for Reagent '" + reagentName + "'");
+
+    var isReagentIdentified = false;
+    var inventoryCount = undefined;
+    
+    //Select the group by reagent checkbox => if selected then validate the invetory count    
+    if(ClickOnGroupByReagent()) 
+    {      
+      //Wait for the reagent grid to load data
+      WaitForProgressRingToDisappear(30);
+    
+      //Get the datagrid object for reagent overview datagrid
+      var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+      
+      //Check the reagent overview datagrid displayed    
+      if(VerifyObjectExists(reagentOverviewDataGrid)) 
+      {
+        //Get the datagrid row group header list to get the list of reagents
+        var groupHeaderDetails = GetAllChildren(reagentOverviewDataGrid, ["ControlPatterns","ClassName"],["ScrollItem",""]);
+      
+        //check the groupdetails count
+        if(groupHeaderDetails.length <= 0)
+        {
+          Log["Error"]("Unable to get the reagent group information from the reagent overview grid");
+          Log["PopLogFolder"]();
+          return false;
+        } else {
+          groupHeaderDetails = groupHeaderDetails.reverse();
+        }
+        
+        
+        //Iterate the datagrid group headers displayed in the reagent overview datagrid
+        for(var groupIndex=0; groupIndex<groupHeaderDetails.length; groupIndex++) 
+        {
+          var groupParent = groupHeaderDetails[groupIndex];
+        
+          //Get the list of header values from the group header
+          var headerTextValue = Getchild(groupParent, "AutomationId", "groupHeaderReagentName");
+
+          //Check the current iteration reagent name is as expected reagent name
+          if(aqString["ToLower"](headerTextValue["Text"]) == aqString["ToLower"](reagentName))
+          {
+            Log["Message"]("Reagent '" + reagentName + "' identified in the group header");
+            
+            isReagentIdentified = true;
+
+            //Get the inventory count of the current reagent
+            var inventoryCountObj = Getchild(groupParent, "AutomationId", "groupHeaderInventory");
+            inventoryCount = GetNativeObjectName(inventoryCountObj);
+            
+            Log["Message"]("Inventory count displayed for the reagent '" + reagentName + "' is '" + inventoryCount + "'");
+            break;
+          }
+        }      
+      } else {
+        Log["Error"]("Unable to view / locate the 'Reagent Overview' datagrid");
+        isReagentIdentified = false;        
+      }
+    } else {
+      Log["Error"]("Unable to select the GroupBy Reagent checkbox in 'Reagent Overview' screen");
+      isReagentIdentified = false;
+    }
+    
+    //Check the reagent is identified in the overview group headers
+    if(isReagentIdentified)
+    {
+      //Check the inventory count is retrieved
+      if(inventoryCount)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Inventory Count for reagent '" + reagentName + "'");
+        Log["PopLogFolder"]();
+        return inventoryCount;        
+      } else {
+        Log["Error"]("Unable to get the inventory count for the given reagent '" + reagentName + "'");
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to get the inventory count for the given reagent '" + reagentName + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to identify the reagent name from the reagent overview screen");
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to identify the reagent name from the reagent overview screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : ClickOnGroupByReagent()
+//*   Function Description: This function is used to select the group by reagent checkbox in the reagent overview screen
+//*   Input               : NA
+//*   Output              : return true, if the groupby checkbox is successfully selected
+//*                         return false, if the groupbyuy checkbox is unable to select
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function ClickOnGroupByReagent()
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview::Selecting the GroupBy Reagent Checkbox");
+    
+    var isCheckboxSelected = false;
+    
+    //Get the group by reagent checkbox displayed in reagent overview screen
+    var groupByCheckBoxObj = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "cbGroupByReagent");
+    
+    //Check the group by checkbox is selected => if not then select the checkbox
+    if(!GetCheckBoxState(groupByCheckBoxObj)) 
+    {
+      //Select the checkbox
+      SelectCheckbox(groupByCheckBoxObj);
+    } else {
+      
+      //un select the checkbox
+      SelectCheckbox(groupByCheckBoxObj);
+      
+      //wait for page to refresh
+      WaitForProgressRingToDisappear(20);
+      
+      //wait
+      aqUtils["Delay"](2000, "Wait for the reagents to get refreshed");
+      
+      //select the checkbox
+      SelectCheckbox(groupByCheckBoxObj);
+      
+    }
+    
+    //Check the groupby checkbox selected => if selected then return true
+    if(GetCheckBoxState(groupByCheckBoxObj)) 
+    {
+      Log["Message"]("Successfully Selected the GroupBy Reagent Checkbox");
+      isCheckboxSelected = true;
+    } else {
+      Log["Error"]("Unable to select the GroupBy Reagent Checkbox");
+      isCheckboxSelected = false;
+    }
+    
+    Log["PopLogFolder"]();
+    return isCheckboxSelected;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function LoadQBUReagents(RgtFilePath)
+{
+  try
+  {  
+    WshShell["Run"]("powershell -file "+ RgtFilePath)   //This command directly runs the powershell script
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+//Updated to SF grid by Prabu Ramaraj
+function CheckTheReagentIsListedInReagentOverview(reagentName,seqNumber)
+{
+  try
+  {
+    Log["AppendFolder"]("Reagent Overview :: Check the reagent is listed in the reagent overview screen");
+    
+    //Get the datagrid container object for reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+      
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("There are no records displayed in the reagent overview grid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Get column index details of reagent name seq number & lotno
+      var filterExpandedState = IsDataGridDisplayedAsFullView();      
+      var reagentColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+      var sequenceNoColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Sequence",filterExpandedState);
+      var lotNoColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Lot",filterExpandedState);
+      var isReagentExists = false;
+        
+      for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+      {
+        //get the row parent and cell details
+        var rowParent = rowDetails[rowIndex];
+        var gridCellDetails = GetAllChildren(rowParent,"ClassName","GridCell").reverse();
+        
+        //Get the reagent name, seq number and lot number
+        var actualReagentCtrl = Getchild(gridCellDetails[reagentColumnIndex], "ClassName", "TextBlock");
+        var actualReagentName = actualReagentCtrl["Text"];
+        var actualSequenceNumberCtrl = Getchild(gridCellDetails[sequenceNoColumnIndex], "ClassName", "TextBlock");
+        var actualSequenceNumber = actualSequenceNumberCtrl["Text"];
+        var actualLotNoCtrl = Getchild(gridCellDetails[lotNoColumnIndex], "ClassName", "TextBlock");
+        var actualLotNo = actualLotNoCtrl["Text"];
+          
+        if((actualReagentName == reagentName) && (actualSequenceNumber == seqNumber))
+        {
+          Log["Message"]("'" + reagentName + "' is listed with the sequence number '" + actualSequenceNumber);
+          isReagentExists = true;
+          break;
+        }
+      }
+        
+      //Check the reagent exists in the grid
+      if(isReagentExists)
+      {
+        Log["Message"]("'" + reagentName + "' with the sequence number '" + seqNumber + "' is listed in the reagent overview grid");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("'" + reagentName + "' with the sequence number '" + seqNumber + "' is not listed in reagent overview grid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Updated to SF grid by Shrutika Tyagi
+function UnloadReagentIfExists(reagentType,reagentName)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Unload Reagent from the Reagent Overview if reagent exists");
+    
+//    //Apply filter by reagent type
+//    if(!ApplyFilterByReagentTypeInReagentOverviewScreen(reagentType))
+//    {
+//      Log["Error"]("Unable to apply the filter in the reagent overview screen");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+    
+    aqUtils["Delay"](2000, "Wait for the reagents to be filtered");
+    
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");  // changed workflow code here as per new structure- by shrutika
+
+
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      
+     //Get the row count of the worklsit datagrid      
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid);
+    
+      if(!rowDetails)
+      {
+        Log["Message"]("Reagent overview doesn't have any reagents loaded");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(rowDetails.length > 0 ) 
+      {
+          var isReagentExists = false;
+          var isReagentSelected = false;
+          var reagentSelectedCount = 0;
+
+          //Get the Column index
+          var filterExpandedState = IsDataGridDisplayedAsFullView();
+          var ReagentColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+          var SequenceColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Sequence",filterExpandedState);
+          var LotNoColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Lot",filterExpandedState);
+        
+            //Iterate the rows  to get the row of the given sample id
+          for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+          {
+            //Get the All the cells in a row
+            var rowParent = rowDetails[rowIndex];
+            var datagridcells = GetAllChildren(rowParent, "ClassName", "GridCell");
+            datagridcells = datagridcells.reverse();
+      
+            //Get the Code Cell
+            var ReagentNameCell = Getchild(datagridcells[ReagentColumnIndex], "ClassName", "TextBlock"); 
+            var SequenceNumberCell = Getchild(datagridcells[SequenceColumnIndex], "ClassName", "TextBlock"); 
+            var LotNoCell = Getchild(datagridcells[LotNoColumnIndex], "ClassName", "TextBlock"); 
+      
+            //Verify the Code value exist
+            if(aqString.Trim(ReagentNameCell["Text"]) == reagentName)
+            {
+              Log["Message"]("'" + reagentName + "' is identified / located in reagent screen");
+              isReagentExists = true;
+              
+                      
+              //reagentOverviewDataGrid["Parent"]["Refresh"]();
+            
+              aqUtils["Delay"](2000, "Wait for the reagent to be selected");
+              
+               //click on the reagent name to select the record
+              //var CheckboxColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Checkbox",filterExpandedState);
+              var checkBoxCtrl = Getchild(rowParent,"ClassName", "CheckBox");
+            
+              //Click on the checkbox if it is not selected
+              //GetCheckBoxState(checkBoxCtrl)
+              if(checkBoxCtrl["ToggleState"] == 0)
+              {
+                //Click on the checkbox to select
+                Sys["HighlightObject"](checkBoxCtrl);
+                ClickCtrl(checkBoxCtrl);
+              
+                Log["Message"]("Selected the reagent '" + reagentName + "'");
+              
+                isReagentSelected = true;
+                reagentSelectedCount = reagentSelectedCount +1;
+              } 
+              else 
+              {
+                Log["Message"]("reagent '" + reagentName + "' is already selected");
+              }              
+            }
+        }
+        
+        if(isReagentExists && isReagentSelected)
+        {
+          //click on unload button
+          if(!ClickOnUnloadButton())
+          {
+            Log["Error"]("Unable to locate unload button / the unload button is not enabled");
+            Log["PopLogFolder"]();
+            return false;
+          }
+    
+          aqUtils["Delay"](2000, "Wait for the unload reagent pack confirmation popup to be displayed");
+    
+          if(reagentSelectedCount < 2 && reagentType != "CH")
+          {
+            if(!AcceptUnloadReagentPackPopup())
+            {
+              Log["Error"]("Unable to locate the Unload Reagent Pack Confirmation Alert Popup");
+              Log["PopLogFolder"]();
+              return false; 
+            }  
+          }
+
+          //Wait for the process ring to disappear    
+          WaitForProgressRingToDisappear(30);
+    
+          //Wait for the reagent to be removed
+          aqUtils["Delay"](60000, "Wait for the reagents to be unloaded: Maxwait(1min)"); 
+          
+          Log["PopLogFolder"]();
+          return true; 
+        } else  if (isReagentExists && !isReagentSelected) {
+          Log["Error"]("Some of the record is not selected from the reagent overview data grid");
+          Log["PopLogFolder"]();
+          return false;
+        } else {
+          Log["Message"]("Reagent overview doesn't have any reagents with '" + reagentName + "'");
+          Log["PopLogFolder"]();
+          return true;
+        }
+      } else {
+        Log["Message"]("Reagent overview doesn't have any reagents loaded");
+        Log["PopLogFolder"]();
+        return true;
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetCHReagentsCountFromDrawer()
+{
+  try
+  {
+   Log["AppendFolder"]("Getting reagents loaded in drawer");
+   var chReagentDrawerCtrl = GetAutomationIDControl("ReagentNeeds_ReagentLoading","listCHReagents");
+   var allReagentsInDrawer = new Array();
+   
+    //Verify CH reagents drawer exists
+    if(VerifyObjectExists(chReagentDrawerCtrl))
+    {
+      var chReagentInDrawerCtrl = GetAllChildren(chReagentDrawerCtrl, "ClassName","ListBoxItem").reverse();
+      
+      for(i=0;i<chReagentInDrawerCtrl.length;i++)
+      {
+        var reagentNameCtrl = Getchild(chReagentInDrawerCtrl[i],"AutomationId","ContentTextBlock") 
+        
+        if(reagentNameCtrl["Text"] != "")
+        {
+           Log["Message"]("Position '"+i+"' of CH drawer has reagent in it");
+           allReagentsInDrawer["push"](i + ":" + reagentNameCtrl["Text"]);
+        }        
+      }
+     
+      Log["Message"](allReagentsInDrawer.length + " reagents are in the CH drawer");
+      Log["PopLogFolder"](); 
+      return allReagentsInDrawer;
+    }
+    else
+    {
+      Log["Error"]("Ch Reagent Drawer doesn't exist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Verify Ch Drawer is cleared
+function VerifyIfCHPositionsAreCleared()
+{
+  try
+  {
+    Log["AppendFolder"]("Verify Ch Drawer is cleared");
+    
+    //Get Total number of CH reagents displayed in CH drawer
+    var countInDrawer = GetCHReagentsCountFromDrawer()
+    
+    if(typeof countInDrawer == "boolean") //Verify if getting the count from drawer failed 
+    {
+      Log["Error"]("Failed to get total reagents present in drawer");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else if(countInDrawer.length > 0) //Verify if CH drawer has reagents in it
+    {
+      Log["Message"]("Ch Drawer is not empty");
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    else
+    {
+      Log["Message"]("Ch Drawer is empty");
+      Log["PopLogFolder"]();
+      return true; 
+    }       
+  }
+  catch(e)
+  {
+     Log["Error"]("Exception : ", e["description"]);
+     Log["PopLogFolder"]();
+     return false;
+  }
+}
+
+//Verify Drawer is loaded with number of Ch reagent's that was unloaded
+function VerifyChDrawerIsLoaded(totalUnloadedReagent)
+{
+  try
+  {
+    Log["AppendFolder"]("Verify the CH Drawer is Loaded");
+    
+    //Get CH reagents count from drawer
+    var reagentsInDrawer = GetCHReagentsCountFromDrawer()
+    
+    if(typeof reagentsInDrawer == "boolean") //Verify if getting the count from drawer failed
+    {
+      Log["Error"]("Failed to get total reagents displayed in CH drawer");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else if(reagentsInDrawer.length == totalUnloadedReagent) //Verify if the drawer displayes the reagent which where unloaded
+    {
+      Log["Message"]("Total CH reagents unloaded:"+totalUnloadedReagent);
+      Log["Message"]("Total CH reagents present in drawer:"+reagentsInDrawer.length);
+      
+      for(i=0;i<reagentsInDrawer.length;i++)
+      {
+        var inDrawerarr = reagentsInDrawer[i].split(":");
+        Log["Message"]("Reagent Type: "+inDrawerarr[1]+" is present in Lot: "+inDrawerarr[0]);
+      }
+      
+      Log["Message"]("All the unloaded reagents are present in the CH drawer");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else if(reagentsInDrawer.length === 0)
+    {
+      Log["Error"]("Reagent drawer is empty");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Error"]("Total reagents unloaded:"+totalUnloadedReagent);
+      Log["Error"]("Total reagents present in drawer:"+reagentInDrawerCount);
+      Log["Error"]("The drawer doesn't have all the "+totalUnloadedReagent+" reagents that was unloaded");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Check the reagents loaded in reagent overview screen using reagent name, lot number & sequence number
+//Updated to SF grid by Shrutika Tyagi
+function CheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo)
+{ 
+try
+  { 
+    Log["AppendFolder"]("Inventory :: Verify Reagent '" + reagentName + "' Loaded into the System");
+        
+    //Get the reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");  // changed workflow code here as per new structure- by shrutika
+    
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {  
+     //Get the row count of the reagent overview datagrid
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid); 
+      if(!rowDetails)
+      {
+        Log["Error"]("Reagent overview doesn't have loaded with the any of the reagents. and the datagrid is empty");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(rowDetails.length > 0 ) 
+      {
+          var isReagentVerified = false;
+
+          //Get the Column index of Event Code & Message Cell
+          var filterExpandedState = IsDataGridDisplayedAsFullView();
+          var ReagentColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+          var SequenceColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Sequence",filterExpandedState);
+          var LotNoColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Lot",filterExpandedState);
+          var isDataExist = false;
+        
+            //Iterate the rows  to get the row of the given sample id
+          for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+          {
+            //Get the All the cells in a row
+            var rowParent = rowDetails[rowIndex];
+            var datagridcells = GetAllChildren(rowParent, "ClassName", "GridCell");
+            datagridcells = datagridcells.reverse();
+      
+            //Get the Code Cell
+            var ReagentNameCell = Getchild(datagridcells[ReagentColumnIndex], "ClassName", "TextBlock"); 
+            var SequenceNumberCell = Getchild(datagridcells[SequenceColumnIndex], "ClassName", "TextBlock"); 
+            var LotNoCell = Getchild(datagridcells[LotNoColumnIndex], "ClassName", "TextBlock"); 
+            Log["Message"]("Values for troubleshooting : ReagentNameCell-" +GetNativeObjectName(ReagentNameCell) + " SequenceNumberCell-"+ GetNativeObjectName(SequenceNumberCell) + " LotNoCell-"+GetNativeObjectName(LotNoCell));
+      
+            //Verify the Code value exist
+            if((aqString.Trim(ReagentNameCell["Text"]) == reagentName)&& (aqString.Trim(SequenceNumberCell["Text"]) == sequenceNo)&&(aqString.Trim(LotNoCell["Text"]) == lotNo))
+            {
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "'" + reagentName + "' is identified / located in reagent screen");
+              isReagentVerified = true;
+              break;
+            }
+          }
+        
+        if(isReagentVerified)
+        {
+          Log["CheckPoint"]("'" + reagentName + "' with sequence number '" + sequenceNo + "' and Lot Number "+ lotNo +" is available in Reagents Grid");// modified by shrutika to add lot no
+          Log["PopLogFolder"]();
+          return true; 
+        } else {
+          Log["Message"]("Unable to locate the reagent '" + reagentName + "' with sequence number '" + sequenceNo + "'" + "' and Lot Number "+ lotNo); // modified by shrutika to add lot no and message not error
+          Log["PopLogFolder"]();
+          return false; 
+        }
+        
+      } else {
+        Log["Error"]("Reagent overview doesn't have loaded with the any of the reagents. and the datagrid is empty");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Updated to SF grid by Prabu Ramaraj
+function VerifyDefaultSortingInReagentOverviewGrid(defaultsortColumns)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Verify Default SortOrder In Reagent Overview Grid");
+    
+    var sortColumns  = defaultsortColumns["split"](";");
+    switch(sortColumns[0])
+      {
+        case "Reagent" :
+          var sortbaseColumnId="TxtReagnt";
+          break;
+        case "Sequence" :
+          var sortbaseColumnId="TxtSequenceNumber";
+          break;
+      }
+     switch(sortColumns[1])
+      {
+        case "Reagent" :
+          var sortColumnId="TxtReagnt";
+          break;
+        case "Sequence" :
+          var sortColumnId="TxtSequenceNumber";
+          break;
+      }
+    
+    var IsSorted= true;
+
+    //Get the reagent overview datagrid 
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+      
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //Get the row details from the reagent overview grid and reverse the order to get actual order        
+        var dataGridRow = GetSFGridRowDetails(reagentOverviewDataGrid);
+    
+        if(!dataGridRow)
+        {
+          Log["Error"]("There are no records displayed in the datagrid");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      
+      if(dataGridRow.length == 0)
+      {
+        Log["Message"]("Sorting Cannot be performed as No records available")
+        Log["PopLogFolder"]();
+        return true;
+      } else if(dataGridRow.length ==1) {
+        Log["Message"]("Sorting Verification Is Passed as only One Record is available")
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        
+        var baseColumnValues = new Array();
+        var sortColumnValues= new Array();
+        
+        //iterate the rowdetails to get the base column information and sorting col information for reference
+        for(var i=0;i<dataGridRow.length;i++)
+        {
+          baseColumnValues["push"](Getchild(dataGridRow[i], "AutomationId", sortbaseColumnId));
+          sortColumnValues["push"](Getchild(dataGridRow[i], "AutomationId", sortColumnId));
+        }
+        
+        //Iterate the base col information to verify the 
+        for(var i=0;i<baseColumnValues.length-1;i++)
+        {
+          if(aqString.Compare(GetNativeObjectName(baseColumnValues[i]), GetNativeObjectName(baseColumnValues[i+1]), false) > 0)
+          {
+            Log["Error"]("Sorting Verification Is Failed");            
+            IsSorted= false;
+            break;
+          }
+          else if(aqString.Compare(GetNativeObjectName(baseColumnValues[i]), GetNativeObjectName(baseColumnValues[i+1]), false) == 0)
+          {
+            if(aqString.Compare(GetNativeObjectName(sortColumnValues[i]), GetNativeObjectName(sortColumnValues[i+1]), false) > 0)
+            {
+              Log["Error"]("Sorting Verification Is Failed");              
+              IsSorted= false;
+              break;
+            }
+          }
+        }
+        
+        //check all the columns base col & sorting col are sorted in order
+        if(IsSorted)
+        {
+          Log["CheckPoint"]("Default sorting verification is 'Passed' in 'Reagent Overview Screen'")
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Default sorting verification is 'Failed' in 'Reagent Overview Screen'")
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj
+//Updated to SF grid by Shrutika Tyagi
+function SelectReagentByNameAndSequenceNumber(reagentName,seqNumber,lotNumber)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Selecting the reagent '" + reagentName + "' with sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber +"'" );
+    
+    //Get the datagrid container object for reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("Reagent overview doesn't have loaded with the any of the reagents. and the datagrid is empty");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(rowDetails.length > 0 )
+      {
+        var isReagentExists = false;
+        //Get the Column index of Event Code & Message Cell
+          var filterExpandedState = IsDataGridDisplayedAsFullView();
+          var ReagentColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+          var SequenceColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Sequence",filterExpandedState);
+          var LotNoColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Lot",filterExpandedState);
+          var isDataExist = false;
+          
+           //Iterate the rows  to get the row of the given sample id
+          for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+          {
+            //Get the All the cells in a row
+            var rowParent = rowDetails[rowIndex];
+            var datagridcells = GetAllChildren(rowParent, "ClassName", "GridCell");
+            datagridcells = datagridcells.reverse();
+      
+            //Get the Code Cell
+            var ReagentNameCell = Getchild(datagridcells[ReagentColumnIndex], "ClassName", "TextBlock"); 
+            var SequenceNumberCell = Getchild(datagridcells[SequenceColumnIndex], "ClassName", "TextBlock"); 
+            var LotNoCell = Getchild(datagridcells[LotNoColumnIndex], "ClassName", "TextBlock"); 
+      
+            //Verify the Code value exist
+            if((aqString.Trim(ReagentNameCell["Text"]) == reagentName)&& (aqString.Trim(SequenceNumberCell["Text"]) == seqNumber)&&(aqString.Trim(LotNoCell["Text"]) == lotNumber))
+            {
+              Log["Message"]("'" + reagentName + "' is available with the sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber +"'" );
+           
+            //reagentOverviewDataGrid["Refresh"]();
+            
+            aqUtils["Delay"](2000, "Wait for the reagent to be selected");
+            
+            //click on the reagent name to select the record
+            var checkBoxCtrl = Getchild(rowParent,"ClassName", "CheckBox");
+            
+            //Click on the checkbox if it is not selected
+            if(checkBoxCtrl["ToggleState"] == 0)
+            {
+              //Click on the checkbox to select
+              Sys["HighlightObject"](checkBoxCtrl);
+              ClickCtrl(checkBoxCtrl);
+              
+              Log["Message"]("Clicked on the checkbox to select the reagent '" + reagentName + "' with sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber +"'" );
+            } else {
+              Log["Message"]("reagent '" + reagentName + "' with sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber + "' is already selected");
+            }
+            
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Clicked on the reagent '" + reagentName + "' to select");
+            Log["PopLogFolder"]();
+            return true; 
+          }
+        }
+        
+        if(!isReagentExists)
+        {
+          Log["Error"]("Unable to locate the reagent '" + reagentName + "' with the sequence number '" + seqNumber + "' in the reagent overview screen");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      } else {
+        Log["Error"]("Reagent overview doesn't have loaded with the any of the reagents. and the datagrid is empty");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Updated to SF grid by Prabu Ramaraj
+function VerifyColumnPresentInReagentOverviewGrid(columnList)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Verify ColumnList In Reagent Overview Screen");
+    
+     //Get the reagent overview datagrid 
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+      
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      if(columnList.length > 0)
+      {
+        //Get the Column Headers
+        var gridheaderCtrl = Getchild(reagentOverviewDataGrid, "ClassName", "GridHeaderRow");
+        
+        var colHeaderList = GetAllChildren(gridheaderCtrl, "ClassName", "TextBlock");
+        
+        var verifiedColumnCount = 0;
+        
+        //Check the Column Available in Reagent Overview Grid
+        for(var i=0;i<columnList.length;i++)
+        {
+          Log["Message"]("Verifying the '" + columnList[i] + "' is displayed in the reagent overview header name")
+         
+          var isColNameVerified = false;
+           
+          for(var j=0;j<colHeaderList.length;j++)
+          {
+            if(colHeaderList[j]["ObjectIdentifier"] == columnList[i])
+            {
+              verifiedColumnCount = verifiedColumnCount+1;
+              isColNameVerified = true;
+              break;
+            }
+          }
+          
+          //check the column name is displayed
+          if(isColNameVerified)
+          {
+            Log["Message"]("Column name '" + columnList[i] + "' is successfully verified as displayed in reagent overview grid");            
+          } else {
+            Log["Error"]("Unable to locate the column name '" + columnList[i] + "' in the reagent overview grid column header list");
+          }
+        }
+        
+        //Check all the columns are verified as displayed in reagent overview grid
+        if(columnList.length==verifiedColumnCount)
+        {
+          Log["CheckPoint"]("Column Verification In Reagent Overview Grid Passed Successfully")
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Column Verification In Reagent Overview Grid Failed")
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj
+function UnloadReagentByNameAndSequenceNumberAndLotNo(reagentType,reagentName,seqNumber,lotNo)// modify by shrutika to add lot no in parameter and func name
+//function UnloadReagentByNameAndSequenceNumberFromPrimeDisp(reagentType,reagentName,seqNumber)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Unload Reagent from the Reagent Overview");
+    
+//     commented below lines by shrutika as it is not working in latest tpr builds
+//    //Apply filter by reagent type
+//    if(!ApplyFilterByReagentTypeInReagentOverviewScreen(reagentType))
+//    {
+//      Log["Error"]("Unable to apply the filter in the reagent overview screen");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+    
+    aqUtils["Delay"](2000, "Wait for the reagents to be filtered");
+    
+    //Select reagent by reagent name and sequence name
+    if(!SelectReagentByNameAndSequenceNumber(reagentName, seqNumber,lotNo))// modify by shrutika to add lot no in parameter
+    {
+      Log["Error"]("Unable to select the reagent '" + reagentName + "' from the reagent overview screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    aqUtils["Delay"](2000, "Wait for the reagents to be selected");
+    
+    //click on unload button
+    if(!ClickOnUnloadButton())
+    {
+      Log["Error"]("Unable to locate unload button / the unload button is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    aqUtils["Delay"](2000, "Wait for the unload reagent pack confirmation popup to be displayed");
+    
+    if(!AcceptUnloadReagentPackPopup())
+    {
+      Log["Error"]("Unable to locate the Unload Reagent Pack Confirmation Alert Popup");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+
+    //Wait for the process ring to disappear    
+    WaitForProgressRingToDisappear(30);
+    
+    //Wait for the reagent to be removed
+    aqUtils["Delay"](5000, "Wait for the reagents to be unloaded");
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Updated to SF grid by Prabu Ramaraj
+function VerifyGroupByReagentInReagentOverviewGrid()
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Verify the 'Group By Reagent' in Reagent Overview Grid");
+    
+    //Get the reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //Select the group by reagent checkbox    
+      if(ClickOnGroupByReagent()) 
+      {      
+        //Wait for the reagent grid to load data
+        WaitForProgressRingToDisappear(30);
+    
+        //Get the datagrid row group header list to get the list of reagents
+        var groupHeaderDetails = GetAllChildren(reagentOverviewDataGrid, ["ControlPatterns","ClassName"],["ScrollItem",""]);
+      
+        //check the groupdetails count
+        if(groupHeaderDetails.length <= 0)
+        {
+          Log["Error"]("Unable to get the reagent group information from the reagent overview grid");
+          Log["Error"]("Group By Reagent in Reagent Overview Grid Passed")
+          Log["PopLogFolder"]();
+          return false;
+        } else {          
+          Log["CheckPoint"]("Group By Reagent in Reagent Overview Grid Passed")
+          Log["PopLogFolder"]();
+          return true;
+        }       
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj
+function ClickOnUnloadButton()
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Click on the unload button in the reagent overview screen");
+    
+    //get the unload button 
+    //var unloadBtnCtrl = GetAutomationIDControl("PrimeDispReagentOverviewScreen", "btnUnloadReagent");
+    var unloadBtnCtrl = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "btnUnloadReagent");
+    
+    //Check the unload button is enabled
+    if(VerifyObjectEnabled(unloadBtnCtrl))
+    {
+      Log["Message"]("Unload button is located and enabled in reagent overview screen");
+      
+      //click on the unload button
+      ClickCtrl(unloadBtnCtrl);
+      
+      Log["Message"]("Clicked on the unload button");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unload button in the reagent overview screen is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySortingInReagentOverviewGrid(sortColumn,sortOrder)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Verify Sorting In Reagent Overview Screen");
+    
+    if(!ClickGridColumnHeaderForSortingInReagentOverviewGrid(sortColumn,sortOrder))
+    {
+      Log["Error"]("Failed to Click Column Header for Sorting")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!VerifySortingInOverviewGrid(sortColumn,sortOrder))
+    {
+      Log["Error"]("Sorting Verification failed in Reagent Overview Grid")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj
+function AcceptUnloadReagentPackPopup() // need to modify to handle for both IM and CH packs bcs pop behavior is not same for both IM and CH
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Accept the unload reagent pack popup");
+    
+    //Refresh the root node of the application to get the latest popup details
+    var primaryUI = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    primaryUI["Refresh"]();
+    
+    //Get alert confirmation popup control
+    var alertConfirmation = Getchild(primaryUI, "AutomationId", "alertDialog");
+            
+    //Check the transmit alert present
+    if(VerifyObjectExists(alertConfirmation))
+    {
+      var title = Getchild(alertConfirmation, "AutomationId", "AlertTitleTextBlock");
+      var yesBtn = Getchild(alertConfirmation, ["AutomationId", "ObjectIdentifier"], ["PrimaryButton", "Yes"]);
+      
+      if(title["Text"] == "Unload Reagent Pack")
+      {
+        ClickCtrl(yesBtn);
+        Log["Message"]("Clicked on the yes button in the unload reagent pack confirmation popup");
+        Log["PopLogFolder"]();
+        return true;   
+      } else {
+        Log["Error"]("Unable to locate the header name of the popup with unload reagent pack");
+        Log["PopLogFolder"]();
+        return false;   
+      }      
+    } else {
+      Log["Error"]("Unable to locate the accpet unload reagent pack alert message");
+      Log["PopLogFolder"]();
+      return false;   
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickGridColumnHeaderForSortingInReagentOverviewGrid(sortColumn,sortOrder)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Clicking ReagentOverview Grid Columns Header for Setting SortOrder");
+    
+    var columnHeaderClicked=false;
+    
+    //Get the reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //Get the Column Headers
+      var colHeaderCtrls = Getchild(ColumnHeadersPresenter, "ClassName", "GridHeaderRow");      
+      var colHeaders = GetAllChildren(colHeaderCtrls, "ClassName", "HeaderCellContainer");
+        
+      //Get the SortColumn in Reagent Overview Grid
+      for(var i=0;i<colHeaders.length;i++)
+      {
+        //check the given column name is exists
+        if(colHeaders[i]["Text"] == sortColumn)
+        {
+            for(var j=0;j<3;j++)
+            {
+              if(colHeaders[i]["HelpText"]==undefined && sortOrder=="Ascending")
+              {
+                Log["Message"]("Reagent Overview Grid Sort Order is already set to '"+sortOrder+"'for "+sortColumn+"")
+                Log["PopLogFolder"]();
+                return true;
+              }
+              else
+              {
+                Sys["HighlightObject"](ColumnHeaders[i])
+                ClickCtrl(ColumnHeaders[i]);
+              }
+              if(ColumnHeaders[i]["HelpText"]==sortOrder)
+              {
+                columnHeaderClicked=true
+                break;
+              }
+            }
+            if(columnHeaderClicked)
+            {
+              Log["Message"]("Clicked the Column Header '"+sortColumn+"'")
+              aqUtils["Delay"](3000);
+              Log["PopLogFolder"]();
+              return true;
+            }
+            else
+            {
+              Log["Error"]("Failed to Click the Column Header '"+sortColumn+"'")
+              Log["PopLogFolder"]();
+              return false;
+            }
+          }
+        }
+        
+    }
+    else 
+    {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function VerifySortingInOverviewGrid(sortColumn,sortOrder)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Verify SortOrder In Reagent Overview Grid");
+    
+    switch(sortColumn)
+    {
+      case "Reagent" :
+        sortColumnId="TxtReagnt";
+        break;
+    }
+    var IsSorted=true;
+    
+    //Get the reagent overview datagrid from the grid container identified
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+      
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //get the row count of the reagent overview data grid
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid);
+      
+      //check the row has records displayed
+      if(rowDetails.length == 0)
+      {
+        Log["Message"]("Sorting Cannot be performed as No records available")
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else if(rowDetails.length == 1) //if only one record is displayed in the datagrid
+      {
+        Log["Message"]("Sorting Verification Is Passed as only One Record is available")
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else 
+      {
+
+        var ColumnValues = new Array();
+        
+        for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+        {
+          ColumnValues["push"](Getchild(rowDetails[rowIndex], "AutomationId", sortColumnId));
+        }
+        
+        if(sortOrder=="Ascending")
+        {
+          for(var i=0;i<ColumnValues.length-1;i++)
+          {
+            if(aqString.Compare(GetNativeObjectName(ColumnValues[i]), GetNativeObjectName(ColumnValues[i+1]), false) > 0)
+            {
+              Log["Error"]("Sorting Verification Is Failed")
+              Log["PopLogFolder"]();
+              return false ;
+            }
+          }
+        } else {
+            
+          for(var i=0;i<ColumnValues.length-1;i++)
+          {
+            if(aqString.Compare(GetNativeObjectName(ColumnValues[i]), GetNativeObjectName(ColumnValues[i+1]), false) < 0)
+            {
+              Log["Error"]("Sorting Verification Is Failed")
+              Log["PopLogFolder"]();
+              return false ;
+            }
+          }
+        }
+        
+        if(IsSorted)
+        {
+          Log["CheckPoint"]("Reagent Overview Grid is Sorted by "+sortColumn+" values")
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else
+        {
+          Log["Error"]("Sorting Verification Is Failed In Reagent Overview Screen")
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+    } 
+    else 
+    {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : VerifyReagentDetails()
+//*   Function Description: This function is used to verify the reagent details various parameters for a selected reagent in the reagent overview datagrid
+//*   Input               : reagentType,reagent details Parameters,reagent details Parameters ExpectedValue
+//*   Output              : 
+//*   Date of Creating    : 31 Nov 2019
+//*   Last Modified date  : 31 Nov 2019
+//*   Created By          : Shrutika Tyagi
+//*****************************************************************************************
+function VerifyReagentDetails(reagentType,Parameters,ParametersExpectedValues)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Verifying the reagent details");
+    
+    //Initialize
+    var iCount = 0;
+    
+    var arrParameters = new Array();
+    arrParameters = Parameters["split"](",");
+    var TotalParameters = arrParameters["length"];
+    
+    var arrParametersExpectedValues = new Array();
+    arrParametersExpectedValues = ParametersExpectedValues["split"](",");
+    //var TotalParametersExpectedValues = arrParametersExpectedValues["length"];
+    
+    //Run the loop for count of parameters to be verified in this function
+    for( var i =0 ; i<TotalParameters ; i++)
+      {
+        var ExpectedValue = aqConvert["VarToStr"](arrParametersExpectedValues[i]);
+        switch(arrParameters[i])
+        { 
+          case "Name" :        
+            //Get the reagent status value
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentName = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentName");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentName = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentName"); 
+            
+            actualReagentName = objReagentName["Text"];
+  
+            //Verify the reagent name
+            if(aqString["Trim"](actualReagentName) == aqString["Trim"](ExpectedValue))
+            //var res = aqString["Find"](aqString["Trim"](actualReagentName),aqString["Trim"](ExpectedValue))
+            //if( res!=-1)
+            {
+              Log["Message"]("Reagent name is displayed as: " + actualReagentName+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent name does not match. It is displayed as: " + actualReagentName +" and expected is :"+ExpectedValue);
+            break;
+            
+          case "Lot" :        
+            //Get the reagent lot
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentLot = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentLotNumber");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentLot = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentLotNumber"); 
+              
+            actualReagentLot = objReagentLot["Text"];
+  
+            //Verify the reagent lot
+            if(aqString["Trim"](actualReagentLot) == aqString["Trim"](ExpectedValue))
+            //var res = aqString["Find"](aqString["Trim"](actualReagentLot),aqString["Trim"](ExpectedValue))
+            //if( res!=-1)
+            {
+              Log["Message"]("Reagent lot is displayed as: " + actualReagentLot+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent lot does not match. It is displayed as: " + actualReagentLot+" and expected is :"+ExpectedValue);
+            break;
+            
+          case "PackLocation" :        
+            //Get the reagent pack location
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentName = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentPackLocation");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentPackLocation = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentPackLocation"); 
+              
+            actualReagentPackLocation = objReagentPackLocation["Text"];
+  
+            //Verify the reagent pack location
+            if(aqString["Trim"](actualReagentPackLocation) == aqString["Trim"](ExpectedValue))
+            //var res = aqString["Find"](aqString["Trim"](actualReagentPackLocation),aqString["Trim"](ExpectedValue))
+            //if( res!=-1)
+            {
+              Log["Message"]("Reagent pack location is displayed as: " + actualReagentPackLocation+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent pack location does not match. It is displayed as: " + actualReagentPackLocation+" and expected is :"+ExpectedValue);
+            break;
+            
+          case "Position" :
+            //Get the reagent status value
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentPosition = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentPosition");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentPosition = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentPosition"); 
+              
+            actualReagentPosition = objReagentPosition["Text"];
+  
+            //Verify the reagent pack status
+            if(aqString["Trim"](actualReagentPosition) == aqString["Trim"](ExpectedValue))
+            //var res = aqString["Find"](aqString["Trim"](actualReagentPosition),aqString["Trim"](ExpectedValue))
+            // res!=-1)
+            {
+              Log["Message"]("Reagent position is displayed as: " + actualReagentPosition+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent position does not match. It is displayed as: " + actualReagentPosition+" and expected is :"+ExpectedValue);
+            break;
+            
+          case "Status" :      
+            //Get the reagent status value
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentStatus = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentStatus");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentStatus = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentStatus"); 
+              
+            actualReagentStatus = objReagentStatus["Text"];
+        
+            //Verify the reagent pack status
+            // below if condition only for scenario when we see reagent pack status as nothing/blank on reagent overview and and this is expectated
+            if(ExpectedValue=='""')
+            {
+              ExpectedValue=" ";
+              if(aqString["Trim"](actualReagentStatus) == aqString["Trim"](ExpectedValue))
+              {
+                 Log["Message"]("Reagent status is displayed as blank and expected is blank");
+                 iCount = iCount +1;
+              }
+              else
+                Log["Message"]("Reagent status is NOT displayed as blank and expected is blank");
+            }
+            else
+            {
+            //if(actualReagentStatus == ExpectedValue)
+              var res = aqString["Find"](aqString["Trim"](aqConvert.VarToStr(actualReagentStatus)),aqString["Trim"](aqConvert.VarToStr(ExpectedValue)))
+              if( res!=-1)
+              {
+                Log["Message"]("Reagent status is displayed as: " + actualReagentStatus +" and expected is :"+ExpectedValue);
+                iCount = iCount +1;
+              }
+              else
+                Log["Error"]("Reagent status does not match. It is displayed as: " + actualReagentStatus+" and expected is :"+ExpectedValue);  
+            }    
+            break;
+            
+          case "SequenceNumber" :      
+            //Get the reagent sequence number
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentSequenceNo = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentSequenceNumber");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentSequenceNo = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentSequenceNumber"); 
+              
+            actualReagentSequenceNo = objReagentSequenceNo["Text"];
+  
+            //Verify the reagent pack status
+            if(aqString["Trim"](actualReagentSequenceNo) == aqString["Trim"](ExpectedValue))
+            //var res = aqString["Find"](aqString["Trim"](actualReagentSequenceNo),aqString["Trim"](ExpectedValue))
+            //f( res!=-1)
+            {
+              Log["Message"]("Reagent sequence number is displayed as: " + actualReagentSequenceNo +" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent sequence number  does not match. It is displayed as: " + actualReagentSequenceNo+" and expected is :"+ExpectedValue);
+            break;
+            
+          case "CountRemaining" :
+           //Get the reagent sequence number
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentCountRemaining = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentCountRemaining");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentCountRemaining = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentCountRemaining");
+              
+            actualReagentCountRemaining = objReagentCountRemaining["Text"];
+  
+            //Verify the reagent pack status
+            if(aqString["Trim"](actualReagentCountRemaining) == aqString["Trim"](ExpectedValue))
+            {
+              Log["Message"]("Reagent inventory is displayed as: " + actualReagentCountRemaining+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent inventory does not match. It is displayed as: " + actualReagentCountRemaining+" and expected is :"+ExpectedValue);
+            break;
+            
+          case "OnboardStability" :
+           //Get the reagent sequence number
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentOnboardStability = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentOnboardStability");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentOnboardStability = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentOnboardStability");
+              
+            actualReagentOnboardStability = objReagentOnboardStability["Text"];
+  
+            //Verify the reagent pack status
+            if(aqString["Trim"](actualReagentOnboardStability) == aqString["Trim"](ExpectedValue))
+            {
+              Log["Message"]("Reagent inventory is displayed as: " + actualReagentOnboardStability+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent inventory does not match. It is displayed as: " + actualReagentOnboardStability+" and expected is :"+ExpectedValue);
+            break;
+            
+          case "LotExpiration" : 
+           //Get the reagent sequence number
+            if(reagentType == "IMPrimary" || reagentType == "IMAncillary")
+              var objReagentLotExpiration = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblIMReagentLotExpiration");
+            else if(reagentType == "CH" ||reagentType=="CHPairedPack")
+              var objReagentLotExpiration = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "lblCHReagentLotExpiration");
+              
+            actualReagentLotExpiration = objReagentLotExpiration["Text"];
+  
+            //Verify the reagent pack status
+            if(aqString["Trim"](actualReagentLotExpiration) == aqString["Trim"](ExpectedValue))
+            {
+              Log["Message"]("Reagent inventory is displayed as: " + actualReagentLotExpiration+" and expected is :"+ExpectedValue);
+              iCount = iCount +1;
+            }
+            else
+              Log["Error"]("Reagent inventory does not match. It is displayed as: " + actualReagentLotExpiration+" and expected is :"+ExpectedValue);
+            break;
+         
+      }// end of switch
+    }//end of for loop 
+    
+    if(iCount==TotalParameters)
+    {
+      Log["Message"]("All parameters are matching as expected")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"]("All parameters are not matching as expected. Matching parameters count is :"+iCount + " and total parameters is :"+TotalParameters);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }//end of try
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Reagent Loading screen
+///barcode error scenario
+function GetTheIMReagentAvailableInReagentLoadingScreen(reagentType,position)
+{
+  try
+  {
+    Log["AppendFolder"]("Get the IM reagent in reagent loading screen");
+    
+    var reagentList = "";
+    
+    if(reagentType == "IMPrimary")
+    {
+      reagentList = GetIMPrimaryReagentsLoadedFromPrimeDisp();
+
+    } else if(reagentType == "IMAncillary") {
+      
+      reagentList = GetIMAncillaryReagentsLoadedFromPrimeDisp();
+     
+    } else {
+      Log["Error"]("Please provide a valid reagent type");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    
+    if(reagentList == false || reagentList == "")
+    {
+      Log["Error"]("Failed to get the reagent list from the reagent loading screen");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    else 
+    {
+      Log["PopLogFolder"]();
+      return reagentList[position-1]; 
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetIMPrimaryReagentsLoadedFromPrimeDisp()
+{
+  try
+  {
+    Log["AppendFolder"]("Get the IM Primary reagent details from reagent loading screen");
+    //var primeDispObj = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    //var primaryReagentParentObj = Getchild(primeDispObj, "AutomationId", "IMPrimaryReagentList");
+
+    var reagents = new Array();    
+    //var primaryReagentParentObj = GetAutomationIDControl("PrimeDispReagentLoadingScreen", "listIMPrimaryReagents"); // commented by shrutika for new workflow code
+    var primaryReagentParentObj = GetAutomationIDControl("ReagentNeeds_ReagentLoading", "listIMPrimaryReagents");
+    
+    
+    if(VerifyObjectExists(primaryReagentParentObj))
+    {
+      var reagentList = GetAllChildren(primaryReagentParentObj, "ClassName", "ListBoxItem");
+      
+      if(reagentList.length > 0)
+      {
+        reagentList = reagentList.reverse();
+        
+        for(var i=0; i< reagentList.length; i++)
+        {
+          var reagent = GetAllChildren(reagentList[i], "ClassName", "TextBlock").reverse();          
+          reagents["push"](reagent[0]["Text"]);// + ":" + reagent[1]["Text"]);
+        }
+        
+        if(reagents.length == reagentList.length)
+        {
+          Log["Message"]("Successfully fetched the IM primary reagent name and position from the reagent loading screen");
+          Log["PopLogFolder"]();
+          return reagents;
+        } else {
+          Log["Error"]("Some issue in getting the IM primary reagent list from the reagent loading screen");
+          Log["PopLogFolder"]();
+          return false;
+        }        
+      } else {
+        Log["Error"]("Unable to locate the reagent list from the reagent loading screen");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the IM primary regaents in the reagent loading screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetIMAncillaryReagentsLoadedFromPrimeDisp()
+{
+  try
+  {
+    Log["AppendFolder"]("Get the IM Ancillary reagent details from reagent loading screen");
+    //var primeDispObj = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    //var ancillaryReagentParentObj = Getchild(primeDispObj, "AutomationId", "IMAncillaryDoorList");
+    
+    var reagents = new Array();
+    //var ancillaryReagentParentObj = GetAutomationIDControl("PrimeDispReagentLoadingScreen", "listIMAncillaryReagents");  // commented by shrutika for new workflow code
+    var ancillaryReagentParentObj = GetAutomationIDControl("ReagentNeeds_ReagentLoading", "listIMAncillaryReagents"); // added by shrutika 
+    
+    if(VerifyObjectExists(ancillaryReagentParentObj))
+    {
+      var reagentList = GetAllChildren(ancillaryReagentParentObj, "ClassName", "ListBoxItem");
+      
+      if(reagentList.length > 0)
+      {
+        reagentList = reagentList.reverse();
+        
+        for(var i=0; i< reagentList.length; i++)
+        {
+          var reagent = GetAllChildren(reagentList[i], "ClassName", "TextBlock").reverse();          
+          reagents["push"](reagent[0]["Text"]);// + ":" + reagent[1]["Text"]);
+        }
+        
+        if(reagents.length == reagentList.length)
+        {
+          Log["Message"]("Successfully fetched the IM ancillary reagent name and position from the reagent loading screen");
+          Log["PopLogFolder"]();
+          return reagents;
+        } else {
+          Log["Error"]("Some issue in getting the IM ancillary reagent list from the reagent loading screen");
+          Log["PopLogFolder"]();
+          return false;
+        }        
+      } else {
+        Log["Error"]("Unable to locate the reagent list from the reagent loading screen");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the IM ancillary regaents in the reagent loading screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterPackIDAndSaveInManualEntryPopup(reagentType,positionArray,packID)
+{
+  try
+  {
+    Log["AppendFolder"]("Enter PackID in Manual Entry Popup");
+    
+    //Click the Position with Barcode Error
+    if(!ClickTheBarCodeErrorPosition(reagentType,positionArray))
+    {
+      Log["Error"]("Failed to Click the Position");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Verify the Manual entry popup displayed
+    if(!VerifyManualEntryPopupDisplayed())
+    {
+      Log["Error"]("Failed to Locate the Manual Entry Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Enter the packId
+    if(!EnterPackIDInManualEntryPopup(packID))
+    {
+      Log["Error"]("Failed to Enter PackID in the Manual Entry Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on the verify button
+    if(!ClickVerifyInManualEntryPopup())
+    {
+      Log["Error"]("Failed to Click the Verify button in the Manual Entry Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on the Save button 
+    if(!ClickSaveInManualEntryPopup())
+    {
+      Log["Error"]("Failed to Click the Save button in the Manual Entry Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickTheBarCodeErrorPosition(reagentType,positionArray)
+{
+  try
+  {
+    Log["AppendFolder"]("Click the Reagent Position");
+    
+    if(reagentType == "IMPrimary")
+    {
+      //var ReagentParentObj = GetAutomationIDControl("PrimeDispReagentLoadingScreen", "listIMPrimaryReagents");  // commented by shrutika for new workflow code
+      var ReagentParentObj = GetAutomationIDControl("ReagentNeeds_ReagentLoading", "listIMPrimaryReagents"); // added by shrutika
+      
+    } else if(reagentType == "IMAncillary") {
+      
+      //var ReagentParentObj = GetAutomationIDControl("PrimeDispReagentLoadingScreen", "listIMAncillaryReagents");  // commented by shrutika for new workflow code
+      var ReagentParentObj = GetAutomationIDControl("ReagentNeeds_ReagentLoading", "listIMAncillaryReagents"); // added by shrutika
+     
+    } else {
+      Log["Error"]("Please provide a valid reagent type");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    var ReagentPositiontoClick =Getchild(ReagentParentObj,["AutomationId","Text"],["PositionTextBlock",positionArray])
+    if(VerifyObjectExists(ReagentPositiontoClick))
+    {
+      ClickCtrl(ReagentPositiontoClick);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Failed to Locate Position to Click");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyManualEntryPopupDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("Verify Manual Entry Popup");
+    
+    //var popupCtrl=GetAutomationIDControl("PrimeDispBarcodeManualEntryPopup", "txtPackBarcodeTextBox");  // commented by shrutika for new workflow code
+    var popupCtrl=GetAutomationIDControl("ReagentNeeds_ReagentLoading", "txtPackBarcodeTextBox"); // added by shrutika
+    
+    
+    if(VerifyObjectExists(popupCtrl))
+    {
+      Log["Message"]("Manual Entry Popup is diplayed");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Failed to Locate Manual Entry Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterPackIDInManualEntryPopup(packID)
+{
+  try
+  {
+    Log["AppendFolder"]("Enter PackID in Manual Entry Popup");
+    
+    //var txtBarcode=GetAutomationIDControl("PrimeDispBarcodeManualEntryPopup", "txtPackBarcodeTextBox");  // commented by shrutika for new workflow code
+    var txtBarcode=GetAutomationIDControl("ReagentNeeds_ReagentLoading", "txtPackBarcodeTextBox"); // added by shrutika
+    
+    if(VerifyObjectExists(txtBarcode))
+    {
+      Log["Message"]("Located the Barcode TextBox");
+      txtBarcode.SetValue(packID);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Failed to Locate Barcode TextBox");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickVerifyInManualEntryPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Click Verify button in Manual Entry Popup");
+
+    //var btnVerify=GetAutomationIDControl("PrimeDispBarcodeManualEntryPopup", "btnVerifyButton");  // commented by shrutika for new workflow code
+    var btnVerify=GetAutomationIDControl("ReagentNeeds_ReagentLoading", "btnVerifyButton"); // added by shrutika
+    
+    if(VerifyObjectExists(btnVerify))
+    {
+      Log["Message"]("Located the Verify Button in Manual entry Popup");
+      ClickCtrl(btnVerify);
+      Log["Message"]("Clicked Verify Button in Manual entry Popup");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Failed to Locate Verify Button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickSaveInManualEntryPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Click Save button in Manual Entry Popup");
+    
+    //var btnSave=GetAutomationIDControl("PrimeDispBarcodeManualEntryPopup", "btnSaveButton");
+    var btnSave=GetAutomationIDControl("ReagentNeeds_ReagentLoading", "btnSaveButton");
+    
+    if(VerifyObjectExists(btnSave))
+    {
+      Log["Message"]("Located the Save Button in Manual entry Popup");
+      ClickCtrl(btnSave);
+      Log["Message"]("Clicked Save Button in Manual entry Popup");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Failed to Locate Save Button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnAPostionInIMCompartmentAndVerifyPopUpExistance(reagentType,positionArray)
+{
+  try
+  {
+    Log["AppendFolder"]("Click on a specific postion in " + reagentType + " compartment and verfiy pop up existance");
+    
+    //Click the Position
+    if(!ClickTheBarCodeErrorPosition(reagentType,positionArray)) // click on any position using this fn but it was already created
+    {
+      Log["Error"]("Failed to Click the Position");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Verify the Manual entry popup displayed
+    if(VerifyManualEntryPopupDisplayed())
+    {
+      Log["Message"]("Failed to Locate the Manual Entry Popup");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//function by shrutika
+function VerifyManualEntryConfirmationPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Verify Manual Entry Confirmation Popup");
+    
+    //var popupCtrl=GetAutomationIDControl("PrimeDispBarcodeManualEntryPopup", "txtPackBarcodeTextBox");
+    var popupCtrl=GetAutomationIDControl("ReagentNeeds_ReagentLoading", "lblManualConfirmationPopUp");
+    
+    if(VerifyObjectExists(popupCtrl))
+    {
+      Log["Message"]("Manual Entry Confirmation Popup is displayed");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Manual Entry Confirmation Popup is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetCHInUseCountValue() //Update AutomationID, used parent for now
+{
+  try
+  {
+    Log["AppendFolder"]("Get the CH in Use Count value in PrimeDisp")
+    
+    //get the parent element
+    var parentElement = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    var chInUseReagentsCountCtrl = Getchild(parentElement,["ObjectIdentifier","ObjectGroupIndex"],["TextBlock","1"])
+    var inUseCount;
+    
+    //Verify CH in use count control exists
+    if(VerifyObjectExists(chInUseReagentsCountCtrl))
+    {
+      inUseCount = chInUseReagentsCountCtrl["Text"];
+      Log["Message"]("The Ch In Use count displayed is:"+inUseCount);
+      Log["PopLogFolder"]();
+      return inUseCount;
+    }
+    else
+    {
+      Log["Error"]("Ch In Use Count doesn't exist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+     
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception : ", e["description"]);
+     Log["PopLogFolder"]();
+     return false;
+  }
+}
+
+//manual entered barcode confirmation pop up
+function SelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,SelectOrUnSelect)
+{
+  try
+  {   
+    Log["AppendFolder"]("SelectOrUnselectTheManualEnteredPackInConfirmationPopUp");
+     
+    //Get confirmation pop up data grid control
+    //var ContainerObj = GetAutomationIDControl("ReagentNeeds_ReagentLoading","dtgrdConfirmationPopUp") becasue does not work always
+    
+    var obj = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["UIAObject"]("Atellica")["UIAObject"]("HomePageCtrl")["UIAObject"](2)
+    var ContainerObj = Getchild(obj, "AutomationId", "dataGridControl");
+    
+    //get total columns of grid showing in confirmation pop up
+    var totalcolumns = ContainerObj["ColumnCount"]
+    var totalrows = ContainerObj["RowCount"]
+    //Check the reagent overview datagrid displayed    
+    
+    var chkbxcolumnfound=0;
+    var positioncolumnfound=0;
+    var assaycolumnfound=0;
+    if(VerifyObjectExists(ContainerObj)) 
+    {
+        // to get the column no of position column from grid - commented as of now because column no is fetched 
+        //Get the Column HeaderPresenter
+        var ColumnHeadersPresenter = Getchild(ContainerObj, "ClassName", "DataGridColumnHeadersPresenter");
+        //Get the Column Headers
+        var ColumnHeaders = GetAllChildren(ColumnHeadersPresenter, "ClassName", "DataGridColumnHeader").reverse();
+        
+        for (var i = 0 ;i<totalcolumns ;i++)
+        {
+            var objCheckboxColumn = Getchild(ColumnHeaders[i], "ClassName", "Checkbox");
+         // if(ColumnHeaders[i]["ObjectIdentifier"]=="Position")
+          //{
+            if(VerifyObjectExists(objCheckboxColumn))
+            {
+              var checkboxcolno = i;
+              chkbxcolumnfound = 1;
+              //break;
+            }
+             
+            if(ColumnHeaders[i]["ObjectIdentifier"]=="Position")
+            {
+              var positioncolno = i;
+              positioncolumnfound = 1;
+            }
+            if(ColumnHeaders[i]["ObjectIdentifier"]=="Assay")
+            {
+              var assaycolno = i;
+              assaycolumnfound = 1;
+            }
+//          }
+         if((chkbxcolumnfound==1)&&(positioncolumnfound==1)&&(assaycolumnfound==1))
+          break;
+        }
+        
+//        var positioncolno =  GetDataGridColumnIndexByColumnHeader(ContainerObj, "Position");
+//        var assaycolno =  GetDataGridColumnIndexByColumnHeader(ContainerObj, "Assay");
+       
+      if(totalrows=1)
+      {
+        //Get the rowspresenter of above identified parent data grid control object
+        var objDataGridRowsPresenter = Getchild(ContainerObj, "ClassName", "DataGridRowsPresenter");  
+        var objDataGridRow = GetAllChildren(objDataGridRowsPresenter, "ClassName", "DataGridRow").reverse();// need when multiple rows are shown
+        //var objDataGridCell = GetAllChildren(objDataGridRowsPresenter, "ClassName", "DataGridCell").reverse();
+        
+        for ( var j= 0; j < objDataGridRow.length ;j++)
+        {
+          //if(objDataGridCell[j]["ColumnHeaderItems"] == "[Position]")
+          //{
+            var objDataGridCells = GetAllChildren(objDataGridRow[j], "ClassName", "DataGridCell").reverse();
+            var objPositionTextBlock = Getchild(objDataGridCells[positioncolno], "AutomationId", "PositionTextBlock");
+            var objAssayTextBlock = Getchild(objDataGridCells[assaycolno], "AutomationId", "ReagentTextBlock");
+            //for(j=0;j<objDataGridCell.length;j++)  we can do for loop when we get column header and then columnno from above . right now we dont have column header so we can pass column no directly
+            //{
+              //ColumnHeaderItems
+              if((objPositionTextBlock["Text"]==ExpectedPositionNo)&&(objAssayTextBlock["Text"]==ExpectedAssay))
+              {
+                //click on the reagent name to select the record 
+                var checkBoxCtrl = Getchild(objDataGridCells[checkboxcolno], "AutomationId", "SelectCheckBox");
+            
+                //Click on the checkbox if it is not selected
+                if(checkBoxCtrl["ToggleState"] ==1)
+                {
+                  
+                  //Click on the checkbox to unselect
+                  mycase = aqString["ToUpper"](SelectOrUnSelect)
+                  switch(mycase)
+                  {
+                    case "UNSELECT" :
+                        ClickCtrl(checkBoxCtrl);
+                        Log["Message"]("sucessfully unselected the row to unselect the manual entered pack");
+                        break;
+                        
+                    case "SELECT" :
+                        //ClickCtrl(checkBoxCtrl);
+                        Log["Message"]("By default the row is selected to select the manual entered pack");
+                        break;
+                  }
+                }
+              }
+              else
+              {
+                Log["Message"]("Expected postion " +ExpectedPositionNo + " and expected assay name "+ ExpectedAssay +" is not listed in row "+ (j+1) +" confirmation pop up")
+                Log["PopLogFolder"]();
+                return false;
+              }
+          //}
+        }
+        
+//        if (j=1) 
+//        {
+//          Log["Message"]("Position header column is not found in confirmation pop up")
+//          Log["PopLogFolder"]();
+//          return false; 
+//        }
+        
+      }
+      else // add code here if needed when confirmartion pop up has more that 1 rows and which one to select or unselect as per the scenario
+      {
+        //Get the datagrids of above identified parent data grid object
+        var objDataGrids = GetAllChildren(objDataGridRowsPresenter, "ClassName", "DataGrid").reverse();
+        for (var k=0;k<rowcounts;k++)
+        {
+        
+        }
+      }
+      
+      
+    }
+    else 
+    {
+      Log["Error"]("Unable to locate the confirmation pop up");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    //click on OK button afetr selecting or unselecting
+    var objbtnOKManualPackConfirmationPopUp = GetAutomationIDControl("ReagentNeeds_ReagentLoading","btnOKManualPackConfirmationPopUp")
+    ClickCtrl(objbtnOKManualPackConfirmationPopUp);
+    Log["PopLogFolder"]();
+    return true;
+   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function DisableOrEnableReagentLot(reagentName,seqNumber,lotNumber,DisableOrEnableLot)
+{
+  try
+  {
+    Log["AppendFolder"]("DisableOrEnableReagentLot");
+    if(!SelectReagentByNameAndSequenceNumber(reagentName,seqNumber,lotNumber))
+      return false;
+    var btnDisableReagentLot = GetAutomationIDControl("ReagentNeeds_ReagentOverview","btnDisableReagentLot")
+    var objchild = Getchild(btnDisableReagentLot,"ClassName","TextBlock")
+    switch(aqString["ToUpper"](DisableOrEnableLot))
+    {
+      case "DISABLE":
+            if(btnDisableReagentLot["Exists"])
+            {
+                if(objchild["Text"]=="Disable Reagent Lot")
+                {
+                  Log["Message"]("Disable Reagent Pack button is shown for the selected reagent row");            
+                  ClickCtrl(btnDisableReagentLot)
+                }
+                Log["Message"]("sucessfully clicked on disable Reagent Lot button of the selected reagent row");
+                //wait
+                aqUtils["Delay"](2000, "Wait for the reagent row to get disabled Lot");
+                if(objchild["Text"]=="Enable Reagent Lot")
+                {
+                  Log["Message"]("Button now showing as Enable Reagent Lot after clicking on Disable Reagent Lot");
+                  Log["PopLogFolder"]();
+                  return true;
+                }
+                else
+                {
+                  Log["Error"]("Button not showing as Enable Reagent Lot after clicking on Disable Reagent Lot");
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+        
+            }
+            else{
+              Log["Error"]("Disable Reagent Lot button is not found -Unable to click");
+              Log["PopLogFolder"]();
+              return false;
+            }
+            break;
+    
+            
+    case  "ENABLE":
+        if(btnDisableReagentLot["Exists"])
+        {
+          if(objchild["Text"]=="Enable Reagent Lot")
+          {          
+            Log["Message"]("Enable Reagent Pack button is shown for the selected reagent row");              
+            ClickCtrl(btnDisableReagentLot)
+          }
+          Log["Message"]("sucessfully clicked on enable reagent Lot button of the selected reagent row");
+          aqUtils["Delay"](2000, "Wait for the reagent row to get enabled Lot");
+          if(objchild["Text"]=="Disable Reagent Lot")
+          {
+            Log["Message"]("Button now showing as Disable Reagent Lot after clicking on Enable Reagent Lot");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Error"]("Button not showing as Disable Reagent Lot after clicking on Enable Reagent Lot");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+        else
+        {
+          Log["Error"]("Disable Reagent pack button is not found -Unable to click");
+          Log["PopLogFolder"]();
+          return false;
+        }
+        break;
+  
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function DisableOrEnableReagentPack(reagentName,seqNumber,lotNumber,DisableOrEnablePack)
+{
+  try
+  {
+    Log["AppendFolder"]("DisableOrEnableReagentPack");
+    if(!SelectReagentByNameAndSequenceNumber(reagentName,seqNumber,lotNumber))
+      return false;
+    var btnDisableReagentPack = GetAutomationIDControl("ReagentNeeds_ReagentOverview","btnDisableReagentPack")
+    var objchild = Getchild(btnDisableReagentPack,"ClassName","TextBlock")
+    switch(aqString["ToUpper"](DisableOrEnablePack))
+    {
+      case "DISABLE":
+      if(btnDisableReagentPack["Exists"])
+      {
+          if(objchild["Text"]=="Disable Reagent Pack")
+          {
+            Log["Message"]("Disable Reagent Pack button is shown for the selected reagent row");            
+            ClickCtrl(btnDisableReagentPack)
+          }
+          Log["Message"]("sucessfully clicked on disable reagent pack button of the selected reagent row");
+          //wait
+          aqUtils["Delay"](2000, "Wait for the reagent row to get disabled Pack");
+          if(objchild["Text"]=="Enable Reagent Pack")
+          {
+            Log["Message"]("Button now showing as Enable Reagent Pack after clicking on Disable Reagent Pack");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Error"]("Button not showing as Enable Reagent Pack after clicking on Disable Reagent Pack");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        
+      }
+      else{
+        Log["Error"]("Disable Reagent pack button is not found -Unable to click");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      break;
+    
+    case  "ENABLE":
+        if(btnDisableReagentPack["Exists"])
+        {
+          if(objchild["Text"]=="Enable Reagent Pack")
+          {          
+            Log["Message"]("Enable Reagent Pack button is shown for the selected reagent row");              
+            ClickCtrl(btnDisableReagentPack)
+          }
+          Log["Message"]("sucessfully clicked on enable reagent Pack button of the selected reagent row");
+          aqUtils["Delay"](2000, "Wait for the reagent row to get enabled pack");
+          if(objchild["Text"]=="Disable Reagent Pack")
+          {
+            Log["Message"]("Button now showing as Disable Reagent Pack after clicking on Enable Reagent Pack");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Error"]("Button not showing as Disable Reagent Pack after clicking on Enable Reagent Pack");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+        else
+        {
+          Log["Error"]("Disable Reagent pack button is not found -Unable to click");
+          Log["PopLogFolder"]();
+          return false;
+        }
+        break;
+        
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyCHWellStatus(wellNumber,expectedWellStatus)
+{
+  try
+  {
+    Log["AppendFolder"]("VerifyCHWellStatus");
+    switch(aqString["ToUpper"](wellNumber))
+    {
+      case "WELL1":
+        var objcmbxWell = GetAutomationIDControl("ReagentNeeds_ReagentOverview","cmbbxCHWell1Status");
+        break;
+      case "WELL2":
+        break;
+        
+    }
+    
+    var actualwellStatus = GetComboBoxValueSelected(objcmbxWell, ""); 
+    if(aqString.Trim(actualwellStatus)==aqString["Trim"](expectedWellStatus))
+    {
+      Log["Message"]("well status of well" +wellNumber+" is displayed as "+actualwellStatus + "and expected status is "+ expectedWellStatus);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("well status of well" +wellNumber+" is displayed as "+actualwellStatus + "and expected status is "+ expectedWellStatus);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyCHWellCount(wellNumber,expectedWellCount)
+{
+  try
+  {
+    Log["AppendFolder"]("VerifyCHWellCount");
+    switch(aqString["ToUpper"](wellNumber))
+    {
+      case "WELL1":
+        var objtxtboxWellCount = GetAutomationIDControl("ReagentNeeds_ReagentOverview","txtBoxCHWell1Count");
+        break;
+      case "WELL2":
+        break;
+        
+    }
+    var actualWellCount = GetPropertyValue(objtxtboxWellCount,"Text")
+    if(VerifyControlText(objtxtboxWellCount,expectedWellCount))
+    {
+      Log["Message"]("count of well" +wellNumber+" is displayed as "+ actualWellCount +" and expected is :"+ expectedWellCount);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("count of well" +wellNumber+" is displayed as "+ actualWellCount+" and expected is :"+ expectedWellCount);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectSequenceTabForCHPairedPackAndVerifyReagentDetails(sequenceNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+{
+    Log["AppendFolder"]("Get the IM Primary reagent details from reagent loading screen")
+    var objParent = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "SequencePivotCHPairedPack");
+    var objChild = GetAllChildren(objParent,"AutomationId","SequeneNumberPivotItem");//will get 2 objects with this
+       
+    var tabcontrol
+    for(var j=0;j<objChild.length;j++)
+    {
+      if(objChild[j]["HelpText"]==sequenceNo)// needs to check this property in nezt stbl builds
+      {
+        tabcontrol= objChild[j]
+        break;
+      }
+    }
+    //if seq tab exists then verify reagnet details
+    if(tabcontrol)
+    {
+      ClickCtrl(tabcontrol);
+      Log["PopLogFolder"]()
+      return VerifyReagentDetails(reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+    }
+    else
+    {
+      Log["PopLogFolder"]()
+      Log["Message"]("Sequence tab does not exists for sequece no :"+sequenceNo);
+      return false;
+    }
+}
+
+//date on 28Jan2020- shrutika tyagi
+function VerifyIMPrimaryReagentPackUsableOrUnusableStateOnReagentLoadingScreen(expectedPosition,expectedState)
+{
+  try
+  {
+    Log["AppendFolder"]("Get the IM Primary reagent details from reagent loading screen");
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Reagent loading screen");
+    var reagents = new Array();    
+    var primaryReagentParentObj = GetAutomationIDControl("ReagentNeeds_ReagentLoading", "listIMPrimaryReagents");
+    
+    if(VerifyObjectExists(primaryReagentParentObj))
+    {
+      var reagentList = GetAllChildren(primaryReagentParentObj, "ClassName", "ListBoxItem");
+      
+      if(reagentList.length > 0)
+      {
+        reagentList = reagentList.reverse();
+        
+        for(var i=0; i< reagentList.length; i++)
+        {
+          var reagent = Getchild(reagentList[i], ["ClassName","AutomationId"], ["TextBlock","PositionTextBlock"]);
+          if(reagent["Text"] ==expectedPosition)
+          {
+            Log["Message"]("Position is found");
+            switch(aqString["ToUpper"](expectedState))
+            {
+              case "UNUSABLE" :
+                          if((reagent["HelpText"]=="Disabled")||(reagent["HelpText"]=="Expired"))
+                          {
+                            Log.Message("IMPrimary reagent at position "+expectedPosition + "is unusable and due to " +reagent["HelpText"])
+                            Log["PopLogFolder"]();                            
+                            return true;
+                          }
+                          else
+                          {
+                            Log.Message("IMPrimary reagent at position "+expectedPosition + "is not unusable and due to state is shown as :" +reagent["HelpText"])
+                            Log["PopLogFolder"]();                            
+                            return false;
+                          }
+                          break;
+                          
+              case "USABLE" :
+                          if(reagent["HelpText"]=="Idle")
+                          {
+                            Log.Message("IMPrimary reagent at position "+expectedPosition + " usable and state is " +reagent["HelpText"])
+                            Log["PopLogFolder"]();
+                            return true;
+                          } 
+                          else
+                          {
+                           Log.Message("IMPrimary reagent at position "+expectedPosition + "is not usable and due to state is shown as :" +reagent["HelpText"])
+                            Log["PopLogFolder"]();                           
+                            return false; 
+                          }
+                          break;
+            }
+          }
+        }//end of for
+      }      
+      else {
+        Log["Error"]("Unable to locate the reagent list from the reagent loading screen");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } 
+    else {
+      Log["Error"]("Unable to locate the IM primary regaents in the reagent loading screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetReagentRowColumnValues(expectedColumns,reagentName,seqNumber,lotNumber)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Get the values from expected columns in reagent row '" + reagentName + "' with sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber +"'" );
+    Log["Message"]("Expected columns are :"+expectedColumns)
+    var dictColumnValues  = new ActiveXObject("Scripting.Dictionary");
+    var filterExpandedState = IsDataGridDisplayedAsFullView();
+    var arrexpectedColumns = new Array();
+    arrexpectedColumns = expectedColumns["split"](",");
+    for(var i = 0;i<arrexpectedColumns.length;i++)
+    {
+        switch(arrexpectedColumns[i])
+                {
+                  
+                  case "Type" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Type",filterExpandedState);
+                        break;
+                  case "Reagent" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+                        break;
+                  case "Inventory" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Inventory",filterExpandedState);
+                        break;
+                  case "OnBoardStability" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","OnBoardStability",filterExpandedState);
+                        break;
+                  case "Sequence" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Sequence",filterExpandedState);
+                        break;
+                  case "CalInterval" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","CalInterval",filterExpandedState);
+                        break;
+                  case "CalTypeInUse" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","CalTypeInUse",filterExpandedState);
+                        break;
+                  case "Lot" :
+                        var columnindex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Lot",filterExpandedState);
+                        break;
+                }//end of switch
+                
+                var actualColumnValue= GetACoulmnValueInAReagentRowInReagentOverviewGrid(columnindex,reagentName,seqNumber,lotNumber)
+                
+                dictColumnValues.Add(aqConvert["VarToStr"](arrexpectedColumns[i]),actualColumnValue)
+    }
+    Log["PopLogFolder"]();
+    return dictColumnValues
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetACoulmnValueInAReagentRowInReagentOverviewGrid(columnindex,reagentName,seqNumber,lotNumber)
+{
+  try
+  {
+    Log["AppendFolder"]("ReagentOverview :: Get the all column values in reagent row '" + reagentName + "' with sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber +"'" );
+    
+    //click on reagent grid filetr expander control- to do in next stbl build
+    
+    //Get the datagrid container object for reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");
+
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    {
+      //get the row count of the reagent overview data grid      
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      };
+      
+      if(rowDetails.length > 0 )
+      {
+        var isReagentExists = false;  
+        //Iterate the rows  to get the row of the given sample id
+        for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+        {
+          //Get the All the cells in a row
+          var rowParent = rowDetails[rowIndex];
+          var datagridcells = GetAllChildren(rowParent, "ClassName", "GridCell");
+          datagridcells = datagridcells.reverse();
+          
+          //Get the column index of reagent name and sequence and lot no Cell to get the row
+          var filterExpandedState = IsDataGridDisplayedAsFullView();
+          var ReagentColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+          var SequenceColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Sequence",filterExpandedState);
+          var LotNoColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Lot",filterExpandedState);
+        
+          //Get the Code Cell
+          var ReagentNameCell = Getchild(datagridcells[ReagentColumnIndex], "ClassName", "TextBlock"); 
+          var SequenceNumberCell = Getchild(datagridcells[SequenceColumnIndex], "ClassName", "TextBlock"); 
+          var LotNoCell = Getchild(datagridcells[LotNoColumnIndex], "ClassName", "TextBlock"); 
+      
+          //Get the all textblocks in a row
+          var datagridCellsTextBlocks = GetAllChildren(rowParent, "ClassName", "TextBlock"); 
+          datagridCellsTextBlocks= datagridCellsTextBlocks.reverse();
+          
+          //Verify the reagent row exists
+          if((aqString.Trim(ReagentNameCell["Text"]) == reagentName)&& (aqString.Trim(SequenceNumberCell["Text"]) == seqNumber)&&(aqString.Trim(LotNoCell["Text"]) == lotNumber))
+          {
+            isReagentExists=true;
+            Log["Message"]("'" + reagentName + "' is available with the sequence number '" + seqNumber + "'" + " and lot no '" +lotNumber +"'" );
+            var expcolumnCellTextBlock = Getchild(datagridcells[columnindex], "ClassName", "TextBlock");
+            if(expcolumnCellTextBlock["Exists"])
+            {
+              expcolumnCellValue = expcolumnCellTextBlock["Text"]
+              Log["Message"]("Returning the cell  value  "+ expcolumnCellValue)
+              Log["PopLogFolder"]();
+              return expcolumnCellValue;
+            }
+            else
+            {
+              Log["Message"]("Cell text block object does not exist")
+              Log["PopLogFolder"]();
+              return false;
+            }
+          }//end of if      
+        }//end of outer for
+
+        if(!isReagentExists)
+        {
+          Log["Error"]("Unable to locate the reagent '" + reagentName + "' with the sequence number '" + seqNumber + "' in the reagent overview screen");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+      else {
+        Log["Error"]("Reagent overview doesn't have loaded with the any of the reagents. and the datagrid is empty");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } 
+    else 
+    {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyDisableEnableReagentPackButtonState(reagentName,seqNumber,lotNumber,disablePackButtonOrEnablePackButton)
+{
+  try
+  {
+    Log["AppendFolder"]("Reagents : Verify Enable or Disable Reagent Pack button state")
+    if(!SelectReagentByNameAndSequenceNumber(reagentName,seqNumber,lotNumber))
+        return false;
+    var objbtnDisableReagentPack = GetAutomationIDControl("ReagentNeeds_ReagentOverview","btnDisableReagentPack")
+    var objchild = Getchild(objbtnDisableReagentPack,"ClassName","TextBlock")
+
+    var actualvalue = GetPropertyValue(objbtnDisableReagentPack,"IsEnabled")
+    switch(aqString.ToUpper(disablePackButtonOrEnablePackButton))
+    {
+      case "DISABLEPACK":
+          if(objchild["Text"]=="Disable Reagent Pack")
+          {
+               Log["Message"]("Button is shown as Disable Reagent Pack as expected") 
+               if(actualvalue==true)
+               {
+                 Log["Message"]("Disable Reagent Pack Button is enabled")
+                 Log["PopLogFolder"]();
+                 return true;
+               }
+               else
+               {
+                  Log["Message"]("Disable Reagent Pack Button is disabled")
+                  Log["PopLogFolder"]();
+                  return false;
+               }
+          }
+          else if(objchild["Text"]=="Enable Reagent Pack")
+          {
+              Log["Message"]("Button is shown as Enable Reagent Pack and expected is to display as Disable Reagent Pack")
+              Log["PopLogFolder"]();
+              return false;
+          }
+          break;
+          
+      case "ENABLEPACK":
+          if(objchild["Text"]=="Enable Reagent Pack")
+          {
+               Log["Message"]("Button is shown as Enable Reagent Pack as expected") 
+               if(actualvalue==true)
+               {
+                 Log["Message"]("Enable Reagent Pack Button is enabled")
+                 Log["PopLogFolder"]();
+                 return true;
+               }
+               else
+               {
+                  Log["Message"]("Enable Reagent Pack Button is disabled")
+                  Log["PopLogFolder"]();
+                  return false;
+               }
+          }
+          else if(objchild["Text"]=="Disable Reagent Pack")
+          {
+              Log["Message"]("Button is shown as Disable Reagent Pack and expected is to display as Enable Reagent Pack")
+              Log["PopLogFolder"]();
+              return false;
+          }
+          break;
+    }
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyHydraReagentRowIsEnabled(reagentName,sequenceNo,lotNo)
+{ 
+try
+  { 
+    Log["AppendFolder"]("Inventory :: Verify reagent row  "+ "'" + reagentName + "' with sequence number '" + sequenceNo + "' and Lot Number "+ lotNo +" is enabled or disabled in Reagents Grid");;
+        
+    //Get the reagent overview datagrid
+    var reagentOverviewDataGrid = GetAutomationIDControl("ReagentNeeds_ReagentOverview", "dtgrdReagentOverview");  // changed workflow code here as per new structure- by shrutika
+    
+    //Check the reagent overview datagrid displayed    
+    if(VerifyObjectExists(reagentOverviewDataGrid)) 
+    { 
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(reagentOverviewDataGrid);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      } else if(rowDetails.length > 0 )  {
+        
+          var isReagentVerified = false;
+
+          //Get the Column index of Event Code & Message Cell
+          var filterExpandedState = IsDataGridDisplayedAsFullView();
+          var ReagentColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview","Reagent",filterExpandedState);
+          var SequenceColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Sequence",filterExpandedState);
+          var LotNoColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Reagents_ReagentOverview", "Lot",filterExpandedState);
+          //var isDataExist = false;
+        
+          //Iterate the rows  to get the row of the given sample id
+          var rowno;
+          for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+          {
+            //Get the All the cells in a row
+            var rowParent = rowDetails[rowIndex];
+            var datagridcells = GetAllChildren(rowParent, "ClassName", "GridCell");
+            datagridcells = datagridcells.reverse();
+      
+            //Get the Code Cell
+            var ReagentNameCell = Getchild(datagridcells[ReagentColumnIndex], "ClassName", "TextBlock"); 
+            var SequenceNumberCell = Getchild(datagridcells[SequenceColumnIndex], "ClassName", "TextBlock"); 
+            var LotNoCell = Getchild(datagridcells[LotNoColumnIndex], "ClassName", "TextBlock"); 
+            Log["Message"]("Values for troubleshooting : ReagentNameCell-" +GetNativeObjectName(ReagentNameCell) + " SequenceNumberCell-"+ GetNativeObjectName(SequenceNumberCell) + " LotNoCell-"+GetNativeObjectName(LotNoCell));
+      
+            //Verify the Code value exist
+            if((aqString.Trim(ReagentNameCell["Text"]) == reagentName)&& (aqString.Trim(SequenceNumberCell["Text"]) == sequenceNo)&&(aqString.Trim(LotNoCell["Text"]) == lotNo))
+            {
+              Log["CheckPoint"]("'" + reagentName + "' with sequence number '" + sequenceNo + "' and Lot Number "+ lotNo +" is available in Reagents Grid");
+              isReagentVerified = true;
+              rowno = rowIndex;
+              break;
+            }
+          }
+        
+        if(isReagentVerified)
+        {
+          if(rowDetails[rowno]["HelpText"]=="True")
+          {
+            Log["Message"]("Reagent row is enabled")
+            Log["PopLogFolder"]();
+            return true; 
+          }
+          else
+          {
+            Log["Message"]("Reagent row is disabled")
+            Log["PopLogFolder"]();
+            return false; 
+          }
+        }
+        else {
+          Log["Message"]("Unable to locate the reagent '" + reagentName + "' with sequence number '" + sequenceNo + "'" + "' and Lot Number "+ lotNo); // modified by shrutika to add lot no and message not error
+          Log["PopLogFolder"]();
+          return false; 
+        }
+        
+      } else {
+        Log["Error"]("Reagent overview doesn't have loaded with the any of the reagents. and the datagrid is empty");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the reagent overview datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

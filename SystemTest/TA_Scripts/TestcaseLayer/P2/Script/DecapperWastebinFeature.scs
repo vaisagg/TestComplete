@@ -1,0 +1,1760 @@
+﻿
+//USEUNIT StepDefinition
+//USEUNIT DecapperWasteBinFeatureSteps
+
+function DecapperWasteBin()
+{
+  InitializeMetaData();
+    
+  Log["AppendFolder"]("Feature: Decapper WasteBin"); 
+
+  GWT178923_01_DecapperWasteBinOK();
+  
+  GWT178925_01_DecapperWasteBinAlmostFull();
+  
+  GWT178925_02_DecapperWasteBinNearToFull();
+  
+  GWT178972_01_DecapperReadyAndWasteBinOK();
+   
+  GWT178972_02_DecapperReadyAndWasteBinAlmostFull();
+  
+  GWT178951_01_DecapperWasteBinNotPresentWithOK();
+   
+  GWT178951_02_RemoveWasteBin();
+      
+  GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull();
+  
+  GWT178951_04_WasteBinNotPresent_BinStatusFull();
+    
+  GWT178957_01_PersistWasteBinStatusOKOnSystemResume();
+  
+  GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume();
+  
+  GWT178957_03_PersistWasteBinStatusFullOnSystemResume();
+  
+  GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK();//
+  
+  GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull();
+  
+  GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull();
+  
+  GWT190359_04_DecapperStoppedWasteBinOverflow();
+  
+  GWT190359_05_DecapperStoppedWasteBinNotPresent();
+  
+  GWT190359_06_DecapperStoppedWasteBinNotPresent();
+  
+  
+  GWT187979_01_ArchiveRackNotConfiguredForUse();
+  
+  GWT186492_01_DecapperInProcessingWasteBinOK();
+  
+  GWT186492_02_DecapperInProcessingWasteBinAlmostFull();
+  
+  GWT186492_03_DecapperInProcessingWasteBinFull();
+  
+  GWT186492_04_DecapperInProcessingWasteBinOverflown();   //Commented out script
+  
+  GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin();
+  
+  GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin();
+  
+  GWT186185_01_DecapperWasteBinCountReset();
+  
+  Log["PopLogFolder"](); 
+  
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinTeardown";
+
+  Log["AppendFolder"]("Teardown: Decapper WasteBin"); 
+  DecapperWastebinTeardown();
+  Log["PopLogFolder"]();
+
+}
+
+function GWT178925_01_DecapperWasteBinAlmostFull()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT178925_01: Waste bin present - updated cap count equals or exceeds the almost full threshold and is less than the full threshold ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperWasteBinAlmostFull"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinAlmostFull";
+
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperConfiguredAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("Given WasteBin Status Is OK"); 
+  if(!GivenTheWasteBinStatusIsOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+ 
+   Log["AppendFolder"]("When there is successfull decapping"); 
+   if(!WhenThereIsSuccessfulDecapping())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   Log["AppendFolder"]("When updated Capcount equals Or exceeds the Almost full Threshold And is Less Than The full Threshold"); 
+   if(!WhenUpdatedCapcountEqualsOrExceedsTheAlmostFullThresholdAndIsLessThanTheFullThreshold())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then WasteBin Status Is Still Almost Full"); 
+   if(!ThenWasteBinStatusIsStillAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+function GWT178925_02_DecapperWasteBinNearToFull()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT178925_02: Waste bin present - updated cap count equals or exceeds the almost full threshold and is less than the full threshold ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperWasteBinNearToFull"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinNearToFull";
+
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured");
+  if(!GivenDecapperConfiguredNearToFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Given WasteBin Status Is Almost full"); 
+  if(!GivenTheWasteBinStatusIsAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+ 
+   Log["AppendFolder"]("When there is successfull decapping"); 
+   if(!WhenThereIsSuccessfulDecappingWasteBinNearToFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   Log["AppendFolder"]("When updated Capcount exceeds the Almost full Threshold And is Less Than The full Threshold"); 
+   if(!WhenUpdatedCapcountExceedsTheAlmostFullThresholdAndIsLessThanTheFullThreshold())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then WasteBin Status Is Still Almost Full"); 
+   if(!ThenWasteBinStatusNearToFullIsStillAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["PopLogFolder"]();
+}
+
+//Scenario 8: Waste Bin Not Present - Waste Bin status is "OK" or "Almost Full" or "Full"
+function GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull()
+{
+  Log["AppendFolder"]("GWT178951_03: Waste Bin Not Present - Waste Bin status is Almost Full");
+  NetworkSuite["Variables"]["SHScenario"] = "DecappedSample"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperReadyWasteBinAlmostFull";
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperConfiguredWasteBinAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given The waste bin status is almost full")
+  if(!GivenWasteBinIsAlmostFullRemoveWasteBin())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+ 
+   
+   Log["AppendFolder"]("When the waste bin is detected as not present")
+   if(!WhenTheWasteBinIsDetectedAsNotPresent())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then the waste bin status is not present")
+   if(!ThenWasteBinStatusIsNotPresentBinStatusAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+//Joby
+//Scenario 9: Waste Bin Not Present - Waste Bin status is "OK" or "Almost Full" or "Full"
+function GWT178951_04_WasteBinNotPresent_BinStatusFull()
+{ 
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT178951_04: Waste Bin Not Present - Waste Bin status is Full");
+  NetworkSuite["Variables"]["DecapperScenario"] = "WasteBinNotPresentBinFull";
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperConfiguredFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given The waste bin status is full")
+  if(!GivenWasteBinStatusFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+	Log["AppendFolder"]("When the waste bin is detected as not present ")
+   if(!WhenTheWasteBinIsDetectedAsNotPresent())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then the waste bin status is not present")
+   if(!ThenWasteBinStatusIsNotPresentBinFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+
+//Scenario 5
+function GWT178972_02_DecapperReadyAndWasteBinAlmostFull()
+{
+  Log["AppendFolder"]("GWT178972_02: Decapper in Ready/Processing state - Waste bin status is Almost Full");
+  NetworkSuite["Variables"]["SHScenario"] = "DecappedSample"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperReadyWasteBinAlmostFull";
+  
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperIsConfigured())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is Almost Full");  
+  if(!GivenWasteBinIsAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("When a capped tube is identified as candidate for decapping");
+   if(!(WhenACappedTubeIsIdentifiedAsCandidateForDecappingAndWasteBinAlmostFull()))
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then system automatically routes the tube to the decapper");
+   if(!ThenSystemAutomaticallyRoutesTheTubeToTheDecapperWasteBinAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();   
+   Log["PopLogFolder"]();
+}
+
+//Scenario 4
+function GWT178972_01_DecapperReadyAndWasteBinOK()
+{
+  Log["AppendFolder"]("GWT178972_01: Scenario: Decapper in Ready/Processing state - Waste bin status is OK");
+  NetworkSuite["Variables"]["SHScenario"] = "DecappedSample";
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperReadyWasteBinOK";
+  
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperIsConfigured())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is OK");  
+  if(!GivenTheWasteBinStatusIsOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("When a capped tube is identified as candidate for decapping");
+   if(!(WhenACappedTubeIsIdentifiedAsCandidateForDecapping()))
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then system automatically routes the tube to the decapper");
+   if(!ThenSystemAutomaticallyRoutesTheTubeToTheDecapper())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();   
+   Log["PopLogFolder"]();
+}
+
+function GWT178951_02_RemoveWasteBin()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT178951_02: Scenario: Decapper in Ready/Processing state - Waste bin status is OK");
+  NetworkSuite["Variables"]["SHScenario"] = "DecappedSample";
+  NetworkSuite["Variables"]["DecapperScenario"] = "RemoveWasteBin";
+  NetworkSuite["Variables"]["DCapSampleID"] = "";
+  
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperIsConfigured())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is OK");  
+  if(!GivenTheWasteBinStatusIsOK())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+   Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("When the waste bin is detected as not present");  
+  if(!WhenTheWasteBinIsDetectedAsNotPresentAfterLoadingASample())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("Then the waste bin status is 'Not Present'");  
+  if(!ThenWasteBinStatusIsNotPresentRemoveWasteBin())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+//****************************************************
+// This function is to verify whether the wastebin status is ok
+// when the updted capcount is less than Almost Full.
+// And decapper remains in ready and processing
+//****************************************************
+
+function GWT178923_01_DecapperWasteBinOK()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT178923_01: Waste bin present - updated cap count equals is less than the Almostfull threshold ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperWasteBinOK"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinOK";
+  
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "I");    
+  
+  //Given Decapper Is Configured
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperModuleConfigured())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "F");
+    Log["Error"]("Test failed : Precondition Failed - Decapper is not configured properly");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  
+//  
+  //Given WasteBin Status is OK
+  Log["AppendFolder"]("Wastebin status is OK"); 
+  if(!GivenTheWasteBinStatusIsOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "F");
+    Log["Error"]("Test failed : Precondition Failed- WasteBin Status is not OK");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+ 
+   
+   //Load Samples for Decapping
+   Log["AppendFolder"]("When there is successfull Decapping"); 
+   if(!WhenDecappingIsSuccessfull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   //Verify whether the updated count is lessthan almost full threshold
+   Log["AppendFolder"]("When the updated capcount is less than AlmostFull"); 
+   if(!WhenUpdatedCapcountLessThanTheAlmostFullThreshold()) 
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Verify whether the wastebin status is OK
+   Log["AppendFolder"]("Then Wastebin status is still OK"); 
+   if(!ThenWasteBinStatusIsStillOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+
+
+
+
+//****************************************************
+// This function is to verify whether the wastebin status is ok
+// when the updted capcount is less than Almost Full.
+// And decapper remains in ready and processing
+//****************************************************
+
+
+function GWT178951_01_DecapperWasteBinNotPresentWithOK()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT178951_01: Waste bin Not present - Waste Bin Status is OK ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperWasteBinNotPresentWithOK";   
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinNotPresentWithOK";
+  
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "I");    
+
+  //Given Decapper Is Configured
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperModuleConfiguredWithWasteBin())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "F");
+    Log["Error"]("Test failed : Precondition Failed - Decapper is not configured properly");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  //Given WasteBin Status is OK
+  Log["AppendFolder"]("Given Wastebin Status is OK"); 
+  if(!GivenTheWasteBinStatusIsOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "F");
+    Log["Error"]("Test failed : Precondition Failed- WasteBin Status is not OK");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();  
+   
+   
+   
+   //When the Wastebin is Removed
+   Log["AppendFolder"]("When the Wastebin is Removed"); 
+  if(!WhenTheWasteBinIsDetectedAsNotPresent())
+   {
+    
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "F");
+    Log["Error"]("Test failed : When Bin is not Removed Properly");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"](); 
+   
+   
+   //Then Wastebin status is displayed as Not Present
+   Log["AppendFolder"]("Then the Wastebin status is displayed as Not Present"); 
+   if(!ThenWasteBinStatusIsNotPresent())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "F");
+    Log["Error"]("Test failed : WasteBin Status is Not displayed Correctly");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();    
+   Log["PopLogFolder"]();
+}
+
+// scenario 10:
+function GWT178957_01_PersistWasteBinStatusOKOnSystemResume()
+{
+
+  Log["AppendFolder"]("GWT178957_01:Persist Waste Bin cap quantity on System Resume - WasteBin Status OK");
+  NetworkSuite["Variables"]["SHScenario"] = "PersistWasteBinOKOnSystemResume";
+  NetworkSuite["Variables"]["DecapperScenario"] = "PersistWasteBinOKOnSystemResume"; 
+
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "I");  
+
+
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperConfiguredForPersistWasteBinStatusOKOnSystemResume())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin is present");
+  if(!GivenWaseBinStausOKIsPresent())
+   {
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When the system is resumed");
+   if(!WhenTheSystemIsResumedForWasteBinOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then the waste bin cap count remains the same as the last known cap count");
+   if(!ThenWasteBinCapCountRemainsSameAsLastKnownCapCountForWasteBinOK())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+
+   Log["PopLogFolder"]();
+}
+
+
+
+//scenario 11:
+function GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume()
+{
+  Log["AppendFolder"]("GWT178957_02:Persist Waste Bin cap quantity on System Resume - WasteBin Status Almost full");
+  NetworkSuite["Variables"]["SHScenario"] = "PersistWasteBinAlmostFullOnSystemResume";
+  NetworkSuite["Variables"]["DecapperScenario"] = "PersistWasteBinAlmostFullOnSystemResume"; 
+
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperConfiguredForPersistWasteBinStatusAlmostFullOnSystemResume())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin is present");
+  if(!GivenWaseBinStausAlmostFullIsPresent())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+
+   Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When the system is resumed");
+   if(!WhenTheSystemIsResumedForWasteBinAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("Then the waste bin cap count remains the same as the last known cap count");
+   if(!ThenWasteBinCapCountRemainsSameAsLastKnownCapCountForWasteBinAlmostFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+
+   Log["PopLogFolder"]();
+}
+
+function GWT178957_03_PersistWasteBinStatusFullOnSystemResume()
+{ 
+  Log["AppendFolder"]("GWT178957_03:Persist Waste Bin cap quantity on System Resume");
+  NetworkSuite["Variables"]["SHScenario"] = "PersistWasteBinOnSystemResume";
+  NetworkSuite["Variables"]["DecapperScenario"] = "PersistWasteBinStatusFullOnSystemResume"; 
+
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "I");  
+  
+  Log["AppendFolder"]("Given Decapper Is Configured"); 
+  if(!GivenDecapperConfiguredForPersistWasteBinStatusFullOnSystemResume())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given waste bin is present");
+  if(!GivenWasteBinIsPresentAndStatusFull())
+   {
+    
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+ 
+   Log["AppendFolder"]("When the system is resumed");
+   if(!WhenTheSystemIsResumedForWasteBinFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+    Log["AppendFolder"]("Then waste bin cap count remains the same as the last known cap count");
+   if(!ThenWasteBinCapCountRemainsSameAsLastKnownCapCountForWasteBinFull())
+   {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["PopLogFolder"]();
+}
+
+
+function GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK()
+{
+  Log["AppendFolder"]("GWT190359_01:Loading of capped sample tubes when decapper is in stopped state and waste bin status is OK");
+  
+  Log["AppendFolder"]("Given there is only one decapper on the system And there are Capped samples to be decapped");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapWhenStoppedAndWasteBinOK";
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapWhenStoppedAndWasteBinOK"; 
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "I");
+  if(!GivenThereIsOnlyOneDecapperOnTheSystem())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the decapper is in stopped state");
+  if(!WhenTheDecapperIsInStoppedState())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is OK");
+  if(!WhenTheWasteBinStatusIsOK())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the samples are not decapped");
+  if(!ThenTheSamplesAreNotDecapped())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And are unloaded to the SH");
+  if(!ThenUnloadedToTheSH())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+function GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull()
+{
+  Log["AppendFolder"]("GWT190359_02:Loading of capped sample tubes when decapper is in stopped state and waste bin status is Almost full");
+  
+  Log["AppendFolder"]("Given there is only one decapper on the system And there are Capped samples to be decapped");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapWhenStoppedAndWasteBinOK";
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperReadyWasteBinAlmostFull"; 
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "I");
+  if(!GivenThereIsOnlyOneDecapperOnTheSystemWasteBinAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is Almost full");
+  if(!WhenTheWasteBinStatusIsAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("When the decapper is in stopped state");
+  if(!WhenTheDecapperIsInStoppedState())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ 
+  
+  Log["AppendFolder"]("Then the samples are not decapped");
+  if(!ThenTheSamplesAreNotDecappedWastebinAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And are unloaded to the SH");
+  if(!ThenUnloadedToTheSHWastebinAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+function GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull()
+{
+  
+  Log["AppendFolder"]("GWT190359_03:Loading of capped sample tubes when decapper is in stopped state and waste bin status is Full");
+  
+  Log["AppendFolder"]("Given there is only one decapper on the system And there are Capped samples to be decapped");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapWhenStoppedAndWasteBinOK";
+  NetworkSuite["Variables"]["DecapperScenario"] = "PersistWasteBinStatusFullOnSystemResume"; 
+ ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "I");
+  if(!GivenThereIsOnlyOneDecapperOnTheSystemWasteBinFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is full");
+  if(!WhenTheWasteBinStatusIsFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("When the decapper is in stopped state");
+  if(!WhenTheDecapperIsInStoppedState())
+  {
+    
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ 
+  
+  Log["AppendFolder"]("Then the samples are not decapped");
+  if(!ThenTheSamplesAreNotDecappedWastebinFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And are unloaded to the SH");
+  if(!ThenUnloadedToTheSHWastebinFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+
+} 
+
+function GWT190359_04_DecapperStoppedWasteBinOverflow()
+{
+  Log["AppendFolder"]("GWT190359_04: Loading capped sample tubes when decapper is in Stopped state");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedWasteBinOverflow"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "I");
+
+  Log["AppendFolder"]("Given there is only one decapper on the system And there are Capped samples to be decapped");
+  if(!GivenThereIsOnlyOneDecapperOnTheSystem())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the decapper is in stopped state");
+  if(!WhenTheDecapperIsInStoppedState())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is Overflow");
+  if(!WhenTheWasteBinStatusIsOverflow())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the samples are not decapped");
+  if(!ThenTheSamplesAreNotDecappedBinStatusOverflow())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And are unloaded to the SH");
+  if(!ThenUnloadedToTheSHWasteBinOverflow())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT190359_05_DecapperStoppedWasteBinNotPresent()
+{
+  Log["AppendFolder"]("GWT190359_05: Loading capped sample tubes when decapper is in Stopped state");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedWasteBinOverflow"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "I");
+
+  Log["AppendFolder"]("Given there is only one decapper on the system And there are Capped samples to be decapped");
+  if(!GivenThereIsOnlyOneDecapperOnTheSystem())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the decapper is in stopped state");
+  if(!WhenTheDecapperIsInStoppedState())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the waste bin status is not present");
+  if(!WhenTheWasteBinStatusIsNotPresent())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the samples are not decapped");
+  if(!ThenTheSamplesAreNotDecappedWasteBinNotPresent())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And are unloaded to the SH");
+  if(!ThenUnloadedToTheSHWasteBinNotPresent())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT190359_06_DecapperStoppedWasteBinNotPresent()
+{
+  Log["AppendFolder"]("GWT190359_06: Loading capped sample tubes when decapper is in Stopped state");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedWasteBinOKRemoveWasteBin"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "I");
+
+  Log["AppendFolder"]("Given there is only one decapper on the system And there are Capped samples to be decapped");
+  if(!GivenThereIsOnlyOneDecapperOnTheSystem())
+  {
+    ReportTestStatusToResultXML("Decapper Wsatebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the decapper is in stopped state And the waste bin status is not present");
+  if(!WhenTheWasteBinStatusIsOKRemoveWasteBin())
+  {
+    
+    ReportTestStatusToResultXML("Decapper Wsatebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the samples are not decapped");
+  if(!ThenTheSamplesAreNotDecappedBinStatusOKRemoveWasteBin())
+  {
+    ReportTestStatusToResultXML("Decapper Wsatebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And are unloaded to the SH");
+  if(!ThenUnloadedToTheSHBinStatusOKRemoveWasteBin())
+  {
+    ReportTestStatusToResultXML("Decapper Wsatebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+//Joby
+function GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin()
+{
+  Log["AppendFolder"]("GWT186167_01:Loading of capped sample tubes when decapper is in stopped state and waste bin status is OK");
+    
+  Log["AppendFolder"]("Given that Decapper is in the stopped state");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperResumingAfterWasteBinOpenClose";
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperResumingAfterWasteBinOpenClose"; 
+  ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "I");
+  if(!GivenDecapperIsInStoppedState())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Last Known waste Status is OK");
+  if(!WhenTheWasteBinStatusIsOK())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    
+  Log["AppendFolder"]("Decapper Stopped Due to Waste Bin Removed");
+  if(!DecapperStoppedDueToWasteBinRemoved())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Waste Bin Open/Close does not trigger count reset");
+  if(!WhenWasteBinOpenCloseDoesNotTriggerCountReset())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Waste Bin is not  Overflowed after closing Waste Bin");
+  if(!WhenWasteBinIsNotOverflowedAfterClosingWasteBin())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Decapper resumes decapping");
+  if(!ThenDecapperResumesDecapping())
+  {
+    
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Waste Bin Status is OK");
+  if(!ThenWasteBinStatusIsOK())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Waste Bin count is not reset");
+  if(!ThenWasteBinCountIsNotReset())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+function GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin()
+{
+
+  Log["AppendFolder"]("GWT186167_02:Loading of capped sample tubes when decapper is in stopped state and waste bin status is OK");
+  
+  Log["AppendFolder"]("Given that Decapper is in the stopped state");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperResumingAfterWasteBinOverflow";
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperResumingAfterWasteBinOverflow"; 
+  ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "I");
+  if(!GivenDecapperIsInStoppedState())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Last Known waste Status is OK");
+  if(!WhenTheWasteBinStatusIsOK())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Decapper Stopped Due to Waste Bin Overflow");
+  if(!DecapperStoppedDueToWasteBinOverflow())
+  {
+    
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Waste Bin Open/Close does not trigger count reset");
+  if(!WhenWasteBinOpenCloseNotTriggerCountReset())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Waste Bin is not  Overflowed after closing Waste Bin");
+  if(!WhenWasteBinIsNotOverflowedAfterClosingWasteBin())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Decapper resumes decapping");
+  if(!ThenDecapperResumesDecapping())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Waste Bin Status is OK");
+  if(!ThenWasteBinStatusIsOK())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Waste Bin count is not reset");
+  if(!ThenWasteBinCountIsNotResetOverflow())
+  {
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+} 
+
+function GWT186492_01_DecapperInProcessingWasteBinOK()
+{
+  Log["AppendFolder"]("GWT186492_01: Decapper is in processing state - Waste bin status is OK");
+
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperProcessingWasteBinOK"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_01_DecapperInProcessingWasteBinOK", "I");
+  Log["AppendFolder"]("Given that the decapper is in processing state");
+
+  if(!GivenThatTheDecapperIsInProcessingState())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_01_DecapperInProcessingWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("When there are no capped tubes routed to the decapper for certain time And wastebin status is OK");
+  if(!WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinOK())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_01_DecapperInProcessingWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then the system transitions to stopped state");
+  if(!ThenTheSystemTransitionsToStoppedStateWasteBinOK())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_01_DecapperInProcessingWasteBinOK", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"](); 
+}
+
+function GWT186492_02_DecapperInProcessingWasteBinAlmostFull()
+{
+  Log["AppendFolder"]("GWT186492_02: Scenario: Decapper is in processing state - Waste bin goes to Almost Full");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperProcessingWasteBinAlmostFull"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperInProcessingWasteBinFull";
+
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_02_DecapperInProcessingWasteBinAlmostFull", "I");
+  
+  Log["AppendFolder"]("Given that the decapper is in processing state");
+
+  if(!GivenThatTheDecapperIsInProcessingState())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_02_DecapperInProcessingWasteBinAlmostFull", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["AppendFolder"]("When there are no capped tubes routed to the decapper for certain time And wastebin status is OK");
+
+  if(!WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinAlmostFull())
+  {
+    
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_02_DecapperInProcessingWasteBinAlmostFull", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  Log["AppendFolder"]("Then the system transitions to stopped state");
+
+  if(!ThenTheSystemTransitionsToStoppedStateWasteBinAlmostFull())
+  {
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_02_DecapperInProcessingWasteBinAlmostFull", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"](); 
+}
+
+
+function GWT186492_03_DecapperInProcessingWasteBinFull()
+{
+  Log["AppendFolder"]("GWT186492_03: Decapper is in processing state - Waste bin status is not OK (Full)");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperInProcessingWasteBinFull"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperInProcessingWasteBinFull";
+
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "I");
+  
+  Log["AppendFolder"]("Given that the decapper is in processing state");
+    
+    if(!GivenThatTheDecapperIsInProcessingState())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When there are no capped tubes routed to the decapper for certain time");
+
+    if(!WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinFull())
+    {
+      
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   
+    Log["AppendFolder"]("And wastebin status is not OK");
+    if(!AndWastebinStatusIsNotOK())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("Then the system transitions to stopped state");
+
+    if(!ThenTheSystemTransitionsToStoppedStateWasteBinFull())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"](); 
+} 
+
+
+function GWT186492_04_DecapperInProcessingWasteBinOverflown()
+{
+  Log["AppendFolder"]("GWT186492_04: Decapper is in processing state - Waste bin status is not OK (Overflown)");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperInProcessingWasteBinFull"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperInProcessingWasteBinFull";
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "I");
+    
+  Log["AppendFolder"]("Given that the decapper is in processing state");
+    
+    if(!GivenThatTheDecapperIsInProcessingState())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "F")
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When there are no capped tubes routed to the decapper for certain time");
+    if(!WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinOverflown())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"](); 
+   
+    Log["AppendFolder"]("And wastebin status is Overflown");
+    if(!AndWastebinStatusIsOverflown())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("Then the system transitions to stopped state");
+    if(!ThenTheSystemTransitionsToStoppedStateWasteBinOverflown())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+
+
+    Log["PopLogFolder"](); 
+
+} 
+
+
+
+function GWT186185_01_DecapperWasteBinCountReset()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT186185_01: Decapper is stopped, waste bin status: Full and waste bin count is reset");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperWasteBinCountReset"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "PersistWasteBinStatusFullOnSystemResume";
+  
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "I");
+  
+  Log["AppendFolder"]("Given that the decapper is in Stopped state");
+    
+    if(!GivenThatTheDecapperIsInStoppedState())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("When last known waste status is full and decapper stopped due to waste bin full");
+    
+    if(!WhenTheLastKnownWasteStatusIsFullAndDecapperStopped())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And WasteBin open or close triggers count reset");
+    if(!WhenWastebinOpenOrCloseTriggersCountReset())
+    {
+      
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("And wastebin does not result in overflow after closing the waste bin");
+    if(!AndWastebinDoesNotResultInOverflowAfterClosingTheWasteBin())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then decapper resumes decapping");
+    if(!ThenDecapperResumesDecapping())
+    {
+      
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And wastebin status is OK");
+    if(!ThenWasteBinStatusIsOK())
+    {
+      
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And wastebin count is reset");
+    if(!ThenWasteBinCountIsReset())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And an entry is made in event log to indicate that waste bin  is replaced empty");
+    if(!ThenAnEntryIsMadeInEventLogToIndicateWastebinIsReplacedEmpty())
+    {
+      ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+
+    
+} 
+
+function GWT187979_01_ArchiveRackNotConfiguredForUse()
+{
+  Log["AppendFolder"]("GWT187979_01: Archive racks not configured for use");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperInProcessingWasteBinFull"; 
+  ReportTestStatusToResultXML("Decapper Processing State", "GWT187979_01_ArchiveRackNotConfiguredForUse", "I");
+  
+  Log["AppendFolder"]("Given archive racks are not configured to be used in the system"); 
+  if(!GivenArchiveRacksAreNotConfiguredToBeUsedInTheSystem())
+  {
+    
+    ReportTestStatusToResultXML("Decapper Processing State", "GWT187979_01_ArchiveRackNotConfiguredForUse", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["AppendFolder"]("When operator navigates through configuration");
+
+  if(!WhenOperatorNavigatesThroughConfigurationScreens())
+  {
+    ReportTestStatusToResultXML("Decapper Processing State", "GWT187979_01_ArchiveRackNotConfiguredForUse", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("Then archive racks related configuratios are not available");
+  if(!ThenArchiveRacksRelatedConfigurationsAreNotAvailable())
+  {
+    
+    ReportTestStatusToResultXML("Decapper Processing State", "GWT187979_01_ArchiveRackNotConfiguredForUse", "F"); 
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"](); 
+}

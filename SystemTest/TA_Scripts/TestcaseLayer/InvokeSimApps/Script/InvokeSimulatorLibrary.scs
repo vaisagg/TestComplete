@@ -1,0 +1,128 @@
+﻿//USEUNIT SHLibraries
+//USEUNIT CCLibraries
+//USEUNIT IALibraries
+//USEUNIT CommonUtilities
+
+function InvokeSHSim()
+{ 
+  try
+  {
+      var strAppName=" SH"
+      var strAppPath = Project["Variables"]["SH_BatchFile"];
+  
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+      
+      InvokeSH(strAppName,strAppPath,"","")
+      
+       //Check the SH RAMP Service is running
+      var res = StartService(".", "RAMP");
+      if(res == true)
+      {
+        Log.Message("The SH RAMP Service started successfully or already started"); 
+      }
+      else
+      {
+        Log.Error("Unable to start the SH RAMP Service");
+      }
+      
+      //Check the SH Module Manager Service is running
+      var res = StartService(".", "SampleHandlerModuleManagerService");
+      if(res == true)
+      {
+        Log.Message("The SH Module Manager Service started successfully or already started"); 
+        return true;
+      }
+      else
+      {
+        Log.Error("Unable to start the SH Module Manager Service");
+        return false;
+      }    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+  }
+}
+
+function InvokeIASim()
+{ 
+  try
+  {
+      var strAppName=" IA"
+      var strAppPath = Project["Variables"]["IA_BatchFile"];
+      var strAMSimpath= Project["Variables"]["AM_Simulator"];
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+      var strProcessName=Project["Variables"]["IA_ProcessName"];
+      var strSimProcessName=Project["Variables"]["SIM_ProcessName"];
+      var Testobj=Aliases.ICMessageViewer.ICMsgView
+      var SimTestObj=Aliases.AMSimulator.MainForm
+      strAppDriverpath= Project["Variables"]["DriverPath"];
+      Log.Enabled=false;
+      //Check if IA Process exists
+      if(Sys.Process(strProcessName)["Exists"]==false)
+      {
+        Log.Enabled=true;
+        InvokeIA(strAppName,strAppPath,"",strProcessName)
+        aqUtils.Delay(65000);
+        InvokeIA(strAppName,strAMSimpath,"",strSimProcessName)
+        if (Aliases.AMSimulator.dlgAMSimulator.btnOK.Exists)
+        {
+          Aliases.AMSimulator.dlgAMSimulator.btnOK.Click()
+        }
+      }     
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+  }
+}
+
+
+function InvokeCCSim()
+{ 
+  try
+  {
+      var strAppName=" CC"
+      var strAppPath = Project["Variables"]["CC_BatchFile"];
+     
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+      var CCProcessobj = Aliases.TriModuleDisplay
+      //Check if the CC Process exists
+      if(CCProcessobj.Exists==false)
+      {
+        InvokeCC(strAppName,strAppPath,"","")
+        aqUtils.Delay(65000); 
+      }
+      
+      //Check the CC RAMP Service is running
+      var res = StartService(".", "RAMP");
+      if(res == true)
+      {
+        Log.Message("The CC RAMP Service started successfully or already started"); 
+      }
+      else
+      {
+        Log.Error("Unable to start the CC RAMP Service");
+      }
+      
+      //Check the CC Module Manager Service is running
+      var res = StartService(".", "CC Module Manager");
+      if(res == true)
+      {
+        Log.Message("The CC Module Manager Service started successfully or already started"); 
+        return true;
+      }
+      else
+      {
+        Log.Error("Unable to start the CC Module Manager Service");
+        return false;
+      }    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+  }
+}

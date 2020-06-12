@@ -1,0 +1,4012 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT ControlAccessLibrary
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+//USEUNIT LocalizationUtilities
+
+
+// ***********************************************************************************************
+// Function Name : CheckSystemStatus()
+// Function Description: This function verifies the Status of and return True or False
+// Inputs : 
+// ***********************************************************************************************
+
+
+function CheckSystemStatus(DeploymentType)
+{
+  Log.AppendFolder("System::CheckSystemStatus");
+  var Navigation = InvokeWorkflow("System_Status_System");
+  var boolFlag = false;
+  //var LangID=GetCurrentLanguageSettings();
+  var transReady=GetTranslatedString("Ready","")
+  var transStandby=GetTranslatedString("Standby","")
+  var transProcessing=GetTranslatedString("Processing","")
+  switch(DeploymentType)
+  {
+    case "SCI":
+              for(i=1; i < 120; i++)
+              {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+                var IAStatus = GetModuleStatus("IA");
+
+                //if ( (VMMStatus=="Ready" || VMMStatus=="Standby") && (SHStatus=="Ready" || SHStatus=="Standby") && (CCStatus=="Ready" || CCStatus=="Standby")&& (IAStatus=="Ready" || IAStatus=="Standby"))
+				        if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing)&& (IAStatus==transStandby || IAStatus==transReady || IAStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  Log["Message"]("IA Status : " + IAStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+              }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+                Log["Message"]("IA Status : " + IAStatus);
+              }
+              break;
+    
+    case "SID":
+              for(i=1; i < 120; i++)
+               {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var IAStatus = GetModuleStatus("IA");
+
+		            if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (IAStatus==transReady || IAStatus==transStandby || IAStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("IA Status : " + IAStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+               }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("IA Status : " + IAStatus);
+              }
+              break;
+              
+    case "SCID":
+              for(i=1; i < 120; i++)
+              {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+                var IAStatus = GetModuleStatus("IA");
+                var DCStatus = GetModuleStatus("DECAPPER");
+
+                //if ( (VMMStatus=="Ready" || VMMStatus=="Standby") && (SHStatus=="Ready" || SHStatus=="Standby") && (CCStatus=="Ready" || CCStatus=="Standby")&& (IAStatus=="Ready" || IAStatus=="Standby"))
+				        if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing)&& (IAStatus==transStandby || IAStatus==transReady || IAStatus==transProcessing) && (DCStatus==transStandby || DCStatus==transReady || DCStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  Log["Message"]("IA Status : " + IAStatus);
+                  Log["Message"]("DECAPPER Status : " + DCStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+              }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+                Log["Message"]("IA Status : " + IAStatus);
+                Log["Message"]("DECAPPER Status : " + DCStatus);
+              }
+              break;
+                
+      case "SCD":
+               for(i=1; i < 120; i++)
+               {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+                var DCStatus = GetModuleStatus("DECAPPER");
+
+                //if ( (VMMStatus=="Ready" || VMMStatus=="Standby") && (SHStatus=="Ready" || SHStatus=="Standby") && (CCStatus=="Ready" || CCStatus=="Standby")&& (IAStatus=="Ready" || IAStatus=="Standby"))
+				        if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing)&& (DCStatus==transStandby || DCStatus==transReady || DCStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  Log["Message"]("DECAPPER Status : " + DCStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+               }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+                Log["Message"]("DECAPPER Status : " + DCStatus);
+              }
+              break;
+
+      case "SC":
+              for(i=1; i < 120; i++)
+               {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+
+		            if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+               }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+              }
+              break;
+	case "SCR":
+               for(var i=1; i < 120; i++)
+               {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+                var SLRStatus = GetModuleStatus("SEALER");
+
+                //if ( (VMMStatus=="Ready" || VMMStatus=="Standby") && (SHStatus=="Ready" || SHStatus=="Standby") && (CCStatus=="Ready" || CCStatus=="Standby")&& (IAStatus=="Ready" || IAStatus=="Standby"))
+				        if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing)&& (SLRStatus==transStandby || SLRStatus==transReady || SLRStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  Log["Message"]("SEALER Status : " + SLRStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+               }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+                Log["Message"]("SEALER Status : " + SLRStatus);
+              }
+              break;
+              
+	 case "SCDR":
+               for(i=1; i < 120; i++)
+               {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+                var DCStatus = GetModuleStatus("DECAPPER");
+                var SLRStatus = GetModuleStatus("SEALER");
+
+                //if ( (VMMStatus=="Ready" || VMMStatus=="Standby") && (SHStatus=="Ready" || SHStatus=="Standby") && (CCStatus=="Ready" || CCStatus=="Standby")&& (IAStatus=="Ready" || IAStatus=="Standby"))
+				        if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing)&& (DCStatus==transStandby || DCStatus==transReady || DCStatus==transProcessing)&& (SLRStatus==transStandby || SLRStatus==transReady || SLRStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  Log["Message"]("DECAPPER Status : " + DCStatus);
+                  Log["Message"]("SEALER Status : " + SLRStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+               }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+                Log["Message"]("DECAPPER Status : " + DCStatus);
+                Log["Message"]("SEALER Status : " + SLRStatus);
+              }
+              break;
+              
+       case "SCIDR":
+              for(i=1; i < 120; i++)
+              {
+                var VMMStatus = GetModuleStatus("VMM"); 
+                var SHStatus = GetModuleStatus("SH");
+                var CCStatus = GetModuleStatus("CC");
+                var IAStatus = GetModuleStatus("IA");
+                var DCStatus = GetModuleStatus("DECAPPER");
+                var SLRStatus = GetModuleStatus("SEALER");
+
+                //if ( (VMMStatus=="Ready" || VMMStatus=="Standby") && (SHStatus=="Ready" || SHStatus=="Standby") && (CCStatus=="Ready" || CCStatus=="Standby")&& (IAStatus=="Ready" || IAStatus=="Standby"))
+				        if ( (VMMStatus==transReady || VMMStatus==transStandby) && (SHStatus==transReady || SHStatus==transStandby || SHStatus==transProcessing) && (CCStatus==transReady || CCStatus==transStandby || CCStatus==transProcessing)&& (IAStatus==transStandby || IAStatus==transReady || IAStatus==transProcessing) && (DCStatus==transStandby || DCStatus==transReady || DCStatus==transProcessing)&& (SLRStatus==transStandby || SLRStatus==transReady || SLRStatus==transProcessing))
+                {
+                  boolFlag = true;
+                  Log["Message"]("VMM Status : " + VMMStatus);
+                  Log["Message"]("SH Status : " + SHStatus);
+                  Log["Message"]("CC Status : " + CCStatus);
+                  Log["Message"]("IA Status : " + IAStatus);
+                  Log["Message"]("DECAPPER Status : " + DCStatus);
+                  Log["Message"]("SEALER Status : " + SLRStatus);
+                  break;
+                }
+                else
+                {
+                  aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+                }
+              }
+              if(i==120)
+              {
+                Log["Message"]("VMM Status : " + VMMStatus);
+                Log["Message"]("SH Status : " + SHStatus);
+                Log["Message"]("CC Status : " + CCStatus);
+                Log["Message"]("IA Status : " + IAStatus);
+                Log["Message"]("DECAPPER Status : " + DCStatus);
+                Log["Message"]("SEALER Status : " + SLRStatus);
+              }
+              break;
+    default:
+                break;       
+  }
+
+
+  if(boolFlag)
+  {
+    Log["Message"]("Trinidad is Initialized properly");
+    Log["PopLogFolder"]();
+    return (true);
+  }
+  else
+  {
+    Log["Warning"]("Trinidad is not Initialized");
+    Log["PopLogFolder"]();
+    return (false);
+  }
+}
+
+
+//*******************************************************************************************************************
+// Function Name       :  GetSystemStatus(SystemName)
+// Function Description: This function fetches the System Status and returns the Status text
+// Inputs              : SystemName -> The System Name for which the Status should be verified
+// ********************************************************************************************************************
+function GetSystemStatus(SystemName)
+{
+  try
+  {
+  //  var objctrl = Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SystemWindow"]["Root"]["Root_PAGES"]["Status"]["ContentFrame_SystemStatus"]["SystemStatusViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["PART_Selector"];
+    //Log.AppendFolder("System::GetSystemStatus");
+    //  Get the listbox item of the corresponding <SystemName>
+    var objctrl = GetControl("System_Status_System","listBoxStatus");
+    var proparr=["ClrClassName","Content.Name.OleValue"];
+    var vararr=["ListBoxItem",SystemName];
+    var objSystem = Getchild(objctrl, proparr, vararr);
+  
+  //  Get StatusText of the System
+    proparr=["ClrClassName","WPFControlName"];
+    vararr =["TextBlock","StateTextBlock"]
+    var objstatus = Getchild(objSystem, proparr, vararr);
+    var Status =  objstatus["Text"]["Olevalue"];
+    //Log["Message"]("System status for: " + SystemName + " is : " + Status);
+    //Log["PopLogFolder"]();
+    return Status;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    //Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+//*******************************************************************************************************************
+// Function Name       :  CheckAvailableModuleStatus()
+// Function Description: This is generic function to check whether all modules are in ready/standby irrespective of moduletype
+// Inputs              : 
+// ********************************************************************************************************************
+function CheckAvailableModuleStatus()
+{
+try
+{
+  MaxWait=60;
+  Log.AppendFolder("System::CheckSystemStatus_AvailableModules");
+  var Navigation = InvokeWorkflow("System_Status_System");
+    var transReady=GetTranslatedString("Ready","");
+  var transStandby=GetTranslatedString("Standby","");
+  var transProcessing=GetTranslatedString("Processing","");
+  
+ var dtModStatus=new ActiveXObject("scripting.Dictionary");
+  var dtResult=new ActiveXObject("scripting.Dictionary");
+  var Itms;
+  
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["ListBox","PART_Selector"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if(objModule!=null)
+    {
+   for(WaitCount=1; WaitCount < MaxWait; WaitCount++)
+   {
+    
+      ModuleCount=objModule["Items"]["Count"];
+      
+    for(i=1; i<ModuleCount;i++)
+    {
+      ModuleType=objModule["Items"]["Item"](i)["ModuleType"].OleValue;
+      ModStatus=GetModuleStatus(ModuleType);
+      dtModStatus["Add"](ModuleType,ModStatus);
+      dtResult["Add"](ModuleType,"False");
+      
+       switch(ModuleType)
+        {
+           case "VMM": if (ModStatus==transReady || ModStatus==transStandby) dtResult["Item"](ModuleType)="True";
+                break;
+           case "SH":
+           case "CC" :
+           case "IA":
+            case "DECAPPER": if (ModStatus==transReady || ModStatus==transStandby|| ModStatus==transProcessing) dtResult["Item"](ModuleType)="True";
+                break;
+   }
+       }
+       Itms=dtModStatus["Keys"]()["toArray"]();
+       ErrFlag=false;
+       for (ArrCnt=0;ArrCnt<Itms.length;ArrCnt++)
+       {
+        if(dtResult["Item"](Itms[ArrCnt])=="False")
+        {
+          ErrFlag=true;
+          break;
+          }
+       }
+       if(!ErrFlag)break;
+       else
+       {  
+          aqUtils["Delay"](5000, "Waiting for all nodes to come to Ready/Standby state");
+          if(WaitCount < MaxWait-1)
+          {
+            dtResult["RemoveAll"]();
+            dtModStatus["RemoveAll"]();
+          }
+          
+       } 
+       }
+    }
+      for(j=0; j<ModuleCount-1;j++)
+    {   
+        Log["Message"](Itms[j] +" Status : " + dtModStatus["Item"](Itms[j]));
+    }
+ 
+  if(!ErrFlag)
+  {
+    Log["Message"]("Trinidad is Initialized properly");
+    Log["PopLogFolder"]();
+    return (true);
+  }
+  else
+  {
+    Log["Warning"]("Trinidad is not Initialized");
+    Log["PopLogFolder"]();
+    return (false);
+  }
+    }
+    catch(exp)
+    {
+      Log["Warning"]("Exception " + exp["Description"]);
+      Log["PopLogFolder"]();
+      return (false);
+    }
+  } 
+
+function SelectAnalyzer(sModuleName)
+{
+  try
+  {
+    Log.AppendFolder("System::SelectAnalyzer");
+
+    //var objctrl=Sys["WaitProcess"]("Shell");//GetControl("System_Status_System","listBoxItemSystem");
+    //var objctrl= Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Status")//Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+    
+//	  var objctrl = GetControl("System_Status_System","gdStatus");
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+	 var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue","VisibleOnScreen"];
+    var vararr=["Image","ModuleImage",sModuleName,"True"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objModule))//["Exist"])
+    {
+      ClickControl(objModule)//["Click"]();
+      Log["Message"]("Selected analyzer "+sModuleName)
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+       Log["Error"]("unable to select the specific analyzer");
+       Log["PopLogFolder"]();
+       return false;
+    }
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+
+function GetModuleStatus(sModuleName)
+{
+  try
+  {
+//	  var objctrl = GetControl("System_Status_System","gdStatus");
+    var objctrl = GetControl("System_Status_System","winSystem");
+    //var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleType.OleValue","VisibleOnScreen"];
+    var vararr=["ListBoxItem",sModuleName,"True"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+    var ModuleStatus = aqString["Trim"](ModuleStateObj["Text"]["OleValue"])
+    return ModuleStatus;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+}
+
+function CheckModuleExists(sModuleName)
+{
+  try
+  {
+	Log.AppendFolder("System::CheckModuleExists");    
+var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleType.OleValue","VisibleOnScreen"];
+    var vararr=["ListBoxItem",sModuleName,"True"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if(objModule.Visible)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sModuleName +" is available");
+    Log["PopLogFolder"]();
+      return true;
+    } 
+    else
+    {
+     Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sModuleName +" is not available");
+    Log["PopLogFolder"]();
+     return false;
+    } 
+   
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+}
+
+function GetModuleNames(sModuleType)
+{
+  //Module types are : IM,CC,SH,DECAPPER
+  try
+  {
+    sConfigPath="F:\\InstrumentOutput\\FederationConfig.xml"
+    var objBuildInfo  = ReadXML(sConfigPath);
+    var objInstrumentsInfo=objBuildInfo["SelectNodes"]("FEDERATION/INSTRUMENT")
+    var arrInstrumentNames = new Array();
+    var m=0;
+    for(var i=0; i<objInstrumentsInfo["length"];i++)
+    {
+      if((objInstrumentsInfo["item"](i)["getAttribute"]("MODULE_TYPE")==sModuleType)&&(objInstrumentsInfo["item"](i)["getAttribute"]("ENABLED")=="True"))
+      {
+        arrInstrumentNames[m]=objInstrumentsInfo["item"](i)["getAttribute"]("SERIAL_NO")
+        m=m+1;
+      } 
+    }
+    return arrInstrumentNames;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+  }
+
+} 
+
+function GetModuleStatusByModuleName(sModuleName)
+{
+  try
+  {
+////Module names are SERIAL_NO of specific module type in federation config.xml file
+
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleIdentifier.Name.OleValue"];
+    var vararr=["ListBoxItem",sModuleName];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+    var ModuleStatus = aqString["Trim"](ModuleStateObj["Text"]["OleValue"])
+    return ModuleStatus;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+
+} 
+
+function StopAllAvailableModules(sModuleType)
+{
+//Module types are : IM,CC,SH,DECAPPER
+ try
+ {
+//   InitializeMetaData()
+//    sModuleType="DECAPPER"
+    Log.AppendFolder("System::StopAllAvailableModules");
+    var arrInstrumentNames=GetModuleNames(sModuleType);
+    var m=0;
+    for(var i=0;i<arrInstrumentNames["length"];i++)
+    {
+      var sModuleName=arrInstrumentNames[i]
+      if(SelectModuleByName(sModuleName))
+      {
+        if(StopModuleByName(sModuleName))
+        {
+          m=m+1;
+        } 
+      } 
+    }
+    if(m==arrInstrumentNames["length"])
+    {
+      Log["Message"]("All available modules of type "+sModuleType+" are stopped successfully")
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else
+    {
+      Log["Error"]("Unable to stop available modules of type "+sModuleType)
+      Log["PopLogFolder"]();
+      return false;
+    } 
+ }
+ catch(exp)
+ {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+ }
+  
+}
+
+function StopModuleByName(sModuleName)
+{
+  //Module names are SERIAL_NO of specific module type in federation config.xml file
+  try
+  {
+    Log.AppendFolder("System::StopModuleByName");
+       
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleIdentifier.Name.OleValue"];
+    var vararr=["ListBoxItem",sModuleName];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+
+
+    var transStopped=GetTranslatedString("Stopped","")
+     var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+    if (ModuleStatus==transStopped)
+    {
+     Log["Message"]("Already module "+sModuleName+" is in Stopped state")
+     Log["PopLogFolder"]()
+     return true;
+    }
+        
+    var objctrl = GetControl("System_Status_System","btnPause");
+   
+    if (VerifyObjectExistance(objctrl))//["Exist"])
+    {
+    ClickControl(objctrl)//["Click"]();
+      
+//    var objctrl = GetControl("System_Status_System","btnYes");
+//    ClickControl(objctrl);
+     
+    }
+   
+    for (var i=0;i<300;i++)
+    {
+      var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+      if (ModuleStatus==transStopped)
+      {
+       Log["Message"]("Stopped analyzer "+sModuleName)
+       Log["PopLogFolder"]();
+       return true;
+      }
+      else
+      {
+        aqUtils["Delay"](1000,"Waiting for Analyzer to stop")
+      }
+      if (i==300)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }   
+  
+} 
+
+function SelectModuleByName(sModuleName)
+{
+//Module names are SERIAL_NO of specific module type in federation config.xml file
+try
+  {
+//    InitializeControlXML()
+//    InitializeWorkflowXML() 
+//    sModuleName="Decapper"
+    Log.AppendFolder("System::SelectModuleByName");
+
+    //var objctrl=Sys["WaitProcess"]("Shell");//GetControl("System_Status_System","listBoxItemSystem");
+    //var objctrl= Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Status")//Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+    
+//	  var objctrl = GetControl("System_Status_System","gdStatus");
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","WPFControlName","DataContext.ModuleIdentifier.Name.OleValue"];
+    var vararr=["Image","ModuleImage",sModuleName];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objModule))//["Exist"])
+    {
+      ClickControl(objModule)//["Click"]();
+      Log["Message"]("Selected module "+sModuleName)
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+       Log["Error"]("unable to select the specific module");
+       Log["PopLogFolder"]();
+       return false;
+    }
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+  
+} 
+
+function StopAnalyzer(sModuleName)
+{
+  try
+  {
+    Log.AppendFolder("System::StopAnalyzer"); 
+    var Navigation = InvokeWorkflow("System_Status_System");
+    SelectAnalyzer(sModuleName)
+    
+    
+//    var objctrl = GetControl("System_Status_System","listBoxItemSystem");
+//    var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+//    var vararr=["ListBoxItem",sModuleName];
+//    var objModule = Getchild(objctrl, proparr, vararr);
+//   
+//    var proparr=["ClrClassName","WPFControlName"];
+//    var vararr=["TextBlock","StateTextBlock"];
+//    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleType.OleValue","VisibleOnScreen"];
+    var vararr=["ListBoxItem",sModuleName,"True"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+
+
+    var transStopped=GetTranslatedString("Stopped","")
+     var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+    if (ModuleStatus==transStopped)
+    {
+     Log["Message"]("Already analyzer "+sModuleName+" is in Stopped state")
+     Log["PopLogFolder"]()
+     return true;
+    }
+        
+    var objctrl = GetControl("System_Status_System","btnStop");
+   
+    if (VerifyObjectExistance(objctrl))//["Exist"])
+    {
+    ClickControl(objctrl)//["Click"]();
+      
+    var objctrl = GetControl("System_Status_System","btnYes");
+    ClickControl(objctrl);
+     
+    }
+   
+    for (var i=0;i<300;i++)
+    {
+      var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+      if (ModuleStatus==transStopped)
+      {
+       Log["Message"]("Stopped analyzer "+sModuleName)
+       Log["PopLogFolder"]();
+       return true;
+      }
+      else
+      {
+        aqUtils["Delay"](1000,"Waiting for Analyzer to stop")
+      }
+      if (i==300)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }   
+}
+
+function StartAnalyzer(sModuleName)
+{
+  try
+  {
+      Log.AppendFolder("System::StartAnalyzer"); 
+      var Navigation = InvokeWorkflow("System_Status_System");
+      SelectAnalyzer(sModuleName)
+      
+      var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+     var proparr=["ClrClassName","DataContext.ModuleType.OleValue","VisibleOnScreen"];
+
+      var vararr=["ListBoxItem",sModuleName,"True"];
+      var objModule = Getchild(objctrl, proparr, vararr);
+   
+      var proparr=["ClrClassName","WPFControlName"];
+      var vararr=["TextBlock","StateTextBlock"];
+      var ModuleStateObj=Getchild(objModule, proparr, vararr);
+      
+      var transStopped=GetTranslatedString("Stopped","")
+      var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+      if (ModuleStatus!=transStopped)
+      {
+        Log["Message"]("Analyzer "+sModuleName+" is in "+ModuleStatus+"  state")
+        Log["PopLogFolder"]()
+        return true;
+      }
+         
+      var objctrl = GetControl("System_Status_System","btnStart");
+            if (VerifyObjectExistance(objctrl))//["Exist"])
+      {
+        if(sModuleName=="DECAPPER")
+        {
+          ClickControl(objctrl)//["Click"]()
+          aqUtils["Delay"](5000, "Wait for start button to enable again");
+         // ClickControl(objctrl)//["Click"]()
+        }
+        else
+        ClickControl(objctrl)//["Click"]()
+       
+      }
+      var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+      var proparr=["ClrClassName","DataContext.ModuleType.OleValue","VisibleOnScreen"];
+	  
+      var vararr=["ListBoxItem",sModuleName,"True"];
+      var objModule = Getchild(objctrl, proparr, vararr);
+   
+      var proparr=["ClrClassName","WPFControlName"];
+      var vararr=["TextBlock","StateTextBlock"];
+      var ModuleStateObj=Getchild(objModule, proparr, vararr);
+    
+      var transReady=GetTranslatedString("Ready","")
+  var transProcessing=GetTranslatedString("Processing","")
+      for (var i=0;i<500;i++)
+      {
+        var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+        
+        if(sModuleName=="SH")
+        {
+            if ((ModuleStatus==transReady)||(ModuleStatus==transProcessing))
+            {
+             Log["Message"]("Started analyzer "+sModuleName)
+             Log["PopLogFolder"]();
+    		     return true;
+            }
+            else
+            {
+              aqUtils["Delay"](1000,"Waiting for Analyzer to Start")
+            }
+        } 
+                
+        if (ModuleStatus==transReady)
+        {
+         Log["Message"]("Started analyzer "+sModuleName)
+         Log["PopLogFolder"]();
+		     return true;
+        }
+        else
+        {
+          aqUtils["Delay"](1000,"Waiting for Analyzer to Start")
+        }
+      }
+	    
+      if (ModuleStatus!=transReady)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function LaunchSHSim()
+{ 
+  try
+  {
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("StartSH").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("StartSH").State;
+    if(TaskStatus==1)
+    {
+      Log.Message("Start SH task is completed")
+      return true;
+    }
+    else
+    {
+      Log.Error("Start SH Failed");
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);  
+    return false;  
+  }
+}
+
+function ShutdownSHSim()
+{
+  try
+  {
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("ShutdownSH").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("ShutdownSH").State;
+    if(TaskStatus==1)
+    {
+      Log.Message("ShutdownSH task is completed")
+      return true;
+    }
+    else
+    {
+      Log.Error("ShutdownSH Failed")
+      return false;
+    }   
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+    return false;
+  }
+}
+
+function LaunchCCSim()
+{ 
+  try
+  {
+    //ProjectSuite["Variables"]["StartCCStatus"]=false;
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("StartCC").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("StartCC").State;
+  
+    if(TaskStatus ==true)
+    {
+      Log.Message("Start CC task is completed")
+      return true;
+    }
+    else
+    {
+      Log.Error("Start CC Failed");
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);  
+    return false;  
+  }
+}
+
+
+function ShutdownCCSim()
+{
+  try
+  {
+   // ProjectSuite["Variables"]["ShutdownCCStatus"]=false;
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("ShutdownCC").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("ShutdownCC").State;
+    
+    if(TaskStatus==true)
+    {
+      Log.Message("ShutdownCC task is completed")
+      return true;
+    }
+    else
+    {
+  
+      Log.Error("ShutdownCC Failed")
+      return false;
+    }   
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+    return false;
+  }
+}
+
+
+
+function UpdateFakeBarcodes(sTestDataPath,sFakeBarcodeFileName)
+{
+  try
+  {
+    Log.AppendFolder("System::UpdateFakeBarcodes"); 
+    var sFakeBarcodefilePath="C:\\Siemens\\VMM\\Bin";
+    //var sFakeBarcodefilePath="C:\\hydra.dev\\drop\\Configuration\\VMM\\TCSM";
+    var sTestDataPath=Project["Path"]+"TestData\\"+sFakeBarcodeFileName;
+    sText=aqFile["ReadWholeTextFile"](sTestDataPath,22)
+  
+    if (aqFile["Exists"](sFakeBarcodefilePath+"\\TCS1EmulatorHost.TubeBarcodes.txt"))
+    {
+        aqFile["WriteToTextFile"](sFakeBarcodefilePath+"\\TCS1EmulatorHost.TubeBarcodes.txt",sText,22,true)
+//      aqFile["Delete"](sFakeBarcodefilePath+"\\FakeBarcodeReadings.txt")
+//      aqUtils["Delay"](5000,"Deleting existing FakeBarcodeFile")
+//      aqFile["Copy"](sTestDataPath,sFakeBarcodefilePath)
+      Log["Message"]("Updated FakeBarCode File")
+    }
+    else
+    {
+      aqFile["Create"](sFakeBarcodefilePath+"\\TCS1EmulatorHost.TubeBarcodes.txt")
+      aqFile["WriteToTextFile"](sFakeBarcodefilePath+"\\TCS1EmulatorHost.TubeBarcodes.txt",sText,22,true)
+    }
+//      aqFile["Rename"](sFakeBarcodefilePath+"\\"+sFakeBarcodeFileName,sFakeBarcodefilePath+"\\FakeBarcodeReadings.txt")
+//      var oBarCodefile=aqFile["OpenTextFile"](sFakeBarcodefilePath+"\\FakeBarcodeReadings.txt",aqFile["faWrite"],21)
+//      oBarCodefile["Close"]();
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception"+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+// 
+function UpdateFakebarcodeReadingsFile(sSampleID)
+{
+  try
+  {
+    Log.AppendFolder("System::UpdateFakebarcodeReadingsFile"); 
+   // var sFakeBarcodefilePath="C:\\hydra.dev\\drop\\Configuration\\VMM\\TCSM";
+    var sFakeBarcodefilePath="C:\\Siemens\\VMM\\Bin";
+    var oFile = aqFile["OpenTextFile"](sFakeBarcodefilePath+"\\TCS1EmulatorHost.TubeBarcodes.txt", aqFile["faWrite"], aqFile["ctANSI"], true);
+    
+    if(GetVarType(sSampleID)==8)//String
+    {
+      oFile["Write"](sSampleID+"\r\n");
+      Log["Message"]("Fake Barcode file updated with " +sSampleID);
+    }
+    
+    if(GetVarType(sSampleID)==1)//null
+    {
+      sSampleID = "";
+      oFile["Write"](sSampleID+"\r\n");
+      Log["Message"]("Fake Barcode file updated with " +sSampleID);
+    }
+    
+    if(GetVarType(sSampleID)==9)//array
+    {
+      for(var i=0;i<sSampleID["length"];i++)
+      {
+        oFile["Write"](sSampleID[i]+"\r\n");
+        var strMessage = strMessage + sSampleID[i] + " ";
+      }
+      Log["Message"]("Batch Order : Fake Barcode file updated with " + strMessage );
+    }
+    oFile["Close"]();
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception" + exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function VerifyResumeErrorPopUpfterWasteBinAlmostFullOrFull(sModuleName)
+{
+  try
+  {
+      Log.AppendFolder("System::VerifyResumeErrorPopUpfterWasteBinAlmostFullOrFull"); 
+      var Navigation = InvokeWorkflow("System_Status_System");
+      SelectAnalyzer(sModuleName)
+      
+      var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+      var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+      var vararr=["ListBoxItem",sModuleName];
+      var objModule = Getchild(objctrl, proparr, vararr);
+   
+      var proparr=["ClrClassName","WPFControlName"];
+      var vararr=["TextBlock","StateTextBlock"];
+      var ModuleStateObj=Getchild(objModule, proparr, vararr);
+      
+      var transStopped=GetTranslatedString("Stopped","")
+      var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+      if (ModuleStatus!=transStopped)
+      {
+        Log["Message"]("Analyzer "+sModuleName+" is in "+ModuleStatus+"  state")
+        Log["PopLogFolder"]()
+        return true;
+      }
+         
+      var objctrl = GetControl("System_Status_System","btnStart");
+      if (VerifyObjectExistance(objctrl))//["Exist"])
+      {
+        ClickControl(objctrl)//["Click"]()
+      }
+      
+      objctrl = GetControl("System_Status_System","winResumeError");
+    
+      var transResumeError = GetTranslatedString("Resume Error","")
+      if(VerifyControlText(objctrl,transResumeError) == true )
+      {
+        Log["Message"]("Resume Error pop window is visible");
+      }
+      else
+      {
+        Log["Warning"]("Resume Error pop window is not visible");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      objctrl = GetControl("System_Status_System","btnResumeErrorOK");
+      ClickControl(objctrl);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    catch(exp)
+    {
+      Log["Error"]("Exception",exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+}
+function VerifyEventLog(sTime,sModuleSerialNumber,sEvent)
+{
+  try
+  { 
+    Log.AppendFolder("System::VerifyEventLog"); 
+    var transsTime=GetTranslatedString(sTime,"")
+    var transsEvent=GetTranslatedString(sEvent,"")
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+    ClickItem(objctrl, transsTime)
+   
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+    if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+    {
+      Log["Message"]("Selected module "+sModuleSerialNumber)
+    } 
+    else
+    {
+      Log["Error"]("Unable to select module as "+sModuleSerialNumber)
+    }
+    
+    aqUtils["Delay"](10000,"Waiting for events to load");
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+    if(CheckTextonGrid(objctrl,"Event", transsEvent))
+    {
+      Log["Message"]("Verified event log message : "+transsEvent)
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Unable to find event log message : "+sEvent)
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+} 
+
+function VerifySystemEventLog(sModuleSerialNumber, sEvent, sEventParam)
+{
+  try
+  {
+    Log["AppendFolder"]("System::VerifySystemEventLog");
+    aqUtils["Delay"](5000, "Sync to generate logs");
+    var transsEvent=GetTranslatedString(sEvent,"");
+    
+    //transsEvent = aqString["Replace"](transsEvent, "{0}", sEventParam);
+    transsEvent = ReplaceString(transsEvent, "{0}", sEventParam, true);
+    var objctrl = GetControl("System_Logs_SystemMessageLog", "cmbBoxModuleFilter");
+    if(sModuleSerialNumber!="")
+    {
+      if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+      {
+        Log["Message"]("Selected module "+sModuleSerialNumber);
+        aqUtils["Delay"](3000);
+      }
+      else
+      {
+        Log["Error"]("Unable to select module as "+sModuleSerialNumber);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+
+    
+    var objctrl = GetControl("System_Logs_SystemMessageLog", "grdSystemMessageLog");
+    if(CheckTextonGrid(objctrl, "Event", transsEvent))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verified event log message : "+transsEvent);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to find event log message : "+transsEvent);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function SelectModuleInEventLog(objctrl,sModuleSerialNumber)
+{
+   try
+   {
+   
+    //objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+    if(sModuleSerialNumber=="All")
+    {
+      ClickItem(objctrl, 0)
+      return true; 
+    }
+    
+    for(var i=1;i<objctrl["Items"]["Count"];i++)
+    {
+         
+      if(objctrl["Items"]["Item"](i)["SerialNumber"]["OleValue"]==sModuleSerialNumber)
+      {
+        var iIndex=i;
+        break;
+      } 
+ 
+      } 
+      if(iIndex>=0)
+      {
+        ClickItem(objctrl, iIndex)
+        return true;    
+      } 
+      else
+      {
+        return false;
+      }
+   }
+   catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+ } 
+function VerifyNoErrorEventLog(sTime,sModuleSerialNumber,iErrorcodes)
+//function VerifyNoErrorEventLog()
+{
+  try
+  { 
+    Log.AppendFolder("System::VerifyNoErrorEventLog"); 
+    
+//      sTime="30 Minutes"
+//      sModuleSerialNumber="Decapper"
+    //  sEvent="Decapper wastebin status is NotPresent"
+    var transsTime=GetTranslatedString(sTime,"")
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+    ClickItem(objctrl, transsTime)
+   
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+    if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+    {
+      Log["Message"]("Selected module "+sModuleSerialNumber)
+    } 
+    else
+    {
+      Log["Error"]("Unable to select module as "+sModuleSerialNumber)
+    }
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","chkBoxErrors");
+    SelectCheckbox(objctrl);
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","btnDisplayEvents");
+    ClickControl(objctrl)
+      
+    objctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+    var iRows=GetGridRowCount(objctrl)
+    
+    
+    
+     objctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+     if(iRows>0)
+     {
+       for(i=0;i<iErrorcodes["length"];i++)
+       {
+         if(CheckTextonGrid(objctrl,"Code", iErrorcodes[i]))
+         {
+          Log["Error"]("Verified that error events are displayed for  "+sModuleSerialNumber+" with code "+iErrorcodes[i])
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Error events for Decapper is displayed");
+          Log["PopLogFolder"]();
+          return false;
+         }
+       } 
+       if(i>=iErrorcodes["length"])
+       {
+          Log["Message"]("Verified that no error events are displayed for  "+sModuleSerialNumber+" when decapping is successfull")
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "No Error events for Decapper is displayed");
+          Log["PopLogFolder"]();
+          return true;
+       }   
+     }
+     else
+     {
+      Log["Message"]("Verified that no error events are displayed for  "+sModuleSerialNumber+" when decapping is successfull")
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "No Error events for Decapper is displayed");
+      Log["PopLogFolder"]();
+      return true;
+     } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function ModifyTCSVersion(intTCSVersion)
+{
+  try
+  {
+    Log["AppendFolder"]("System::ModifyTCSVersion");
+    
+    //Getting the FederationConfig.xml file path from Registry key
+    strFedConfigPath = GetRegistryKeyValue("SOFTWARE\\Siemens\\Trinidad", HKEY_LOCAL_MACHINE, "InstrDataDir") + "\\InstrumentOutput\\FederationConfig.xml" ;
+    
+    var objFedConfig = ReadXML(strFedConfigPath);
+  
+    objTCSNode = objFedConfig["selectSingleNode"]("/FEDERATION/TCS");
+    var intCurrentTCSVersion = objTCSNode["getAttribute"]("VERSION");
+    Log["Message"]("Current TCS Version is : " + intCurrentTCSVersion);
+    
+    objTCSNode["setAttribute"]("VERSION")=intTCSVersion;
+    objFedConfig["save"](strFedConfigPath);
+    
+    intCurrentTCSVersion = objTCSNode["getAttribute"]("VERSION");
+    
+    if(intCurrentTCSVersion == intTCSVersion)
+    {
+      Log["Message"]("TCS Version modified to : " + intCurrentTCSVersion);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Unable to modify TCS Version. Version in file is :  " + intCurrentTCSVersion);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyAvailableSQC(intExpectedSQC, intExpectedTCSVersion)
+{
+  try
+  {
+    Log["AppendFolder"]("System::VerifyAvailableSQC");
+    
+    //Getting the FederationConfig.xml file path from Registry key
+    strFedConfigPath = GetRegistryKeyValue("SOFTWARE\\Siemens\\Trinidad", HKEY_LOCAL_MACHINE, "InstrDataDir") + "\\InstrumentOutput\\FederationConfig.xml" ;
+    
+    var objFedConfig = ReadXML(strFedConfigPath);
+    strXPath  = "/FEDERATION/INSTRUMENT[@MODULE_TYPE='SH']";
+    objSHNode = objFedConfig["selectNodes"](strXPath);
+    intAvailableSQC = objSHNode["length"];
+    Log["Message"]("Number of SQC available : " + intAvailableSQC);
+  
+    objTCSNode = objFedConfig["selectSingleNode"]("/FEDERATION/TCS");
+    intTCSVersion = objTCSNode["getAttribute"]("VERSION");
+    Log["Message"]("TCS Version is : " + intTCSVersion);
+    
+    if(intTCSVersion == intExpectedTCSVersion && intAvailableSQC == intExpectedSQC)
+    {
+      Log["Message"]("Number of available SQC matches with expected SQC count");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"]("Number of available SQC doesnot match with expected SQC count");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function UpdateAnalysisData(TestDataFile, SheetName, Feature)
+{
+    
+    try
+    {
+//  var TestDataFile="F:\\SystemTest\\TA_Scripts\\TestcaseLayer\\P2\\TestData\\TestData.xls"
+//  var SheetName="AnalysisData"
+//   var  Feature="GWT233847_01"
+   
+   var sCurrentAnalysisDataPath="C:\\Siemens\\Configs\\TCS2Simulation\\TCS2Emulator\\AnalysisData.xml"
+   
+    Log["AppendFolder"]("System::UpdateAnalysisData")
+    var arrData = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+    var sAnalysisDataPath=Project["Path"]+"TestData\\AnalysisData.xml"
+ 
+    var sAnalysisDataPath1=Project["Path"]+"TestData\\AnalysisData1.xml"
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sAnalysisDataPath);
+    objNode    = objXMLDoc["selectSingleNode"]("/AnalysisDatas");//objXMLDoc["selectNodes"]("/AnalysisDatas");
+    
+    var objXMLDoc1   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc1["async"] = false;
+    objXMLDoc1["load"](sAnalysisDataPath1);
+    var sTestDataPath=Project["Path"]+"TestData\\AnalysisData.xml";
+    sText=aqFile["ReadWholeTextFile"](sAnalysisDataPath1,22)
+
+   if (aqFile["Exists"](sAnalysisDataPath))
+    {
+        aqFile["WriteToTextFile"](sAnalysisDataPath,sText,22,true)
+        objXMLDoc["load"](sAnalysisDataPath);
+        objXMLDoc["save"](sAnalysisDataPath)
+    }
+    else
+    {
+      aqFile["Create"](sAnalysisDataPath)
+      aqFile["WriteToTextFile"](sAnalysisDataPath,sText,22,true)
+    }
+      
+    objXMLDoc["load"](sAnalysisDataPath);
+    objNode    = objXMLDoc["selectSingleNode"]("/AnalysisDatas")
+    if(arrData["length"]>0) 
+    {
+      for(var i=1;i<arrData["length"];i++)
+      {
+      
+        var objNode1    = objXMLDoc1["selectSingleNode"]("//AnalysisData");
+        var obj= objNode1["cloneNode"](true)
+        objNode["appendChild"](obj)
+        objXMLDoc["save"](sAnalysisDataPath)
+        
+      }
+      
+    } 
+    var sTubeBarcode
+    var objAnalysisDataXML=ReadXML(sAnalysisDataPath); 
+    for(var i=0;i<arrData["length"];i++)
+    {
+      sTubeBarcode=arrData[i]["Item"]("TubeBarcode")    
+      var objAnalysisData=objAnalysisDataXML["selectNodes"]("//AnalysisData")
+      
+      var objTubeBarCode=objAnalysisData["item"](i)["selectSingleNode"]("TubeBarcode/TubeBarcode")
+      objTubeBarCode["setAttribute"]("Value",sTubeBarcode);
+      
+      if(!SetTubeCharacteristics(objAnalysisData["item"](i),arrData[i]))
+        return false;
+     
+      if(!SetFluidCharacteristicsInAnalysisData(objAnalysisData["item"](i),arrData[i]))
+        return false;
+      
+       Log["Message"]("Analysis data updated with " +sTubeBarcode);    
+         objAnalysisDataXML["save"](sAnalysisDataPath)   
+    }  
+    
+      aqFile["Delete"](sCurrentAnalysisDataPath)
+      aqUtils["Delay"](5000,"Deleting existing AnalysisData")
+      aqFile["Copy"](sTestDataPath,sCurrentAnalysisDataPath)   
+  
+   Log["PopLogFolder"]();
+   objXMLDoc=null;
+   objXMLDoc1=null;
+   return true;
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+    
+}   
+
+function SetOverrideCachedDataSetting(boolValue)
+{
+  try
+  {
+    //Read XML
+    var sPresentationLayerXMLPath = "C:\\Siemens\\TCS2\\Emulator\\Bin\\TCS2Emulator.PresentationLayer.Implement.exe.config"
+    var objXMLDoc = ReadXML(sPresentationLayerXMLPath);
+    
+    //Update the node value and save
+    objOverrideNode = objXMLDoc["selectSingleNode"]("/configuration/appSettings/add[@key='OverrideCachedDataWithVlauesFromAnalysisDataFile']")
+    objOverrideNode["setAttribute"]("value") = boolValue;
+    objXMLDoc["save"](sPresentationLayerXMLPath);
+    Log["Message"]("OverrideCachedDataWithVlauesFromAnalysisDataFile node value is updated with "+boolValue);
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function SetTubeCharacteristics(objAnalysisData,arrTubeData)
+{
+    
+  try
+  {
+    Log["AppendFolder"]("System :SetTubeCharacteristics ")
+    
+    // var sCapStatus=arrTubeData["Item"]("CapStatus")
+     var sTubeType=arrTubeData["Item"]("TubeType")
+     var sTubeDimensionsAreValid=arrTubeData["Item"]("TubeDimensionsAreValid")
+	  var sTubeHeight=arrTubeData["Item"]("TubeHeight")
+    
+	  var sRPrimaryvalue= arrTubeData["Item"]("CapColorPrimary_R");
+     var sGPrimaryvalue= arrTubeData["Item"]("CapColorPrimary_G")  
+     var sBPrimaryvalue= arrTubeData["Item"]("CapColorPrimary_B")
+     
+     var sRSecondaryvalue= arrTubeData["Item"]("CapColorSecondary_R");
+     var sGSecondaryvalue= arrTubeData["Item"]("CapColorSecondary_G")  
+     var sBSecondaryvalue= arrTubeData["Item"]("CapColorSecondary_B")
+     var sTubeBarcodeIsValid = arrTubeData["Item"]("TubeBarcodeIsValid");  
+//    var objCapStatus=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapStatus"); // "CapStatus" attribute not present in AnalysisDta xml in P2.Dev builds on/after 10July'18
+//    objCapStatus["setAttribute"]("Value")=sCapStatus;
+//    Log["Message"]("CapStatus is updated with "+sCapStatus)
+
+    var sCapColorIdentifierValue= arrTubeData["Item"]("CapColorIdentifier");
+    var sCapColorIdentifierIsValidValue= arrTubeData["Item"]("CapColorIdentifierIsValid");
+       
+    var objTubeType=objAnalysisData["selectSingleNode"]("TubeCharacteristics/TubeType");
+    objTubeType["setAttribute"]("Value")=sTubeType;
+    Log["Message"]("TubeType is updated with "+sTubeType) 
+    
+   if((sTubeBarcodeIsValid!="")&(sTubeBarcodeIsValid!=null))
+    {
+      var objTubeBarcodeIsValid=objAnalysisData["selectSingleNode"]("TubeBarcode/TubeBarcodeValidness");
+      objTubeBarcodeIsValid["setAttribute"]("Value") = sTubeBarcodeIsValid;
+      Log["Message"]("TubeBarcodeIsValid node is updated with "+sTubeBarcodeIsValid);
+    }
+    
+    if((sTubeDimensionsAreValid!="")&(sTubeDimensionsAreValid!=null))
+    {
+      var objTubeDimensionsAreValid=objAnalysisData["selectSingleNode"]("TubeCharacteristics/TubeDimensionsValidness");
+      objTubeDimensionsAreValid["setAttribute"]("Value")=sTubeDimensionsAreValid;
+      Log["Message"]("TubeDimensionsValidness is updated with "+sTubeDimensionsAreValid) 
+    }
+    if((sTubeHeight!="")&(sTubeHeight!=null))
+    {
+      var objTubeHeight=objAnalysisData["selectSingleNode"]("TubeCharacteristics/TubeHeight");
+      objTubeHeight["setAttribute"]("Value")=sTubeHeight;
+      Log["Message"]("TubeHeight is updated with "+sTubeHeight) ;
+    }
+	
+	 if((sRPrimaryvalue!="")&(sRPrimaryvalue!=null))
+    {
+      var objRPrimaryCapColor=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapColorPrimary/R");
+      objRPrimaryCapColor["setAttribute"]("Value")=sRPrimaryvalue;
+      Log["Message"]("CapColorPrimary R is updated with "+sRPrimaryvalue) ;
+    }
+    if((sGPrimaryvalue!="")&(sGPrimaryvalue!=null))
+    {
+      var objGPrimaryCapColor=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapColorPrimary/G");
+      objGPrimaryCapColor["setAttribute"]("Value")=sGPrimaryvalue;
+      Log["Message"]("CapColorPrimary G is updated with "+sGPrimaryvalue) ;
+    }
+    if((sBPrimaryvalue!="")&(sBPrimaryvalue!=null))
+    {
+      var objBPrimaryCapColor=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapColorPrimary/B");
+      objBPrimaryCapColor["setAttribute"]("Value")=sBPrimaryvalue;
+      Log["Message"]("CapColorPrimary B is updated with "+sBPrimaryvalue) ;
+    }
+    
+    if((sRSecondaryvalue!="")&(sRSecondaryvalue!=null))
+    {
+      var objRSecondaryCapColor=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapColorSecondary/R");
+      objRSecondaryCapColor["setAttribute"]("Value")=sRSecondaryvalue;
+      Log["Message"]("CapColorPrimary R is updated with "+sRSecondaryvalue) ;
+    }
+    
+    if((sGSecondaryvalue!="")&(sGSecondaryvalue!=null))
+    {
+      var objGSecondaryCapColor=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapColorSecondary/G");
+      objGSecondaryCapColor["setAttribute"]("Value")=sGSecondaryvalue;
+      Log["Message"]("CapColorPrimary G is updated with "+sGSecondaryvalue) ;
+    }
+    
+    if((sBSecondaryvalue!="")&(sBSecondaryvalue!=null))
+    {
+      var objBSecondaryCapColor=objAnalysisData["selectSingleNode"]("TubeCharacteristics/CapColorSecondary/B");
+      objBSecondaryCapColor["setAttribute"]("Value")=sBSecondaryvalue;
+      Log["Message"]("CapColorPrimary B is updated with "+sBSecondaryvalue) ;
+    }
+    
+     if((sCapColorIdentifierValue!="")&(sCapColorIdentifierValue!=null))
+    {
+      var objCapColorIdentifierValue=objAnalysisData["selectSingleNode"]("TubeCharacteristics/TubeGroupName");
+      objCapColorIdentifierValue["setAttribute"]("Value") = sCapColorIdentifierValue;
+      Log["Message"]("TubeGroupName node is updated with "+sCapColorIdentifierValue);
+    }
+    
+     if((sCapColorIdentifierIsValidValue!="")&(sCapColorIdentifierIsValidValue!=null))
+    {
+      var objCapColorIdentifierIsValid=objAnalysisData["selectSingleNode"]("TubeCharacteristics/TubeGroupNameValidness");
+      objCapColorIdentifierIsValid["setAttribute"]("Value") = sCapColorIdentifierIsValidValue;
+      Log["Message"]("TubeGroupNameValidness node is updated with "+sCapColorIdentifierIsValidValue);
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+} 
+
+
+function SetFluidCharacteristicsInAnalysisData(objAnalysisData,arrFluidData)
+{
+  
+  try
+  { 
+     Log["AppendFolder"]("System:SetFluidCharacteristicsInAnalysisData")
+     
+     var iHvalue=arrFluidData["Item"]("H_Value")
+     var iIvalue=arrFluidData["Item"]("I_Value")
+     var iLvalue=arrFluidData["Item"]("L_Value")
+     var sFluidVolumeIsValid= arrFluidData["Item"]("FluidVolumeIsValid")
+     var iFluidVolume= arrFluidData["Item"]("FluidVolume")
+      var sSpinStatus= arrFluidData["Item"]("SpinStatus")     
+     if((iHvalue!="")&(iHvalue!=null))
+     {
+        var objHvalue=objAnalysisData["selectSingleNode"]("FluidCharacteristics/H_Value");
+        objHvalue["setAttribute"]("Value")=iHvalue;
+        Log["Message"]("H value is updated with value "+iHvalue)
+     } 
+   
+     if((iIvalue!="")&(iIvalue!=null))
+     {
+       var objIvalue=objAnalysisData["selectSingleNode"]("FluidCharacteristics/I_Value");
+       objIvalue["setAttribute"]("Value")=iIvalue;
+       Log["Message"]("I value is updated with value "+iIvalue)
+     } 
+   
+     if((iLvalue!="")&(iLvalue!=null))
+     {
+        var objLvalue=objAnalysisData["selectSingleNode"]("FluidCharacteristics/L_Value");
+        objLvalue["setAttribute"]("Value")=iLvalue;
+        Log["Message"]("L value is updated with value "+iLvalue)
+     }
+     
+     if((sFluidVolumeIsValid!="")&(sFluidVolumeIsValid!=null))
+     {
+        var objLvalue=objAnalysisData["selectSingleNode"]("FluidCharacteristics/FluidVolumeValidness");
+        objLvalue["setAttribute"]("Value")=sFluidVolumeIsValid;
+        Log["Message"]("FluidVolumeValidness value is updated with value "+sFluidVolumeIsValid)
+     } 
+     if((iFluidVolume!="")&(iFluidVolume!=null))
+     {
+        var objFluidVolume=objAnalysisData["selectSingleNode"]("FluidCharacteristics/FluidVolume");
+        objFluidVolume["setAttribute"]("Value")=iFluidVolume;
+        Log["Message"]("Fluid Volume is updated with value "+iFluidVolume)
+     } 
+	 if((sSpinStatus!="")&(sSpinStatus!=null))
+     {
+        var objFluidVolume=objAnalysisData["selectSingleNode"]("FluidCharacteristics/SpinStatus");
+        objFluidVolume["setAttribute"]("Value")=sSpinStatus;
+        Log["Message"]("Fluid Spin Status is updated with value "+sSpinStatus)
+     } 
+     
+     Log["PopLogFolder"]();
+     return true;
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+   
+
+}  
+
+function VerifyAvailableSampleHandlers(intExpectedSHCount)
+{
+  try
+  {
+    Log["AppendFolder"]("System::VerifyAvailableSampleHandlers");
+    
+    //Getting the FederationConfig.xml file path from Registry key
+    strFedConfigPath = GetRegistryKeyValue("SOFTWARE\\Siemens\\Trinidad", HKEY_LOCAL_MACHINE, "InstrDataDir") + "\\InstrumentOutput\\FederationConfig.xml" ;
+    
+    var objFedConfig = ReadXML(strFedConfigPath);
+    strXPath  = "/FEDERATION/INSTRUMENT[@MODULE_TYPE='SH']";
+    objSHNode = objFedConfig["selectNodes"](strXPath);
+    intAvailableSHCount = objSHNode["length"];
+    Log["Message"]("Number of Sample handlers available : " + intAvailableSHCount);
+        
+    if(intAvailableSHCount == intExpectedSHCount)
+    {
+      Log["Message"]("Number of available Sample handlers matches with expected SH count");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"]("Number of available Sample handlers doesnot match with expected SH count");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetDeploymentTypeFromFederationConfig()
+{
+   //Module types are : IM,CC,SH,DECAPPER
+  try
+  {
+    sConfigPath="F:\\InstrumentOutput\\FederationConfig.xml"
+    var objBuildInfo  = ReadXML(sConfigPath);
+    var objInstrumentsInfo=objBuildInfo["SelectNodes"]("FEDERATION/INSTRUMENT")
+    var arrInstrumentNames = new Array();
+    var sDeploymenttype="";
+    var iSHCount=0;
+    var iCHcount=0;
+    var iIAcount=0;
+    var iDCcount=0;
+	var iSLRcount=0;
+    
+    for(var i=0; i<objInstrumentsInfo["length"];i++)
+    {
+      if(objInstrumentsInfo["item"](i)["getAttribute"]("ENABLED")=="True")
+      {
+        var sModuleType=objInstrumentsInfo["item"](i)["getAttribute"]("MODULE_TYPE");
+        switch(sModuleType)
+        {
+          case "SH":
+                    iSHCount=iSHCount+1;
+                    break;
+          case "CC":
+                    iCHcount=iCHcount+1;
+                    break;
+          case "IA":
+                    iIAcount=iIAcount+1;
+                    break;
+          case "DECAPPER":
+                    iDCcount=iDCcount+1;
+                    break;
+		  case "SEALER":
+                    iSLRcount=iSLRcount+1;
+                    break;
+          default:
+            break;
+        }
+      }
+    }
+    
+    for(var i=0; i<iSHCount;i++)
+    {
+      sDeploymenttype=sDeploymenttype+"S"
+    } 
+    for(var i=0; i<iCHcount;i++)
+    {
+      sDeploymenttype=sDeploymenttype+"C"
+    } 
+    for(var i=0; i<iIAcount;i++)
+    {
+      sDeploymenttype=sDeploymenttype+"I"
+    } 
+    for(var i=0; i<iDCcount;i++)
+    {
+      sDeploymenttype=sDeploymenttype+"D"
+    } 
+	for(var i=0; i<iSLRcount;i++)
+    {
+      sDeploymenttype=sDeploymenttype+"R"
+    } 
+    
+    return sDeploymenttype;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+  }
+
+
+} 
+
+
+function NotConfirmCalQCStorageContents()
+{
+  Log["AppendFolder"]("System::NotConfirmCalQCStorageContents");
+  
+  if(!SelectAnalyzer("SH"))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  var objctrl = GetControl("Inventory_CalQCStorageInventory", "btnConfirmCalQcStorageContents");
+  ClickControl(objctrl);
+  
+  var objctrl = GetControl("Inventory_CalQCStorageInventory", "radioBtnOperatorRemovedallContentsToDegfault");  // need to change
+  ClickControl(objctrl);
+  
+  var objctrl = GetControl("Inventory_CalQCStorageInventory", "btnConfirmCalQCStorageOK");
+  ClickControl(objctrl);
+  
+  Log["PopLogFolder"]();
+  return true;
+
+}
+
+function VerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent)
+{
+  try
+  {
+    Log.AppendFolder("System::VerifyEventLogWithParams"); 
+    var transsTime=GetTranslatedString(sTime,"")
+//    var transsEvent=GetTranslatedString(sEvent,"")
+//    var transEventWithParams=ReplaceString(transsEvent,"{0}",sEventParams,true)
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+    ClickItem(objctrl, transsTime)
+	aqUtils["Delay"](2000,"Sync to generate logs");
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+    if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+    {
+      Log["Message"]("Selected module "+sModuleSerialNumber);
+      aqUtils["Delay"](5000,"Sync to generate logs");
+    } 
+    else
+    {
+      Log["Error"]("Unable to select module as "+sModuleSerialNumber)
+    }
+  
+    objctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+    if(CheckTextonGrid(objctrl,"Event", sEvent))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verified event log message : "+sEvent);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to find event log message : "+sEvent);
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function PauseAnalyzer(sModuleName)
+{
+  try
+  {
+    Log.AppendFolder("System::StopAnalyzer"); 
+    var Navigation = InvokeWorkflow("System_Status_System");
+    SelectAnalyzer(sModuleName)
+   
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+    var vararr=["ListBoxItem",sModuleName];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+
+
+    var transStopped=GetTranslatedString("Stopped","")
+     var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+    if (ModuleStatus==transStopped)
+    {
+     Log["Message"]("Already analyzer "+sModuleName+" is in Stopped state")
+     Log["PopLogFolder"]()
+     return true;
+    }
+        
+    var objctrl = GetControl("System_Status_System","btnPause");
+   
+    if (VerifyObjectExistance(objctrl))//["Exist"])
+    {
+    ClickControl(objctrl)//["Click"]();
+      
+//    var objctrl = GetControl("System_Status_System","btnYes");
+//    ClickControl(objctrl);
+     
+    }
+   
+    for (var i=0;i<300;i++)
+    {
+      var ModuleStatus=ModuleStateObj["Text"]["OleValue"]
+      if (ModuleStatus==transStopped)
+      {
+       Log["Message"]("Stopped analyzer "+sModuleName)
+       Log["PopLogFolder"]();
+       return true;
+      }
+      else
+      {
+        aqUtils["Delay"](1000,"Waiting for Analyzer to stop")
+      }
+      if (i==300)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception", exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }   
+}
+
+function VerifySystemMessageLog(sModuleSerialNumber,transsEvent)//verify event logs in system messge log page by passing translated event message and module serial number
+{
+  try
+  {
+    Log["AppendFolder"]("System::VerifySystemMessageLog");
+    aqUtils["Delay"](5000, "Sync to generate logs");
+    var objctrl = GetControl("System_Logs_SystemMessageLog", "cmbBoxModuleFilter");
+    if(sModuleSerialNumber!="")
+    {
+      if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+      {
+        Log["Message"]("Selected module "+sModuleSerialNumber);
+		aqUtils["Delay"](3000);
+      }
+      else
+      {
+        Log["Error"]("Unable to select module as "+sModuleSerialNumber);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    
+    var objctrl = GetControl("System_Logs_SystemMessageLog", "grdSystemMessageLog");
+    if(CheckTextonGrid(objctrl, "Event", transsEvent))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verified event log message : "+transsEvent);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to find event log message : "+transsEvent);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function VerifyOperatorEventLogForCapColorSpecimenTypeMismatch(sTime, sModuleSerialNumber, sEvent,sEventParam)
+{
+  try
+  {
+    Log["AppendFolder"]("System::VerifyOperatorEventLogForCapColorSpecimenTypeMismatch");
+    var transsEvent=GetTranslatedString(sEvent,"");
+    
+    transsEvent = ReplaceString(transsEvent, "{1}", sEventParam, true);
+    var arrMsg= transsEvent["split"](",")
+    
+    var objctrl = GetControl("System_Logs_OperatorEventLog", "cmbBoxModule");
+    if(sModuleSerialNumber!="")
+    {
+      if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+      {
+        Log["Message"]("Selected module "+sModuleSerialNumber);
+      }
+      else
+      {
+        Log["Error"]("Unable to select module as "+sModuleSerialNumber);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    
+    var transsTime=GetTranslatedString(sTime,"");
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+    ClickItem(objctrl, transsTime);
+    aqUtils["Delay"](4000, "Sync to generate logs");
+    var objctrl = GetControl("System_Logs_OperatorEventLog", "grdOperatorEventsLog");
+
+    Rowcount = GetGridRowCount(objctrl);
+    for(Row = 0; Row < Rowcount; Row++)
+    {
+      strCellText = GetGridCellText(objctrl, Row, "Event")
+      if(aqString["Find"](strCellText, arrMsg[1])>0)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "The Item: "+strCellText+" is available in Column: Event, Row number: " + Row);
+        Log["PopLogFolder"]();
+        return true;
+      }
+    }
+    
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to find event log message : "+transsEvent);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+function VerifyOperatorEventLog(sTime, sModuleSerialNumber, sEvent, sEventParam)
+{
+  try
+  {
+    Log["AppendFolder"]("System::VerifyOperatorEventLog");
+    var transsEvent=GetTranslatedString(sEvent,"");
+    
+    transsEvent = ReplaceString(transsEvent, "{1}", sEventParam, true);
+    var objctrl = GetControl("System_Logs_OperatorEventLog", "cmbBoxModule");
+    if(sModuleSerialNumber!="")
+    {
+      if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+      {
+        Log["Message"]("Selected module "+sModuleSerialNumber);
+      }
+      else
+      {
+        Log["Error"]("Unable to select module as "+sModuleSerialNumber);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    
+    var transsTime=GetTranslatedString(sTime,"");
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+    ClickItem(objctrl, transsTime);
+    aqUtils["Delay"](4000, "Sync to generate logs");
+    var objctrl = GetControl("System_Logs_OperatorEventLog", "grdOperatorEventsLog");
+
+    Rowcount = GetGridRowCount(objctrl);
+    
+    for(Row = 0; Row < Rowcount; Row++)
+    {
+      strCellText = GetGridCellText(objctrl, Row, "Event")
+      if(aqString["Find"](strCellText, transsEvent)>0)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "The Item: "+strCellText+" is available in Column: Event, Row number: " + Row);
+        Log["PopLogFolder"]();
+        return true;
+      }
+    }
+    
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to find event log message : "+transsEvent);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterDiagnosticsMode()
+{
+  try
+  {
+    Log["AppendFolder"]("System::EnterDiagnosticsMode");
+    var objctrl = GetControl("System_OperatorDiagnostics", "grdSubSystems");
+    var intRow = GetGridRowNo(objctrl, "Subsystems", "TCS");
+    SelectGridRow(objctrl, intRow-1);
+    
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnSystemEnterDiagnostics");
+    ClickControl(objctrl);
+    aqUtils["Delay"](1000);
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnEnterDiagnosticsYes");
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnPerform");
+    if(!WaitForControlToGetEnabled(objctrl, 10000))
+    {
+      return false;
+    }
+    
+    //If Perform button gets activated then click on it
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("System_OperatorDiagnostics", "wndEnterDiagnostics");
+    transConfirmation = GetTranslatedString("Confirmation","");
+    if(!GetPropertyValue(objctrl, "Text") == transConfirmation)
+    {
+      Log["Message"]("Confirmation window did not come up");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnEnterDiagnosticsYes");
+    ClickControl(objctrl);
+
+    var objctrl = GetControl("System_OperatorDiagnostics", "wndPerform");
+    var intWaitTime = 0;
+    var intStartTime = aqDateTime["Time"]();
+    while(objctrl["Exists"]==null && intWaitTime < 30000)
+    {
+      aqUtils["Delay"](1000, "Waiting for cap color training window");
+      intWaitTime = aqDateTime["Time"]() - intStartTime;
+      objctrl = GetControl("System_OperatorDiagnostics", "wndPerform");
+    }
+//    var objctrl = GetControl("System_OperatorDiagnostics", "wndPerform");
+    transPerform = GetTranslatedString("Perform","");
+
+    if(!VerifyControlText(objctrl, transPerform))
+    //if(!GetPropertyValue(objctrl, "Text") == transPerform)
+    {
+      Log["Message"]("Perform window did not come up");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnPerformOK");
+    ClickControl(objctrl);
+    
+    objctrl = GetControl("System_OperatorDiagnostics", "CapColorConfigurationWindow");
+    
+    var intWaitTime = 0;
+    var intStartTime = aqDateTime["Time"]();
+    while(objctrl["Exists"]==null && intWaitTime < 60000)
+    {
+      aqUtils["Delay"](5000, "Waiting for cap color training window");
+      intWaitTime = aqDateTime["Time"]() - intStartTime;
+      objctrl = GetControl("System_OperatorDiagnostics", "CapColorConfigurationWindow");
+    }
+    
+    if(WaitForControl(objctrl, 15000) == true)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Cap color training window came up successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Cap color training window did not appear");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ExitDiagnosticsMode()
+{
+  try
+  {
+    Log["AppendFolder"]("System::ExitDiagnosticsMode");
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnExitDiagnostics");
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("System_OperatorDiagnostics", "wndEnterDiagnostics");
+    transConfirmation = GetTranslatedString("Confirmation","");
+    if(!GetPropertyValue(objctrl, "Text") == transConfirmation)
+    {
+      Log["Message"]("Confirmation window did not come up");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var objctrl = GetControl("System_OperatorDiagnostics", "btnEnterDiagnosticsYes");
+    ClickControl(objctrl);
+	  Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+/*-------------------------------------- Capcolor Training -------------------------------------*/
+
+function UpdateCapColorGroup(strExistingCapColorGrp, strUpdateParam)
+{
+/*
+  1. Check the text - "Modifying existing cap color group. To add new identified cap colors to the existing cap color group, select Extend.
+  2. Select "Update existing" radio button and select an existing cap color group name from the combo box
+  3. Click on Replace/Update button(as [er the param: strUpdateParam )if it is enabled
+  4. Click Yes on the popup
+  5. Wait for the confirmation msg
+*/
+  try
+  {
+    Log["AppendFolder"]("System::UpdateCapColorGroup")
+    var objctrl = GetControl("System_OperatorDiagnostics", "OK");
+    ClickControl(objctrl);
+    
+    var txtStatus  = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage");
+    strMsg = txtStatus["WPFControlText"];
+    
+    var transMsgText = GetTranslatedString("Modifying existing cap color group.To add new identified cap colors to the existing cap color group, select Extend.To replace the existing cap color group colors with the current identified cap colors, select Replace.","")
+    arrDBTransMsg = transMsgText.split(".\\r\\n\\r\\n");
+    arrUIMsg = strMsg.split(".");
+    if(aqString["Compare"](arrDBTransMsg[0], arrUIMsg[0],false) != 0)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to modify existing cap color group");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!aqString["Find"](strMsg, "Modifying existing cap color group") < 0)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to modify existing cap color group");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var objctrl = GetControl("CapColorTrainingConfiguration", "radioButtonUpdateExisting");
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("CapColorTrainingConfiguration", "comboBoxCapColorType");
+    SetComboValue(objctrl, strExistingCapColorGrp);
+    
+    //selectSpecimenType(SpecTypes)
+    if(strUpdateParam == "Update")
+      var objctrl = GetControl("CapColorTrainingConfiguration", "btnUpdate");
+    else
+      var objctrl = GetControl("CapColorTrainingConfiguration", "btnReplace");
+      
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("CapColorTrainingConfiguration", "btnYes"); 
+    ClickControl(objctrl);
+    
+    aqUtils["Delay"](10000, "Waiting to save");
+    
+    var txtStatus  = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage");
+    strMsg = txtStatus["WPFControlText"];
+    if(strUpdateParam == "Update")
+    {
+      var transMsg = GetTranslatedString("The system updated the following cap color group with a new identified color range: {0}.", "");
+      var transMsgWithParam = ReplaceString(transMsg, "{0}", strExistingCapColorGrp, true);
+      if((aqString["Compare"](strMsg, transMsgWithParam, false))==0)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Successfully extended the cap color group: " +strExistingCapColorGrp); 
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to extend/update the cap color group: " +strExistingCapColorGrp);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else if(strUpdateParam == "Replace")
+    {
+      var transMsg = GetTranslatedString("Cap color group replaced.", "");
+      if((aqString["Compare"](strMsg, transMsg, false))==0)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Successfully replaced the cap color group: " +strExistingCapColorGrp); 
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to replace the cap color group: " +strExistingCapColorGrp);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } 
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function StartCapColorTraining(DrawerNo,DrawerZone)
+{
+try
+{
+  Log["AppendFolder"]("System: CapColorTraining");
+     
+ if(!WaitTillTubeStatusChange(DrawerNo,DrawerZone))
+ {
+   Log["PopLogFolder"]();
+   return false; 
+ }
+    
+ var btnStart = GetControl("CapColorTrainingConfiguration","buttonStart");
+ if(!WaitTillGettingEnabled(btnStart,60))
+ {
+   Log["PopLogFolder"]();
+   return false; 
+ }
+    
+ aqUtils["Delay"](1000);
+ 
+ Clickbutton(btnStart);
+ aqUtils["Delay"](1500,"Waitng For Confirm Window");
+ var btnYes = GetControl("CapColorTrainingConfiguration","btnYes");
+ Clickbutton(btnYes);
+ var txtMessage = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage"); 
+ 
+ var btnStart = GetControl("CapColorTrainingConfiguration","buttonStart");
+ if(!WaitTillGettingEnabled(btnStart,7500))
+ {
+   Log["PopLogFolder"]();
+   return false; 
+ }
+      
+ if(!SelectDrawer(DrawerNo,DrawerZone))
+ {
+   Log["PopLogFolder"]();
+   return false; 
+ }
+       
+  var txtMessage = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage");
+  
+   TransMessage=GetTranslatedString("To assign a cap color type, select a rack on the left","");
+  if(aqString["Compare"](TransMessage,txtMessage["WPFControlText"],false)==0)
+  {
+    Log["Message"]("Cap color training completed successfully");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  else
+  {
+     Log["Message"]("Error in Cap color training");
+     Log["PopLogFolder"]();
+     return false;
+  }
+  } 
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+ 
+ }
+
+ 
+function CreateCapColorGroup(DrawerNo,DrawerZone,GroupName,SpecTypes,strExistingCapColorGrp, UpdateParam)
+{ 
+  try
+  {
+    Log["AppendFolder"]("System:CapColorGroupCreate")
+    if(!SelectDrawer(DrawerNo,DrawerZone))
+     {
+       Log["PopLogFolder"]();
+       return false; 
+     }
+ 
+    if(!selectSpecimenType(SpecTypes))
+     {
+       Log["PopLogFolder"]();
+       return false; 
+     }
+
+    var textbox = GetControl("CapColorTrainingConfiguration","textBoxCapColorType");
+    SetText(textbox,GroupName);
+    SendKeys(textbox,"[Tab]");
+  
+    var btnCreate = GetControl("CapColorTrainingConfiguration","buttonCreate");
+    if(btnCreate)
+    {
+      Clickbutton(btnCreate);
+      aqUtils["Delay"](1500,"Waitng For Confirm Window");
+      var btnYes = GetControl("CapColorTrainingConfiguration","btnYes");
+      Clickbutton(btnYes);
+      
+      //aqUtils["Delay"](1000,"Waitng For Confirm Window");
+      var objctrl = GetControl("CapColorTrainingConfiguration","MessageBox");    
+      var intWaitTime = 0;
+      var intStartTime = aqDateTime["Time"]();
+      while(objctrl["Exists"]==null && intWaitTime < 20000)
+      {
+        aqUtils["Delay"](2000, "Waiting for message box");
+        intWaitTime = aqDateTime["Time"]() - intStartTime;
+        objctrl = GetControl("CapColorTrainingConfiguration","MessageBox");
+      }
+      
+      if(objctrl)
+      {
+        lblObjctrl = GetControl("CapColorTrainingConfiguration","MessageBoxLabel");
+        var transResumeError = GetTranslatedString("Cap color group already exists. Enter a unique name.","");
+        if(VerifyControlText(lblObjctrl,transResumeError) == true )
+        {
+          Log["Message"]("Cap color group already exists");
+          var btnOK = GetControl("CapColorTrainingConfiguration","OK");
+          Clickbutton(btnOK);
+//          var btnClose = GetControl("CapColorTrainingConfiguration","buttonClose");
+//          Clickbutton(btnClose);
+          Log["PopLogFolder"]();
+          return false;
+        }
+        else
+        {
+          var msgLabelText=GetTranslatedString("The system failed to create a new cap color group.,The colors already exist in another cap color group.,{0},Update the existing cap color group?","")
+          arr=msgLabelText.split("\\r\\n\\r\\n");
+          var objItem = eval(lblObjctrl);
+          lblObjctrlMsg =lblObjctrl["Text"]["OleValue"];
+          arrMsg=lblObjctrlMsg.split(".");
+          lbl=aqString["Trim"](arrMsg[1])+".";
+          if(aqString["Compare"](lbl,arr[1],false)==0)
+          {
+            Log["Message"]("Group with same color already existing");
+            Log["PopLogFolder"]();
+            return UpdateCapColorGroup(strExistingCapColorGrp, UpdateParam);
+          }  
+        }
+        Log["PopLogFolder"]();
+        return false;
+      }
+    
+      aqUtils["Delay"](2000,"Waitng to complete..");
+      var txtStatus  = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage");
+      message=txtStatus["WPFControlText"];
+     if((aqString["Compare"](message,GetTranslatedString("New cap color group created",""),false))==0)
+     {
+         Log["Message"]("Cap color group"+ GroupName +" created successfully");
+         Log["PopLogFolder"]();
+         return true;
+     } 
+     else
+     {
+        Log["Message"]("Cap color group"+ GroupName +" is not created");
+        Log["PopLogFolder"]();
+        return false;
+     }
+    }
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+}
+
+function CloseCapColorConfigWindow()
+{
+  try
+  {
+    var btnClose = GetControl("CapColorTrainingConfiguration","buttonClose");
+    if(btnClose)
+    {
+      Clickbutton(btnClose);
+      
+      var objctrl = GetControl("CapColorTrainingConfiguration", "MessageBox");
+      var intWaitTime = 0;
+      var intStartTime = aqDateTime["Time"]();
+      while(objctrl["Exists"]==null && intWaitTime < 15000)
+      {
+        aqUtils["Delay"](1000, "Waiting for remove sample tubes message box");
+        intWaitTime = aqDateTime["Time"]() - intStartTime;
+        objctrl = GetControl("CapColorTrainingConfiguration", "MessageBox");
+      }
+      
+      transRemoveSampleTubes = GetTranslatedString("Remove Sample Tubes","");
+
+      if(!VerifyControlText(objctrl, transRemoveSampleTubes))
+      {
+        Log["Message"]("Remove sample tubes message box did not come up");
+        return true;
+      }
+      else
+      {
+        var btnOK = GetControl("CapColorTrainingConfiguration", "OK");
+        ClickControl(btnOK);
+        Log["Message"]("Cap color training window closed");
+        return true;
+      } 
+    } 
+    else
+    {
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    return false;
+  }
+}  
+function selectSpecimenType(SpecTypes)
+{
+Log["AppendFolder"]("System:SelectCapColorSpecimenType");
+try
+{
+  if(SpecTypes!="")
+  {
+    var SpecimenType=SpecTypes["split"](",");
+    for (var j=0;j<SpecimenType["length"];j++)
+    {
+        switch(aqString["ToLower"](SpecimenType[j]))
+        {
+          case "serum":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenSerum");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "plasma":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenPlasma");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "urine":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenUrine");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "csf":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenCSF");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "oral fluids":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenOralFluids");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "whole blood":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenWholeBlood");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "buffer-base solutions":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenBufferBaseSolutions");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "rbc hemolysate":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenRBCHemolysate");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "saliva":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenSaliva");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "amniotic fluid":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenAmnioticFluid");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+          case "other":
+                        specimenCheckBox=GetControl("CapColorTrainingConfiguration","checkBoxSpecimenOther");
+                        SelectCheckbox(specimenCheckBox);
+                        break;
+                      
+        } 
+    }
+    Log["Message"]("Cap color specimen type selected successfully")
+    Log["PopLogFolder"]();
+    return true;
+  } 
+  else
+  {
+    Log["Warning"]("Cap color specimen type is not selected")
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+ catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+}
+function SelectDrawer(DrawerNo,DrawerZone)
+{
+  try
+  {
+  if(aqString["Compare"](DrawerZone,"FRONT",false))
+    ordinal=1;
+  else
+    ordinal=2;
+  objctrl=Sys["Process"]("Shell")["WPFObject"]("HwndSource: CapColorConfigurationWindow")["WPFObject"]("CapColorConfigurationWindow")["WPFObject"]("UIWDesktopDialogLayoutUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Grid", "", 1)
+  objctrl["Click"]();
+  objMainRegion =GetFindchild(objctrl,Array("WPFControlName","ClrClassName"),Array("Drawer" + DrawerNo + "Layout","ContentControl"),200);
+  objDrawerGrid = GetFindchild(objMainRegion,Array("ClrClassName","WPFControlOrdinalNo"),Array("ContentControl",ordinal),15)
+  objDrawerGrid["Click"]();
+  return true;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    return false;
+  } 
+}
+
+function WaitTillGettingEnabled(objCtrl,times)
+{
+try
+ {
+for(i=0;i<times;i++)
+  {
+    flg=VerifyObjectEnabled(objCtrl);
+    if(flg) return true;
+    aqUtils["Delay"](1000,"Waiting for control to be enabled");
+  }
+  return false;
+}
+catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    return false;
+  } 
+}
+
+function WaitTillTubeStatusChange(DrawerNo,DrawerZone)
+{
+ try
+ {
+ if(aqString["Compare"](DrawerZone,"FRONT",false)==0)
+    ordinal=2;
+  else
+    ordinal=1;
+
+for(i=0;i<600;i++)
+{
+  var objCtrl=Sys["Process"]("Shell")["WPFObject"]("HwndSource: CapColorConfigurationWindow")["WPFObject"]("CapColorConfigurationWindow")["WPFObject"]("UIWDesktopDialogLayoutUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Drawer"+DrawerNo+"Layout")["WPFObject"]("drawerPanel")["WPFObject"]("ContentControl", "", ordinal)["WPFObject"]("Canvas", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Border", "", 1) //["WPFObject"]("ItemsControl", "", 1)["WPFObject"]("ContentPresenter", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("ItemsControl", "", 1)["WPFObject"]("ContentPresenter", "", NumOfTubes)["WPFObject"]("Grid", "", 1)["WPFObject"]("button")
+  objCtrl["DataContext"]["NumberOfTubes"]
+  if(objCtrl["DataContext"]["NumberOfTubes"]>0)
+  {
+    return true;
+  }
+    aqUtils["Delay"](1000,"Waiting for tube to be scanned");
+  
+}
+return false;
+}
+catch(exp)
+{
+  Log["Message"]("Exception "+ exp["Description"]);
+    return false;
+} 
+}
+
+
+function UpdateMinimumNumberOfTubesInSHDiagnosticsConfiguration(iMinNumberOfTubes)
+{
+  try
+  {
+    //Copy the SHDiagnosticsConfiguration.xml file, if it is not present
+    var sSHDiagnosticsConfigurationPath="F:\\InstrumentOutput\\SHDiagnosticsConfiguration.xml";
+    aqFile["Delete"](sSHDiagnosticsConfigurationPath);
+    aqUtils["Delay"]("3000", "Verifying SHDiagnosticsConfiguration.xml file");
+    var sTestDataPath=Project["Path"]+"TestData\\SHDiagnosticsConfiguration.xml";
+    aqFile["Copy"](sTestDataPath, sSHDiagnosticsConfigurationPath);    
+
+    
+    //Update the node value with <iMinNumberOfTubes>
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sSHDiagnosticsConfigurationPath);
+    var objNode    = objXMLDoc["selectSingleNode"]("//CapColorTraining/MinimumNumberOfTubes")
+
+    objNode["setAttribute"]("Value")= iMinNumberOfTubes;
+    objXMLDoc["save"](sSHDiagnosticsConfigurationPath);
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+
+function ReplaceVMMAlignmentSimulationFile()
+{
+  try
+  {
+
+    var sVMMAlignmentSimulationFilePath="F:\\SystemSpecificConfigs\\VMM\\VMMAlignment_Simulation.xml";
+   // var sVMMAlignmentSimulationFilePath1="F:\\SystemSpecificConfigs\\VMM\\VMMAlignment_Simulation_old.xml";
+    aqFile["Delete"](sVMMAlignmentSimulationFilePath);
+    aqUtils["Delay"]("5000","Deleting VMMAlignmentSimulation File ")
+   // aqFile["Rename"](sVMMAlignmentSimulationFile,sVMMAlignmentSimulationFilePath1);
+     
+    var sTestDataPath=Project["Path"]+"TestData\\VMMAlignment_Simulation.xml";
+    aqFile["Copy"](sTestDataPath,sVMMAlignmentSimulationFilePath);
+    return true;
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+} 
+
+
+//update cap color training file with multiple consistant colors at a time(in the same session)
+function UpdateCapColorTrainingFileFormultipleColors(TestDataFile,SheetName,Feature)
+{
+//  var TestDataFile="F:\\SystemTest\\TA_Scripts\\TestcaseLayer\\P2\\TestData\\TestData.xls";
+//  var SheetName="CapcolorTraining";
+//  var Feature="GWT235505_TC290983_01";
+  try
+  {
+    Log["AppendFolder"]("System: UpdateCapColorTrainingFileFormultipleColors");
+    var arrTestData = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+    var iTotalTubeCount=arrTestData[0]["item"]("TotalTubeCount")
+    var iColors=arrTestData[0]["item"]("CapcolorsCount")
+    if(!UpdateConsistantCapColorsAndTubeDataNodes(iTotalTubeCount,iColors))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+ 
+    if(!UpdateConsistentCapcolorAndTubeDataCapColorValues(arrTestData))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+} 
+
+
+
+
+
+//update cap color training file with single consistant colors at a time
+function UpdateCapColorTrainingFile(arrTubeData,iTubeCount)
+{
+  try
+  {
+  //Give directltly array of data
+//    var TestDataFile="F:\\SystemTest\\TA_Scripts\\TestcaseLayer\\P2\\TestData\\TestData.xls";
+//    var SheetName="CapColorTraining";
+//    var Feature="GWT235505_TC290983_01";
+//    
+//    var arrTestData = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+//    var arrTubeData=arrTestData[0];
+   // var iTubeCount=2;
+    Log["AppendFolder"]("System: UpdateCapColorTrainingFile");
+    if(!AppendTubeDatas(arrTubeData,iTubeCount))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    var sCapcolorTrainingFilepath="C:\\Siemens\\Configs\\TCS2Simulation\\TCS2Emulator\\CapColorTrainingFiles\\CapColorTraining.xml"
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sCapcolorTrainingFilepath);
+        
+    var RPrimaryValue= arrTubeData["Item"]("ConsistentCapColorsPrimary_R");
+    var GPrimaryValue= arrTubeData["Item"]("ConsistentCapColorsPrimary_G");
+    var BPrimaryValue= arrTubeData["Item"]("ConsistentCapColorsPrimary_B");
+    
+    var RSecondaryValue= arrTubeData["Item"]("ConsistentCapColorsSecondary_R");
+    var GSecondaryValue= arrTubeData["Item"]("ConsistentCapColorsSecondary_G");
+    var BSecondaryValue= arrTubeData["Item"]("ConsistentCapColorsSecondary_B");
+
+
+
+
+
+    
+    var TubeRPrimaryValue= arrTubeData["Item"]("TubeDataCapColorPrimary_R");
+    var TubeGPrimaryValue= arrTubeData["Item"]("TubeDataCapColorPrimary_G");
+    var TubeBPrimaryValue= arrTubeData["Item"]("TubeDataCapColorPrimary_B");
+
+
+
+    
+    var TubeRSecondaryValue= arrTubeData["Item"]("TubeDataCapColorSecondary_R");
+    var TubeGSecondaryValue= arrTubeData["Item"]("TubeDataCapColorSecondary_G");
+    var TubeBSecondaryValue= arrTubeData["Item"]("TubeDataCapColorSecondary_B");
+
+
+
+    
+    var sTubeCount=arrTubeData["Item"]("TubeDataCount");
+
+
+
+    
+
+
+    objXMLDoc["selectSingleNode"]("//ConsistentCapColors/ConsistentCapColor/Primary/R")["setAttribute"]("Value")=RPrimaryValue;
+    objXMLDoc["selectSingleNode"]("//ConsistentCapColors/ConsistentCapColor/Primary/G")["setAttribute"]("Value")=GPrimaryValue;
+    objXMLDoc["selectSingleNode"]("//ConsistentCapColors/ConsistentCapColor/Primary/B")["setAttribute"]("Value")=BPrimaryValue;
+    
+    objXMLDoc["selectSingleNode"]("//ConsistentCapColors/ConsistentCapColor/Secondary/R")["setAttribute"]("Value")=RSecondaryValue;
+    objXMLDoc["selectSingleNode"]("//ConsistentCapColors/ConsistentCapColor/Secondary/G")["setAttribute"]("Value")=GSecondaryValue;
+    objXMLDoc["selectSingleNode"]("//ConsistentCapColors/ConsistentCapColor/Secondary/B")["setAttribute"]("Value")=BSecondaryValue;
+             
+    for(i=0;i<sTubeCount;i++)
+    {   
+    objXMLDoc["selectNodes"]("//TubeDatas/TubeData/CapColorPrimary/R")["item"](i)["setAttribute"]("Value")=TubeRPrimaryValue;
+    objXMLDoc["selectNodes"]("//TubeDatas/TubeData/CapColorPrimary/G")["item"](i)["setAttribute"]("Value")=TubeGPrimaryValue;
+    objXMLDoc["selectNodes"]("//TubeDatas/TubeData/CapColorPrimary/B")["item"](i)["setAttribute"]("Value")=TubeBPrimaryValue;
+    
+    objXMLDoc["selectNodes"]("//TubeDatas/TubeData/CapColorSecondary/R")["item"](i)["setAttribute"]("Value")=TubeRSecondaryValue;
+    objXMLDoc["selectNodes"]("//TubeDatas/TubeData/CapColorSecondary/G")["item"](i)["setAttribute"]("Value")=TubeGSecondaryValue;
+    objXMLDoc["selectNodes"]("//TubeDatas/TubeData/CapColorSecondary/B")["item"](i)["setAttribute"]("Value")=TubeBSecondaryValue;
+    }
+        
+    objXMLDoc["save"](sCapcolorTrainingFilepath);
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+} 
+
+//iTotalTubeCount- total number of tube data nodes required for the tubes
+//iColors-total number of reference colors (consistant cap colors) required for the scenario
+
+function UpdateConsistantCapColorsAndTubeDataNodes(iTotalTubeCount,iColors)
+{
+//   var iTubeCount=6;
+//   var iColors=2;
+  
+  try
+  {
+   Log["AppendFolder"]("System: UpdateConsistantCapColorsAndTubeDataNodes");
+    var sCapColorTrainingFilePath="C:\\Siemens\\Configs\\TCS2Simulation\\TCS2Emulator\\CapColorTrainingFiles\\CapColorTraining.xml" 
+ 
+    var sCapColorTrainingFilePath1=Project["Path"]+"TestData\\CapColorTraining.xml";
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sCapColorTrainingFilePath);
+    objNode    = objXMLDoc["selectSingleNode"]("/CapColorTrainingResponseValues/ConsistentCapColors");//objXMLDoc["selectNodes"]("/AnalysisDatas");
+    
+    var objXMLDoc1   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc1["async"] = false;
+    objXMLDoc1["load"](sCapColorTrainingFilePath1);
+    var sTestDataPath=Project["Path"]+"TestData\\CapColorTraining.xml";
+    sText=aqFile["ReadWholeTextFile"](sTestDataPath,22)
+    
+    if (aqFile["Exists"](sCapColorTrainingFilePath))
+    {
+        aqFile["WriteToTextFile"](sCapColorTrainingFilePath,sText,22,true)
+        objXMLDoc["load"](sCapColorTrainingFilePath);
+        objXMLDoc["save"](sCapColorTrainingFilePath)
+    }
+    else
+    {
+
+      aqFile["Create"](sCapColorTrainingFilePath)
+      aqFile["WriteToTextFile"](sCapColorTrainingFilePath,sText,22,true)
+    }
+      
+    objXMLDoc["load"](sCapColorTrainingFilePath);
+    objNode    = objXMLDoc["selectSingleNode"]("/CapColorTrainingResponseValues/ConsistentCapColors")
+    //var sTubeCount=arrData["Item"]("TubeDataCount");
+    
+     if(iColors>0) 
+    {
+      for(var i=1;i<iColors;i++)
+      {
+        var objNode1    = objXMLDoc1["selectSingleNode"]("//ConsistentCapColor");
+        var obj= objNode1["cloneNode"](true)
+        objNode["appendChild"](obj)
+        objXMLDoc["save"](sCapColorTrainingFilePath)
+      }
+      
+    }
+    
+    
+    objXMLDoc["load"](sCapColorTrainingFilePath);
+    objNode    = objXMLDoc["selectSingleNode"]("/CapColorTrainingResponseValues/TubeDatas")
+    
+//    var sCapColorTrainingFilePath1=Project["Path"]+"TestData\\CapColorTraining.xml";
+//    var objXMLDoc1   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+//    objXMLDoc1["async"] = false;
+    objXMLDoc1["load"](sCapColorTrainingFilePath1);
+    var sTestDataPath=Project["Path"]+"TestData\\CapColorTraining.xml";
+    
+    
+    
+    
+    if(iTotalTubeCount>0) 
+    {
+      for(var i=1;i<iTotalTubeCount;i++)
+      {
+      
+        var objNode1    = objXMLDoc1["selectSingleNode"]("//TubeData");
+        var obj= objNode1["cloneNode"](true)
+        objNode["appendChild"](obj)
+        objXMLDoc["save"](sCapColorTrainingFilePath)
+      }
+    }
+    Log["Message"]("Updated CapColorTraining file with "+iTotalTubeCount+ " tube data nodes and "+iColors+"Consistant cap color nodes")
+    Log["PopLogFolder"]();
+    return true;
+    }
+   catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+  
+} 
+
+//updates consistant cap color RGB node values and Tube data RGB Node values
+function UpdateConsistentCapcolorAndTubeDataCapColorValues(arrData)
+{
+ 
+   
+ // var arrData = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+ try
+  {
+   Log["AppendFolder"]("System: UpdateConsistentCapcolorAndTubeDataCapColorValues");
+   var sCapColorTrainingFilePath="C:\\Siemens\\Configs\\TCS2Simulation\\TCS2Emulator\\CapColorTrainingFiles\\CapColorTraining.xml" 
+ 
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sCapColorTrainingFilePath);
+  
+    for(var i=0;i<arrData["length"];i++)
+    {
+      if(arrData[i]["item"]("ConsistentCapColorsPrimary_R")!=null)
+      {
+      
+        var ConsColor=objXMLDoc["selectNodes"]("//CapColorTrainingResponseValues/ConsistentCapColors/ConsistentCapColor")
+        ConsColor(i)["selectSingleNode"]("Primary/R")["setAttribute"]("Value")=arrData[i]["item"]("ConsistentCapColorsPrimary_R"); 
+        ConsColor(i)["selectSingleNode"]("Primary/G")["setAttribute"]("Value")=arrData[i]["item"]("ConsistentCapColorsPrimary_G");
+        ConsColor(i)["selectSingleNode"]("Primary/B")["setAttribute"]("Value")=arrData[i]["item"]("ConsistentCapColorsPrimary_B");
+      } 
+   
+      if(arrData[i]["item"]("ConsistentCapColorsSecondary_R")!=null)
+      {
+      
+        var ConsColor=objXMLDoc["selectNodes"]("//CapColorTrainingResponseValues/ConsistentCapColors/ConsistentCapColor")
+        ConsColor(i)["selectSingleNode"]("Secondary/R")["setAttribute"]("Value")=arrData[i]["item"]("ConsistentCapColorsSecondary_R"); 
+        ConsColor(i)["selectSingleNode"]("Secondary/G")["setAttribute"]("Value")=arrData[i]["item"]("ConsistentCapColorsSecondary_G");
+        ConsColor(i)["selectSingleNode"]("Secondary/B")["setAttribute"]("Value")=arrData[i]["item"]("ConsistentCapColorsSecondary_B");
+      } 
+    }
+    objXMLDoc["save"](sCapColorTrainingFilePath)
+    var n=0//
+    for(var i=0;i<arrData["length"];i++)
+    {
+      iTubeCount=arrData[i]["item"]("TubeDataCount");
+      for (var m=0;m<iTubeCount;m++)//iTubeCount=2
+      {
+        var TubeData=objXMLDoc["selectNodes"]("//CapColorTrainingResponseValues/TubeDatas/TubeData")
+        TubeData(n)["selectSingleNode"]("CapColorPrimary/R")["setAttribute"]("Value")=arrData[i]["item"]("TubeDataCapColorPrimary_R")
+        TubeData(n)["selectSingleNode"]("CapColorPrimary/G")["setAttribute"]("Value")=arrData[i]["item"]("TubeDataCapColorPrimary_G")
+        TubeData(n)["selectSingleNode"]("CapColorPrimary/B")["setAttribute"]("Value")=arrData[i]["item"]("TubeDataCapColorPrimary_B")
+        TubeData(n)["selectSingleNode"]("CapColorSecondary/R")["setAttribute"]("Value")=arrData[i]["item"]("TubeDataCapColorSecondary_R")
+        TubeData(n)["selectSingleNode"]("CapColorSecondary/G")["setAttribute"]("Value")=arrData[i]["item"]("TubeDataCapColorSecondary_G")
+        TubeData(n)["selectSingleNode"]("CapColorSecondary/B")["setAttribute"]("Value")=arrData[i]["item"]("TubeDataCapColorSecondary_B")
+        n=n+1;
+      }     
+    } 
+  
+      objXMLDoc["save"](sCapColorTrainingFilePath);
+     // Log["Message"]("Updated CapColorTraining file with "+iTotalTubeCount+ " tube data values and "+iColors+"Consistant cap color values")
+      Log["Message"]("CapColorTraining file is updated successfully"); 
+      Log["PopLogFolder"]();
+      return true;
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+  
+  
+} 
+
+function AppendTubeDatas(arrTubeData,iTubeCount)//,TestDataFile,SheetName,Feature)//(iCapCount)
+{
+
+//     var TestDataFile="F:\\SystemTest\\TA_Scripts_Capcolor\\TestcaseLayer\\P2\\TestData\\TestData.xls";
+//    var SheetName="CapcolorTraining";
+//    var Feature="GWT233853_01";
+   
+   // var arrData = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+    var sCapColorTrainingFilePath="C:\\Siemens\\Configs\\TCS2Simulation\\TCS2Emulator\\CapColorTrainingFiles\\CapColorTraining.xml" 
+ 
+    var sCapColorTrainingFilePath1=Project["Path"]+"TestData\\CapColorTraining.xml";
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sCapColorTrainingFilePath);
+    objNode    = objXMLDoc["selectSingleNode"]("/CapColorTrainingResponseValues/TubeDatas");//objXMLDoc["selectNodes"]("/AnalysisDatas");
+    
+    var objXMLDoc1   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc1["async"] = false;
+    objXMLDoc1["load"](sCapColorTrainingFilePath1);
+    var sTestDataPath=Project["Path"]+"TestData\\CapColorTraining.xml";
+    sText=aqFile["ReadWholeTextFile"](sTestDataPath,22)
+
+
+   if (aqFile["Exists"](sCapColorTrainingFilePath))
+    {
+        aqFile["WriteToTextFile"](sCapColorTrainingFilePath,sText,22,true)
+        objXMLDoc["load"](sCapColorTrainingFilePath);
+        objXMLDoc["save"](sCapColorTrainingFilePath)
+    }
+    else
+    {
+
+      aqFile["Create"](sCapColorTrainingFilePath)
+      aqFile["WriteToTextFile"](sCapColorTrainingFilePath,sText,22,true)
+    }
+      
+    objXMLDoc["load"](sCapColorTrainingFilePath);
+    objNode    = objXMLDoc["selectSingleNode"]("/CapColorTrainingResponseValues/TubeDatas")
+    //var sTubeCount=arrData["Item"]("TubeDataCount");
+    
+     if(iTubeCount>0) 
+
+    {
+      for(var i=1;i<iTubeCount;i++)
+      {
+      
+        var objNode1    = objXMLDoc1["selectSingleNode"]("//TubeData");
+        var obj= objNode1["cloneNode"](true)
+        objNode["appendChild"](obj)
+        objXMLDoc["save"](sCapColorTrainingFilePath)
+        
+      }
+      
+    }
+    return true;
+
+} 
+function DeleteCapColorGroupCurrentSession(DrawerNo,DrawerZone)
+{
+try
+{
+  Log["AppendFolder"]("System: DeleteCapColorGroup");
+   if(!SelectDrawer(DrawerNo,DrawerZone))
+    return false;
+   var btnDel = GetControl("CapColorTrainingConfiguration","buttonDelete");
+   
+ if(btnDel)
+ {
+
+ Clickbutton(btnDel);
+ aqUtils["Delay"](1500,"Waitng For Confirm Window");
+ var btnYes = GetControl("CapColorTrainingConfiguration","btnYes");
+ Clickbutton(btnYes);
+ aqUtils["Delay"](7500,"Waitng to Delete the Group");
+ 
+ var btnDel = GetControl("CapColorTrainingConfiguration","buttonDelete");
+ 
+ if(btnDel)
+  {
+    
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Capcolor group is not deleted successfully" );
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  else
+  {
+   Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Capcolor group is deleted successfully" );
+   Log["PopLogFolder"]();
+    return false; 
+  }
+  }   
+
+}
+ catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+}  
+
+function ExtendCapColorGroup(strExistingCapColorGrp,SpecTypes)
+//function ExtendCapColorGroup()
+{
+
+  try
+  {
+    Log["AppendFolder"]("System::ExtendCapColorGroup")
+    
+    var objctrl = GetControl("CapColorTrainingConfiguration", "radioButtonUpdateExisting");
+    ClickControl(objctrl);
+    
+    var txtStatus  = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage");
+    strMsg = txtStatus["WPFControlText"];
+    
+    var transMsgText = GetTranslatedString("Modifying existing cap color group.To add new identified cap colors to the existing cap color group, select Extend.To replace the existing cap color group colors with the current identified cap colors, select Replace.","")
+    arrDBTransMsg = transMsgText.split(".\\r\\n\\r\\n");
+    arrUIMsg = strMsg.split(".");
+    if(aqString["Compare"](arrDBTransMsg[0], arrUIMsg[0],false) != 0)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to modify existing cap color group");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!aqString["Find"](strMsg, "Modifying existing cap color group") < 0)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to modify existing cap color group");
+      Log["PopLogFolder"]();
+      return false;
+    }
+   
+    var objctrl = GetControl("CapColorTrainingConfiguration", "comboBoxCapColorType");
+    SetComboValue(objctrl, strExistingCapColorGrp);
+    
+//    if(!selectSpecimenType(SpecTypes))
+//      return false;
+      
+//    if(strUpdateParam == "Update")
+      var objctrl = GetControl("CapColorTrainingConfiguration", "btnUpdate");
+//    else
+//      var objctrl = GetControl("CapColorTrainingConfiguration", "btnReplace");
+      
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("CapColorTrainingConfiguration", "btnYes"); 
+    ClickControl(objctrl);
+    
+    aqUtils["Delay"](10000, "Waiting to save");
+    
+    var txtStatus  = GetControl("CapColorTrainingConfiguration","textBlockZoneStausMessage");
+    strMsg = txtStatus["WPFControlText"];
+//    if(strUpdateParam == "Update")
+//    {
+      var transMsg = GetTranslatedString("The system updated the following cap color group with a new identified color range: {0}.", "");
+      var transMsgWithParam = ReplaceString(transMsg, "{0}", strExistingCapColorGrp, true);
+      if((aqString["Compare"](strMsg, transMsgWithParam, false))==0)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Successfully extended the cap color group: " +strExistingCapColorGrp); 
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to extend/update the cap color group: " +strExistingCapColorGrp);
+        Log["PopLogFolder"]();
+        return false;
+      }
+//    }
+//    else if(strUpdateParam == "Replace")
+//    {
+//      var transMsg = GetTranslatedString("Cap color group replaced.", "");
+//      if((aqString["Compare"](strMsg, transMsg, false))==0)
+//      {
+//        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Successfully replaced the cap color group: " +strExistingCapColorGrp); 
+//        return true;
+//      } 
+//      else
+//      {
+//        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to replace the cap color group: " +strExistingCapColorGrp);
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//    } 
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}   
+
+/*-------------------------------------- Capcolor Training -------------------------------------*/
+
+
+/*-------------------------------------- HYDRA Functions -------------------------------------*/
+
+//'*******************************************************************************
+//*  FunctionName : GetModuleStatusHydra
+//*  Description: Gets module status for DL and Hydra
+//*  Input: sModuleName
+//*  Output: Boolean
+//*  Example: GetModuleStatusHydra(sModuleName)
+//*  Date of Creating: 30 Oct 2018
+//*  Created By: Bhawya V J
+//'*****************************************************************************
+function GetModuleStatusHydra(sModuleName)
+{
+  try
+  {
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+    var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+    var vararr=["ListBoxItem",sModuleName];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+    var ModuleStatus = aqString["Trim"](ModuleStateObj["Text"]["OleValue"])
+    return ModuleStatus;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    //Log["PopLogFolder"]()
+    return false;
+  }
+}
+
+//'*******************************************************************************
+//*  FunctionName : VerifyOperatorEventLogForSupplies
+//*  Description: To verify Operator Event Log for Supplies
+//*  Input: ArrSuppliesType,sEvent,Rowcount,objctrl
+//*  Output: Boolean
+//*  Example: VerifyOperatorEventLogForSupplies(ArrSuppliesType,sEvent,Rowcount,objctrl)
+//*  Date of Creating: 30 Oct 2018
+//*  Created By: Ramitha K
+//'*****************************************************************************
+function VerifyOperatorEventLogForSupplies(ArrSuppliesType,sEvent,Rowcount,objctrl)
+{
+  try
+  { 
+    Log.AppendFolder("VerifyOperatorEventLog :: "+ ArrSuppliesType); 
+
+    for(Row = 0; Row < Rowcount; Row++)
+    {
+      strCellText = GetGridCellText(objctrl, Row, "Event")
+      if(aqString["Find"](strCellText, sEvent)!= -1)
+      {
+        Log["Checkpoint"]("The Item: "+"' "+sEvent+" '"+ " is available in Operator Event Log under Column Name: Event, Row number: " + Row)
+        Log["PopLogFolder"]();
+        return true;
+      }
+    }
+    
+    Log["Error"]("The Item: "+"' "+sEvent+" '"+ " is not available in Operator Event Log under Column Name: Event")
+    Log["PopLogFolder"]();
+    return false;
+//    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+} 
+
+
+//*********************************************************************************
+//*  FunctionName :  fnCheckCHSubSystemMechanismStatus()
+//*  Description: Check CH Mechanism Status for subsystem
+//*  Input: ModuleName
+//*  Output: Status of Mechanism
+//*  Example:fnCheckCHSubSystemMechanismStatus()
+//*  Date of Creating: 30 Jan 2019
+//*  Created By: Bhawya V J
+//*********************************************************************************
+//Need to remove this function once RT script is cleaned
+function fnCheckCHSubSystemMechanismStatus()
+{
+    try
+    {
+        //Open Log
+        Log["AppendFolder"]("Check CH SubSystem Mechanism Status")
+        
+        //Select Hydra Module
+        if(!fnSelectModuleARM("HYDRA1"))
+          return false;
+         
+        //Check CH Mechanism Status
+        var CHMechanismStatus = fnCheckSubSystemMechanismStatus("CH")
+        if(CHMechanismStatus!= "OK"){
+          Log["Error"]("CH Mechanism Status is "+CHMechanismStatus)
+          Log["PopLogFolder"]();
+          return false;
+        } else{
+          Log["Checkpoint"]("CH Mechanism is in Ready State")
+          Log["PopLogFolder"]();
+          return true;
+        }
+    }
+    catch(exp)
+    {
+      Log["Message"]("Exception "+exp["Description"]);
+      Log["PopLogFolder"]();
+      return False
+    }     
+}
+
+
+//*********************************************************************************
+//*  FunctionName :  fnSelectModuleARM()
+//*  Description: Selects module by name
+//*  Input: ModuleName
+//*  Output: boolean
+//*  Example:fnSelectModuleARM("HYDRA1")
+//*  Date of Creating: 25 Jan 2019
+//*  Created By: Bhawya V J
+//*********************************************************************************
+function fnSelectModuleARM(strModuleName)
+{
+    try
+    {
+        //Open Log
+        Log["AppendFolder"]("Select Module -"+strModuleName)
+        
+        //Click on Module
+        var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+        var proparr=["ClrClassName","WPFControlName","AutomationProperties_Name.OleValue"];
+        var vararr=["TextBlock","NameTextBlock",strModuleName];
+        var objModule = Getchild(objctrl, proparr, vararr);
+        if (VerifyObjectExistance(objModule))
+        {
+            ClickControl(objModule)
+            Log["Checkpoint"]("Selected module "+strModuleName)
+            Log["PopLogFolder"]();
+            return true;
+        }
+        else
+        {
+            Log["Error"]("unable to select the specific module");
+            Log["PopLogFolder"]();
+            return false;
+        }
+    }
+    catch(exp)
+    {
+      Log["Message"]("Exception "+exp["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }     
+} 
+
+
+//*********************************************************************************
+//*  FunctionName :  fnCheckSubSystemMechanismStatus(strModule)
+//*  Description: Check Mechanism Status for subsystem
+//*  Input: ModuleName
+//*  Output: Status of Mechanism
+//*  Example:fnCheckSubSystemMechanismStatus("CH")
+//*  Date of Creating: 25 Jan 2019
+//*  Created By: Bhawya V J
+//*********************************************************************************
+function fnCheckSubSystemMechanismStatus(strModule)
+{
+    try
+    {
+        //Open Log
+        Log["AppendFolder"]("Check Machanism Status for -"+strModule)
+         
+        //Declare
+        var Status
+         
+        //Click on Module
+        var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+        var proparr=["ClrClassName","WPFControlName","WPFControlAutomationId"];
+        var strWPFControlAutomationId = strModule +"SubSystem_Mechanisms_ImageTile"
+        var vararr=["Image","ImageTile",strWPFControlAutomationId];
+        var objModule = Getchild(objctrl, proparr, vararr);
+        if (VerifyObjectExistance(objModule))
+        {
+            ClickControl(objModule)
+            Status = objModule["Tag"]["Olevalue"]
+            Log["Message"](strModule+" Mechanism Status is "+Status)
+            Log["PopLogFolder"]();
+            return Status
+        }
+        else
+        {
+            Log["Error"]("unable to fetch "+strModule+" Mechanism status");
+            Log["PopLogFolder"]();
+            return "False"
+        }
+    }
+    catch(exp)
+    {
+      Log["Message"]("Exception "+exp["Description"]);
+      Log["PopLogFolder"]();
+      return "False"
+    }     
+}
+
+//*********************************************************************************
+//*  FunctionName :  fnCheckSubSystemSuppliesStatus(strModule)
+//*  Description: Check Supplies Status for subsystem
+//*  Input: ModuleName
+//*  Output: Status of Supplies
+//*  Example:fnCheckSubSystemSuppliesStatus("CH")
+//*  Date of Creating: 22 Feb 2019
+//*  Created By: Shahana
+//*********************************************************************************
+function fnCheckSubSystemSuppliesStatus(strModule)
+{
+    try
+    {
+        //Open Log
+        Log["AppendFolder"]("Check Supplies Status for -"+strModule)
+         
+        //Declare
+        var Status;
+         
+        //Click on Module
+        var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+        var proparr=["ClrClassName","WPFControlName","WPFControlAutomationId"];
+        var strWPFControlAutomationId = strModule +"Subsystem_Supplies_ImageTile"
+        var vararr=["Image","ImageTile",strWPFControlAutomationId];
+        var objModule = Getchild(objctrl, proparr, vararr);
+        if (VerifyObjectExistance(objModule))
+        {
+            ClickControl(objModule)
+            Status = objModule["Tag"]["Olevalue"]
+            Log["Message"](strModule+" Supplies Status is "+Status)
+            Log["PopLogFolder"]();
+            return Status
+        }
+        else
+        {
+            Log["Error"]("unable to fetch "+strModule+" Supplies status");
+            Log["PopLogFolder"]();
+            return "False"
+        }
+    }
+    catch(exp)
+    {
+      Log["Message"]("Exception "+exp["Description"]);
+      Log["PopLogFolder"]();
+      return "False"
+    }     
+}
+
+//****************************************************************************************************************************
+//*  FunctionName : ClickOnStartButtonHydra()
+//*  Description: Starts the Hydra module
+//*  Input: 
+//*  Output: boolean
+//*  Example: ClickOnStartButtonHydra()
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function ClickOnStartButtonHydra()
+{
+  try
+  {      
+      Log["AppendFolder"]("Clicking on Start button for Hydra module")
+      
+      //var StartButton=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Status")["WinFormsObject"]("ContentFrame_SystemStatus")["WinFormsObject"]("SystemStatusViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("SystemStatusLayoutView", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("ModuleContent")["WPFObject"]("HydraModuleStatusView", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("StackPanel", "", 1)["WPFObject"]("UCStackPanel")["WPFObject"]("StackPanel", "", 1)["WPFObject"]("StackPanel", "", 1)["WPFObject"]("ResumeButton")["WPFObject"]("Image", "", 1);
+      var StartButton=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Status")["WinFormsObject"]("ContentFrame_SystemStatus")["WinFormsObject"]("SystemStatusViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("SystemStatusLayoutView", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("ModuleContent")["WPFObject"]("HydraModuleStatusV")["WPFObject"]("UIWDesktopDialogLayoutUserControl", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("StackPanel", "", 1)["WPFObject"]("UCStackPanel")["WPFObject"]("StackPanel", "", 1)["WPFObject"]("StackPanel", "", 1)["WPFObject"]("ResumeButton")["WPFObject"]("Image", "", 1);
+      
+      //Click Resume button
+	    if(StartButton["Exists"])
+      {
+          ClickControl(StartButton);
+          Log["Message"]("Clicked Play/Resume button successfully")
+      }
+      else
+          Log["Message"]("Hydra already in Ready state")   
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : CheckModuleStatusHydra
+//*  Description: CheckModuleStatusHydra
+//*  Input: NA
+//*  Output: Boolean
+//*  Example: CheckModuleStatusHydra
+//*  Date of Creating: 30 Oct 2018
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function CheckModuleStatusHydra()
+{
+  try
+    {
+        //Open Log
+        Log["AppendFolder"]("Wait for DL and Hydra to be Ready")
+        
+        //Wait for Module to be in Ready/Standby State
+        var blnModuleState = false;
+        for(i=1; i < 120; i++) //Modified Wait- 30 Mins [15 Secs Polling]
+        {
+            var HYDRAStatus = GetModuleStatusHydra("Hydra"); 
+            var DLStatus = GetModuleStatusHydra("DL");
+              
+            if ((HYDRAStatus=="Ready" || HYDRAStatus=="Standby") && (DLStatus=="Ready" || DLStatus=="Standby")){
+                boolFlag = true;
+                Log["Checkpoint"]("Hydra Status : " + HYDRAStatus);
+                Log["Checkpoint"]("DL Status : " + DLStatus);
+                blnModuleState =true;
+                break;
+            }else
+                aqUtils["Delay"](15000, "Waiting for all nodes to come to Ready/Standby state");                
+            if(i==120)
+            {
+                Log["Message"]("Hydra Status : " + HYDRAStatus);
+                Log["Message"]("DL Status : " + DLStatus);
+                blnModuleState =false;
+                break;
+            }
+        }
+    
+        //Close Log
+        Log["PopLogFolder"]();    
+        return blnModuleState;        
+        
+    }catch(e){
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+}
+
+
+
+//'***************************************************************************************************************************
+//*  FunctionName : GetModuleStatusRT
+//*  Description: Gets module status for DL and Hydra
+//*  Input: sModuleName
+//*  Output: Boolean
+//*  Example: GetModuleStatusRT(sModuleName)
+//*  Date of Creating: 30 Oct 2018
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function GetModuleStatusRT(sModuleName)
+{
+  try
+  {
+//	  var objctrl = GetControl("System_Status_System","gdStatus");
+   // var objctrl = GetControl("System_Status_System","winSystem");
+    var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")//GetControl("System_Status_System","listBoxItemSystem");
+    var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+    var vararr=["ListBoxItem",sModuleName];
+    var objModule = Getchild(objctrl, proparr, vararr);
+   
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StateTextBlock"];
+    var ModuleStateObj=Getchild(objModule, proparr, vararr);
+    var ModuleStatus = aqString["Trim"](ModuleStateObj["Text"]["OleValue"])
+    return ModuleStatus;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]()
+    return false;
+  }
+}
+
+
+function VerifyHydraEventLog(sTime,sModuleSerialNumber,sEvent)
+//function VerifyEventLog()
+{
+  try
+  { 
+    Log.AppendFolder("System::VerifyEventLog"); 
+	var stringLength=sEvent.length;
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+   // objctrl = Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Events")["WinFormsObject"]("Events_PAGES")["WinFormsObject"]("UserEvents")["WinFormsObject"]("ContentFrame_Events")["WinFormsObject"]("UserEventCtrl")["WinFormsObject"]("splitContainer2")["WinFormsObject"]("PanelTwo")["WinFormsObject"]("splitContainer1")["WinFormsObject"]("Panela")["WinFormsObject"]("uiwPanel1")["WinFormsObject"]("eventLogQuickFilterExp1")["WinFormsObject"]("uiwGroupBox1")["WinFormsObject"]("cmbTime");
+    ClickItem(objctrl, sTime)
+   
+    objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+   // objctrl =Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Events")["WinFormsObject"]("Events_PAGES")["WinFormsObject"]("UserEvents")["WinFormsObject"]("ContentFrame_Events")["WinFormsObject"]("UserEventCtrl")["WinFormsObject"]("splitContainer2")["WinFormsObject"]("PanelTwo")["WinFormsObject"]("splitContainer1")["WinFormsObject"]("Panela")["WinFormsObject"]("uiwPanel1")["WinFormsObject"]("eventLogQuickFilterExp1")["WinFormsObject"]("uiwGroupBox1")["WinFormsObject"]("cmbModule");
+    if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+    {
+      Log["Message"]("Selected module "+sModuleSerialNumber)
+    } 
+    else
+    {
+      Log["Error"]("Unable to select module as "+sModuleSerialNumber)
+    }
+    
+    aqUtils["Delay"](10000,"Waiting for events to load");
+    
+    objctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+    //objctrl =Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Events")["WinFormsObject"]("Events_PAGES")["WinFormsObject"]("UserEvents")["WinFormsObject"]("ContentFrame_Events")["WinFormsObject"]("UserEventCtrl")["WinFormsObject"]("splitContainer2")["WinFormsObject"]("PanelTwo")["WinFormsObject"]("splitContainer1")["WinFormsObject"]("Panelb")["WinFormsObject"]("splitContainer")["WinFormsObject"]("Panel1")["WinFormsObject"]("panelEvents")["WinFormsObject"]("eventsGridView");
+    if(CheckTextonGrid(objctrl,"Event", sEvent))
+    {
+      Log["Message"]("Verified event log message : "+sEvent)
+      Log["PopLogFolder"]();
+      return true;
+    }
+	else if(CheckSubstringTextonGrid(objctrl,"Event", sEvent, 0, stringLength))
+    {
+      Log["Message"]("Verified event log message : "+sEvent)
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Unable to find event log message : "+sEvent)
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+} 
+
+function IsCapColorWindowAvailable()
+{
+  try
+  {
+    Log["AppendFolder"]("System::IsCapColorWindowAvailable");
+    objctrl = GetControl("System_OperatorDiagnostics", "CapColorConfigurationWindow");
+    
+    var intWaitTime = 0;
+    var intStartTime = aqDateTime["Time"]();
+    while(objctrl["Exists"]==null && intWaitTime < 3000)
+    {
+      aqUtils["Delay"](5000, "Waiting for cap color training window");
+      intWaitTime = aqDateTime["Time"]() - intStartTime;
+      objctrl = GetControl("System_OperatorDiagnostics", "CapColorConfigurationWindow");
+    }
+    
+    if(objctrl["Exists"])
+    {
+      ClickControl(objctrl);
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Cap color training window came up successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Cap color training window did not appear");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//'***************************************************************************************************************************
+//*  FunctionName : VerifyModuleStatus
+//*  Description: verifies module state
+//*  Input: sModuleName,sModuleStatus
+//*  Output: Boolean
+//*  Example: VerifyModuleStatus(sModuleName,sModuleStatus)
+//*  Date of Creating: 21 March 2019
+//*  Created By: Shrutika Tyagi
+//'***************************************************************************************************************************
+function VerifyModuleStatus(sModuleName,sModuleStatus)
+{
+   try
+    {
+      //Open Log
+      Log["AppendFolder"]("System::VerifyModuleStatus")
+        
+      //Wait for Module to be in expected State for 1 min
+      var blnModuleState = false;
+      for(i=1; i<1201; i++) //8 Mins (Increased to 20 mins as Maintenance activity takes 20 mins)
+      {
+          var ModuleStatus = GetModuleStatusHydra(sModuleName); 
+          
+          if (aqString["ToUpper"](ModuleStatus)==aqString["ToUpper"](sModuleStatus))
+          {
+              boolFlag = true;
+              Log["Message"](sModuleName + " module status : " + sModuleStatus);
+              blnModuleState =true;
+              break;
+          }
+          else
+              aqUtils["Delay"](1000, "Waiting for " +sModuleName + " module to come to " +sModuleStatus+ " state"); 
+      }              
+      if(i==481)
+      {
+          Log["Error"](sModuleName +" status : " +sModuleStatus);
+          blnModuleState =false;
+      }
+      
+    
+      //Close Log
+      Log["PopLogFolder"]();    
+      return blnModuleState;        
+        
+    }
+    catch(e)
+    {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+}
+
+/*-------
+ BHAWYA 
+ -------*/
+ 
+//*************************************************************************
+//*  FunctionName : StopPauseOrResumeModule(strAction)
+//*  Description: Stop,Pause,OrResume Module
+//*  Input: STOP/PAUSE/RESUME
+//*  Output: Boolean
+//*  Example: StopHydraAnalyzer()
+//*  Date of Creating: 21 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function StopPauseOrResumeModule(strAction)
+{
+  try
+  {      
+      //Initialize
+      var sExpState = ""
+      var btnObj 
+      var sModuleName = "HYDRA"
+  
+      //Log Open
+      Log["AppendFolder"](strAction+" Hydra Module")
+      
+      //Select the Module
+      var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+      var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+      var vararr=["ListBoxItem",sModuleName];
+      var objModule = Getchild(objctrl, proparr, vararr);
+   
+      var proparr=["ClrClassName","WPFControlName"];
+      var vararr=["TextBlock","StateTextBlock"];
+      var ModuleStateObj=Getchild(objModule, proparr, vararr);
+      ClickControl(ModuleStateObj)
+    
+       //Stop button
+      if(aqString["Find"](strAction,"STOP")!= -1){
+        sExpState ="Stopped"
+        btnObj= GetControl("System_Status_System","btnStop"); 
+      }
+      //Pause Button
+      else if(aqString["Find"](strAction,"PAUSE")!= -1){
+        sExpState ="Stopped"
+        btnObj= GetControl("System_Status_System","btnPause"); 
+      }
+      
+      //Resume
+      else if(aqString["Compare"](strAction,"RESUME",false)== 0){
+        sExpState ="Ready"
+        btnObj= GetControl("System_Status_System","btnStart"); 
+      }
+      
+      //Resume_Startup
+      else if(aqString["Compare"](strAction,"RESUME_Startup",false)== 0){
+        sExpState ="Startup"
+        btnObj= GetControl("System_Status_System","btnStart"); 
+      }
+      
+      //Verify Button and click
+      if (VerifyObjectExistance(btnObj))
+      {
+        ClickControl(btnObj)
+        var btnObj = GetControl("System_Status_System","btnYes");
+        ClickControl(btnObj);
+      }else{
+        Log["Error"]("Unable to "+strAction+" Module")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Wiat to Reach Exp State -15 Mins
+      for (var i=0;i<90;i++)
+      {
+        var ModuleStatus=GetModuleStatusHydra("HYDRA")
+        if (ModuleStatus==sExpState)
+        {
+          Log["Checkpoint"]("HYDRA in "+sExpState+" state")
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else
+        {
+          aqUtils["Delay"](10000,"Waiting for state transition")
+        }
+        if (i==90)
+        {
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : "+exp["description"]);
+    Log["Error"]("Unable to "+strAction+" HYDRA Module")
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*********************************************************************************
+//*  FunctionName :  ShutdownModule(sModuleName,sInitialState,sConfirmation)
+//*  Description: Shutdown module
+//*  Created By: Shrutika
+//*********************************************************************************
+function ShutdownModule(sModuleName,sInitialState,sConfirmation)
+{
+  try
+  {       
+      //Log Open
+      Log["AppendFolder"]("System::ShutdownModule")
+      
+      //Select the Module
+      var objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")
+      var proparr=["ClrClassName","DataContext.ModuleType.OleValue"];
+      var vararr=["ListBoxItem",sModuleName];
+      var objModule = Getchild(objctrl, proparr, vararr);
+   
+      var proparr=["ClrClassName","WPFControlName"];
+      var vararr=["TextBlock","StateTextBlock"];
+      var ModuleStateObj=Getchild(objModule, proparr, vararr);
+      ClickControl(ModuleStateObj)
+  
+      //sExpState ="Off"
+      var btnObj= GetControl("System_Status_System","btnShutdown"); 
+	  sConfirmation = ToUpperCase(sConfirmation); 
+
+      if(VerifyObjectExistance(btnObj))
+      {
+          switch(sConfirmation)
+          {
+            case "YES":
+                    ClickControl(btnObj)
+                    var btnObj = GetControl("System_Status_System","btnYes");
+                    ClickControl(btnObj);
+                    break;
+              
+            case "NO":
+                    ClickControl(btnObj)
+                    var btnObj = GetControl("System_Status_System","btnNo");
+                    ClickControl(btnObj);
+                    break;
+                    
+            case "CANCEL":
+                    ClickControl(btnObj)
+                    var btnObj = GetControl("System_Status_System","btnCancel");
+                    ClickControl(btnObj);
+                    break;
+        
+          }
+      }
+      else
+      {
+        Log["Error"]("Unable to shutdown "+ sModuleName)
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+function CopyVMMTrackFiles()
+{
+  try
+  {
+    var sPath=Project["Path"]["split"]("TestcaseLayer")
+ 
+   // var sSourcepath=sPath[0]+"TA_Scripts\\TestcaseLayer\\P2\\TestData\\VMMTrackFiles\\Track.xml"
+    var sSourcepath=sPath[0]+"TestcaseLayer\\P2\\TestData\\VMMTrackFiles\\Track.xml"
+    var sDestinationPath= "F:\\SystemSpecificConfigs\\VMM"
+    aqFile["Delete"](sDestinationPath+"\\Track.xml")
+    aqUtils["Delay"](5000, "waiting for Track.xml file to delete")
+    aqFile["Copy"](sSourcepath,sDestinationPath,false)
+  
+    var sSourcepath=sPath[0]+"TestcaseLayer\\P2\\TestData\\VMMTrackFiles\\Track_Emulation.xml"
+    var sDestinationPath= "F:\\SystemSpecificConfigs\\VMM"
+    aqFile["Delete"](sDestinationPath+"\\Track_Emulation.xml")
+    aqUtils["Delay"](5000,"waiting for Track_Emulation.xml file to delete")
+    aqFile["Copy"](sSourcepath,sDestinationPath,false)
+
+  
+    var sSourcepath=sPath[0]+"TestcaseLayer\\P2\\TestData\\VMMTrackFiles\\Track_Simulation.xml"
+    var sDestinationPath= "F:\\SystemSpecificConfigs\\VMM"
+    aqFile["Delete"](sDestinationPath+"\\Track_Simulation.xml")
+    aqUtils["Delay"](5000,"waiting for Track_Simulation.xml file to delete")
+    aqFile["Copy"](sSourcepath,sDestinationPath,false)
+  
+    Log["Message"]("VMM track files are placed")
+ }
+ catch(exp) 
+ {
+    Log["Error"]("Exception - " + exp["description"]);
+    return false;
+ }
+ 
+} 

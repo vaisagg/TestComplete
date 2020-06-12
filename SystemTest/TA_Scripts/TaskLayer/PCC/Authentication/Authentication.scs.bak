@@ -1,0 +1,2668 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT ControlAccessLibrary
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT TCCSConfigLibrary
+
+
+
+// ***********************************************************************************************
+// Function Name : EnterUserName(Username)
+// Function Description: This function writes the UserName in the login window
+// Inputs : Username -> Username needed for the login operation
+// ***********************************************************************************************
+function EnterUserName(Username)
+{
+  try
+  {
+    Log["Message"]("Entering the Username in Login window");
+    var objctrl = GetControl("Login","txbUsername");
+    SetText(objctrl,Username);
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    return false;
+  }
+
+}
+
+// ***********************************************************************************************
+// Function Name : EnterPassword(Password)
+// Function Description: This function writes the password in Login window
+// Inputs : Password -> Password needed for the login operation
+// ***********************************************************************************************
+function EnterPassword(Password)
+{
+  try
+  {
+    Log["Message"]("Entering the Password in Login window");
+    var objctrl = GetControl("Login","txbPassword");
+    SetText(objctrl,Password);  
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    return false;
+  }
+}
+
+
+// ***********************************************************************************************
+// Function Name : ClickOnSignButton()
+// Function Description: This function clicks the signin button in the login window
+// Inputs : NA
+// ***********************************************************************************************
+function ClickOnSignButton()
+{
+
+  try
+  {
+    Log["Message"]("Clicking the Signin Button in Login window");
+    var objctrl = GetControl("Login","btnSignin");
+    ClickControl(objctrl);
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    return false;
+  }
+} 
+
+
+// ***********************************************************************************************
+// Function Name : VerifySigin()
+// Function Description: This function verifies whether the application signed in successfully
+// Inputs : NA
+// ***********************************************************************************************
+function VerifySignin()
+{
+  try
+  {
+    Log.AppendFolder("Authentication::VerifySignin")
+    Log["Message"]("Verifying whether Application is logged in successfully");
+    for(i=1; i < 200; i++)
+    {
+      objctrl = GetControl("Login", "cctrlModule")
+      if(objctrl["Exists"]==true)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Successfully logged in to Atellica");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        aqUtils["Delay"](2000, "Waiting for System screen to load")
+      }
+    }
+    if(i==200)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Login failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+
+
+// ***********************************************************************************************
+// Function Name : InitializeTrinidad()
+// Function Description: This function verifies whether the Systemstatus is Ready and log the Result
+// Inputs : NA
+// ***********************************************************************************************
+function InitializeTrinidad(Username, Password, DeploymentType)
+{
+  Log.AppendFolder("Authentication::InitializeTrinidad")
+  //TO DO : function to launch StartEngMode
+  var Status = CheckSystemStatus(DeploymentType);
+  Log["PopLogFolder"]();
+  return Status;
+}
+
+
+function IsTrinidadLaunched()
+{
+  //Check whether the login window is visible on screen
+  var objLogin = GetControl("Login","winLogInWindow")
+  if(ScreenExists(objLogin,1000)==true)
+  {
+    Log["Message"]("Trinidad is Launched and Login Window is Visible");
+  }
+  else
+  {
+   Log["Message"]("Trinidad is not Launched"); 
+   Runner["Halt"]("Trinidad is not launched and cannot proceed further");   
+  }
+}
+
+
+function InvokePCC()
+{
+  try
+  {
+      var strApplication  = "PCC";
+      var strpath         = "C:\\Siemens\\Bin\\StartENG.bat " + strApplication;
+      //var strpath         = "C:\\Siemens\\Bin\\RAMP.exe";
+      var arrServices     = new Array("RAMP Service", "UIW.DM.DMService", "UIW.Framework.EventService", "UIW.Maintenance.DBMaintenanceService", "UIW.Reports.ReportsManagerService");
+      var objWS           = Sys["OleObject"]("WScript.Shell");
+    
+      var oShell = Sys["OleObject"]("Shell.Application");
+      ProjPath = ProjectSuite["Path"];
+      arrPath  = ProjPath["split"]("Atellica")
+      var sTestDataPath =  arrPath[0] + "TestcaseLayer\\P2\\TestData";
+      
+      UpdateFakeBarcodes(sTestDataPath,"FakeBarcodeReadings.txt")
+      
+      objWS["Run"](strpath);
+  
+      //Waits for the Shell Process to initialize. Max waiting time : 30 seconds
+      if (Sys["WaitProcess"]("Shell",60000)["Exists"] == true )
+      {
+        Log["Message"]("Shell process has started");
+        aqUtils["Delay"](5000, "Waiting for Shell")
+        Sys["Process"]("Shell")["Refresh"]();
+        //Waits for the Login Window to appear. Max waiting time : 90 seconds
+        //WindowLogin = Sys["Process"]("Shell")["WaitWinFormsObject"]("LogInWindow",90000)
+//        var intStartTime = aqDateTime["Time"]();
+//        do
+//        {
+//          WindowLogin = GetControl("Login", "winLogInWindow")
+//          //aqString["ToLower"]()
+//          intElapsedTime = aqDateTime["Time"]() - intStartTime
+//        }
+//        while(WindowLogin["Exists"]==false || intElapsedTime < 90000 )
+        
+        for(i=1; i < 250; i++)
+        {
+          WindowLogin = GetControl("Login", "winLogInWindow")
+          if(WindowLogin["Exists"]==true)
+            break;
+          else
+          {
+            //add Unavailable DM check here
+            aqUtils["Delay"](2000, "Waiting for Login Window")
+          }
+        }
+
+        if(WindowLogin != null || WindowLogin != "")
+        {      
+          var txtBoxUserID = GetControl("Login", "txbUsername")
+          //Waits until the UserID text box is visible. Max waiting time : 90 seconds 
+          if (txtBoxUserID.WaitProperty("VisibleOnScreen", "True",180000) == true )
+          {
+            Sys["Process"]("Shell")["Refresh"]();
+            return true;
+          }
+          else
+          {
+            Log["Error"]("UserID text box not visible after waiting for 60 seconds");
+            return false;
+          }
+        }
+        else
+        {
+          Log["Error"]("Unable to find Login Window");
+          return false;
+        }   
+      }
+      else
+      {
+        Log["Error"]("Shell process has not started");
+        return false;
+      } 
+  }
+  catch(exp) 
+  {
+     Log["Error"]("Exception", exp["description"]);
+     return false;
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : PCCShutdown
+//*
+//*  Description: Trinidad Shutdown.
+//*  
+//*  Input: 
+//*
+//*  Output: True or False
+//*
+//*  Example: PCCShutdown()
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function PCCShutdown()
+{
+  try
+  {
+    var strshutdownPath = "C:\\Siemens\\Installation\\Tools\\KillallAndPCM.bat"
+    var objWS = Sys["OleObject"]("WScript.Shell");
+    objWS["Run"](strshutdownPath);
+    aqUtils["Delay"](10000, "Waiting for Trinidad application shutdown");
+    //var cmdobj = Sys["Process"]("cmd")["Window"]("ConsoleWindowClass", "Administrator: Windows PowerShell", 1)
+    var desktopObj=Sys["Desktop"];
+    var proparr=["WndClass", "wndCaption","wText"];
+    var vararr=["ConsoleWindowClass", "Administrator: Windows PowerShell","*Press Enter to continue:*"];
+    //var cmdObj =Sys["Find"](proparr,vararr,35);
+    
+    var boolCMDFlag = false;
+    
+    for(i=0; i<10; i++)
+    {
+      var cmdObj =Sys["Find"](proparr,vararr,35)
+      if(cmdObj["Exists"])
+      {
+        cmdObj["Activate"]();
+        cmdObj["Close"]();
+        aqUtils["Delay"](5000,"Waiting for cmd window to close");
+        boolCMDFlag = true;
+        break;
+      }
+      else
+        aqUtils["Delay"](3000, "Waiting for Trinidad application to shutdown");
+    }
+    
+    if(boolCMDFlag)
+    {
+      //arrProcess = ["RAMP", "RAMP.Service", "UIW.Maintenance.Monitor.Debug", "UIW.Reports.ReportsManagerService", "DBMaintenance", "DM", "TCS1EmulatorHost", "VMM.ServiceHost", "Planner.ServiceHost", "HLCSimulator", "SIM.Service"];
+      arrProcess = ["VMM.ServiceHost", "Planner.ServiceHost", "SIM.Service", "Event"];
+      WaitToKillProcess(arrProcess, 10000);
+      return true;
+    }
+    else
+    {
+      Log["Error"]("PCC shutdown cmd window did not come up");
+      return false;
+    }
+    
+/*   
+     //Press Enter to continue:
+     var cmdobj = Sys["Process"]("cmd",2)["Window"]("ConsoleWindowClass", "Administrator: Windows PowerShell", 1)
+    
+     if (cmdobj["Exists"])
+     {
+      cmdobj["Activate"]();
+      cmdobj["Close"]();
+      return true;
+     }
+     else
+     {  var cmdobj1=Sys["Process"]("cmd",3)["Window"]("ConsoleWindowClass", "Administrator: Windows PowerShell", 1)
+        
+        cmdobj1["Activate"]();
+        cmdobj1["Close"]();
+        return true;
+     }
+    if(cmdObj["Exists"])
+    {
+      cmdObj["Activate"]();
+      cmdObj["Close"]();
+      aqUtils["Delay"](5000,"Waiting for cmd window to close")
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+*/
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    return false;
+  }
+}
+
+function LaunchAndLoginToTrinidad(PCCUsername,Password)
+{
+      
+    if(InvokePCC() == false)
+      Runner["Halt"]("Unable to invoke PCC")
+      
+    //aqUtils["Delay"](150000);
+    if(!EnterUserName(PCCUsername))
+      return false;
+    if(!EnterPassword(Password))
+      return false; 
+    if(!ClickOnSignButton())
+       return false; 
+   
+    var sValue=UpdateSecurityQuestions();
+    if(sValue=="Failure")
+    {
+       return false; 
+    }
+	  else if(sValue=="Success")
+    {
+  		if(!EnterUserName(PCCUsername))
+  			return false;
+  		if(!EnterPassword(Password))
+  			return false; 
+  		if(!ClickOnSignButton())
+  			return false; 
+    }
+    
+    return VerifySignin();
+}
+
+//This function logs out the current user from Atellica 
+function Logout()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication::Logout"); 
+    var objctrl = GetControl("Login", "btnLogon");
+    ClickControl(objctrl);
+    var objctrl = GetControl("Login", "btnSignOut")
+    ClickControl(objctrl);
+    var objctrl = GetControl("Login", "msgBoxLabelSignout");
+    
+    //if(VerifyControlText(objctrl, GetTranslatedString("Sign out?", LangID)))
+    if(ScreenExists(objctrl, 3000))
+    {
+      var objctrl = GetControl("Login", "btnYes")
+      ClickControl(objctrl);
+      var objctrl = GetControl("Login", "txbUsername")
+      if(ScreenExists(objctrl, 3000))
+      {
+        Log["Message"]("Successfully logged out from Atellica")
+        Log["PopLogFolder"]();
+        return true;
+      }
+    }
+    else
+    {
+      Log["Message"]("Unable to log out from Atellica");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+function UpdateSecurityQuestions()
+{
+  try
+  {
+    Log.AppendFolder("Authentication::UpdateSecurityQuestions")
+    
+    var objctrl = GetControl("Login", "msgBoxLabelFirstTimeSignin");
+    if(!VerifyObjectExistance(objctrl))
+    {
+      Log["Message"]("Security questions did not appear")
+      Log["PopLogFolder"]();
+      return "NotAppeared";
+    }
+    
+    var objctrl = GetControl("Login", "btnFirsttimeSignInOk");
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("Login", "cmbBoxQuestion1");
+    ClickItem(objctrl,0)
+    
+    var objctrl = GetControl("Login", "txtBoxAnswer1");
+    SetText(objctrl,"P2Test1")
+    
+    var objctrl = GetControl("Login", "cmbBoxQuestion2");
+    ClickItem(objctrl,1)
+    
+    var objctrl = GetControl("Login", "txtBoxAnswer2");
+    SetText(objctrl,"P2Test2")
+    
+	//Added PHI -Hydra for LabManager -Shahana------------------
+    var objctrl = GetControl("Login", "txtBoxNewPHIKey");
+    if(objctrl["Exists"])
+    {
+    
+		SetText(objctrl,"Siemens1234567%")
+		var objctrl = GetControl("Login", "txtBoxConfirmNewPHIKey");
+		SetText(objctrl,"Siemens1234567%")
+    }
+    //----------------------------------------------------------
+    var objctrl = GetControl("Login", "btnSecurityQuestionsSave");
+    ClickControl(objctrl);
+    
+    
+    var objctrl = GetControl("Login", "msgBoxLabelSecurityQuestionsSaved");
+    if(VerifyObjectExistance(objctrl))
+    {
+      Log["Message"]("Security questions are updated successfully")
+      
+      var objctrl = GetControl("Login", "btnSecurityQuestionsSavedOK");
+      ClickControl(objctrl); 
+           
+      Log["PopLogFolder"]();
+      return "Success";
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to update security questions ");
+      Log["Error"]("Security questions saved messagebox is not displayed")
+      Log["PopLogFolder"]();
+      return "Failure";
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return "Failure";
+  }
+}
+
+
+function Login(PCCUsername,Password)
+ {
+   try
+   {
+    Log.AppendFolder("Authentication::Login")
+    if(!EnterUserName(PCCUsername))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    } 
+      
+    if(!EnterPassword(Password))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    if(!ClickOnSignButton())
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!VerifySignin())
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!VerifyLoggedInUser(PCCUsername))
+    {
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;
+    } 
+   } 
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+    
+
+ }
+
+function VerifyLoggedInUser(sUser)
+{
+  
+  try
+  {
+    Log.AppendFolder("Authentication::VerifyLoggedInUser")
+  
+    var objctrl= GetControl("Login", "flFrameSystemTools");
+    var proparr=["ClrClassName","WinFormsControlName"];
+    var vararr=["ShellLabel","UserNameLabel"];
+    var objUsername=Getchild(objctrl,proparr,vararr)
+    sLoggedInUser=GetPropertyValue(objUsername,"Text");
+  
+    if(trim(sLoggedInUser)==sUser)
+    {
+      Log["Message"]("Verified : Logged in user is "+sLoggedInUser)
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else
+    {
+       Log["Message"]("Verification failed : Logged in user is "+sLoggedInUser)
+       Log["PopLogFolder"]();
+       return false;
+    } 
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+} 
+
+
+/*-------------------------------------- HYDRA Functions -------------------------------------*/
+
+/*-------
+ BHAWYA 
+ -------*/
+ 
+//*************************************************************************
+//*  FunctionName : InitializeHydra
+//*  Description: Launch and Login to ARM
+//*  Input: na
+//*  Output: Boolean
+//*  Example: InitializeARM
+//*  Date of Creating: 10 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+
+function InitializeHydra()
+{
+    //Log Open
+    Log["AppendFolder"]("INITIALIZE :Launch and Login to ARM");
+
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA1();
+
+    //Read data for Login
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","Login");
+    var dictColumn=arrTestData[0];
+    
+    /*--------- SHUTDOWN ----------*/
+    
+    ShutDownARM();
+    aqUtils["Delay"](5000,"Wait for shutdown");
+    
+    /*--------- LAUNCH ----------*/
+     
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "I");
+    
+    //Launch Hydra
+    if(!LaunchHydra()){
+      ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "F");
+      return false}
+      
+    //Result.xml
+    ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "P");
+    
+    /*--------- LOGIN ----------*/
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Initialize", "Login_Hydra", "I");
+    
+    //Login to Hydra
+    if(!LoginToHydra1(dictColumn["Item"]("User"),dictColumn["Item"]("Password"))){
+      ReportTestStatusToResultXML("Initialize", "Login_Hydra", "F");
+      return false}
+
+    //Result.xml
+    ReportTestStatusToResultXML("Initialize", "Login_Hydra", "P");
+    
+    /*------ MODULE STATE ------*/
+
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "I");
+
+    //Wait till  Hydra Module Ready/Standby - Max 30 Mins
+    counter=0
+    sDLModuleName ="DL"
+    sHydraModuleName ="HYDRA"
+    //Log["Enabled"] = false;
+    var sHydraStatus =GetModuleStatusHydra(sHydraModuleName)
+    while(sHydraStatus != "Ready" && sHydraStatus != "Standby" && counter<120){
+            aqUtils["Delay"](15000,"Wait for Hydra to be Ready");
+            sHydraStatus =GetModuleStatusHydra(sHydraModuleName)
+            counter =counter+1;
+    }
+    sHydraStatus =GetModuleStatusHydra(sHydraModuleName)
+    if(sHydraStatus != "Ready" && sHydraStatus != "Standby"){
+            sHydraStatus = GetModuleStatusHydra(sHydraModuleName)
+            Log["Enabled"] = true;
+            Log["Error"]("Hydra module status is "+sHydraStatus)
+            ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+            Log["PopLogFolder"]()
+            return false;
+    }else if(sHydraStatus == "Ready" || sHydraStatus == "Standby"){
+      Log["Enabled"] = true;
+    }
+ 
+    //Wait till  DL Module Ready/Standby
+    counter=0;
+    Log["Enabled"] = false;
+    var sDLStatus =GetModuleStatusHydra(sDLModuleName)
+    while(sDLStatus != "Ready" && sDLStatus != "Standby" && counter<120){
+            aqUtils["Delay"](15000,"Wait for DL to be Ready");
+            sDLStatus =GetModuleStatusHydra(sDLModuleName)
+            counter =counter+1;
+    }
+    sDLStatus =GetModuleStatusHydra(sDLModuleName)
+    if(sDLStatus != "Ready" && sDLStatus != "Standby"){
+            sDLStatus =GetModuleStatusHydra(sDLModuleName)
+            Log["Enabled"] = true;
+            Log["Error"]("Hydra module status is "+sDLStatus)
+            ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+            Log["PopLogFolder"]()
+            return false;
+    }else if(sDLStatus == "Ready" || sDLStatus == "Standby"){
+      Log["Enabled"] = true;
+    }
+
+    //Log close
+    Log["Enabled"] = true;
+    ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "P");
+    Log["PopLogFolder"]()
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : LaunchHydra
+//*  Description: Launches ARM pplication [Run RAMP.exe & Shell.exe]
+//*  Input: na
+//*  Output: Boolean
+//*  Example: LaunchHydra()
+//*  Date of Creating: 09 Sep 2018
+//*  Created By: Bhawya V J
+//*  Modified By : Shahana [10 May 2019]
+//*************************************************************************
+function LaunchHydra()
+{
+    try
+    {
+        //Project path
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra")     
+        var AppConfigFiles =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\";
+        
+        //Initialize
+        var ARMConsole,UIW;
+        var WinFolder = "C:\\Siemens\\Bin";
+        //var obj = new ActiveXObject("WScript.shell")
+        var explorer;
+        var folderView;
+        explorer = Aliases["explorer"];
+        
+        //Open log
+        Log["AppendFolder"]("Launch ARM")
+        
+//        //Copy Triprocesses to desired location
+//        Log["AppendFolder"]("Copy Triprocesses File - not to start IOT");
+//        aqFile["Copy"](AppConfigFiles+"\\TriProcesses.xml","F:\\InstrumentOutput",false)  
+//        Log["Checkpoint"]("Copied Triprocesses file to desired location")
+//        Log["PopLogFolder"]();
+        
+        //create shell shortcut if not present
+        if(!CreateShellShortcut())
+        {
+            Log["Error"]("Error in shell shortcut");
+            Log["PopLogFolder"]();
+            return false;
+        }
+        
+//        //Start Trinidad [Run RAMP.exe]
+//        Log["Enabled"] = false;
+//        obj["Run"](WinFolder+"\\RAMP.exe")
+//        if(!aqFile["Exists"]("C:\\Siemens\\ARM\\Bin\\ARMConsole.exe")){
+//          Log["Error"]("ARM Bundle not installed sucessfully")
+//          return false;
+//        }
+
+        //Start Trinidad [Run RAMP.exe]
+        Log["AppendFolder"]("Start Trinidad");
+        folderView = explorer["wndProgman"]["SHELLDLL_DefView"]["FolderView"];
+        folderView["ClickItem"]("Start Trinidad", 0);
+        folderView["ClickItemR"]("Start Trinidad", 0);
+        folderView["PopupMenu"]["Click"]("Run as administrator");
+        Log["PopLogFolder"]();
+        
+//        ARMConsole =Sys["WaitProcess"]("ARMConsole",240000)
+//       aqUtils["Delay"](10000,"Wait - Launched ARMConsole")
+//       aqUtils["Delay"](40000,"Wait for components to Initialize")
+        //Log["Enabled"] =true;
+        
+//        //Verify ARM console started
+//        if (!Sys["Process"]("ARMConsole")["Exists"]) {
+//            Log.Error("Unable to Launch ARM");
+//            Log["PopLogFolder"]();
+//            return false;
+//        }
+       
+//        //Start UIW [Run Shell.exe]
+//        obj["Run"](WinFolder+"\\Shell.exe")
+//        Log["Enabled"] =false;
+        
+        //Start UIW [Run Shell.exe]
+        Log["AppendFolder"]("Start Shell");
+        folderView["ClickItem"]("Shell - Shortcut", 0);
+        folderView["ClickItemR"]("Shell - Shortcut", 0);
+        folderView["PopupMenu"]["Click"]("Run as administrator");
+        Log["PopLogFolder"]();
+        
+        UIW =Sys["WaitProcess"]("Shell",240000)  
+        aqUtils["Delay"](10000,"Wait for Login window to enable")
+        Log["Enabled"] =true;  
+        
+        //Verify UIW launched
+        if(UIW["Exists"])
+        {
+            Log["Checkpoint"]("UIW launched successfully.");
+        }
+        else
+        {
+            Log.Error("Unable to Launch UIW");
+            Log["PopLogFolder"]();
+            return false;
+        }              
+    }
+    catch(e)
+    {
+      Log["Enabled"] =true;  
+      Log["Error"]("Exception : "+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Close Log
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : ShutDownARM
+//*  Description: ShutDown ARM pplication 
+//*  Input: na
+//*  Output: Boolean
+//*  Example: ShutDownARM()
+//*  Date of Creating: 24 Sep 2018
+//*  Last Modified: 30 Jan 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function ShutDownARM()
+{
+    try
+    {
+        //Project path
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra")     
+        var AppConfigFiles =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\";
+        
+        //Open log
+        Log["Enabled"] = true;
+        Log["AppendFolder"]("Shutdown ARM")
+        
+        //Initialize
+        var ARMConsole,UIW;
+        Log["Enabled"] = false;
+        var WinFolder = "C:\\Siemens\\Installation\\Tools";
+        var obj = new ActiveXObject("WScript.shell")
+        
+        //Copy KillAll to desired location
+        Log["AppendFolder"]("Copy KillAll File");
+        aqFile["Copy"](AppConfigFiles+"\\Killall.ps1",WinFolder,false)  
+        Log["Checkpoint"]("Copied KillAll file to desired location")
+        Log["PopLogFolder"]();
+        
+        //Verify App
+        if(!aqFile["Exists"](WinFolder+"\\KillallAndPCM.bat")){
+          Log["Enabled"] =true;
+          Log["Checkpoint"]("No Application Installed to Shutdown")
+          Log["PopLogFolder"]()
+          return true;
+        }
+        
+        //Shutdown ARM
+        obj["Run"](AppConfigFiles+"\\KillallAndPCM.bat")
+        aqUtils["Delay"](10000,"Wait for components to close")
+         
+        //Close CMD
+        Options["Run"]["Delay"] =0;
+        Options["Run"]["Timeout"] =0;
+        var proparr=["WndClass","WndCaption", "wText"]
+        //var vararr=["ConsoleWindowClass", "*Shutdown PCM Applications*"];
+        //var vararr=["ConsoleWindowClass", "*Press Enter to continue:*"];
+        var vararr=["ConsoleWindowClass", "Administrator:  KillAll","*Press Enter to continue:*"];
+        
+        var cmdObj =Sys["Find"](proparr,vararr,200)
+        if(cmdObj["Exists"]){
+          cmdObj["Activate"]();
+          cmdObj["Close"]();
+          aqUtils["Delay"](2000,"Close cmd")}  
+        
+        //Close Log
+        Options["Run"]["Timeout"] =10000;
+        Log["Enabled"] = true;
+        Log["Checkpoint"]("Application closed successfully");
+        Log["PopLogFolder"]();
+        
+    }catch(e){
+      Log["Enabled"] =true;  
+      Options["Run"]["Timeout"] =10000;
+      Log["PopLogFolder"]();
+      Log["Error"]("Exception : "+e["Description"]);
+      return false;
+    } 
+    return true;
+}
+//*************************************************************************
+//*  FunctionName : LoginToHydra
+//*  Description: Hydra Login
+//*  Input: strUserID,strPswd
+//*  Output: Boolean
+//*  Example: LoginToHydra("Username","Password")
+//*  Date of Creating: 09 Sep 2018 [21 Nov 2018]
+//*  Created By: Bhawya V J
+//*************************************************************************
+function LoginToHydra1(strUserID,strPswd)
+{
+  try{
+        //Open Log
+        Log["AppendFolder"]("Login to ARM")
+        
+        //Wait for Login screen to load
+        for(i=1; i <= 200; i++)
+        {
+          objctrl = GetControl("Login","txbUsername");
+          if(objctrl["Exists"]==true)
+          {
+              Log["Message"]("Login screen loaded");
+              break;
+          }
+          else
+              aqUtils["Delay"](2000, "Waiting for Login screen to load")
+          if(i==200)
+          {
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Login screen not loaded");
+              Log["PopLogFolder"]();
+              return false;
+          }
+        } 
+         
+        //Enter Credentials and Login
+        aqUtils["Delay"](5000,"Activate Login screen objects");
+        counter =0
+        var LoginObj = GetControl("Login","txbUsername");
+        var LoginEnabled = VerifyObjectEnabled(LoginObj)
+        while(LoginEnabled ==false && counter<60)
+        {
+            LoginObj = GetControl("Login","txbUsername");
+            LoginEnabled = VerifyObjectEnabled(LoginObj);
+            aqUtils["Delay"](1000,"Wait for window activate");
+            counter =counter+1;
+        }
+        if(counter == 60)
+        {
+            Log["Error"]("User name object disabled")
+            return false;
+        }
+        
+        Log["AppendFolder"]("Enter Credentials");
+        if(!EnterUserName(strUserID))
+            return false;
+        if(!EnterPassword(strPswd))
+            return false; 
+        if(!ClickOnSignButton())
+            return false; 
+        Log["PopLogFolder"]();
+            
+         
+         //Verify Password Failure
+        Log["Enabled"] =false
+        var MgBoxObj =Sys["Process"]("Shell")["WinFormsObject"]("MessageBox");
+//        if(MgBoxObj!= null && MgBoxObj!= "undefined")
+//        {
+            if(Sys["Process"]("Shell")["WinFormsObject"]("MessageBox")["Exists"])
+            {
+                 var ErrMsg =Sys["Process"]("Shell")["MessageBox"]["Root"]["WinFormsObject"]("ContentFrame")["WinFormsObject"]("MessageBoxLabel")["get_Text"]()
+                 Log["Enabled"] =true
+                 if(aqString["Find"](ErrMsg,"The password will expire on",false)!=-1)
+                 {
+                     Aliases["Shell"]["MessageBox"]["Root"]["WindowButtonsFrame"]["No"]["ClickButton"]();
+                     aqUtils["Delay"](2000)
+                 }
+            //If First Time login
+            else if(aqString["Find"](ErrMsg,"First-time Sign-in",false)!=-1)
+            {
+                    var sValue=UpdateSecurityQuestions();
+                    if(sValue=="Failure")
+                      return false;  
+                    else if(sValue=="Success")
+                    {
+                      if(!EnterUserName(strUserID))
+                        return false;
+                      if(!EnterPassword(strPswd))
+                        return false; 
+                      if(!ClickOnSignButton())
+                        return false; 
+                    }
+                 }
+                 else
+                 {
+                     Log["Enabled"] =true
+                     Log["Error"]("Login failed.Error :"+ErrMsg);
+                     Log["PopLogFolder"]();
+                     return false;
+                 }
+            }
+         //}
+         
+    
+       //Verify Application Login   
+      var objctrl ;   
+      aqUtils["Delay"](1000);
+      Log["Enabled"] =true
+      Log["AppendFolder"]("Verifying whether Application is logged in successfully");
+      for(i=1; i < 200; i++)
+      {
+          Log["Enabled"] =false;
+          objctrl =  Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow") 
+          if(objctrl["Exists"]==true)
+          {
+              Log["Enabled"] =true;
+              Log["Message"]("Successfully logged in to ARM");
+              Log["PopLogFolder"]();
+              break;
+          }
+          else
+          {
+              aqUtils["Delay"](2000, "Waiting for System screen to load")
+          }
+      }
+      if(objctrl["Exists"] ==false)
+      {
+            Log["Enabled"] =true;
+            Log["Error"]("Hydra Login Failed");
+            Log["PopLogFolder"]();
+            return false;
+      } 
+      
+      //verify user logged in 
+      if(!VerifyLoggedInUser(strUserID))
+      {
+          Log["Error"]("Failed : Expected user not logged in");
+          Log["PopLogFolder"]();
+          return false;
+      }
+      
+      Log["PopLogFolder"]();
+      return true;
+  }
+  catch(e)
+  {
+      Log["Enabled"] =true;  
+      Log["PopLogFolder"]();
+      Log["Error"]("Exception : "+e["Description"]);
+      return false;
+  } 
+}
+//*************************************************************************
+//*  FunctionName : InitializeMetaDataHYDRA1
+//*  Description: InitializeMetaDataHYDRA1
+//*  Input: na
+//*  Output: na
+//*  Example: InitializeMetaDataHYDRA1()
+//*  Date of Creating: 09 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function InitializeMetaDataHYDRA1()
+{
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      DBDataFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls"
+	    AppConfigFilesPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\AppConfigFiles";
+      var strWorkflowXMLPath = arrPath[0]+"TaskLayer\\GUIAccessLibrary\\WorkflowNavigator\\TrinidadWorkflows.xml";
+      var strControlXMLPath  = arrPath[0]+"TaskLayer\\GUIAccessLibrary\\ControlAccess\\TrinidadControls.xml";
+
+      InitializeWorkflowXML(strWorkflowXMLPath);
+      InitializeControlXML(strControlXMLPath);
+      //AddNameMappingObjects();    
+}
+
+
+//*************************************************************************
+//*  FunctionName : PreRunHydra
+//*  Description: PreRunHydra -Temporary Function
+//*  Input: na
+//*  Output: na
+//*  Example: PreRunHydra()
+//*  Date of Creating: 23 Nov 2018
+//*  Date of Modify: 17 Oct 2019[Bhawya]
+//*  Created By: Bhawya V J
+//*************************************************************************
+function PreRunHydra()
+{
+  try
+    {
+        var vistaConfigurationMainForm;
+        var moduleIDEntry;
+        var textBoxExt;
+        var ProjPath = ProjectSuite["Path"];
+        var obj = new ActiveXObject("WScript.shell")
+        
+        //Open log
+        Log["AppendFolder"]("Hydra - PRERUN")
+        
+        //Test data
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra") 
+        var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+        var DBDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls";    
+        var TestData =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\";
+        var SimulationPath = "C:\\data\\deploy\\simulation\\";
+        var SimulatorFolderPath="C:\\Siemens\\ARM\\Bin\\Configuration\\Overwrite for Test Fixture";
+        var SimulatorSequenceFolderPath="C:\\Siemens\\ARM\\Bin\\Configuration\\Overwrite for Test Fixture\\Sequences";
+        var SequenceFolderPath="C:\\Siemens\\ARM\\Bin\\Configuration\\Sequences";
+        var ConfigurationFolderPath="C:\\Siemens\\ARM\\Bin\\Configuration";
+        var StateMgrConfigFile = "C:\\Siemens\\ARM\\Bin\\Configuration\\StateManagerConfiguration.json";
+
+    
+//        //Delete the latest RegisterIM log file
+//        var sRegisterIMFolderpath="C:\\Siemens\\Bin\\RegisterIM.txt";
+//        if(aqFile["Exists"](sRegisterIMFolderpath))
+//        {
+//          aqFileSystem["DeleteFile"](sRegisterIMFolderpath)
+//          Log["Message"]("Deleted Log IM")
+//        }
+//
+//        
+          //Commented Apr 4th 2019              
+//        //Copy FederationConfig.xml & HydraModuleID.xml   
+//        Log["AppendFolder"]("Copy FederationConfig.xml and HydraModuleID.xml to InstrumentOutput");  
+//        aqFile["Copy"](TestData+"HydraModuleID.xml","F:\\InstrumentOutput",false)
+//        aqFile["Copy"](TestData+"FederationConfig.xml","F:\\InstrumentOutput",false)
+//        Log["PopLogFolder"]()
+
+         //Install-DMLContent    
+        Log["AppendFolder"]("Install-DMLContent");  
+        var IotPath =  "C:\\Siemens\\ARM\\Bin\\IoT_Content"
+        var oShell=Sys["OleObject"]("Shell.Application");
+        oShell.ShellExecute("Install-DMLContent.cmd","",IotPath,"runas",1);
+        aqUtils["Delay"](50000,"Install-DMLContent")
+        Log["Checkpoint"]("Install-DMLContent.cmd sucessful")
+        Log["PopLogFolder"]();
+        
+        //Running DL registry batch files
+        aqUtils["Delay"](2000,"Run DL Registry")
+        var obj = new ActiveXObject("WScript.shell")
+        Log["AppendFolder"]("Running DL registry batch files");   
+        obj["Run"](TestData+"DLRegistry.bat")
+        aqUtils["Delay"](2000,"Wait for Registry Update")
+        Log["PopLogFolder"]();
+      
+        //Remove DLL's -BHAWYA
+        obj = new ActiveXObject("WScript.shell")
+        aqUtils["Delay"](2000,"Run DLLRemove")
+        Log["AppendFolder"]("Remove Dll's - Run RemoveDll.bat")
+        obj["Run"](TestData+"DLLRemove.bat")
+        aqUtils["Delay"](3000,"Wait for DLL's to be removed")
+        Log["PopLogFolder"]();
+       
+//		    //Copy Priming Config file to desired location
+//        Log["AppendFolder"]("Copy Priming File");  
+//        aqFile["Copy"](SimulatorFolderPath+"\\PrimingConfiguration.json",ConfigurationFolderPath,false);
+//        aqUtils["Delay"](2000,"Copying Priming Config file")
+//        Log["Checkpoint"]("Copied Priming Config file to desired location")
+//        Log["PopLogFolder"]();
+        
+        //Copy EngineConfig.json to desired location
+        Log["AppendFolder"]("Copy EngineConfig File");
+        aqFile["Copy"](SimulatorFolderPath+"\\EngineConfig.json",ConfigurationFolderPath,false)  
+        aqUtils["Delay"](2000,"Copying EngineConfig file")
+        Log["Checkpoint"]("Copied EngineConfig file to desired location")
+        Log["PopLogFolder"]();
+        
+        //Copy Simulator Settings.json to desired location
+        Log["AppendFolder"]("Copy Simulator Settings File");
+        aqFile["Copy"](SimulatorFolderPath+"\\SimulatorSettings.json",ConfigurationFolderPath,false)  
+        aqUtils["Delay"](2000,"Copying Priming SimulatorSettings.json file")
+        Log["Checkpoint"]("Copied EngineConfig file to desired location")
+        Log["PopLogFolder"]();
+
+        //Copy ModuleConfiguration.json to desired location
+        Log["AppendFolder"]("Copy MechanismCalibrationData File");
+        aqFile["Copy"](SimulatorFolderPath+"\\ModuleConfiguration.json",ConfigurationFolderPath,false) 
+        aqUtils["Delay"](2000,"Copying Priming ModuleConfiguration.json file") 
+        Log["Checkpoint"]("Copied Module Configuration file to desired location")
+        Log["PopLogFolder"]();
+        
+        //Copy MechanismCalibrationData.json to desired location
+        Log["AppendFolder"]("Copy MechanismCalibrationData File");
+        aqFile["Copy"](SimulatorFolderPath+"\\MechanismCalibrationData.json","F:\\SystemSpecificConfigs",false)  
+        aqUtils["Delay"](2000,"Copying Priming MechanismCalibrationData file") 
+        Log["Checkpoint"]("Copied MechanismCalibrationData file to F:\SystemSpecificConfigs")
+        Log["PopLogFolder"]();
+        
+        //Copy Mechanism Alignment Config.json to desired location
+        Log["AppendFolder"]("Copy Mechanism Alignment Config File");
+        aqFile["Copy"](SimulatorFolderPath+"\\MechanismAlignmentConfig.json","F:\\SystemSpecificConfigs",false) ; 
+        aqUtils["Delay"](2000,"Copying Priming MechanismAlignmentConfig.json file") 
+        Log["Checkpoint"]("Copied Mechanism Alignment Config file to F:\SystemSpecificConfigs")
+        Log["PopLogFolder"]();
+        
+        //Copy PhotometerDarkRead.json to desired location
+        Log["AppendFolder"]("Copy PhotometerDarkRead File");
+        aqFile["Copy"](SimulatorFolderPath+"\\PhotometerDarkRead.json","F:\\SystemSpecificConfigs",false) ; 
+        aqUtils["Delay"](2000,"Copying Priming PhotometerDarkRead.json file") 
+        Log["Checkpoint"]("Copied PhotometerDarkRead.json file to F:\SystemSpecificConfigs")
+        Log["PopLogFolder"]();
+        
+//        //Copy IM Cuvette Loader Hopper Loop.json to desired location
+//        Log["AppendFolder"]("Copy IM Cuvette Loader Hopper Loop File");
+//        aqFile["Copy"](SimulatorSequenceFolderPath+"\\IM Cuvette Loader Hopper Loop.json",SequenceFolderPath,false)  
+//        Log["Checkpoint"]("Copied IM Cuvette Loader Hopper Loop file to desired location");
+//        Log["PopLogFolder"](); 
+        
+//        //Copy CH Reagent Single Delivery.json to desired location [Commented on Oct 16 2019 Bhawya]
+//        Log["AppendFolder"]("Copy CH Reagent Single Delivery File");
+//        aqFile["Copy"](SimulatorSequenceFolderPath+"\\CH Reagent Single Delivery.json",SequenceFolderPath,false)  
+//        Log["Checkpoint"]("Copied CH Reagent Single Delivery file to desired location");
+//        Log["PopLogFolder"]();
+//        
+//        //Copy CH Sample Delivery From Dilution Ring To Reaction Ring.json to desired location [Commented on Oct 16 2019 Bhawya]
+//        Log["AppendFolder"]("Copy CH Sample Delivery From Dilution Ring To Reaction Ring File");
+//        aqFile["Copy"](SimulatorSequenceFolderPath+"\\CH Sample Delivery From Dilution Ring To Reaction Ring.json",SequenceFolderPath,false)  
+//        Log["Checkpoint"]("Copied CH Sample Delivery From Dilution Ring To Reaction Ring file to desired location");
+//        Log["PopLogFolder"]();
+//      
+//        //Copy CH Sample Delivery From Tube To Dilution Ring.json to desired location [Commented on Oct 16 2019 Bhawya]
+//        Log["AppendFolder"]("Copy CH Sample Delivery From Dilution Ring To Reaction Ring File");
+//        aqFile["Copy"](SimulatorSequenceFolderPath+"\\CH Sample Delivery From Tube To Dilution Ring.json",SequenceFolderPath,false)  
+//        Log["Checkpoint"]("Copied CH Sample Delivery From Tube To Dilution Ring file to desired location");
+//        Log["PopLogFolder"]();
+//        
+//        //Copy Home CH Dilution Ring.json to desired location [Commented on Oct 16 2019 Bhawya]
+//        Log["AppendFolder"]("Copy Home CH Dilution Ring File");
+//        aqFile["Copy"](SimulatorSequenceFolderPath+"\\Home CH Dilution Ring.json",SequenceFolderPath,false)  
+//        Log["Checkpoint"]("Copied Home CH Dilution Ring file to desired location");
+//        Log["PopLogFolder"]();
+        
+        //Enabling legacy screen -SHAHANA
+        Log["AppendFolder"]("Enabling legacy screen")
+        var obj = new ActiveXObject("WScript.shell")
+        obj["Run"]("C:\\Siemens\\Installation\\Registry\\LegacyScreensVisible.reg")
+        var obj3=Sys["Process"]("regedit")["Window"]("#32770", "Registry Editor", 1)["UIAObject"]("Registry_Editor")["Window"]("CtrlNotifySink", "", 7)["Window"]("Button", "&Yes", 1);
+        while(obj3["Exists"])
+          obj3.click();
+        aqUtils["Delay"](2000,"Adding delay")
+        var obj4=Sys["Process"]("regedit")["Window"]("#32770", "Registry Editor", 1)["UIAObject"]("Registry_Editor")["Window"]("CtrlNotifySink", "", 7)["Window"]("Button", "OK", 1);
+        while(obj4["Exists"])
+          obj4.click();
+        aqUtils["Delay"](2000,"Adding delay");
+        Log["PopLogFolder"]();
+        
+//        //Commented 28 May 2019 - not required  
+//        //Update Analytical Module -BHAWYA
+//        Log["AppendFolder"]("Update Analytical module");
+//        strQuery = "UPDATE [Bus_DM].[dbo].[Module_Types]  SET IsAnalyticalModule = '1' WHERE Name ='Hydra'"
+//        strConString = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"
+//        if(ExecSQLQueryFromString(strQuery,strConString)!=-1)   
+//          Log["Checkpoint"]("Updated Hydra as AnalyticalModule in DB");
+//        Log["PopLogFolder"]();
+//      
+//        Update Supplies -BHAWYA //Commented 17 July 2019 - Using batch file to fill supplies
+//        Log["AppendFolder"]("Fill supplies in DB");
+//        arrTestData = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra","RoundTrip");
+//        dictColumn=arrTestData[0];
+//        strQuery1 = dictColumn["Item"]("Query")
+//        strConString2 = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+//        if(ExecSQLQueryFromString(strQuery1,strConString2)!=-1)  
+//        {    
+//          Log["Checkpoint"]("Sucessfully loaded all consumables")
+//        }
+//        Log["PopLogFolder"]();
+      
+//        //Commented 28 May 2019 - not required
+           
+        //First time login -Labmanager
+        AddPasscodeInRegistry();
+        InsertSecurityQuestionsInDB(); 
+         
+        //First time login -OtherUsers
+        InsertSecurityQuestionsInDBForG0G2G3G4G5();  
+       
+      //Update State Manager Config file
+      Log["AppendFolder"]("Update State Manager Config file");
+        
+      //EnableDiagnosticsOnFirstInitialization - false
+      var openedTextFile = aqFile["OpenTextFile"](StateMgrConfigFile, aqFile["faRead"], aqFile["ctANSI"]);
+      var contents = openedTextFile["ReadAll"]();
+      var updatedString1 = aqString["Replace"](contents,"\"EnableDiagnosticsOnFirstInitialization\": true", "\"EnableDiagnosticsOnFirstInitialization\": false");
+      aqFile["WriteToTextFile"](StateMgrConfigFile, updatedString1, aqFile["ctANSI"], true);
+      aqUtils["Delay"](2000,"StateMgrConfigFile : EnableDiagnosticsOnFirstInitialization is set to false") 
+      Log["Checkpoint"]("EnableDiagnosticsOnFirstInitialization is set to false");
+        
+      //EnterDiagnosticsOnInstallation - false
+      var openedTextFile = aqFile["OpenTextFile"](StateMgrConfigFile, aqFile["faRead"], aqFile["ctANSI"]);
+      var contents = openedTextFile["ReadAll"]();
+      var updatedString2 = aqString["Replace"](contents,"\"EnterDiagnosticsOnInstallation\": true", "\"EnterDiagnosticsOnInstallation\": false");
+      aqFile["WriteToTextFile"](StateMgrConfigFile, updatedString2, aqFile["ctANSI"], true);
+      aqUtils["Delay"](2000,"StateMgrConfigFile : EnterDiagnosticsOnInstallation is set to false") 
+      Log["Checkpoint"]("EnterDiagnosticsOnInstallation is set to false");
+          
+      //EnterDiagnosticsOnInitialization - false
+      var openedTextFile = aqFile["OpenTextFile"](StateMgrConfigFile, aqFile["faRead"], aqFile["ctANSI"]);
+      var contents = openedTextFile["ReadAll"]();
+      var updatedString3 = aqString["Replace"](contents,"\"EnterDiagnosticsOnInitialization\": true", "\"EnterDiagnosticsOnInitialization\": false");
+      aqFile["WriteToTextFile"](StateMgrConfigFile, updatedString3, aqFile["ctANSI"], true);
+      aqUtils["Delay"](2000,"StateMgrConfigFile : EnterDiagnosticsOnInitialization is set to false") 
+      Log["Checkpoint"]("EnterDiagnosticsOnInitialization is set to false"); 
+      Log["PopLogFolder"]();
+
+//      //load Reagent using Reagent_Load Query   [Commented on Oct 16 2019 -Query not working]
+//      Log["AppendFolder"]("Load Reagents");
+//      LoadReagentthroughQuery();
+//      Log["PopLogFolder"]();
+
+      //load Supplies using Supplies Query  
+      Log["AppendFolder"]("Load Supplies");
+      LoadSuppliesthroughQuery();
+      Log["PopLogFolder"]();
+                         
+      //Switch DL to simulation mode
+      Log["AppendFolder"]("DL in simulation mode");
+      var DLsimulationPath = "C:\\Siemens\\ARM\\Bin\\DL_Configuration\\Switch_Real_And_SimulatedDL"
+      var oShell=Sys["OleObject"]("Shell.Application");
+      oShell.ShellExecute("SwitchToSimulatedDL.bat","",DLsimulationPath,"runas",1);
+      aqUtils["Delay"](5000,"Switch DL to simulation mode") 
+      if(!aqFile["Exists"]("C:\\Siemens\\ARM\\Bin\\DL_Configuration\\Switch_Real_And_SimulatedDL\\SwitchToSimulatedDL.bat")){
+        Log["Error"]("DL Bundle is not installed sucessfully")
+        return false;
+      }
+      Log["PopLogFolder"]();
+        
+      //Set Password to never Expire -Labmanager
+      obj = new ActiveXObject("WScript.shell");
+      aqUtils["Delay"](2000,"Run LabManagerPswdDoNotExpire.cmd");
+      Log["AppendFolder"]("Set LabManager Password to Never Expire");
+      var oShell=Sys["OleObject"]("Shell.Application"); 
+      oShell.ShellExecute("LabManagerPswdDoNotExpire.cmd","",TestData,"runas",1); 
+      aqUtils["Delay"](3000,"Wait");
+      Log["Checkpoint"]("LabManager password do not expire batch file ran suucessfully");
+      Log["PopLogFolder"]();
+        
+      //Set Password to never Expire -SiemensInternal
+      obj = new ActiveXObject("WScript.shell");
+      aqUtils["Delay"](2000,"Run SiemensInternalPswdDoNotExpire.cmd");
+      Log["AppendFolder"]("Set Siemens Internal Password to Never Expire");
+      var oShell=Sys["OleObject"]("Shell.Application"); 
+      oShell.ShellExecute("SiemensInternalPswdDoNotExpire.cmd","",TestData,"runas",1); 
+      aqUtils["Delay"](3000,"Wait");
+      Log["Checkpoint"]("SiemensInternal password do not expire batch file ran suucessfully");
+      Log["PopLogFolder"]();
+        
+       
+//        //Run DisableIPsecRule.bat
+//        obj = new ActiveXObject("WScript.shell")
+//        aqUtils["Delay"](2000,"Run DisableIPsecRule")
+//        Log["AppendFolder"]("Run DisableIPsecRule.bat")
+//        obj["Run"](TestData+"DisableIPsecRule.bat")
+//        aqUtils["Delay"](3000,"Wait")
+//        Log["PopLogFolder"]();
+  
+//        //Set Proxy to False -NOT Required for IOT -Physical Machine
+//        var ARMConfigPath =  "C:\\Siemens\\ARM\\Bin\\Configuration\\StateManagerConfiguration.json";
+//        Log["AppendFolder"]("Update Config File - set EnableDMLComponentProxy as FALSE")
+//        if(!aqFile["Exists"](ARMConfigPath)){
+//          Log["Error"]("Cannot find C:\\Siemens\\ARM\\Bin\\Configuration\\StateManagerConfiguration.json")
+//          Log["PopLogFolder"]()
+//          return false;
+//        }      
+//        var s = aqFile["ReadWholeTextFile"](ARMConfigPath, aqFile["ctANSI"]);
+//        aqFile["Delete"](ARMConfigPath)
+//        sCurrContent =aqString["Replace"](s,"\"EnableDMLComponentProxy\": true","\"EnableDMLComponentProxy\": false")
+//        if(CreatingAndWritingToTextFile(ARMConfigPath,sCurrContent))
+//            Log["Checkpoint"]("Sucessfully disabled Proxy")
+//        Log["PopLogFolder"]()  
+//        
+//        //Open ports -PENDING
+//        //netsh advfirewall firewall add rule name="TestPorts" description="Open ports 50056, 50058, 50060" dir=in action=allow protocol=TCP localport="50056,50058,50060"
+//        
+//        //Deploy S/W to DML or IoT
+//        Log["AppendFolder"]("Update Config File - set EnableDMLComponentProxy as FALSE")
+//        var IotPath ="C:\\Siemens\\ARM\\Bin\\IoTContent\\"
+//        var oShell=Sys["OleObject"]("Shell.Application")
+//        oShell.ShellExecute("Install- DMLContent.cmd","",IotPath,"runas",1);       
+//        Log["PopLogFolder"]()       
+//    
+//        //KeyboardLayoutExample
+//        //KeyboardLayoutExample() 
+
+         //Enable Guest Logon [To access IoT machine filesystem] Bhawya Oct 2019
+          obj = new ActiveXObject("WScript.shell");
+          aqUtils["Delay"](1000,"Run Enable Guest Logon.bat");
+          Log["AppendFolder"]("Enable Guest Logon");
+          var oShell=Sys["OleObject"]("Shell.Application"); 
+          oShell.ShellExecute("EnableGuestLogon.bat","",TestData,"runas",1); 
+          aqUtils["Delay"](3000,"Enable Guest Logon");
+          Log["Checkpoint"]("GuestLogon Enabled from registry");
+          Log["PopLogFolder"]();
+          
+          //Enable File System Permission for UWP App Bhawya Oct 2019
+          obj = new ActiveXObject("WScript.shell");
+          aqUtils["Delay"](1000,"Enable File System Permission for UWP App");
+          Log["AppendFolder"]("Enable File System Permission for UWP App");
+          var oShell=Sys["OleObject"]("Shell.Application"); 
+          oShell.ShellExecute("ChangePrivacySettings.bat","",TestData,"runas",1); 
+          aqUtils["Delay"](3000,"Enable File System Permission for UWP App");
+          Log["Checkpoint"]("File System Permission enabled for UWP App");
+          Log["PopLogFolder"]();
+
+    }
+    catch(e)
+    {
+      Log["Error"]("Exception : "+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+  //Close Log
+  Log["PopLogFolder"]();
+  return true;
+}
+
+
+//*************************************************************************
+//*  FunctionName : VerifyRegisterIMMessageInLogsHydra
+//*  Description: VerifyRegisterIMMessageInLogsHydra
+//*  Input: na
+//*  Output: na
+//*  Example: VerifyRegisterIMMessageInLogsHydra()
+//*  Date of Creating: 23 Nov 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+//function VerifyRegisterIMMessageInLogsHydra()
+//{
+//    try
+ //   {
+ //     var sRegisterIMFolderpath="C:\\Siemens\\Bin\\RegisterIM.txt";
+ //      for(var i=0;i<30;i++)
+ //      {
+ //         sText=aqFile["ReadWholeTextFile"](sRegisterIMFolderpath,22)
+ //         if(aqString["Find"](sText,"Successfully Registered IM.")>0)
+ //         {
+ //           return true;
+ //         } 
+ //         else
+ //         {
+ //           aqUtils["Delay"](10000,"Waiting for Register Im success message in logs");
+ //         } 
+ //      }
+ //      if(i>=30)
+ //      {
+ //       return false;
+ //      }
+ //   } 
+ //   catch(exp)
+ //   {
+ //     Log["Error"]("Exception: " + exp["description"]);
+ //     return false;
+ //   } 
+    
+//}
+
+
+//AMAR
+function GetLatestRegisterIMLogFile()
+{
+  try
+  {
+    var sRegisterIMFolderpath="F:\\InstrumentOutput\\UIW\\Logs";
+    var oFolderobj=aqFileSystem["GetFolderInfo"](sRegisterIMFolderpath);
+    var oFileItems=oFolderobj["Files"]
+    var arrLastModifiedtTime=new Array()
+    var m=0
+    
+    if(oFileItems!=null)
+    {
+      for(var i=0;i<oFileItems["Count"];i++)
+      {
+        if(oFileItems["Item"](i).Name.search("RegisterIM*")==0)
+        {
+          arrLastModifiedtTime[m]=oFileItems["Item"](i)["DateLastModified"];
+          //RegisterIMFiles[m]=oFileItems["Item"](i);
+          m=m+1;
+        } 
+      } 
+      var sGreater=arrLastModifiedtTime[0];
+      var sGreatest=0;
+      var sLatestFileName="";
+      for(m=0;m<arrLastModifiedtTime["length"];m++)
+      {
+        if(sGreater<arrLastModifiedtTime[m])
+        {
+          //sGreater=arrLastModifiedtTime[m];
+          sGreatest=m;
+        } 
+      } 
+      var sLatestFileName=oFileItems["Item"](sGreatest)["Name"];
+    }
+    else
+    {
+      var sLatestFileName="";
+    }
+    
+    return sLatestFileName;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    return false;
+  } 
+}
+function VerifyRegisterIMMessageInLogs()
+{
+    try
+    {
+      var sRegisterIMFolderpath="F:\\InstrumentOutput\\UIW\\Logs";
+ 
+       var sLatestFileName=GetLatestRegisterIMLogFile()
+       
+       for(var i=0;i<30;i++)
+       {
+          sText=aqFile["ReadWholeTextFile"](sRegisterIMFolderpath+"\\"+sLatestFileName,22)
+    
+          if(aqString["Find"](sText,"Successfully Registered IM.")>0)
+          {
+            return true;
+          } 
+          else
+          {
+            aqUtils["Delay"](50000,"Waiting for Register Im success message in logs");
+          } 
+       }
+       if(i>=30)
+       {
+         return false;
+       }
+    } 
+    catch(exp)
+    {
+      Log["Error"]("Exception: " + exp["description"]);
+      return false;
+    } 
+    
+} 
+
+
+//*************************************************************************
+//*  FunctionName : KeyboardLayoutExample
+//*  Description: KeyboardLayoutExample
+//*  Input: na
+//*  Output: na
+//*  Example: KeyboardLayoutExample()
+//*  Date of Creating: 23 Nov 2018
+//*  Created By: NA
+//*************************************************************************
+function KeyboardLayoutExample()
+{
+  Log["AppendFolder"]("Keyboard Layout")
+   WshShell["Run"]("notepad.exe", SW_NORMAL);
+   var wNotepad = Sys["Process"]("notepad");
+   var EditForm = wNotepad.Window("Notepad", "Untitled - Notepad", 1).Window("Edit", "", 1);
+   var USEnglish = "00000409";
+   if (aqEnvironment["GetKeyboardLayout"](EditForm.Handle) != USEnglish)
+   {
+    if (aqEnvironment["SetKeyboardLayout"](wNotepad["Id"]) == false)
+    {
+      Log["Error"]("The specified language is not supported.");
+      Log["PopLogFolder"]()
+    }
+   } 
+   aqUtils["Delay"](2000)
+   if(Sys["Process"]("notepad")["Exists"])
+      Sys["Process"]("notepad")["Close"]();
+   Log["PopLogFolder"]()
+}
+
+//**************************************************************************
+//*  FunctionName : CreatingAndWritingToTextFile
+//*  Description: CreatingAndWritingToTextFile
+//*  Input: sPath,sContent)
+//*  Output: na
+//*  Example: CreatingAndWritingToTextFile(sPath,sContent)
+//*  Date of Creating: 30/10/2018
+//*  Created By: Bhawya V J
+//'************************************************************************      
+      
+function CreatingAndWritingToTextFile(sPath,sContent)
+{  
+    try{
+      if(aqFile.Create(sPath) == 0){
+        aqFile.WriteToTextFile(sPath, sContent,aqFile["ctANSI"]);
+        //Log.Message("The file is created and the specified text is written to it successfully.");
+        }
+      else 
+        Log.Error("The file was not created.");
+    }catch(exp){
+      Log["Error"]("Exception : "+exp["Description"]);
+      return false;}
+    return true;
+} 
+
+//**************************************************************************
+//*  FunctionName : AddPasscodeInRegistry
+//*  Description: First time login- Add PHI key in Registry
+//*  Input: na
+//*  Output: na
+//*  Example: AddPasscodeInRegistry()
+//*  Date of Creating: 30/10/2018
+//*  Created By: Ramitha
+//'************************************************************************  
+function AddPasscodeInRegistry() 
+{  
+      
+    var Key, Name, Count, ValueName, Value;
+  
+    var ProjPath = ProjectSuite["Path"];
+    var arrPath  = ProjPath["split"]("Hydra")     
+    Log["AppendFolder"]("Updating passcode in Registry");  
+    var PrimaryKey =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\PrimaryKey";
+        
+    //Adding Passcode registry through Primary.exe file
+    var oShell=Sys["OleObject"]("Shell.Application");
+    oShell.ShellExecute("PrimaryKey.exe","",PrimaryKey,"runas",1);
+  
+    // Gets an object for the Windows system registry key
+    Key = Storages.Registry("SOFTWARE\\Siemens Healthcare Diagnostics\\UIW\\Encryption", HKEY_LOCAL_MACHINE, true);
+    Name = Key.Name;
+
+    // Determines how many values the key contains
+    Count = Key.OptionCount;
+    if (Count > 0)
+    {
+    // Iterates through the values
+    for (var i = 0; i < Count; i++)
+      {
+          // Obtains the name of the value
+          ValueName = Key.GetOptionName(i);
+          Value = Key.GetOption(ValueName, "not specified");
+          if(ValueName=="Passcode"){
+              Log.Message(ValueName + " added in Registry");       
+              break;
+          }
+      }
+    Log.PopLogFolder();
+    }
+    else
+    {
+      //Log.Error(" Passcode is not added in Registry");
+    }
+
+}
+
+//**************************************************************************
+//*  FunctionName : InsertSecurityQuestionsInDB
+//*  Description: First time login- InsertSecurityQuestionsInDB
+//*  Input: na
+//*  Output: na
+//*  Example: InsertSecurityQuestionsInDB()
+//*  Date of Creating: 30/10/2018
+//*  Created By: Ramitha
+//'************************************************************************  
+function InsertSecurityQuestionsInDB()
+{
+    //Initialize Variables
+    var Returnval = true;
+    var res,arrTestData,dictColumn,strQuery,strConString;
+        
+    //Initialize XMLs
+    InitializeMetaDataHYDRA();
+    //Read data for DB
+    var arrTestData = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra","RoundTrip");
+    var dictColumn=arrTestData[0];
+    var strQuery = dictColumn["Item"]("Query2")
+    var strSelectQuery="SELECT * FROM [Bus_DM].[dbo].[UserSecurityQuestion]"
+    var strConString = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"
+ 
+    RecordSet =ReturnQueryRecordSetFromString(strSelectQuery,strConString);
+    if(RecordSet["RecordCount"]>0){
+    Log["Checkpoint"]("Security questions are already present in [UserSecurityQuestion] table")                                 
+    }
+    else
+    {
+        if(ExecSQLQueryFromString(strQuery,strConString)!=-1)
+        {     
+        Log["Checkpoint"]("Security questions inserted successfully in [UserSecurityQuestion] table")
+        }         
+    }
+
+} 
+
+
+//*********************************************************************************************
+//*  FunctionName :fnUpdateBuildDetails
+//*  Description: Update BuildID,Name and Vapp Deatils in BuildInsInfo and Result.xml
+//*  Input: NA
+//*  Output:NA
+//*  Example:  fnUpdateBuildDetails()
+//*  Date of Creating: 02/Jan/2018
+//*  Last Modified date: 03/Jan/2018
+//* Created By : Bhawya V J
+//*********************************************************************************************
+function fnUpdateBuildDetails(){
+    try{    
+        //Log
+        Log["AppendFolder"]("Update Build Details")
+    
+        //Declare
+        var BuildInsInfoPath = "F:\\Installer\\Files\\BuildInstrumentsInfo.xml"
+        var ResXMLPath = "F:\\SystemTest\\TestOutput\\Result.xml"
+
+        //Read Build Details
+        TFSBuildNumTxt = aqFile.ReadWholeTextFile("F:\\Installer\\UpgradeBuild\\TfsBuildInformation.txt", aqFile.ctANSI);
+        sCurrBuildID = aqString["Trim"](TFSBuildNumTxt["split"]("\n")[0])
+        
+        //Write Build ID and Name in BuildIns Info
+        fnReplaceXMLNodeValue(BuildInsInfoPath,"NAME",sCurrBuildID)
+        if(fnReplaceXMLNodeValue(BuildInsInfoPath,"BUILDID",sCurrBuildID))
+          Log["Checkpoint"]("Sucessfully Updated Build Name and ID in Build Ins info")
+        
+        //Write VappName And Link as NA in BuildIns Info
+        fnReplaceXMLNodeValue(BuildInsInfoPath,"VAPPName","NA")
+        if(fnReplaceXMLNodeValue(BuildInsInfoPath,"VAPPLINK","NA"))
+            Log["Checkpoint"]("Sucessfully Updated Vapp Link and Name as NA in BuildInsInfo")
+            
+        //Write Build ID and Name in Resumt XML
+        fnReplaceXMLNodeValue(ResXMLPath,"Build",sCurrBuildID)
+        if(fnReplaceXMLNodeValue(ResXMLPath,"BuildID",sCurrBuildID))
+            Log["Checkpoint"]("Sucessfully Updated Build Name and ID in Result.xml")
+        
+        //Write VappLink as NA in Result.xml
+        if(fnReplaceXMLNodeValue(ResXMLPath,"VAPPLINK","NA"))
+          Log["Checkpoint"]("Sucessfully Updated Vapp Link in Result.xml")
+          
+         //Close Log
+        Log["PopLogFolder"]()
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+     return true;
+}
+
+
+//*****************************************************************************************
+//*  FunctionName :fnGetNodeValue(strFileContent,strNodeName)
+//*  Description: Returns the value of a node in given XML
+//*  Input: XMLFile content as String,Name of the Node
+//*  Output: Node Value
+//*  Example:  fnGetNodeValue(strFileContent,"INSTALLTYPE")
+//*  Date of Creating: 29/09/2017
+//*  Last Modified date: 29/09/2017
+//* Created By : Bhawya V J
+//*****************************************************************************************
+
+function fnGetNodeValue(strFileContent,strNodeName){
+  
+  //Declare
+  var strValue = "null";
+  var startString,endString,intStartIndex,intEndIndex;
+  
+  try{
+     
+      startString ="<" + strNodeName + ">";
+      endString ="</" + strNodeName + ">";
+      intStartIndex = strFileContent.indexOf(startString) ;
+      
+      //Verify if TAG Exists
+      if(intStartIndex == -1){
+        Log.Error(strNodeName+" Tag doesnot exist in BuildInstrumentsInfo.xml file");
+        return strValue;
+      }
+      intEndIndex = strFileContent.indexOf(endString,intStartIndex) ;
+      strValue = (strFileContent.substring(intStartIndex,intEndIndex)).replace(startString,"");
+
+      return strValue;
+      
+    }catch(exp){
+      Log["Error"](exp["description"])
+      return strValue;
+    }
+}
+//***************************************************************************************
+//*  FunctionName :fnReplaceEndTag(strPath,strNodeName)
+//*  Description: Replaces the XMl End Tag with Start and end tag
+//*  Input: XMLFile path,Name of the Node
+//*  Output:NA
+//*  Example:  fnReplaceEndTag(strPath,strNodeName)
+//*  Date of Creating: 02/Jan/2018
+//*  Last Modified date: NA
+//* Created By : Bhawya V J
+//**************************************************************************************
+function fnReplaceEndTag(strPath,strNodeName){
+  try{
+     
+        ContentAll = aqFile.ReadWholeTextFile(strPath, aqFile.ctANSI);
+        sEndTag= "<"+strNodeName+"/>"
+        if(aqString["Find"](ContentAll,sEndTag)!= -1){
+          sCurrContent = aqString["Replace"](ContentAll,sEndTag, "<"+strNodeName+"></"+strNodeName+">")
+          aqFile["Delete"](strPath)
+          CreatingAndWritingToTextFile(strPath,sCurrContent)
+        }  
+    }catch(exp){
+      Log["Error"](exp["description"])
+    }
+}
+
+//***************************************************************************************
+//*  FunctionName :fnReplaceXMLNodeValue(strPathXML,strNodeName,strNewNodeVal)
+//*  Description: Replaces the XMl tag value with New
+//*  Input: strPathXML,strNodeName,strNewNodeVal
+//*  Output:Boolean
+//*  Example:  fnReplaceXMLNodeValue(strPathXML,"BUILD","ARM.T.All")
+//*  Date of Creating: 03/Jan/2018
+//*  Last Modified date: NA
+//* Created By : Bhawya V J
+//******************************************************************************************
+function fnReplaceXMLNodeValue(strPathXML,strNodeName,strNewNodeVal){
+  try{
+     
+        fnReplaceEndTag(strPathXML,strNodeName)
+        XMLAllContent = aqFile.ReadWholeTextFile(strPathXML, aqFile.ctANSI);
+        aqFile["Delete"](strPathXML)
+        sNodeValue = fnGetNodeValue(XMLAllContent,strNodeName)
+        sCurrTag= "<"+strNodeName+">"+sNodeValue+"</"+strNodeName+">"
+        sFinalTag = "<"+strNodeName+">"+strNewNodeVal+"</"+strNodeName+">"
+        sCurrContent = aqString["Replace"](XMLAllContent,sCurrTag,sFinalTag)
+        if(CreatingAndWritingToTextFile(strPathXML,sCurrContent))
+           return true;
+        else
+          return false;
+            
+    }catch(exp){
+      Log["Error"](exp["description"])
+      return false;
+    }
+    return true
+}
+
+
+//***************************************************************************************
+//*  FunctionName :fnCopyTCCSFiles
+//*  Description: Replaces TCCS Files
+//*  Input: NA
+//*  Output:Boolean
+//*  Example: fnCopyTCCSFiles()
+//*  Date of Creating: 31/Jan/2018
+//*  Last Modified date: NA
+//* Created By : Bhawya V J
+//******************************************************************************************
+function fnCopyTCCSFiles(){
+  try{
+     
+        //Copy TCCS Configuration Files
+        ProjPath = ProjectSuite["Path"];
+        arrPath  = ProjPath["split"]("Hydra")     
+        Log["Message"]("Copy TCCS Configuration Files");  
+        var TCCSPath =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TCCS\\"
+        aqFile["Copy"](TCCSPath+"BindTo.txt","F:\\InstrumentOutput",false)
+        aqFile["Copy"](TCCSPath+"EventLoggingConfig.xml","F:\\InstrumentOutput",false)
+        aqFile["Copy"](TCCSPath+"Startup.xml","F:\\InstrumentOutput",false)
+        aqFile["Copy"](TCCSPath+"Trinidad_Modules_Data.xml","F:\\InstrumentOutput",false)
+        aqFile["Copy"](TCCSPath+"Trinidad_SystemIdentifier_Data.xml","F:\\InstrumentOutput",false)
+        aqFile["Copy"](TCCSPath+"TriProcesses.xml","F:\\InstrumentOutput",false)
+        Log["Checkpoint"]("Copied TCCS Config Files")
+            
+    }catch(exp){
+      Log["Error"]("Unable to Copy TCCS Config Files")
+      Log["Error"](exp["description"])
+      return false;
+    }
+    return true
+}
+
+  
+//**************************************************************************
+//*  FunctionName : InsertSecurityQuestionsInDBForG0G2G3G4G5
+//*  Description: First time login- InsertSecurityQuestionsInDB for G0,G2,G3,G4,G5 users
+//*  Input: NA
+//*  Output: NA
+//*  Example: InsertSecurityQuestionsInDBForG0G2G3G4G5()
+//*  Date of Creating: 31/01/2019
+//*  Created By: Shrutika
+//'************************************************************************  
+function InsertSecurityQuestionsInDBForG0G2G3G4G5()
+{
+    //Initialize Variables
+    var Returnval = true;
+    var res,arrTestData,dictColumn,strQuery,strConString;
+        
+    //Initialize XMLs
+    InitializeMetaDataHYDRA1();
+    //Read data for DB
+    var arrTestData = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra","RoundTrip");
+    var dictColumn=arrTestData[0];
+    //var strUserHashValue = dictColumn["Item"]("Name2")  // if we need to put a check for each user hash value then uncomment it 
+    var strQuery = dictColumn["Item"]("Query3")
+    var strSelectQuery="SELECT * FROM [Bus_DM].[dbo].[UserSecurityQuestion]"
+    //var strSelectQuery="SELECT * FROM [Bus_DM].[dbo].[UserSecurityQuestion] where UserID=" +"'"+strUserHashValue+"'"; //if we need to put a check for each user hash value then uncomment it
+    var strConString = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"
+ 
+    RecordSet =ReturnQueryRecordSetFromString(strSelectQuery,strConString); 
+    if(RecordSet["RecordCount"]==5)
+      Log["Checkpoint"]("Security questions are already present in [UserSecurityQuestion] table")                                 
+    else
+    {
+        if(ExecSQLQueryFromString(strQuery,strConString)!=-1)    
+          Log["Checkpoint"]("Security questions inserted successfully for users G0,G3,G4,G5 in [UserSecurityQuestion] table")
+    }
+
+}
+
+//***************************************************************************************
+//*  FunctionName :fnDisableIPsecRule
+//*  Description: DisableIPsecRule
+//*  Input: na
+//*  Output:Boolean
+//*  Example:  fnDisableIPsecRule
+//*  Date of Creating: 16 jan 2019
+//*  Last Modified date: 6 March 2019
+//* Created By : Bhawya V J
+//******************************************************************************************
+function fnDisableIPsecRule(){
+  try{
+        
+        ProjPath = ProjectSuite["Path"];
+        arrPath  = ProjPath["split"]("Hydra")     
+        DiagPath =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\";
+      
+        //Run DisableIPsecRule.bat
+        aqUtils["Delay"](2000,"Run DisableIPsecRule")
+        Log["AppendFolder"]("Run DisableIPsecRule.bat")
+
+        var oShell=Sys["OleObject"]("Shell.Application"); 
+        oShell.ShellExecute("DisableIPsecRule.bat","",DiagPath,"runas",1); 
+            
+    }catch(exp){
+      Log["Error"](exp["description"])
+      return false;
+    }
+    return true
+}
+   
+
+
+//***************************************************************************************
+//*  FunctionName :fnRunTCCSHydra
+//*  Description: Run TCCS
+//*  Input: na
+//*  Output:Boolean
+//*  Example:  fnRunTCCSHydra
+//*  Date of Creating: 12 Feb 2019
+//*  Last Modified date: NA
+//* Created By : Bhawya V J
+//*****************************************************************************************
+function fnRunTCCSHydra(){
+  try{
+                
+        //Project path
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra")   
+        var TestData =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\";
+  
+        //TCCS
+        Log["AppendFolder"]("TCCS Configuration")
+        obj = new ActiveXObject("WScript.shell")
+        obj["Run"]("C:\\Siemens\\Bin\\TCCSConfigurationEditor.exe")
+        TCCSConfigurationEditor =Sys["WaitProcess"]("TCCSConfigurationEditor",240000)
+        if(!TCCSConfigurationEditor["Exists"])
+           Log["Error"]("TCCS didnt open")   
+        
+        //Set DL IP
+        aqUtils["Delay"](1000)
+        TCCSConfig = Aliases["TCCSConfigurationEditor"]["VistaConfigurationMainForm"]["m_tabControlAdv"]["m_tabPageAdvTwinningConfig"]["m_tccsConfigControl"]["m_groupBoxRightInstrument"]["m_tccsConfig"];
+        moduleIDEntry = TCCSConfig["moduleIDEntryPrimary"];
+        moduleIDEntry["m_cbModuleType"]["ClickItem"]("DL");
+        aqUtils["Delay"](1000)
+        textBoxExt = moduleIDEntry["m_tbModule"];
+        textBoxExt["SetText"]("");
+        textBoxExt["SetText"]("192.168.1.7");
+        aqUtils["Delay"](1000)
+  
+        //Set Hydra IP
+        numericUpDown = Aliases["TCCSConfigurationEditor"]["VistaConfigurationMainForm"]["m_tabControlAdv"]["m_tabPageAdvTwinningConfig"]["m_tccsConfigControl"]["m_groupBoxRightInstrument"]["m_tccsConfig"]["m_nudModules"];
+        upDownEdit = numericUpDown["UpDownEdit"];
+        numericUpDown["wValue"] = 1;
+        upDownEdit["Keys"]("[Tab]");
+        aqUtils["Delay"](1000)
+        moduleIDEntry = TCCSConfig["moduleIDEntry1"];
+        moduleIDEntry["m_cbModuleType"]["ClickItem"]("Hydra");
+        aqUtils["Delay"](1000)
+        textBoxExt = moduleIDEntry["m_tbModule"];
+        textBoxExt["SetText"]("192.168.1.7");
+        aqUtils["Delay"](1000)
+  
+        //SIM Serial Number
+        var vistaConfigurationMainForm;
+        var comboBox;
+        vistaConfigurationMainForm = Aliases["TCCSConfigurationEditor"]["VistaConfigurationMainForm"];
+        vistaConfigurationMainForm["Activate"]();
+        aqUtils["Delay"](1000)
+        comboBox = vistaConfigurationMainForm["m_tabControlAdv"]["m_tabPageAdvTwinningConfig"]["m_tccsConfigControl"]["m_groupBoxLeftInstrument"]["m_cbIpAddresses"];
+        comboBox["ClickItem"]("192.168.1.7");
+        aqUtils["Delay"](1000)
+        
+        //Apply changes
+        Aliases["TCCSConfigurationEditor"]["VistaConfigurationMainForm"]["m_tabControlAdv"]["m_tabPageAdvTwinningConfig"]["m_tccsConfigControl"]["m_xpTaskBar"]["m_xpTaskBarBoxActions"]["m_panelActions"]["m_buttonAdvApply"]["ClickButton"]();
+        aqUtils["Delay"](2000)
+        
+        //Verify IM Sucess
+        if(!VerifyRegisterIMMessageInLogs())
+          return false
+        else{
+            Log["Checkpoint"]("TCCS Sucessfull")
+        }
+               
+        //Exit TCCS
+         Aliases["TCCSConfigurationEditor"]["VistaConfigurationMainForm"]["m_buttonAdvExit"]["ClickButton"]();
+         aqUtils["Delay"](2000);
+         Log["PopLogFolder"]()
+     
+         //Commented Apr 4th 2019
+//        //Read TrinidadModuleID 
+//        sTriMIDFile = aqFile.ReadWholeTextFile("F:\\InstrumentOutput\\TrinidadModuleID.xml", aqFile.ctANSI);
+//        sTemp = sTriMIDFile["split"]("MfgSerialNumber")[1]
+//        var TriMID =aqString["Replace"](aqString["Replace"](sTemp,">",""),"</","")
+//
+//        //Copy HydraModuleID.xml and FederationConfig.xml
+//        aqFile["Copy"](TestData+"FederationConfig.xml","F:\\InstrumentOutput",false)
+//        var sFedConfigAll = aqFile.ReadWholeTextFile(TestData+"FederationConfig.xml", aqFile.ctANSI);
+//        var sContentToReplace = aqString["Replace"](sFedConfigAll,"DLSerialNO",TriMID)
+//        aqUtils["Delay"](500)
+//        aqFile["WriteToTextFile"]("F:\\InstrumentOutput\\FederationConfig.xml",sContentToReplace, aqFile["ctANSI"], true);
+  
+    }catch(exp){
+      Log["Error"](exp["description"])
+      return false;
+    }
+    return true
+}
+
+
+
+/*************************************** ROUNDTRIP FUNCTION : BHAWYA *********************************/
+
+
+
+//'***************************************************************************************************************************
+//*  FunctionName : LaunchAndLoginHydra
+//*  Description: Launch and Login to Hydra
+//*  Input: na
+//*  Output: Boolean
+//*  Example: InitializeARM
+//*  Date of Creating: 10 Sep 2018
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function LaunchAndLoginHydra()
+{  
+
+  try
+    {  
+        InitializeMetaDataHYDRA();
+        
+        //Log Open
+        Log["Enabled"] =true;
+        Log["AppendFolder"]("INITIALIZE :Launch and Login to Hydra");
+
+        //Read data for Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","Login");
+        var dictColumn=arrTestData[0];
+    
+        /*---------- LAUNCH -----------*/
+         
+        //Launch Hydra
+        if(!LaunchHydra())
+        {
+          Log["Error"]("Failed in Lauching Hydra");
+          ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "F");
+          Runner["Stop"]()
+        }
+        
+        //Result.xml - Launch_Hydra - Pass
+        ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "P");
+        
+        //Adding delay
+       aqUtils["Delay"](60000,"Waiting for UIW services to start")
+          
+        /*--------- LOGIN ------------*/
+        
+        //Result.xml - Login_Hydra - Inprogress
+        ReportTestStatusToResultXML("Initialize", "Login_Hydra", "I");
+        
+        //Login to Hydra
+        if(!LoginToHydra1(dictColumn["Item"]("User"),dictColumn["Item"]("Password")))
+        {
+          Log["Error"]("Failed in Login Hydra");
+          ReportTestStatusToResultXML("Initialize", "Login_Hydra", "F");
+          Runner["Stop"]()
+        }
+        
+        //Result.xml - Login_Hydra - Pass
+        ReportTestStatusToResultXML("Initialize", "Login_Hydra", "P");
+    
+        /*------ MODULE STATE -------*/
+    
+        //Call Function    
+//        if(!CheckModuleStatus()){
+//          Log["PopLogFolder"]()
+//          return false;
+//        }
+
+        //Log close
+        Log["PopLogFolder"]()
+        return true;
+        
+    }catch(e){
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+}
+				/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        INITIALIZE UIW and IoT & Load Reagents
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/    
+                
+function InitializeAppWithPreSetup(){
+    
+    //Configure Test Environment
+    PreConfig()
+
+    //Start IoT and UIW with IoT
+    if(!InitializeUIW_IoT()){
+      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+      Runner["Stop"]()}
+    
+    //LoadReagents
+    if(!LoadReagents_IoT()){
+      Log["Error"]("STOP EXECUTION : Load Reagents Failed")
+      Runner["Stop"]()}
+    
+    //User Setup
+    Log["AppendFolder"]("User Setup")
+  	UserSetupForG0G2G3G4G5()
+    Log["PopLogFolder"]()
+    
+}
+         
+                 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 INITIALIZE UIW and IoT 
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/  
+                           
+function InitializeApp(){
+    
+    //Configure Test Environment
+    PreConfig()
+
+    //Start IoT and UIW with IoT
+    if(!InitializeUIW_IoT()){
+      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+      Runner["Stop"]()}
+
+}
+
+                       /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                   RESUSABLES
+                      /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/   
+                
+ 
+//*************************************************************************
+//*  FunctionName : PreConfig
+//*  Description: iNSTALL dIAGNOSTICS,tccs
+//*  Input: na
+//*  Output: NA
+//*  Example: PreConfig()
+//*  Date of Creating: 25 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************                
+function PreConfig(){
+    
+    //Update Build Details
+    fnUpdateBuildDetails()
+    
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+    
+    //Install Diagnostics
+    if(fnInstallDiagnostics()!= "Sucessfull"){
+      Log["Error"]("STOP EXECUTION")
+      Runner["Stop"]()}
+    
+    //Run TCCS
+    if(!PreRunHydra()){
+      Log["Error"]("STOP EXECUTION : TCCS/System Configurations Failed")
+      Runner["Stop"]()
+    }  
+}
+
+//*************************************************************************
+//*  FunctionName : ShutDown_All
+//*  Description: Close UIW,Close and Stop Diag Service,StutDown OiT
+//*  Input: na
+//*  Output: Boolean
+//*  Example: ShutDown_All
+//*  Date of Creating: 25 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function ShutDown_All()
+{
+  try
+    {
+      Log["AppendFolder"]("Exit All Application")
+            
+      //Shutdown Hydra
+      if(!ShutDownARM()){
+          Log["Error"]("Failed to Shutdown UIW");
+          Runner["Stop"]();
+      }
+           
+      //Stop IoT
+      if(!stopIoT()){
+         Log["Error"]("Failed to Stop IoT");
+      }
+      
+      //Stop Diagnostics Service and close diagnostic client [Commented CI Update Bhawya Oct 16 2019]
+      //if(!StopDiagnosticsService()){
+      //   Log["Error"]("Failed to Stop Diagnostic");
+      //   return false;
+      //}
+      
+     }catch(e){
+      Log["PopLogFolder"]();
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+ 
+    
+//*************************************************************************
+//*  FunctionName : InitializeUIW_IoT
+//*  Description: Make system to Ready State
+//*  Input: na
+//*  Output: Boolean
+//*  Example: InitializeUIW
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function InitializeUIW_IoT()
+{
+  try
+    {
+         
+      //Log
+      Log["AppendFolder"]("Initialize UIW and IoT")
+        
+      //Initialize Datafile and XMLS    
+      InitializeMetaDataHYDRA();      
+      
+      //---------------------- SHUTDOWN ALL APPLICATIONS --------------------
+      
+      ShutDown_All()
+     
+      //-------------------- LAUNCH HYDRA ---------------------------------
+      
+      //Result.xml - Launch_Hydra -Inprogress
+      ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "I");
+      
+      //Launch & Login Hydra
+      if(!LaunchAndLoginHydra())
+      {
+          Log["Error"]("Failed in Launch and Login Hydra");
+          Runner["Stop"]();
+      }
+       
+     //--------------------- START IOT -------------------------------------
+      
+      //Result.xml - Module Status Hydra -Inprogress
+      ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "I");
+
+      //WCF started and Start IOT 
+      if(!checkWCFServiceandstartIoT())
+      {
+        Log["Error"]("Failed in Staring IoT")
+        ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+        Runner["Stop"]();
+      }
+      
+      //-------------------- START DIAGNOSTICS -----------------------------
+      
+      //Starting Diagnostics service and initializing Diagnostics
+      if(!StartServiceAndInitializeDiagnosticsClient())
+      {
+          Log["Error"]("Failed in Starting Diagnostics");
+          ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+          Runner["Stop"]();
+      }
+      
+      //------------------ MODULE STATE - READY -----------------------------
+      
+      Log["AppendFolder"]("Check Module Status is Ready")
+      
+      //Navigate to System status   
+      var Navigation=InvokeWorkflow("System_Status_System");
+      if (!Navigation)
+      {
+        Log["Error"]("Failed in Module state")
+        ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+        Runner["Stop"]();
+      }
+          
+      //Adding delay
+      aqUtils["Delay"](120000,"Waiting for modules status")
+      
+      if(!CheckModuleStatusHydra())//Changed from CheckModuleStatus Bhawya 4 Mar
+      {
+          Log["Error"]("Failed in Module state")
+          ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+          Runner["Stop"]();
+      }
+      
+      //Result.xml - Module Status Hydra - Pass
+      ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "P");
+      Log["PopLogFolder"]();
+      
+     }
+     catch(e)
+     {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+     }  
+    
+    Log["PopLogFolder"]();
+    return true;
+}
+ 
+
+//*************************************************************************
+//*  FunctionName : LoadReagents_IoT
+//*  Description: LoadReagents_IoT
+//*  Input: na
+//*  Output: Boolean
+//*  Example: fnLoadReagents_IoT
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function LoadReagents_IoT()
+{
+  try
+    {
+          
+      //Log
+      Log["AppendFolder"]("Load Reagents")  
+      
+      //Project file Paths
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      var SimulationPath = "C:\\data\\deploy\\simulation\\";
+      
+      //Initialize XML
+      InitializeMetaDataHYDRA();
+      
+      //Read data - IA Diagnostics Sequence
+      arrTestDataIA = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq2");
+      dictColumnIA=arrTestDataIA[0];
+      var MechNameIA = dictColumnIA["Item"]("MechanismName")
+      var SeqNameIA = dictColumnIA["Item"]("SeqName")
+      var ReagentTypeIA = dictColumnIA["Item"]("ReagentType")
+      
+      //Read data - CH Diagnostics Sequence
+      arrTestDataCC = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq");
+      dictColumnCC=arrTestDataCC[0];
+      var MechNameCC = dictColumnCC["Item"]("MechanismName")
+      var SeqNameCC = dictColumnCC["Item"]("SeqName")
+      var ReagentTypeCC = dictColumnCC["Item"]("ReagentType")
+      
+      //Read data 
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"RoundTrip","LoadReagent");
+      
+      //-------------------------- LOAD REAGENTS  -------------------
+      
+      var IMReagentStatus=CheckReagentsAvailability(arrTestData2,"IM");
+      var CHReagentStatus=CheckReagentsAvailability(arrTestData2,"CH");
+      
+      if(CHReagentStatus==false)
+      {
+        //load CC reagents
+        if(!LoadingHydraReagents(ReagentTypeCC,MechNameCC,SeqNameCC))
+        {
+          Log["Error"]("CC Reagent Loading Failed")
+          ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+          Runner["Stop"]();
+        }
+      }
+      
+      if(IMReagentStatus==false)
+      {
+        //load IA reagents
+        if(!LoadingHydraReagents(ReagentTypeIA,MechNameIA,SeqNameIA))
+        {
+          Log["Error"]("IA Reagent Loading Failed")
+          ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+          Runner["Stop"]();
+        }
+      }
+            
+      //Result.xml - Load Reagents -Pass
+      ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "P");
+      
+      //-------------------------- MODULE STATE -------------------
+      
+      if(!StepResumeHydraToReady())
+      {
+        Log["Error"]("Module Status Verification Failed")
+        Runner["Stop"]();
+      }
+      
+     //------------------VERIFY REAGENTS LOADED -------------------
+      
+      //Result.xml - Reagent Status 1 -Inprogress
+      ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "I");
+      
+      //Verify the Reagent availability and its Count value
+      var reagentStatus=VerifyReagentStatusForRT(arrTestData2);
+      var counter = arrTestData2["length"]
+      if(reagentStatus==0)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+        //Runner["Stop"]();
+      }
+      else if(reagentStatus<counter)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+      }
+      else
+      {
+        //Result.xml - Reagent Status -Pass
+        ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "P");
+      }
+   
+     }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      //return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}   
+
+//****************************************************************************************************************************
+//*  FunctionName : VerifyReagentStatusForRT(arrTestData1)
+//*  Description: Navigates to Reagent overview screen. Fetches Assay Name details from Test data and sends to function VerifySampleStatus. Returns number of reagent present
+//*  Input: arrTestData1
+//*  Output: reagentCount
+//*  Example: VerifyReagentStatusForRT(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function VerifyReagentStatusForRT(arrTestData1)
+{
+ try
+  {   
+      //Navigate to Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        Runner["Stop"]();
+      
+      //Initialize variables       
+      var counter = arrTestData1["length"]
+      var reagentCount=0;
+      
+      //Verify Reagent status
+      for(z=0;z<counter;z++)
+      {
+        dictColumn1=arrTestData1[z];
+        var Assay1 = dictColumn1["Item"]("Assay")
+        
+        //Verify the Reagent availability and its Count value
+        if(GetReagentCountValue(Assay1))
+            reagentCount = reagentCount+1;
+      }
+        return reagentCount;
+  }  
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+ }
+ 
+//****************************************************************************************************************************
+//*  FunctionName : CreateShellShortcut()
+//*  Description: Checks if shell shortcut available or not else it will create a new one
+//*  Input: NA
+//*  Output: boolean
+//*  Example: CreateShellShortcut()
+//*  Created By: Shahana
+//*  Date of creation : 3 June 2019
+//'***************************************************************************************************************************
+function CreateShellShortcut()
+{
+  try
+  {  
+        Log["AppendFolder"]("Check if Shell shortcut is present");
+      
+        //Initialize variables
+        var  strDesktop, fileName, oShellLink;
+        strDesktop = WshShell["SpecialFolders"]("Desktop");
+        fileName = strDesktop+"\\Shell - Shortcut.lnk";
+        
+        //check if shell shortcut is avilable on desktop
+        if (aqFileSystem["Exists"](fileName))
+        {
+              oShellLink = WshShell["CreateShortcut"](fileName);
+              if (aqFileSystem["Exists"](oShellLink["TargetPath"]))
+              {
+                Log["Message"]("The target file exists (" +oShellLink["TargetPath"] + ").");
+                Log["Checkpoint"]("Shell shortcut available on desktop");
+              }
+              else
+              {
+                Log["Error"]("The target file does not exist (" +oShellLink["TargetPath"] + ").");
+                Log["PopLogFolder"]();
+                return false;
+              }
+        }
+        else
+        { 
+              //create shell shortcut
+              Log["Message"]("Shell shortcut not present hence creating new one");
+              oShellLink = WshShell["CreateShortcut"](strDesktop+"\\Shell - Shortcut.lnk");
+              oShellLink["TargetPath"]="C:\\Siemens\\Bin\\Shell.exe";
+              oShellLink.Save();
+              
+              //verify if created successfully
+              if (aqFileSystem["Exists"](fileName))
+              {
+                  if (aqFileSystem["Exists"](oShellLink["TargetPath"]))
+                  {
+                    Log["Message"]("The target file exists (" +oShellLink["TargetPath"] + ").");
+                    Log["Checkpoint"]("Shell shortcut created successfully");
+                  }
+              }
+        }
+    }    
+    catch(e)
+    {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+}  
+
+function LoadReagentthroughQuery()
+{
+    try
+    {
+        //Project path
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra")     
+        var ReagentQueryPath =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\ReagentLoadQuery";
+        
+        //Open log
+        Log["Enabled"] = true;
+        Log["AppendFolder"]("Loading Reagent through query ")
+         
+        var oShell=Sys["OleObject"]("Shell.Application");
+        oShell.ShellExecute("Reagent_Load.bat","",ReagentQueryPath,"runas",1);
+        aqUtils["Delay"](5000,"Reagent Load Query")
+        Log["Checkpoint"]("Reagent Query.bat sucessful")
+        Log["PopLogFolder"]();       
+        
+//        //Close CMD
+//        Options["Run"]["Delay"] =0;
+//        Options["Run"]["Timeout"] =0;
+//        var proparr=["WndClass","WndCaption", "wText"]
+//        var vararr=["ConsoleWindowClass", "Administrator:  CopyFilesInIoT","*Press any key to continue . . .*"];
+//        
+//        var cmdObj =Sys["Find"](proparr,vararr,200)
+//        if(cmdObj["Exists"]){
+//          cmdObj["Activate"]();
+//          cmdObj["Close"]();
+//          aqUtils["Delay"](1000,"Close cmd")}  
+        
+        //Close Log
+        Options["Run"]["Timeout"] =10000;
+        Log["Enabled"] = true;
+        Log["Checkpoint"]("Application closed successfully");
+        Log["PopLogFolder"]();
+        
+    }catch(e){
+      Log["Enabled"] =true;  
+      Options["Run"]["Timeout"] =10000;
+      Log["PopLogFolder"]();
+      Log["Error"]("Exception : "+e["Description"]);
+      return false;
+    } 
+    return true;
+}
+
+
+function LoadSuppliesthroughQuery()
+{
+    try
+    {
+        //Project path
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra")     
+        var SuppliesQueryPath =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\Supplies_Testing_Sql";
+        
+        //Open log
+        Log["Enabled"] = true;
+        Log["AppendFolder"]("Loading Supplies through query ")
+         
+        var oShell=Sys["OleObject"]("Shell.Application");
+        oShell.ShellExecute("Supplies_RoundTrip.bat","",SuppliesQueryPath,"runas",1);
+        aqUtils["Delay"](5000,"Reagent Load Query")
+        Log["Checkpoint"]("Supplies_RoundTrip.bat sucessful")
+        Log["PopLogFolder"]();       
+        
+//        //Close CMD
+//        Options["Run"]["Delay"] =0;
+//        Options["Run"]["Timeout"] =0;
+//        var proparr=["WndClass","WndCaption", "wText"]
+//        var vararr=["ConsoleWindowClass", "C:\windows\System32\cmd.exe","*Press any key to continue . . .*"];
+//        
+//        var cmdObj =Sys["Find"](proparr,vararr,200)
+//        if(cmdObj["Exists"]){
+//          cmdObj["Activate"]();
+//          cmdObj["Close"]();
+//          aqUtils["Delay"](1000,"Close cmd")}   
+        
+        //Close Log
+        Options["Run"]["Timeout"] =10000;
+        Log["Enabled"] = true;
+        Log["Checkpoint"]("Application closed successfully");
+        Log["PopLogFolder"]();
+        
+    }catch(e){
+      Log["Enabled"] =true;  
+      Options["Run"]["Timeout"] =10000;
+      Log["PopLogFolder"]();
+      Log["Error"]("Exception : "+e["Description"]);
+      return false;
+    } 
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : VerifyMessageInLogs(sFilePath,sSearchText,TimeInMinutes)
+//*  Input: sFilePath,sSearchText,TimeInMinutes
+//*  Output: Boolean
+//*  Date of Creating: 31 Oct 2019
+//*  Created By: Bhawya V J
+//*************************************************************************    
+function VerifyMessageInLogs(sFilePath,sSearchText,MaxTimeInMinutes)
+{   
+    try
+    {    
+        //Maximum Wait : MaxTimeInMinutes [10 seconds polling]
+        var TimeOut = MaxTimeInMinutes *6
+        for(var i=0;i<TimeOut;i++)
+        {
+          sText=aqFile["ReadWholeTextFile"](sFilePath,22)
+          if(aqString["Find"](sText,sSearchText)>0)
+              return true;
+          else
+              aqUtils["Delay"](10000,"Waiting for "+sSearchText+" message in  logs : MaxWait "+MaxTimeInMinutes+" Mins");
+        }
+        if(i>=30)
+            return false;
+    }catch(exp){
+        Log["Error"]("Exception: " + exp["description"]);
+        return false;
+    } 
+} 
+
+
+//*************************************************************************
+//*  FunctionName : VerifyMessageInCMD(CMDObj,sSearchText,MaxTimeInMinutes)
+//*  Input: CMDObj,sSearchText,MaxTimeInMinutes
+//*  Output: Boolean
+//*  Date of Creating: 31 Oct 2019
+//*  Created By: Bhawya V J
+//************************************************************************* 
+function VerifyMessageInCMD(CMDObj,sSearchText,MaxTimeInMinutes)
+{
+    try
+    {    
+        //Maximum Wait : MaxTimeInMinutes [10 seconds polling]
+		if(!CMDObj["Exists"])
+          return false;
+        var TimeOut = MaxTimeInMinutes *6
+        for(var i=0;i<TimeOut;i++)
+        {
+          sText=CMDObj["wText"]
+          if(aqString["Find"](sText,sSearchText)>0)
+              return true;
+          else
+              aqUtils["Delay"](10000,"Waiting for "+sSearchText+" message in console : MaxWait "+MaxTimeInMinutes+" Mins");
+        }
+        if(i>=30)
+            return false;
+    }catch(exp){
+        Log["Error"]("Exception: " + exp["description"]);
+        return false;
+    } 
+    
+}         

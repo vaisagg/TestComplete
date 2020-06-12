@@ -1,0 +1,342 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function CapColorTrainingSetup()
+{
+  return StepUpdateCapColorTrainingConfigFiles("2");
+}
+
+function GivenTCSInDiagnosticMode()
+{
+  if(!IsCapColorWindowAvailable())
+  {
+  if(!GivenAtellicaInitialized())
+    return false;
+   return StepEnterDiagnosticsMode();
+   }
+  else
+  {
+    return true;
+  } 
+} 
+function WhenTCSOperatorPerformCapColorTraining()
+{
+  return StepStartCapColorTraining(1,"Back");
+} 
+function ThenCapColorTrainingOutcomeIsSuccess()
+{
+    boolValue=StepCreateCapColorGroup(1,"Back","WhiteSerum","Serum","");  
+   var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+   if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    //ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    //ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "F"); 
+    return false;
+  }
+} 
+
+function ThenCapColorTrainingOutcomeIsFailure()
+{
+   boolValue=StepStartCapColorTraining(2,"Back"); 
+   var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+   if(boolValue == false)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "F"); 
+    return false;
+  }
+} 
+//**************************** Delete
+function WhenThereIsACapColorGroupInCurrentSession()
+{
+
+var arrData=GetTestItemsByTestName(TestDataFile,"CapColorTraining","GWT235505_TC290949_01")
+if(!UpdateConsistentCapcolorAndTubeDataCapColorValues(arrData))
+    return false;
+
+ if(!StepStartCapColorTraining(1,"Back"))
+    return false;
+ return StepCreateCapColorGroup(1,"Back","GWT235505_TC290949_01","Serum","")
+} 
+function ThenCapColorGroupDeleteIsSuccess()
+{
+   boolValue=StepDeleteCapColorGroupCurrentSession(1,"Back"); 
+   var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+   if(boolValue == false)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F"); 
+    return false;
+  }
+} 
+
+function WhenThereIsACapColorGroupExtendedFromPreviousSession()
+{
+ if(!StepStartCapColorTraining(1,"Back"))
+    return false;
+ if(!StepCreateCapColorGroup(1,"Back","GWT235505_TC290949_01","Serum",""))
+    return false;
+    
+ //Change Xml color
+ 
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_TC290949_02_2";
+ 
+  if(!StepStartCapColorTraining(2,"Back"))
+    return false;
+  
+  return ExtendCapColorGroup("GWT235505_TC290949_01","Serum");
+} 
+function ThenExtendedCapColorGroupDeleteIsSuccess()
+{
+   boolValue=StepDeleteCapColorGroupCurrentSession(2,"Back"); 
+   var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+   if(boolValue == false)
+  {
+    attr["FontColor"] = clGreen;
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F"); 
+    return false;
+  }
+}
+
+function WhenTCSOperatorExercisingRoutine_GWT235505_TC297554_01()
+{
+  DrawerNo= "1";
+  DrawerZone = "Back";
+  GroupName = "TC297554Red10"
+  SpecTypes = "Serum";
+
+  //Set the XMLs here
+  
+  if(!StepStartCapColorTraining("2", DrawerZone))
+    return false;
+
+  return StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, "", "")
+  
+}
+
+function ThenCapColorTrainingIsSuccessful_GWT235505_TC297554_01()
+{
+  DrawerNo= "2";
+  DrawerZone = "Back";
+  GroupName = "TC297554Red11"
+  SpecTypes = "Serum";
+  strExistingGroupName = "TC297554Red10";
+  
+  var boolValue = StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, strExistingGroupName, "Update")
+  
+ // StepCloseCapColorConfigWindow();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_01", "F");
+    return false;  
+  }
+}
+
+function WhenTCSOperatorExercisingRoutine_GWT235505_TC297554_02()
+{
+  DrawerNo= "1";
+  DrawerZone = "Back";
+  GroupName = "TC297554Blue10"
+  SpecTypes = "Serum";
+
+  if(!StepStartCapColorTraining(DrawerNo, DrawerZone))
+    return false;
+
+  return StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, "", "");
+}
+
+function ThenCapColorTrainingIsSuccessful_GWT235505_TC297554_02()
+{
+  DrawerNo= "2";
+  DrawerZone = "Back";
+  GroupName = "TC297554Blue11"
+  SpecTypes = "Serum";
+  strExistingGroupName = "TC297554Blue10";
+  
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_03";
+  
+  if(!StepStartCapColorTraining(DrawerNo, DrawerZone))
+    return false;
+  
+  var boolValue = StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, strExistingGroupName, "Update")
+  
+  //StepCloseCapColorConfigWindow();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_02", "F");
+    return false;  
+  }
+}
+
+function WhenTCSOperatorExercisingRoutine_GWT235505_TC290521_01()
+{
+  DrawerNo= "1";
+  DrawerZone = "Back";
+  GroupName = "TC290521Blue10"
+  SpecTypes = "Serum";
+
+  //Set the XMLs here
+  var arrData=GetTestItemsByTestName(TestDataFile,"CapColorTraining","GWT235505_TC297554_02");
+  if(!UpdateConsistentCapcolorAndTubeDataCapColorValues(arrData))
+    return false;
+  
+  if(!StepStartCapColorTraining("1", DrawerZone))
+    return false;
+
+  return StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, "", "")
+} 
+
+function ThenCapColorTrainingIsSuccessful_GWT235505_TC290521_01()
+{
+  DrawerNo= "2";
+  DrawerZone = "Back";
+  GroupName = "TC290521Blue11"
+  SpecTypes = "Serum";
+  strExistingGroupName = "TC290521Blue10";
+  
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_05";
+  
+  if(!StepStartCapColorTraining(DrawerNo, DrawerZone))
+    return false;
+  
+  var boolValue = StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, strExistingGroupName, "Replace")
+  
+//  StepCloseCapColorConfigWindow();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "F");
+    return false;  
+  }
+} 
+
+function WhenTCSOperatorExercisingRoutine_GWT235505_TC290521_02()
+{
+  DrawerNo= "1";
+  DrawerZone = "Back";
+  GroupName = "TC290521Red10"
+  SpecTypes = "Serum";
+
+  //Set the XMLs here
+  
+  if(!StepStartCapColorTraining("1", DrawerZone))
+    return false;
+
+  return StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, "", "")
+}
+
+function ThenCapColorTrainingIsSuccessful_GWT235505_TC290521_02()
+{
+  DrawerNo= "2";
+  DrawerZone = "Back";
+  GroupName = "TC290521Red11"
+  SpecTypes = "Serum";
+  strExistingGroupName = "TC290521Red10";
+  
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_05";
+  
+  if(!StepStartCapColorTraining(DrawerNo, DrawerZone))
+    return false;
+  
+  var boolValue = StepCreateCapColorGroup(DrawerNo, DrawerZone, GroupName, SpecTypes, strExistingGroupName, "Replace")
+  
+  StepCloseCapColorConfigWindow();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "F");
+    return false;  
+  }
+}

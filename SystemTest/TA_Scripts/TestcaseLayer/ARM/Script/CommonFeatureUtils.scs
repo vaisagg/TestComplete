@@ -1,0 +1,167 @@
+﻿//USEUNIT StepDefinitionHydra
+//USEUNIT CommonUtilities
+//USEUNIT DiagnosticsLibrary
+//USEUNIT Authentication
+
+
+function GivenHydraModuleIsInReadyState()
+{ 
+  var sActualStatus = StepGetModuleStatusHydra("HYDRA")
+  if(aqString["ToLower"](sActualStatus) ==aqString["ToLower"]("Standby"))
+  {
+    if(!StepStopPauseOrResumeModule("RESUME"))
+      return false 
+  }
+  return StepVerifyModuleStatus("HYDRA","READY")
+}
+
+function Teardown_ResumeHydraFromStopped_Paused()
+{
+  Log["AppendFolder"]("Teardown : Resume hydra");
+  if(StepResumeHydraToReady())
+  {
+    Log["Message"]("Teardown Resume Hydra is sucessful")
+    Log["PopLogFolder"]();
+    return true
+  }
+  else
+  {
+    Log["Error"]("Teardown Resume Hydra is failed")
+    Log["PopLogFolder"]();
+    return false
+  }
+}
+
+function InitializeHydraWithModuleStatusCheck()
+{
+    Log["AppendFolder"]("Launch and Login to ARM and verify modules are ready");
+    
+    //Read data for Login
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","Login");
+    var dictColumn=arrTestData[0];
+    
+    //SHUTDOWN IoT and shell
+    stopIoT();
+    ShutDownARM();
+    aqUtils["Delay"](5000,"Wait for shutdown");
+       
+    //Launch Hydra
+    if(!LaunchHydra())
+      return false
+    
+    //Login to Hydra
+    if(!LoginToHydra(dictColumn["Item"]("User"),dictColumn["Item"]("Password")))
+      return false
+    
+    //start IoT
+    if(!checkWCFServiceandstartIoT())
+      return false
+    
+    //verify Hydra and DL are ready
+    if(!CheckModuleStatusHydra())
+    {
+      Log["PopLogFolder"]()
+      return false
+    }
+    else
+    {
+      Log["PopLogFolder"]()
+      return true
+    }
+
+}
+
+
+function InitializeHydraWithoutModuleStatusCheck()
+{   
+  Log["AppendFolder"]("Launch and login to Hydra but no module status verification here")
+  stopIoT();
+  ShutDownARM();
+  aqUtils["Delay"](5000,"Wait for shutdown");
+    
+  //Launch Hydra
+  if(!LaunchHydra())
+    return false;
+    
+  //Login to Hydra
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","Login");
+  var dictColumn=arrTestData[0];
+  if(!LoginToHydra(dictColumn["Item"]("User"),dictColumn["Item"]("Password")))
+    return false;
+    
+  if(!checkWCFServiceandstartIoT())
+  {
+    Log["PopLogFolder"]()
+    return false;
+  }
+  else
+  {
+    Log["PopLogFolder"]()
+    return true;
+  }
+         
+}
+
+function Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+{  
+  Log["AppendFolder"]("Resume hydra");
+  
+  if(!ClickOnExitDiagnostics())
+  {
+    Log["Message"]("Exit diagnostics is not sucesful")
+    Log["Message"]("Teardown Resume Hydra from is not sucessful")
+    Log["PopLogFolder"]();
+    return false
+  }
+    
+  if(StepResumeHydraToReady())
+  {
+    Log["Message"]("Teardown Resume Hydra is sucessful")
+    Log["PopLogFolder"]();
+    return true
+  }
+  else
+  {
+    Log["Error"]("Teardown Resume Hydra is failed")
+    Log["PopLogFolder"]();
+    return false
+  }
+  
+}
+
+function Teardown_FillSupplies()
+{
+  
+  Log["AppendFolder"]("Refill supplies and verify all modules ready");
+  //Read Test data
+  arrTestData = GetTestItemsByTestName(DBDataFile,"StateManager","StoppedCheckSuppliesReady");
+  dictColumn=arrTestData[0];
+  strQuery = dictColumn["Item"]("Query2")
+        
+  //Empty Supplies Query
+  strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+  if(ExecSQLQueryFromString(strQuery,strConString)!=-1) 
+  { 
+    Log["Checkpoint"]("Sucessfully Loaded all Consumables")
+    if(!InitializeHydraWithModuleStatusCheck())
+    {
+      Log["Error"]("Teardown refill supplies is not sucessfull");
+      Log["PopLogFolder"]();
+      return false
+    }
+    else
+    {
+      Log["Message"]("Teardown refill supplies is sucessfull")
+      Log["PopLogFolder"]();
+      return true
+    }
+  }
+  else
+  {
+    Log["Error"]("Teardown refill supplies is not sucessfull");
+    Log["PopLogFolder"]();
+    return false;
+  }
+    
+
+}

@@ -1,0 +1,81 @@
+﻿//USEUNIT Setup
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT Authentication
+//USEUNIT InitializePCC
+//USEUNIT DecapperLibrary
+
+function SetupDefaultDrawerConfiguration()
+{
+  ReportTestStatusToResultXML("Initialize", "SH Drawer Configuration", "I");
+  
+  var boolValue = ConfigureSH();
+  
+  if(boolValue == true)
+    ReportTestStatusToResultXML("Initialize", "SH Drawer Configuration", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "SH Drawer Configuration", "F");
+} 
+
+function ConfigureSH()
+{
+  InitializeMetaData();
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  
+  if(!StopAllAvailableModules("SH"))
+    return false;
+  
+  //call the invoke workflow and lib method to set default archive timeout here
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+       
+  ProjPath = Project["Path"];
+  var TestDataFile =  ProjPath + "TestData\\TestData.xls";
+  
+  if(!SetWaitForResultsWorkflowSettings(TestDataFile, "SHConfig", "DefaultConfig"))
+    return false;
+    
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+
+  
+  if(!PerformSortConfiguration(TestDataFile, "SHConfig", "DefaultConfig"))
+    return false;
+  
+  if(!StartAnalyzer("SH"))
+    return false;
+  /*
+  if(!ShutdownSHSim())
+    return false;
+  
+  if(!ShutDownDecapperSim())
+    return false;
+    
+  if(!PCCShutdown())
+    return false;
+  
+  if(!LaunchSHSim())
+    return false;
+  
+  if(!LaunchAndLoadDecapper())
+    return false;
+    
+  if(!LaunchAndLoginToTrinidad(Project["Variables"]["PCCUsername"],Project["Variables"]["PCCPassword"]))
+    return false;
+  else
+    return true; 
+  */
+  
+  var DeploymentType = GetDeploymentTypeFromFederationConfig()
+   
+  if(CheckSystemStatus(DeploymentType) != true)
+    return false;
+  else
+    return true;
+    
+
+}

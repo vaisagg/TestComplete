@@ -1,0 +1,479 @@
+﻿//USEUNIT Authentication   
+//USEUNIT DiagnosticsLibrary   
+//USEUNIT InstallARM         
+//USEUNIT UserAccountSetup 
+//USEUNIT TCCSConfigLibrary
+//USEUNIT System
+//USEUNIT Inventory
+
+                                 
+                 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        INITIALIZE UIW and IoT & Load Reagents
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/    
+                
+function InitializeAppWithPreSetup(){
+    
+    //Configure Test Environment
+    PreConfig()
+
+    //Start IoT and UIW with IoT
+    if(!InitializeUIW_IoT()){
+      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+      Runner["Stop"]()}
+    
+    //LoadReagents
+    if(!LoadReagents_IoT()){
+      Log["Error"]("STOP EXECUTION : Load Reagents Failed")
+      Runner["Stop"]()}
+    
+    //User Setup
+    Log["AppendFolder"]("User Setup")
+  	UserSetupForG0G2G3G4G5()
+    Log["PopLogFolder"]()
+    
+}
+         
+                 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 INITIALIZE UIW and IoT 
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/  
+                           
+function InitializeApp(){
+    
+    //Configure Test Environment
+    PreConfig()
+
+    //Start IoT and UIW with IoT
+    if(!InitializeUIW_IoT()){
+      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+      Runner["Stop"]()}
+
+}
+
+                       /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                   RESUSABLES
+                      /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/   
+                
+ 
+//*************************************************************************
+//*  FunctionName : PreConfig
+//*  Description: iNSTALL dIAGNOSTICS,tccs
+//*  Input: na
+//*  Output: NA
+//*  Example: PreConfig()
+//*  Date of Creating: 25 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************                
+function PreConfig(){
+    
+    //Update Build Details
+    fnUpdateBuildDetails()
+    
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+    
+    //Install Diagnostics
+    if(fnInstallDiagnostics()!= "Sucessfull"){
+      Log["Error"]("STOP EXECUTION")
+      Runner["Stop"]()}
+    
+    //Run TCCS
+    if(!PreRunHydra()){
+      Log["Error"]("STOP EXECUTION : TCCS/System Configurations Failed")
+      Runner["Stop"]()
+    }  
+}
+
+//*************************************************************************
+//*  FunctionName : ShutDown_All
+//*  Description: Close UIW,Close and Stop Diag Service,StutDown OiT
+//*  Input: na
+//*  Output: Boolean
+//*  Example: ShutDown_All
+//*  Date of Creating: 25 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function ShutDown_All()
+{
+  try
+    {
+      Log["AppendFolder"]("Exit All Application")
+            
+      //Shutdown Hydra
+      if(!ShutDownARM()){
+          Log["Error"]("Failed to Shutdown UIW");
+          Runner["Stop"]();
+      }
+           
+      //Stop IoT
+      if(!stopIoT()){
+         Log["Error"]("Failed to Stop IoT");
+      }
+      
+      //StopDiagnosticsService
+      if(!StopDiagnosticsService()){
+         Log["Error"]("Failed to Stop IoT");
+      }
+      
+     }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+ 
+    
+//*************************************************************************
+//*  FunctionName : InitializeUIW_IoT
+//*  Description: Make system to Ready State
+//*  Input: na
+//*  Output: Boolean
+//*  Example: InitializeUIW
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function InitializeUIW_IoT()
+{
+  try
+    {
+         
+      //Log
+      Log["AppendFolder"]("Initialize UIW")
+        
+      //Initialize Datafile and XMLS    
+      InitializeMetaDataHYDRA();
+      
+      //Project file Paths
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      var DBDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls";
+      var DllPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\AppConfigFiles";
+      var IoTPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\IoT";
+      var SimulationPath = "C:\\data\\deploy\\simulation\\";
+      var SequenceSimulationPath="C:\\Siemens\\ARM\\Bin\\Configuration\\Simulator_Sequences";
+      var IMCuvetteFilePath="C:\\Siemens\\ARM\\Bin\\Configuration\\Sequences";
+      var EngineConfigFilePath="C:\\Siemens\\ARM\\Bin\\Configuration";
+
+      //Read data - IA Diagnostics Sequence
+      arrTestDataIA = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq2");
+      dictColumnIA=arrTestDataIA[0];
+      var MechNameIA = dictColumnIA["Item"]("MechanismName")
+      var SeqNameIA = dictColumnIA["Item"]("SeqName")
+      var ReagentTypeIA = dictColumnIA["Item"]("ReagentType")
+      
+      //Read data - CH Diagnostics Sequence
+      arrTestDataCC = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq");
+      dictColumnCC=arrTestDataCC[0];
+      var MechNameCC = dictColumnCC["Item"]("MechanismName")
+      var SeqNameCC = dictColumnCC["Item"]("SeqName")
+      var ReagentTypeCC = dictColumnCC["Item"]("ReagentType")
+      
+      //Read data 
+      arrTestData1 = GetTestItemsByTestName(TestDataFile,"RoundTrip","CreatePO");
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"RoundTrip","LoadReagent");
+      
+      //---------------------- SHUTDOWN ALL APPLICATIONS --------------------
+      
+      if(!ShutDown_All())
+        Log["Error"]("Error While shutdown")
+        
+      //-------------------- PRE -CONFIGURATIONS -----------------------------
+      
+      //Result.xml - Launch_Hydra -Inprogress
+      ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "I");
+      
+      //Copy IM Cuvette Loader Hopper Loop.json to desired location
+      aqFile["Copy"](SequenceSimulationPath+"\\IM Cuvette Loader Hopper Loop.json",IMCuvetteFilePath,false)  
+      Log["Checkpoint"]("Copied IM Cuvette Loader Hopper Loop file to desired location")  
+      
+      //Copy EngineConfig.json to desired location
+      aqFile["Copy"](SequenceSimulationPath+"\\EngineConfig.json",EngineConfigFilePath,false)  
+      Log["Checkpoint"]("Copied EngineConfig file to desired location")
+      
+      //Update Analytical Module -BHAWYA
+      strQuery = "UPDATE [Bus_DM].[dbo].[Module_Types]  SET IsAnalyticalModule = '1' WHERE Name ='Hydra'"
+      strConString = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"
+      if(ExecSQLQueryFromString(strQuery,strConString)!=-1)   
+      Log["Checkpoint"]("Updated Hydra as AnalyticalModule in DB")
+      
+      //Update Supplies -BHAWYA
+      arrTestData = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra","RoundTrip");
+      dictColumn=arrTestData[0];
+      strQuery1 = dictColumn["Item"]("Query")
+      strConString2 = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+      if(ExecSQLQueryFromString(strQuery1,strConString2)!=-1)  {    
+        Log["Checkpoint"]("Sucessfully loaded all consumables")
+      }
+        
+      //First time login
+      AddPasscodeInRegistry();
+      InsertSecurityQuestionsInDB();
+      
+      //Running DL registry batch files - Shahana
+      Log["Checkpoint"]("Running DL registry batch files"); 
+      var obj=Sys["OleObject"]("Shell.Application");
+      obj.ShellExecute("DLRegistry.bat","",DllPath,"runas",1);  
+      aqUtils["Delay"](2000,"Wait for batch files to close")
+      
+      //Remove DLL's -BHAWYA
+      Log["Checkpoint"]("Remove Dll's - Run RemoveDll.bat")
+      obj.ShellExecute("DLLRemove.bat","",DllPath,"runas",1);
+      aqUtils["Delay"](5000,"Wait for DLL's to be removed")
+      
+      //Disable IPsec Rule -BHAWYA
+      Log["Checkpoint"]("Disable IPsec Rule")
+      obj.ShellExecute("DisableIPsecRule.bat","",DllPath,"runas",1);
+      aqUtils["Delay"](3000,"Disabling IPsec Rule")
+      
+      //Adding delay
+      aqUtils["Delay"](2000,"Adding delay")
+      
+      //Enabling legacy screen -SHAHANA
+      Log["AppendFolder"]("Enabling legacy screen")
+      var obj = new ActiveXObject("WScript.shell")
+      obj["Run"]("C:\\Siemens\\Installation\\Registry\\LegacyScreensVisible.reg")
+      var obj3=Sys["Process"]("regedit")["Window"]("#32770", "Registry Editor", 1)["UIAObject"]("Registry_Editor")["Window"]("CtrlNotifySink", "", 7)["Window"]("Button", "&Yes", 1);
+      while(obj3["Exists"])
+      obj3.click();
+      aqUtils["Delay"](2000,"Adding delay")
+      var obj4=Sys["Process"]("regedit")["Window"]("#32770", "Registry Editor", 1)["UIAObject"]("Registry_Editor")["Window"]("CtrlNotifySink", "", 7)["Window"]("Button", "OK", 1);
+      while(obj4["Exists"])
+      obj4.click();
+      Log["PopLogFolder"]();
+      aqUtils["Delay"](2000,"Adding delay");
+      
+      //-------------------- LAUNCH DIAGNOSTICS -----------------------------
+      
+      //Starting Diagnostics service and initializing Diagnostics
+      if(!StartServiceAndInitializeDiagnosticsClient())
+      {
+          Log["Error"]("Failed in Starting Diagnostics");
+          ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "F");
+          Runner["Stop"]();
+      }
+      
+      //-------------------- LAUNCH HYDRA -----------------------------
+      
+      //Launch & Login Hydra
+      if(!LaunchAndLoginHydra())
+      {
+          Log["Error"]("Failed in Launch and Login Hydra");
+          Runner["Stop"]();
+      }
+ 
+    //----------------- MODULE STATE HYDRA ----------------------------
+      
+      //Result.xml - Module Status Hydra -Inprogress
+      ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "I");
+
+      //WCF started and Start IOT 
+      if(!checkWCFServiceandstartIoT())
+      {
+        Log["Error"]("Failed in Staring IoT")
+        ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+        Runner["Stop"]();
+      }
+      
+      //Navigate to System status   
+      var Navigation=InvokeWorkflow("System_Status_System");
+      if (!Navigation)
+      {
+        Log["Error"]("Failed in Module state")
+        ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+        Runner["Stop"]();
+      }
+          
+      //Adding delay
+      aqUtils["Delay"](120000,"Waiting for modules status")
+      
+      if(!CheckModuleStatusHydra())//Changed from CheckModuleStatus Bhawya 4 Mar
+      {
+          Log["Error"]("Failed in Module state")
+          ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "F");
+          Runner["Stop"]();
+      }
+      
+      //Result.xml - Module Status Hydra - Pass
+      ReportTestStatusToResultXML("Initialize", "ModuleState_Hydra", "P");
+    
+      
+     }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+ 
+
+//*************************************************************************
+//*  FunctionName : LoadReagents_IoT
+//*  Description: LoadReagents_IoT
+//*  Input: na
+//*  Output: Boolean
+//*  Example: fnLoadReagents_IoT
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function LoadReagents_IoT()
+{
+  try
+    {
+          
+      //Log
+      Log["AppendFolder"]("Load Reagents")  
+      
+      //Project file Paths
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      var SimulationPath = "C:\\data\\deploy\\simulation\\";
+      
+      //Initialize XML
+      InitializeMetaDataHYDRA();
+      
+      //Read data - IA Diagnostics Sequence
+      arrTestDataIA = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq2");
+      dictColumnIA=arrTestDataIA[0];
+      var MechNameIA = dictColumnIA["Item"]("MechanismName")
+      var SeqNameIA = dictColumnIA["Item"]("SeqName")
+      var ReagentTypeIA = dictColumnIA["Item"]("ReagentType")
+      
+      //Read data - CH Diagnostics Sequence
+      arrTestDataCC = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq");
+      dictColumnCC=arrTestDataCC[0];
+      var MechNameCC = dictColumnCC["Item"]("MechanismName")
+      var SeqNameCC = dictColumnCC["Item"]("SeqName")
+      var ReagentTypeCC = dictColumnCC["Item"]("ReagentType")
+      
+      //Read data 
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"RoundTrip","LoadReagent");
+      
+      //-------------------------- LOAD REAGENTS  -------------------
+      
+      var IMReagentStatus=CheckReagentsAvailability(arrTestData2,"IM");
+      var CHReagentStatus=CheckReagentsAvailability(arrTestData2,"CH");
+      
+      if(CHReagentStatus==false)
+      {
+        //load CC reagents
+        if(!LoadingHydraReagents(ReagentTypeCC,MechNameCC,SeqNameCC))
+        {
+          Log["Error"]("CC Reagent Loading Failed")
+          ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+          Runner["Stop"]();
+        }
+      }
+      
+      if(IMReagentStatus==false)
+      {
+        //load IA reagents
+        if(!LoadingHydraReagents(ReagentTypeIA,MechNameIA,SeqNameIA))
+        {
+          Log["Error"]("IA Reagent Loading Failed")
+          ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+          Runner["Stop"]();
+        }
+      }
+            
+      //Result.xml - Load Reagents -Pass
+      ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "P");
+      
+      //-------------------------- MODULE STATE -------------------
+      
+
+      // Start Hydra if in Stopped state
+      var HydraStatus=GetModuleStatusRT("Hydra");
+      if (HydraStatus=="Stopped")
+      {
+        //Start Hydra Module
+        ClickOnStartButtonHydra();
+        
+        //Adding delay
+        aqUtils["Delay"](60000,"Waiting for modules status from Stop - Ready")
+      }
+      
+      //Checking Module status
+      if(!CheckModuleStatusHydra())
+      {
+        Log["Error"]("Module Status Verification Failed")
+        Runner["Stop"]();
+      }
+
+      
+     //------------------VERIFY REAGENTS LOADED -------------------
+      
+      //Result.xml - Reagent Status 1 -Inprogress
+      ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "I");
+      
+      //Verify the Reagent availability and its Count value
+      var reagentStatus=VerifyReagentStatusForRT(arrTestData2);
+      var counter = arrTestData2["length"]
+      if(reagentStatus==0)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+        Runner["Stop"]();
+      }
+      else if(reagentStatus<counter)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "F");
+      }
+      else
+      {
+        //Result.xml - Reagent Status -Pass
+        ReportTestStatusToResultXML("PreRequisite", "Load_Reagents", "P");
+      }
+     }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}   
+
+//****************************************************************************************************************************
+//*  FunctionName : VerifyReagentStatusForRT(arrTestData1)
+//*  Description: Navigates to Reagent overview screen. Fetches Assay Name details from Test data and sends to function VerifySampleStatus. Returns number of reagent present
+//*  Input: arrTestData1
+//*  Output: reagentCount
+//*  Example: VerifyReagentStatusForRT(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function VerifyReagentStatusForRT(arrTestData1)
+{
+ try
+  {   
+      //Navigate to Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        Runner["Stop"]();
+      
+      //Initialize variables       
+      var counter = arrTestData1["length"]
+      var reagentCount=0;
+      
+      //Verify Reagent status
+      for(z=0;z<counter;z++)
+      {
+        dictColumn1=arrTestData1[z];
+        var Assay1 = dictColumn1["Item"]("Assay")
+        
+        //Verify the Reagent availability and its Count value
+        if(GetReagentCountValue(Assay1))
+            reagentCount = reagentCount+1;
+      }
+        return reagentCount;
+  }  
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+}

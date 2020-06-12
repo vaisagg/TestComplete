@@ -1,0 +1,214 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT CommonUtilities
+//USEUNIT WorkflowNavigator
+//USEUNIT DecapperSimulator
+var strWorkflowXMLPath=Project["Path"]+"TestData\\DeCapperWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\DeCapperControls.xml";
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function MM_ListBoxes()
+{
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapModuleManager","lstMessage");
+  count= objCtrl["wItemCount"];
+    objCtrl1=GetControl("DCapModuleManager","lstSamples");
+  count1= objCtrl1["wItemCount"];
+} 
+
+function DCap_GetlatestSampleID()
+{
+  try
+  {
+    //NetworkSuite["Variables"]["DCapSampleID"]="";
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    objCtrl=GetControl("DCapModuleManager","lstSamples");
+    if(objCtrl!=null)
+    {
+       count= objCtrl["wItemCount"];
+       if(count>0)
+       {
+         lastItem=objCtrl["wItem"](0);
+         strArr=lastItem["split"](" ");
+         for(i=0;i<strArr["length"];i++)
+         {
+           if(aqString["Trim"](strArr[i])=="Barcode")
+           {
+				//NetworkSuite["Variables"]["DCapSampleID"]=aqString["Trim"](strArr[i+1]);
+				return aqString["Trim"](strArr[i+1]);
+				break;
+           } 
+         } 
+        } 
+       else
+       {
+         //Log["Warning"]("No data available in Decapper Module Manager Sample Details listbox");
+		return "";
+       } 
+    }
+    else
+    {
+      Log["Warning"]("Decapper Module Manager Sample Details listbox is not available");
+		return false;
+    } 
+  }
+  catch(Exp)
+  {
+    Log["Warning"]("Exception - " + Exp["Description"] );
+	return false;
+  } 
+} 
+// Function will save the entire SampleIDs to the Network varible DcapSampleIDs
+//Can be used for Batch sample verification
+function DCap_GetlatestSampleIDs()
+{
+  try
+  {
+    SampleIDs="";
+    NetworkSuite["Variables"]["DCapSampleID"]="";
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    objCtrl=GetControl("DCapModuleManager","lstSamples");
+    if(objCtrl!=null)
+    {
+       count= objCtrl["wItemCount"];
+       for(j=0;j<count;j++)
+       {
+         lastItem=objCtrl["wItem"](j);
+         strArr=lastItem["split"](" ");
+         for(i=0;i<strArr["length"];i++)
+         {
+           if(aqString["Trim"](strArr[i])=="Barcode")
+           {
+             SampleIDs=SampleIDs+aqString["Trim"](strArr[i+1]);
+             if(!(j+1>=count)) SampleIDs=SampleIDs+";";
+             break;
+           } 
+         } 
+        } 
+      NetworkSuite["Variables"]["DCapSampleIDs"]=SampleIDs;
+    }
+    else
+    {
+      Log["Warning"]("Decapper Module Manager Sample Details listbox is not available");
+    } 
+  }
+  catch(Exp)
+  {
+    Log["Warning"]("Exception - " + Exp["Description"] );
+  }
+}
+
+function RemoveWasteBinWhenSampleAppearsInMM()
+{
+  Log["AppendFolder"]("DCapModuleManager::RemoveWasteBinWhenSampleAppearsInMM")
+//  var scenarioname = NetworkSuite["Variables"]["DecapperScenario"];
+//  var arrAttributes = new Array();
+//  var arrAttributes = GetTestItemsByTestName(TestDataFile, "WasteBinCount", scenarioname)
+//  var strSampleID  = arrAttributes[0]["Item"]("SampleID")
+  var strSampleID = NetworkSuite["Variables"]["DCapSampleID"];
+  
+  var boolFlag = false;
+  for(var intCount = 0; intCount < 30; intCount++)
+  {
+    var strLatestSampleID = DCap_GetlatestSampleID(); 
+    if(strSampleID == strLatestSampleID)
+    {
+      //Remove the wastebin
+      Log["Message"](strSampleID + " came up on Decapper module manager");
+      if(!UncheckWasteBinPresent())
+        return false;
+      else
+      {
+        Log["Message"]("WasteBin removed succesfully");
+        return true;
+      }
+    }
+    else
+    {
+      aqUtils["Delay"](2000, "Waiting for sample to appear on Decapper module manager");
+    } 
+  }
+  if(!boolFlag)
+  {
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Workorder SampleID : " + strSampleID + " did not come up on Decapper MM.")
+    return false;
+  } 
+}
+
+function VerifySampleNotLoadedToDecapper()
+{
+try
+{
+  var strSampleID = NetworkSuite["Variables"]["DCapSampleID"];  
+  Log["AppendFolder"]("Verifying whether the sample "+strSampleID+" is not loaded to decapper" );
+  
+  NetworkSuite["Variables"]["SampleInDecapper"]= true;
+  for (counter=0;counter<60;counter++)
+  {
+    var ActualSampleID = DCap_GetlatestSampleID()
+    
+    if(strSampleID == ActualSampleID)
+    {
+      Log["Warning"]("Sample with ID "+strSampleID+ " is loaded to Decapper")
+      NetworkSuite["Variables"]["SampleInDecapper"]= false; 
+      Log["PopLogFolder"]();
+      return true;
+    }      
+    Delay(1000);    
+  }
+  
+  if(NetworkSuite["Variables"]["SampleInDecapper"])
+  {
+    Log["Message"]("Sample with ID "+strSampleID+ " is not loaded to Decapper")
+  }
+  Log["PopLogFolder"]();
+  
+}
+  catch(Exp)
+  {
+    Log["Warning"]("Exception - " + Exp["Description"] );
+    Log["PopLogFolder"]();
+	  return false;
+  }
+
+  
+}
+function TriggerOverflowSensorWhenSampleAppearsInMM()
+{
+  Log["AppendFolder"]("DCapModuleManager::TriggerOverflowSensorWhenSampleAppearsInMM")
+//  var scenarioname = NetworkSuite["Variables"]["DecapperScenario"];
+//  var arrAttributes = new Array();
+//  var arrAttributes = GetTestItemsByTestName(TestDataFile, "WasteBinCount", scenarioname)
+//  var strSampleID  = arrAttributes[0]["Item"]("SampleID")
+  var strSampleID = NetworkSuite["Variables"]["DCapSampleID"];
+  
+  var boolFlag = false;
+  for(var intCount = 0; intCount < 60; intCount++)
+  {
+    var strLatestSampleID = DCap_GetlatestSampleID(); 
+    if(strSampleID == strLatestSampleID)
+    {
+      //Remove the wastebin
+      Log["Message"](strSampleID + " came up on Decapper module manager");
+      if(!CheckWasteBinFull())
+        return false;
+      else
+      {
+        Log["Message"]("Triggered WasteBin overflow sensor succesfully");
+        return true;
+      }
+    }
+    else
+    {
+      aqUtils["Delay"](1000, "Waiting for sample to appear on Decapper module manager");
+    } 
+  }
+  if(!boolFlag)
+  {
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Workorder SampleID : " + strSampleID + " did not come up on Decapper MM.")
+    return false;
+  } 
+}

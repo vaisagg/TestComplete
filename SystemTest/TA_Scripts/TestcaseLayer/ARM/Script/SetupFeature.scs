@@ -1,0 +1,1242 @@
+﻿//USEUNIT Authentication
+//USEUNIT Inventory
+//USEUNIT Setup
+//USEUNIT InventoryFeatureSteps
+//USEUNIT SetupFeatureSteps
+//USEUNIT TCNativeLibraries
+//USEUNIT DiagnosticsFeature
+//USEUNIT TCCSConfigLibrary
+
+            
+/*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                               SMOKE TEST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/   
+            
+function CI_TestDefinitionScenarios()
+{ 
+
+    //Test Count
+    LogHighlight("Scenario Count [Test Definition : 24")
+
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+    US307909_GWT_01_Add_UpdateandSaveCommonParametersforCC()
+    US307909_GWT_01_Add_UpdateandSaveCommonParametersforIA()
+    US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA()
+    US307909_GWT_02_Add_UpdateandSaveGeneralParametersCC()
+    US307909_GWT_03_AdvancedCCsection();
+    US307909_GWT_03_AdvancedIAsection();
+    US307909_GWT_04_MeasuringIntervalsCC();   
+     
+     
+    //Added to CI on 25 Apr 2019
+    US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA() 
+    US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue()
+    US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue()
+    US228320_GWT_08_ModifyCalibrationLotinterval() 
+    US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate()
+    US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal()
+    US228320_GWT_12_ModifyIACalibrationTriggers_G0()
+    US228320_GWT_12_ModifyIACalibrationTriggers_G1()
+    US228320_GWT_12_ModifyIACalibrationTriggers_G2()
+    US228320_GWT_12_ModifyIACalibrationTriggers_G3()
+    US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4()
+    US228320_GWT_13_AttemptsModifyIAControlLevelField_G0()
+    US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1()
+    US228320_GWT_09_ModifyingMinReplicates()
+    US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4()
+    US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5()
+    US228320_GWT_12_ModifyCalibrationTriggersIAForMultipleUsers()
+    US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4G5()
+
+    //Feature 227358 : Standalone TDef Editor
+    //FT227358_StandaloneTDefEditor();
+    
+    //Feature 227348 : Modifying TDef
+    //FT227348_ModifyingTDef();
+
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                                FEATURES  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+                
+    
+//******************************************************************************
+//         [1] FEATURE : 227358 - Standalone TDef Editor
+//******************************************************************************
+function FT227358_StandaloneTDefEditor()
+{
+    
+    //US307909_GWT_01_CC
+    US307909_GWT_01_Add_UpdateandSaveCommonParametersforCC();
+    
+    //US307909_GWT_01_IA
+    US307909_GWT_01_Add_UpdateandSaveCommonParametersforIA();
+    
+    //US307909_GWT_02_CC
+    US307909_GWT_02_Add_UpdateandSaveGeneralParametersCC();
+    
+    //US307909_GWT_02_IA
+    US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA();
+    
+    //US307909_GWT_03_CC
+    US307909_GWT_03_AdvancedCCsection();
+    
+    //US307909_GWT_03_IA
+    US307909_GWT_03_AdvancedIAsection();
+    
+    //US307909_GWT_04_cc
+    US307909_GWT_04_MeasuringIntervalsCC();   
+
+}
+                
+    
+//******************************************************************************
+//         [2] FEATURE : 227348 - Modifying TDef
+//******************************************************************************
+function FT227348_ModifyingTDef()
+{
+       
+    //US228320_GWT_09
+    US228320_GWT_09_ModifyingMinReplicates(); 
+    
+    //US228320_GWT_18_G4
+    US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4();
+    
+    //US228320_GWT_18_G5
+    US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5();
+
+    //US228320_GWT_18 for G3-G0 users // teardown added
+    US228320_GWT_12_ModifyCalibrationTriggersIAForMultipleUsers();
+
+    //US228320_GWT_01 
+    US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA();
+    
+    //US228320_GWT_06 
+    US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue();
+	
+    //US228320_GWT_07
+    US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue();
+	
+	//US228320_GWT_11 for G4 and G5 // teardown added
+	US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4G5();
+		
+	//US228320_GWT_13
+	US228320_GWT_13_AttemptsModifyIAControlLevelField_G0();
+	
+	//US228320_GWT_26
+	US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1();
+
+	//US228320_GWT_08
+	US228320_GWT_08_ModifyCalibrationLotinterval()
+
+	//US228320_GWT_14
+	US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate() 
+
+	//US228320_GWT_20
+	US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal()  
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                                GWT's 
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/ 
+                                 
+
+//******************************************************************************
+//         GWT's [FEATURE :   227348 - Modifying TDef]
+//******************************************************************************
+function US228320_GWT_09_ModifyingMinReplicates()
+{
+    //USER STORY
+    LogHighlight("SCENARIO : Modifying Min Replicates")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_09_ModifyingMinReplicates", "I");
+    
+    //GIVEN *****
+    Log["AppendFolder"]("GIVEN : Calibration, Minimum Replicates is set to 2 ");
+    if(!GivenMinimumReplicateSet())
+    {
+        Log["Error"]("Given condition failed");
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_09_ModifyingMinReplicates", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN *****
+    Log["AppendFolder"]("WHEN : CSE (G2) user attempts to lower New Lot Replicates to 1 ");
+    if(!WhenCSEAttemptsToLowerNewLotReplicate())
+    {
+        Log["Error"]("When condition failed");
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_09_ModifyingMinReplicates", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN *****
+    Log["AppendFolder"]("THEN :system software does not allow user to modify and save the Tdef file (violates MIN restriction)");
+    if(!ThenSystemDoesNotAllowToModifyNewLotReplicate())
+    {
+        Log["Error"]("Then condition failed");
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_09_ModifyingMinReplicates", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_09_ModifyingMinReplicates", "P");
+}
+
+function US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4()
+{
+    //USER STORY
+    LogHighlight("SCENARIO : Modifying Centrifuge Repeat G4")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4", "I");
+    
+    //GIVEN *****
+    Log["AppendFolder"]("GIVEN : G4 user is logged in ");
+    if(!GivenG4UserLoggedIn())
+    {
+        Log["Error"]("Given condition failed");
+        ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN *****
+    Log["AppendFolder"]("WHEN : G4 user modifies Centrifuge for Repeat ");
+    if(!WhenUserModifiesCentrifugeForRepeat())
+    {
+        Log["Error"]("When condition failed");
+        ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN *****
+    Log["AppendFolder"]("THEN :Tdef is modified and saved as a valid Tdef format");
+    if(!ThenTdefIsModifiedAndSavedAsAValidTdefFormat())
+    {
+        Log["Error"]("Then condition failed");
+        ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G4", "P");
+}
+
+function US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5()
+{
+    //USER STORY
+    LogHighlight("SCENARIO : Modifying Centrifuge Repeat G5")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5", "I");
+    
+    //GIVEN *****
+    Log["AppendFolder"]("GIVEN : G5 user is logged in ");
+    if(!GivenG5UserLoggedIn())
+    {
+        Log["Error"]("Given condition failed");
+        ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN *****
+    Log["AppendFolder"]("WHEN : G5 user modifies Centrifuge for Repeat ");
+    if(!WhenUserModifiesCentrifugeForRepeat())
+    {
+        Log["Error"]("When condition failed");
+        ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN *****
+    Log["AppendFolder"]("THEN :Tdef is modified and saved as a valid Tdef format");
+    if(!ThenTdefIsModifiedAndSavedAsAValidTdefFormat())
+    {
+        Log["Error"]("Then condition failed");
+        ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5", "F");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Tdef_Editor", "US228320_GWT_18_ModifyingCentrifugeFoRepeat_G5", "P");
+}
+
+function US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA()
+{             
+   //Launch and Login to ARM
+   //InitializeHydra()        
+
+    //USER STORY
+    LogHighlight("SCENARIO : Modify Region Status Version fields for IA")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA and user attempts to modify the fields");
+     if(!GivenG0isloggedin()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA", "F");
+        Log["PopLogFolder"]();
+        return false}
+           
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA", "F");
+         Log["PopLogFolder"]();
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN for IA
+    Log["AppendFolder"]("THEN : Parameters under common tab should be displayed and user should be able to modify Region,Status and Minimum software Version fields for IA");
+    if(!THENModifyRegionstatusversionvaluesIA()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA", "F");
+         Log["PopLogFolder"]();
+        return false}
+    Log["PopLogFolder"]()  
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA", "P");
+    
+}
+
+function US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue()
+{             
+   //Launch and Login to ARM
+   //InitializeHydra()  
+   
+   // InitializeMetaDataHYDRA();               
+
+    //USER STORY
+    LogHighlight("SCENARIO : Modify Print Display LIS Calfields for IA with non unique value")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA ");
+    if(!GivenG0isloggedin()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_01_ModifyRegionStatusVersionfieldsforIA", "F");
+         Log["PopLogFolder"]();
+        return false}
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue", "F");
+         Log["PopLogFolder"]();
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN
+     Log["AppendFolder"]("THEN : Parameters under CI Test definition should be displayed and user should be able to modify Print Name , Display Name , LIS code and Cal code fields with non unique value for IA and user should not be able to save.");
+    if(!THENModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue", "F");
+         Log["PopLogFolder"]();
+        return false}
+    Log["PopLogFolder"]()  
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_06_ModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue", "P");
+    Log["AppendFolder"]("Teardown:US228320_GWT_01");
+    US228320_GWT_12Teardown();
+    Log["PopLogFolder"](); 
+    Log["PopLogFolder"]();
+    
+}
+
+function US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue()
+{             
+   //Launch and Login to ARM
+   //InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO : Modify Print Display LIS Calfields for IA with unique value")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA "); 
+     if(!GivenG0isloggedin()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue", "F");
+       Log["PopLogFolder"]();
+        return false}  
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue", "F");
+    Log["PopLogFolder"]()
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN 
+     Log["AppendFolder"]("THEN : Parameters under Test definition should be displayed and user should be able to modify Print Name , Display Name , LIS code and Cal code fields with unique value for IA.");
+    if(!THENModifyPrintDisplayLISCalfieldsforIAwithuniquevalue()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue", "F");
+        Log["PopLogFolder"]();
+        return false}
+    Log["PopLogFolder"]()  
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_07_ModifyPrintDisplayLISCalfieldsforIAwithuniquevalue", "P");
+    US228320_GWT_12Teardown();
+    Log["PopLogFolder"](); 
+    Log["PopLogFolder"]();
+}
+
+
+function US228320_GWT_08_ModifyCalibrationLotinterval()
+{         
+    InitializeMetaDataHYDRA();
+  
+    //USER STORY
+    LogHighlight("SCENARIO : Modify Calibration Lot interval")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G0 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_08_ModifyCalibrationLotinterval", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G0 user logged in and set Calibration Lot Interval as 21 days ");
+    if(!GivenG0OperatorUsersetCalibrationLotInterval())
+    {
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_08_ModifyCalibrationLotinterval", "F");       
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G1 user attempts to increase the Calibration Lot Interval above 21");
+    if(!WhenG1OperatorIncreaseCalibrationLotInterval())
+    {
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_08_ModifyCalibrationLotinterval", "F");
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]()
+   
+    //THEN
+     Log["AppendFolder"]("THEN : system software should not allow user to modify and save the Tdef file ");
+     Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_08_ModifyCalibrationLotinterval", "P");
+
+}
+
+function US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate()
+{             
+     //Launch and Login to ARM
+     //InitializeHydra()                 
+	
+  	InitializeMetaDataHYDRA()
+
+    //USER STORY
+    LogHighlight("SCENARIO : Modify Print Display New Lot Replicate Current Lot Replicate")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G0 user logged in and TestDefinitions are available for IA ");
+        if(!GivenG0isloggedin()){
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate", "F");       
+        Log["PopLogFolder"]()
+        return false}
+    Log["PopLogFolder"]();
+
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate", "F");
+        Log["PopLogFolder"]()
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN 
+     Log["AppendFolder"]("THEN : Parameters under Test definition should be displayed and user should be able to modify Print Name , Display Name , LIS code and Cal code fields with unique value for IA.");
+    if(!THENModifyPrintDisplayNewLotReplicateCurrentLotReplicate()){
+        ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate", "F");
+        Log["PopLogFolder"]()
+        return false}
+    Log["PopLogFolder"]()  
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_14_ModifyPrintDisplayNewLotReplicateCurrentLotReplicate", "P");
+}
+
+function US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal()
+{             
+     //Launch and Login to ARM
+     //InitializeHydra()                 
+
+  	 InitializeMetaDataHYDRA()
+
+    //USER STORY
+    LogHighlight("SCENARIO : Modify Print Display LIS Reuse Lot cal Pack cal")
+    Log.Message("FEATURE: 227348 - Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G1 user logged in Calibration Triggers is checked for CC");
+    if(!GivenG1OperatorUserChecksCCCalibrationTriggers())
+    {
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal", "F");       
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    
+     //WHEN
+    Log["AppendFolder"]("WHEN : G1 users attempts to modify Print Name , Display Name ,LIS code , Reuse Result mode ,Lotcal and Packcal values");
+    if(!WhenG1OperatorModifyPrintDisplayLISReuseLotcalPackcalValues())
+    {
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal", "F");
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]()
+ 
+    //THEN 
+    Log["AppendFolder"]("THEN : Tdef is modified and saved as a valid Tdef format");
+    Log["PopLogFolder"]()  
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying_TDef", "US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal", "P");
+	
+     Log["AppendFolder"]("Teardown: US228320_GWT_20_ModifyPrintDisplayLISReuseLotcalPackcal");
+     US228320_GWT_12Teardown();
+     Log["PopLogFolder"]();
+
+
+}
+
+
+//******************************************************************************
+//         GWT's [FEATURE :   227358 - Standalone TDef Editor]
+//******************************************************************************
+function US307909_GWT_01_Add_UpdateandSaveCommonParametersforCC()
+{             
+   //Launch and Login to ARM
+   //InitializeHydra()  
+
+    //USER STORY
+    LogHighlight("SCENARIO : Updateand Save CommonParameters for CC")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Common Parameters for CC")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersCC", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for CC ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersCC", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN for CC
+       Log["AppendFolder"]("THEN : Parameters under Test Identification should be displayed and user should be able to update the parameter values with valid values for CC. ");
+    if(!THENCaptureTestDefinitionvalues()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersCC", "F");
+        return false}
+    Log["PopLogFolder"]()  
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersCC", "P");
+}
+
+function US307909_GWT_01_Add_UpdateandSaveCommonParametersforIA()
+{             
+   //Launch and Login to ARM
+   // InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO : Updateand Save CommonParameters for IA")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Common Parameters for IA")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersIA", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersIA", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN for IA
+    Log["AppendFolder"]("THEN : Parameters under Test Identification should be displayed and user should be able to update the parameter values with valid values. ");
+    if(!THENCaptureTestDefinitionvaluesIA()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersIA", "F");
+        return false}
+    Log["PopLogFolder"]() 
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_01_Add_UpdateandSaveCommonParametersIA", "P");
+
+}
+
+function US307909_GWT_02_Add_UpdateandSaveGeneralParametersCC()
+{             
+   //Launch and Login to ARM
+    //InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO : Updateand Save General Parameters for CC")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Parameters in General section")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParameters", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA and CC ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParameters", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+
+    //THEN
+     Log["AppendFolder"]("THEN : Parameters under General Section should be displayed and user should be able to update the parameter values with valid values. ");
+    if(!THENCaptureTestDefinitionvaluesforGeneralSection()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParameters", "F");
+        return false}
+    Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParameters", "P");
+
+}
+
+function US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA()
+{             
+   //Launch and Login to ARM
+   // InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO : Updateand Save General Parameters for IA")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Parameters in General section for IA ")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA and CC ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+
+    //THEN
+     Log["AppendFolder"]("THEN : Parameters under General Section for IA should be displayed and user should be able to update the parameter values with valid values. ");
+    if(!THENCaptureTestDefinitionvaluesforGeneralSectionIA()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA", "F");
+        return false}
+    Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_02_Add_UpdateandSaveGeneralParametersIA", "P");
+
+}
+
+function US307909_GWT_04_MeasuringIntervalsCC()
+{             
+   //Launch and Login to ARM
+//   InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO :Verify Measuring Intervals CC")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Common Parameters for CC")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_04_MeasuringIntervalsCC", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for CC ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_04_MeasuringIntervalsCC", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN for CC
+     Log["AppendFolder"]("THEN : Parameters under Test Identification should be displayed and user should be able to update the Measuring interval values with valid values for CC. ");
+    if(!THENCaptureMeasuringIntervalvalues()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_04_MeasuringIntervalsCC", "F");
+        return false}
+    Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_04_MeasuringIntervalsCC", "P");
+}
+
+function US307909_GWT_03_AdvancedIAsection()
+{             
+   //Launch and Login to ARM
+//   InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO :Verify Advanced IA section")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Common Parameters for IA")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedIAsection", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedIAsection", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN for CC
+     Log["AppendFolder"]("THEN : Parameters under Advanced section should be displayed and user should be able to update the Advancedsection values for IA ");
+    if(!THENCaptureAdvancedIAsection()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedIAsection", "F");
+        return false}
+    Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedIAsection", "P");
+}
+
+function US307909_GWT_03_AdvancedCCsection()
+{             
+   //Launch and Login to ARM
+//   InitializeHydra()                 
+
+    //USER STORY
+    LogHighlight("SCENARIO :Verify Advanced CC section")
+    Log.Message("FEATURE: 227358 - Standalone TDef_Editor")
+    Log.Message("US307909 : Add/Update and Save Common Parameters for IA")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedCCsection", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : TestDefinitions are available for IA ");
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Operator Navigates to TestDefinition screen");
+    if(!WHENOperatorNavigatesToTestDefinition()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedCCsection", "F");
+        return false}
+    Log["PopLogFolder"]()
+   
+    //THEN for CC
+     Log["AppendFolder"]("THEN : Parameters under Advanced section should be displayed and user should be able to update the Advancedsection values for IA ");
+    if(!THENCaptureAdvancedCCsection()){
+        ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedCCsection", "F");
+        return false}
+    Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("TDef_Editor", "US307909_GWT_03_AdvancedCCsection", "P");
+}
+
+
+
+function US228320_GWT_12_ModifyIACalibrationTriggers_G3()
+{             
+    //USER STORY
+    LogHighlight("SCENARIO : Modify IA Calibration Triggers G3")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G3 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G3", "I");
+    
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G3 user logged in and Calibration Triggers is checked for IA ");
+    if(!GivenG3OperatorUserChecksCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G3", "F");       
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G3 users attempts to modify any of the 4 triggers values");
+    if(!WhenG3OperatorModifyCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G3", "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+   
+    //THEN
+     Log["AppendFolder"]("THEN : Tdef is modified and saved as a valid Tdef format");
+     ScenarioPassOrFail(true)
+     Log["PopLogFolder"]()
+     Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G3", "P");
+
+}
+
+function US228320_GWT_12_ModifyIACalibrationTriggers_G2()
+{             
+    //USER STORY
+    LogHighlight("SCENARIO : Modify IA Calibration Triggers G2")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G2 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G2", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G2 user logged in and Calibration Triggers is checked for IA ");
+    if(!GivenG2OperatorUserChecksCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G2", "F");       
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G2 users attempts to modify any of the 4 triggers values");
+    if(!WhenG2OperatorModifyCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G2", "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+   
+    //THEN
+     Log["AppendFolder"]("THEN : Tdef is modified and saved as a valid Tdef format");
+     ScenarioPassOrFail(true)
+     Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G2", "P");
+
+}
+
+function US228320_GWT_12_ModifyIACalibrationTriggers_G1()
+{                           
+    //USER STORY
+    LogHighlight("SCENARIO : Modify IA Calibration Triggers G1")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G1 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G1", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G1 user logged in and Calibration Triggers is checked for IA ");
+    if(!GivenG1OperatorUserChecksCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G1", "F");       
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G1 users attempts to modify any of the 4 triggers values");
+    if(!WhenG1OperatorModifyCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G1", "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+   
+    //THEN
+    Log["AppendFolder"]("THEN : Tdef is modified and saved as a valid Tdef format");
+    ScenarioPassOrFail(true)
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G1", "P");
+
+}
+
+function US228320_GWT_12_ModifyIACalibrationTriggers_G0()
+{             
+    //USER STORY
+    LogHighlight("SCENARIO : US228320_GWT_12_ModifyIACalibrationTriggers_G0")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G0 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G0", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : G0 user logged in and Calibration Triggers is checked for IA ");
+    if(!GivenG0OperatorUserChecksCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G0", "F");       
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+     Log["AppendFolder"]("WHEN : G0 users attempts to modify any of the 4 triggers values");
+    if(!WhenG0OperatorModifyCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G0", "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]()
+   
+    //THEN
+    Log["AppendFolder"]("THEN : Tdef is modified and saved as a valid Tdef format");
+    ScenarioPassOrFail(true)
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_12_ModifyIACalibrationTriggers_G0", "P");
+
+}
+
+
+function US228320_GWT_12_ModifyCalibrationTriggersIAForMultipleUsers()
+{
+  InitializeMetaDataHYDRA(); 
+  
+  LogHighlight("SCENARIO : Modify Calibration Triggers IA For Multiple Users")
+  Log["AppendFolder"]("US228320_GWT_12_ModifyCalibrationTriggersIAForMultipleUsers")
+  US228320_GWT_12_ModifyIACalibrationTriggers_G3();  //ChiefTechnicians
+  US228320_GWT_12_ModifyIACalibrationTriggers_G2();  //CSE
+  US228320_GWT_12_ModifyIACalibrationTriggers_G1();  //LabManager
+  US228320_GWT_12_ModifyIACalibrationTriggers_G0(); // SiemensInternal
+  
+  Log["AppendFolder"]("Teardown:US228320_GWT_12_ModifyCalibrationTriggersIAForMultipleUsers");
+  US228320_GWT_12Teardown();
+  Log["PopLogFolder"](); 
+  Log["PopLogFolder"]();
+  
+}
+function US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4()
+{             
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    LogHighlight("SCENARIO : Attempts Modify IA Calibration Triggers G4")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G4 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : Calibration Triggers is checked for IA");
+    if(!GivenG1OperatorUserChecksCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4", "F");       
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G4 users attempts to modify any of the 4 triggers values");
+    if(!WhenG4OperatorAttemptsModifyCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4", "F");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+   
+    //THEN
+     Log["AppendFolder"]("THEN : Tdef are not modified and not saved");
+     Log.Message("All four auto calibration triggers fields are disabled -TDef cannot be modifed and  not saved")
+     ScenarioPassOrFail(true)
+     Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4", "P");
+
+}
+
+function US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5()
+{             
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Scenario : US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5");
+    LogHighlight("Scenario : US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition- G4 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : Calibration Triggers is checked for IA");
+    if(!GivenG1OperatorUserChecksCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5", "F");       
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G5 users attempts to modify any of the 4 triggers values");
+    if(!WhenG5OperatorAttemptsModifyCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5", "F");
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]()
+   
+    //THEN
+     Log["AppendFolder"]("THEN : Tdef are not modified and not saved");
+     Log.Message("All four auto calibration triggers fields are disabled -TDef cannot be modifed and  not saved")
+     ScenarioPassOrFail(true)
+     Log["PopLogFolder"]()
+     Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5", "P");
+
+}
+
+function US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4G5()
+{
+  InitializeMetaDataHYDRA();
+  LogHighlight("SCENARIO : Attempts Modify IA Calibration Triggers G4 G5")
+  Log["AppendFolder"]("US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4G5")
+  US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4();  //DayTimeOperator
+  US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G5();  //NightTimeOperator
+  
+  Log["AppendFolder"]("Teardown: US228320_GWT_11_AttemptsModifyIACalibrationTriggers_G4G5");
+  US228320_GWT_12Teardown();
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function US228320_GWT_13_AttemptsModifyIAControlLevelField_G0()
+{             
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    LogHighlight("SCENARIO : Attempts Modify IA Control Level Field G0")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_13_AttemptsModifyIAControlLevelField_G0", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : CBT (Control Bracketed test field) is unchecked/OFF");
+    if(!GivenG0VerifiesControlBracketedTestField())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_13_AttemptsModifyIAControlLevelField_G0", "F");       
+        Log["PopLogFolder"]();
+        US228320_GWT_12Teardown()
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : Siemens internal (G0) user attempts to modify Control level field");
+    if(!WhenG0AttemptsModifyControlLevelField())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_13_AttemptsModifyIAControlLevelField_G0", "F");
+        Log["PopLogFolder"]();
+        US228320_GWT_12Teardown()
+        Log["PopLogFolder"]();
+        return false
+    }
+    Log["PopLogFolder"]();
+   
+  //THEN
+   Log["AppendFolder"]("THEN : Control level field is disable and not available for edit");
+   ScenarioPassOrFail(true)
+   Log["PopLogFolder"]();
+     
+   //Result.xml -Pass
+   ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_13_AttemptsModifyIAControlLevelField_G0", "P");
+     
+   Log["AppendFolder"]("Teardown: US228320_GWT_13_AttemptsModifyIAControlLevelField_G0");
+   US228320_GWT_12Teardown();
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+     
+     
+}
+
+function US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1()
+{             
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    LogHighlight("SCENARIO : Attempts Modify CC Calibration Triggers G1")
+    Log.Message("FEATURE 227348 : Modifying TDef")
+    Log.Message("US228320 : Modifying Test Definition (CC Test)- G1 user")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1", "I");
+
+    //GIVEN
+    Log["AppendFolder"]("GIVEN : Calibration Triggers is checked for IA");
+    if(!GivenG1OperatorUserChecksCCCalibrationTriggers())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1", "F");       
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+
+    //WHEN
+    Log["AppendFolder"]("WHEN : G1 users attempts to modify any of the 4 triggers values");
+    if(!WhenG1OperatorModifyCCCalibrationTriggerValues())
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1", "F");
+        Log["PopLogFolder"]()
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]()
+   
+    //THEN
+     Log["AppendFolder"]("THEN : Tdef is modified and saved as a valid Tdef format");
+     ScenarioPassOrFail(true)
+     Log["PopLogFolder"]()
+     Log["PopLogFolder"]()
+
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Modifying TDef", "US228320_GWT_26_AttemptsModifyCCCalibrationTriggers_G1", "P");
+
+}
+
+function ImportBlobforHydra()
+{
+ // InitializeHydra();
+  Log["AppendFolder"]("Import Tdef for Hydra");
+  
+//  if(!UpdateTDefConffile)
+//  {
+//    return false
+//  }
+    if(!NavigatesetupandImportTdef())
+    {
+        Log["PopLogFolder"]()
+        return false
+    }
+    Log["PopLogFolder"]();
+
+}

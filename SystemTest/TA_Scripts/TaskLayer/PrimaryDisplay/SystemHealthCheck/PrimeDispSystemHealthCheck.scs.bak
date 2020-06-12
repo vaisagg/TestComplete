@@ -1,0 +1,1161 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+
+
+//***************************************************************************************
+//*   Function Name       : GetActualSystemModuleName(moduleType)
+//*   Function Description: This function is used to get the module name from trinidad modules data
+//*   Input               : moduleType (DL or HYDRA)
+//*   Output              : return sysModuleName
+//*                         return false, if not able to find the module name
+//*   Created By          : Vaisag
+//*****************************************************************************************
+function GetActualSystemModuleName(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Get System Module Name for "+moduleType);
+    
+    //Read the TrinidadModulesData.xml file from F:\InstrumentOutput
+    var trinidadModulePath = "F:\\InstrumentOutput\\Trinidad_Modules_Data.xml";
+    
+    //Verify if trinad module data file exist in the path
+    if(!aqFile["Exists"](trinidadModulePath))
+    {
+      Log["Error"]("The file doesn't exist in the path :"+trinidadModulePath);
+      Log["PopLogFolder"]();
+      return false;
+    }
+   
+    var trinidadModules = ReadXML(trinidadModulePath);
+    
+    //Filter the xml content by the given system name & get the actual system module Name    
+    var actualNodes = trinidadModules["selectNodes"]("//Module[ModuleType='"+moduleType +"']");
+    
+    if(actualNodes.length > 0)
+    {
+      var sysModuleName  = trinidadModules["selectSingleNode"]("//Module[ModuleType='"+moduleType +"']//Name")["Text"];      
+      Log["Message"]("System Module Name for the module type '" + moduleType + "' identified as '" + sysModuleName + "'");
+      Log["PopLogFolder"]();
+      return sysModuleName;        
+    } 
+    else 
+    {
+      Log["Error"]("Unable to get the System Module Name for the given module type '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }     
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+//***************************************************************************************
+//*   Function Name        : CheckSystemReadyState()
+//*   Function Description : This function is used to check the HYDRA system is in ready state (both DL & HYDRA)
+//*   Input                : NA
+//*   Output              : return true, if the HYDRA turns into ready state with in the specified time frame
+//*                         return false, if the HYDRA doesn't comes to ready state with in the specified time frame
+//*   Date of Creating    : 13 June 2019
+//*   Modified By          : Prabu Ramaraj
+//*   Modified Date        : 22 June 2019
+//*****************************************************************************************
+function CheckSystemReadyState()
+{
+  try
+  {
+    //Open Log
+    Log["AppendFolder"]("System Health Check :: Check modules in Ready Status")
+     
+    var blnModuleState = true;
+    
+    var DLModuleName = GetActualSystemModuleName("DL");
+    if(!WaitForSystemModuleReadyState(DLModuleName))
+    {
+      Log["Error"]("DL module is not coming to ready state");
+      blnModuleState = false;
+    }
+    
+    var HydraModuleName = GetActualSystemModuleName("HYDRA");
+    if(!WaitForSystemModuleReadyState(HydraModuleName))
+    {
+      Log["Error"]("HYDRA module is not coming to ready state");
+      blnModuleState = false;
+    }
+    
+    //Closing the System health check popup
+    if(!CloseSystemModuleState())
+    {
+      Log["Error"]("Unable to close the system health check details displayed");
+      blnModuleState = false;
+    }
+    
+    //Close Log
+    Log["PopLogFolder"]();    
+    return blnModuleState;   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "+ e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : CloseSystemModuleState()
+//*   Function Description : This function is used to close the system module state displayed
+//*   Input                : -
+//*   Output               : return true, if the module state get closed successfully
+//*                          return false, if the module state is not closed
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 13 June 2019
+//*   Modified By          : Prabu Ramaraj
+//*   Modified Date        : 28 June 2019
+//*****************************************************************************************
+function CloseSystemModuleState()
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check ::Closing the system module state displayed");
+    
+    var primeDispObj =  Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    var dashboardObj = Getchild(primeDispObj, "AutomationId", "DashboardScrollViewer");
+    if(VerifyObjectExists(dashboardObj))
+    {
+      //ClickCtrl(dashboardObj);
+      dashboardObj["Click"](10,10);
+      Log["Message"]("Closing the System Health Check, By clicked outside of the System Health Check area");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the element objeect to close the system health check");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "+ e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : WaitForSystemModuleReadyState()
+//*   Function Description : This function is used to wait for System to be in Ready state
+//*   Input                : systemModuleName
+//*   Output               : return true, if the module state is changed to ready State
+//*                          return false, if the module state is not changed to ready State
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 13 June 2019
+//*   Modified By          : Prabu Ramaraj
+//*   Modified Date        : 28 June 2019
+//*****************************************************************************************
+function WaitForSystemModuleReadyState(systemModuleName)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Checking module status of "+systemModuleName);
+    
+    //Get system health check
+    var systemModulesObj = GetAutomationIDControl("SystemHealthCheck", "systemHealthCheck");
+    
+    //If Module Exists => Check State Displayed
+    if(VerifyObjectExists(systemModulesObj)) 
+    {
+      //Get system module based on given system module name
+      var moduleObj = Getchild(systemModulesObj, ["Text", "ClassName"], [systemModuleName, "TextBlock"]);
+      
+      //Click on the given system module name & checked module state is displayed
+      if(ClickOnSystemModuleFromPrimeDisp(systemModuleName) && CheckModuleStateDisplayed())
+      {
+        //Get the parent object of the system module name to click on the module
+        var parentObj = moduleObj["Parent"];
+        
+        //Get the system module state control
+        var systemStateObj = Getchild(parentObj, "AutomationId", "Siemens.Atellica.Model.ModuleState");
+        
+        //Get the module state displayed for the given system module
+        var systemState = GetNativeObjectName(systemStateObj);
+        
+        var counter = 0;
+        
+        while(!(systemState == "Ready" || systemState == "Standby") && counter <= 150)
+        {
+          aqUtils["Delay"](10000, "Waiting for System, to be Ready")  
+          counter = counter +1;
+          parentObj["Refresh"]();
+          systemState = GetNativeObjectName(systemStateObj);
+        }
+        
+        if(systemState == "Ready" || systemState == "Standby")
+        {
+          Log["Checkpoint"](systemModuleName + " Status : " + systemState);
+          Log["PopLogFolder"]();
+          return true;        
+        } 
+        else 
+        {
+          Log["Error"]("System not came to ready state after wait time");
+          Log["PopLogFolder"]();
+          return false;        
+        }
+      }
+    } 
+    else 
+    {
+      Log["Error"]("Unable to locate the system modules '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :" + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ClickOnSystemModuleFromPrimeDisp()
+//*   Function Description : This function is used to open the given system module name by click on the module name
+//*   Input                : SystemModuleName (Dl/Hydra)
+//*   Output               : return true, if the module clicked successfully
+//*                          return false, if the module state is not changed to ready State
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 13 June 2019
+//*   Modified By          : Prabu Ramaraj
+//*   Modified Date        : 28 June 2019
+//*****************************************************************************************
+function ClickOnSystemModuleFromPrimeDisp(systemModuleName)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check ::Click on the system module '" + systemModuleName + "' to view the state");
+    
+    
+    //Get the system health check control
+    var systemModulesObj = GetAutomationIDControl("SystemHealthCheck" , "systemHealthCheck");
+    
+    //Get the required system name
+    var moduleObj = Getchild(systemModulesObj, ["Text", "ClassName"], [systemModuleName, "TextBlock"]);
+    
+    //Check the given system module name is displayed under the system health check machine map
+    if(VerifyObjectExists(moduleObj))
+    {
+      var parentObj = moduleObj["Parent"];
+      ClickCtrl(parentObj);
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Error"]("Unable to locate the system module '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+ e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : CheckModuleStateDisplayed()
+//*   Function Description : This function is used to check the module state is displayed
+//*   Input                : -
+//*   Output               : return true, if the module state is displayed
+//*                          return false, if the module state is not displayed
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 13 June 2019
+//*   Modified By          : Prabu Ramaraj
+//*   Modified Date        : 28 June 2019
+//*****************************************************************************************
+function CheckModuleStateDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Check the module state is displayed in the system module");
+    
+    //Get the module state controls
+    var moduleStateObj = GetAutomationIDControl("SystemHealthCheck", "moduleStateCtrl");
+    
+    //Check the module state control is displayed on screen and visible
+    if(VerifyObjectExists(moduleStateObj)) 
+    {
+      Log["Message"]("Module State is displayed in system health check");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Error"]("Unable to locate the module state in system health check");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : CheckTheModuleStateControlsDisplayed()
+//*   Function Description : This function is used to check the Sytem module State control is displayed
+//*   Input                : moduleType 
+//*   Output               : return true, if the Sytem module State control is displayed
+//*                          return false, if the Sytem module State control is not displayed
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function CheckTheModuleStateControlsDisplayed(moduleType)
+{
+  try
+  {   
+    Log["AppendFolder"]("System Health Check :: Check the Module State Controls are Displayed");
+    
+    
+    //Get module name for the module Type
+    var systemModuleName = GetActualSystemModuleName(moduleType);
+    if(systemModuleName==false)
+    {
+      Log["Error"]("Module "+ModuleType+" not found");
+      return false;
+    }
+    
+    //Click on the given system module name
+    if(!ClickOnSystemModuleFromPrimeDisp(systemModuleName))
+    {
+      Log["Error"]("Unable to select / click on the module '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Get Module State Control
+    var moduleStateObj = GetAutomationIDControl("SystemHealthCheck", "moduleStateCtrl");
+    
+    //Check the module state controls are displayed
+    if(VerifyObjectExists(moduleStateObj))
+    {
+      Log["Message"]("Module State Controls are Displayed");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Module State Controls are not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ClickModuleStateControlButton()
+//*   Function Description : This function is used to click on given button control
+//*   Input                : buttonControl (Play,Pause,Stop,Diagnostic..)
+//*   Output               : return true, if the given button is clicked
+//*                          return false, if the given button is not clicked
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function ClickModuleStateControlButton(buttonName)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Perform '"+buttonName+"' Action");
+    
+    var buttonControl = undefined;
+    
+    //Get the module state control Button
+    switch (buttonName)
+    {
+      case "Stop":        
+      case "Pause":
+        buttonControl = GetAutomationIDControl("SystemHealthCheck", "btnStopModule");
+        break;
+      case "Resume":
+        buttonControl = GetAutomationIDControl("SystemHealthCheck", "btnPlayModule");
+        break;
+      case "ShutDown":
+        buttonControl = GetAutomationIDControl("SystemHealthCheck", "btnShutdown");
+        break;
+      case "Diagnostics":
+        buttonControl = GetAutomationIDControl("SystemHealthCheck", "btnDiagnostics");
+        break;
+    }
+
+    
+    //check the button is visiable and enabled
+    if(VerifyObjectEnabled(buttonControl))
+    {
+      Log["Message"]("Button '" + buttonName + "' is located in the system health check control actions");
+      
+      //Click on the button control located
+      ClickCtrl(buttonControl);
+      Log["Message"]("Successfully clicked on the button '" + buttonName + "' in system health check");
+      
+      //Check the action button is stop / pause action -> Then need to handle the stop alert
+      if(buttonName == "Pause" || buttonName == "Stop")
+      {
+        //Get Stop Confirmation alert
+        var alertConfirmation = GetAutomationIDControl("SystemHealthCheck", "txStopAlerttTitle");
+        
+        //check Stop Confirmation alert exists
+        if(VerifyObjectExists(alertConfirmation))
+        {
+          Log["Message"]("Stop Confimation Popup Displayed with 2 options of Stop / Stop Immediately");
+          var buttonText;
+          
+          //select button based on pause/stop
+          switch (buttonName)
+          {
+            case "Stop":        
+              buttonControl = GetAutomationIDControl("SystemHealthCheck", "btnstopImmediateButton");
+              buttonText = "Stop Immediatly" ;
+              break;    
+            case "Pause":
+              buttonControl = GetAutomationIDControl("SystemHealthCheck", "btnstopButton");
+              buttonText = "Stop" 
+              break;
+          }
+          
+          //check the button exists
+          if(VerifyObjectEnabled(buttonControl))
+          {
+            Log["Message"]("Button '" + buttonText + "' is located and enabled in the stop confirmation alert");
+            
+            //Click on the button control located
+            ClickCtrl(buttonControl);
+            Log["Message"]("Successfully clicked on the button '" + buttonText + "' in system health check Stop Confimation alert to perform "+buttonName+" action");
+            Log["PopLogFolder"]();
+            return true;
+          } else {
+            Log["Error"]("Failed to locate button '" + buttonText + "' in system health check Stop Confimation alert to perform "+buttonName+" action");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        } else {
+          Log["Error"]("Unable to locate the stop action confirmation alert dialog on performing stop action");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      } else {
+        Log["PopLogFolder"]();
+        return true;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the button '" + buttonName + "' in the module state control buttons");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ConfirmWarningAlert()
+//*   Function Description : This function is used to Accept the Warning dialog by clicking on Yes Button
+//*   Input                : - 
+//*   Output               : return true, if the Yes button is clicked
+//*                          return false, if the Yes button is not clicked
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function ConfirmWarningAlert()
+{
+  try
+  {
+    //Get the alert dialog control
+    var alertDialogueObj = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+  
+    //Check the alert dialogue is exists & visible
+    if(alertDialogueObj["Visible"])
+    {
+      Log["Message"]("Confirmation Alert Dialogue Located");
+      
+      //Get the yes button to confirm the alert warning
+      var yesBtn = Getchild(alertDialogueObj, ["AutomationId", "ObjectIdentifier"], ["PrimaryButton", "Yes"]);
+      
+      //Click on the yes button
+      ClickCtrl(yesBtn);
+      
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the Confirmation Alert Dialogue");
+      return false;
+    }  
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : CheckForSystemToBeInExpectedStatus()
+//*   Function Description : This function is used to Verify the Module in Expected status
+//*   Input                : moduleType, expectedStatus (moduleType - Hydra/DL) 
+//*   Output               : return true, if System in Expected state
+//*                          return false, if System not in Expected state
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function CheckForSystemToBeInExpectedStatus(moduleType,expectedStatus)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Wait for system '" + moduleType + "' to be '" + expectedStatus + "'");
+    
+    //Get module name for the module Type
+    var systemModuleName = GetActualSystemModuleName(moduleType);
+    if(systemModuleName==false)
+    {
+      Log["Error"]("Module "+ModuleType+" not found");
+      return false;
+    }
+    
+    //Get system health check
+    var systemModulesObj = GetAutomationIDControl("SystemHealthCheck", "systemHealthCheck"); //Updated the correct control name from the controls.xml
+    
+    //If Module Exists => Check State Displayed
+    if(VerifyObjectExists(systemModulesObj)) 
+    {
+      //Get system module based on given system module name
+      var moduleObj = Getchild(systemModulesObj, ["Text", "ClassName"], [systemModuleName, "TextBlock"]);
+      
+      //Click on the given system module name & checked module state is displayed
+      if(ClickOnSystemModuleFromPrimeDisp(systemModuleName) && CheckModuleStateDisplayed())
+      {
+        //Get the parent object of the system module name to click on the module
+        var parentObj = moduleObj["Parent"];
+        
+        //Get the system module state control
+        var systemStateObj = Getchild(parentObj, "AutomationId", "Siemens.Atellica.Model.ModuleState");
+        
+        //Get the module state displayed for the given system module
+        var systemState = GetNativeObjectName(systemStateObj);
+        
+        var counter = 0;
+
+        while((systemState != expectedStatus) && counter <= 600)
+        {
+          aqUtils["Delay"](1000,"Wait for the system to be in expcted status");
+          counter = counter +1;
+          parentObj["Refresh"]();
+          systemState = GetNativeObjectName(systemStateObj);
+        }
+        
+        if(systemState == expectedStatus)
+        {
+          Log["Checkpoint"](systemModuleName + " Status : " + systemState);
+          
+          //Closing the System health check popup
+          if(!CloseSystemModuleState())
+          {
+            Log["Error"]("Unable to close the System Health Check Module Expanded");
+            return false;
+          }
+        
+          Log["PopLogFolder"]();
+          return true;        
+        } else {
+          Log["Error"]("System not came to expected state '" + expectedStatus + "' after wait time");
+          
+          //Closing the System health check popup
+          if(!CloseSystemModuleState())
+          {
+            Log["Error"]("Unable to close the System Health Check Module Expanded");
+            return false;
+          }
+          Log["PopLogFolder"]();
+          return false;        
+        }        
+      } else {
+        Log["Error"]("Unable to click on the system module / locate the system module")
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the system modules '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformStopActionOnSystemModule()
+//*   Function Description : This function is used to Click on Stop button
+//*   Input                : moduleType (Hydra/DL) 
+//*   Output               : return true, if the Stop button is clicked
+//*                          return false, if the Stop button is not clicked
+//*   Created By           : Vaisag
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformStopActionOnSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Stop the system module '" + moduleType);
+    
+    //Check the module state control displayed for the system module
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on the  module state controls - StopButton
+    if(ClickModuleStateControlButton("Stop"))
+    {          
+      var isConfirmed = ConfirmWarningAlert();
+      Log["PopLogFolder"]();
+      return isConfirmed;
+    } else {
+      Log["Error"]("Unable to perform the click operation in the stop button");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformResumeActionOnSystemModule()
+//*   Function Description : This function is used to Click on Play/Resume button
+//*   Input                : moduleType (Hydra/DL) 
+//*   Output               : return true, if the Play/Resume button is clicked
+//*                          return false, if the Play/Resume button is not clicked
+//*   Created By           : Vaisag
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformResumeActionOnSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Resume the system module '" + moduleType);
+    
+    //Check the module state control displayed for the system module    
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on the  module state controls - Play / Resume button
+    if(ClickModuleStateControlButton("Resume"))
+    {
+      //Closing the System health check popup
+      if(!CloseSystemModuleState())
+      {
+        Log["Error"]("Unable to close the System Health Check Module Expanded");
+        return false;
+      }
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to perform the click operation in the resume button");
+      //Closing the System health check popup
+      if(!CloseSystemModuleState())
+      {
+        Log["Error"]("Unable to close the System Health Check Module Expanded");
+        return false;
+      }
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformPauseActionOnSystemModule()
+//*   Function Description : This function is used to Click on Pause button
+//*   Input                : moduleType (Hydra/DL) 
+//*   Output               : return true, if the Pause button is clicked
+//*                          return false, if the Pause button is not clicked
+//*   Created By           : Vaisag
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformPauseActionOnSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Pause the system module '" + moduleType);
+    
+    //Check the module state control displayed for the system module
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Click on the  module state controls - Pause button
+    if(ClickModuleStateControlButton("Pause"))
+    {
+      //Closing the System health check popup
+      if(!CloseSystemModuleState())
+      {
+        Log["Error"]("Unable to close the System Health Check Module Expanded");
+        return false;
+      }
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Error"]("Unable to perform the click operation in the pause button");
+      //Closing the System health check popup
+      if(!CloseSystemModuleState())
+      {
+        Log["Error"]("Unable to close the System Health Check Module Expanded");
+        return false;
+      }
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformShutdownActionOnSystemModule()
+//*   Function Description : This function is used to Click on Power Down button
+//*   Input                : moduleType (Hydra/DL) 
+//*   Output               : return true, if the Power Down button is clicked
+//*                          return false, if the Power Down button is not clicked
+//*   Created By           : Vaisag
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformShutdownActionOnSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check ::Power Down the syetm module '" + moduleType);
+      
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    //Click on the  module state controls - Power Down button
+    if(!ClickModuleStateControlButton("ShutDown"))
+    {
+      Log["Error"]("Unable to perform the click operation in the Shut Down button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Accept the confirmation warning message
+    if(!ConfirmWarningAlert())
+    {
+      Log["Error"]("Unabel to locate the shutdown action confirmation warning alert");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformEnterDiagnosticsOnSystemModule()
+//*   Function Description : This function is used to Click on Diagnostic button 
+//*   Input                : moduleType (Hydra/DL) 
+//*   Output               : return true, if the Diagnostic button is clicked
+//*                          return false, if the Diagnostic button is not clicked
+//*   Created By           : Vaisag
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformEnterDiagnosticsOnSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check ::Perform Diagnostics For the system module '" + moduleType);
+      
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    //Click on the  module state controls - Diagnostic button
+    if(ClickModuleStateControlButton("Diagnostics"))
+    {
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Error"]("Unable to perform the click operation in the Diagnostics button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : GetCurrentStateOfSystemModule()
+//*   Function Description : This function is used to get the Current status of system module
+//*   Input                : moduleType (Hydra/DL) 
+//*   Output               : return true, if get the current status of system module
+//*                          return false, if unable to get the current status of system module
+//*   Created By           : Vaisag
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function GetCurrentStateOfSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Get current Module State");
+    
+    var systemModuleName = GetActualSystemModuleName(moduleType);
+    
+    //check the system module name is retrieved 
+    if(!systemModuleName)
+    {
+      Log["Error"]("Unable to get the system module name '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Get system health check
+    var systemModulesObj = GetAutomationIDControl("SystemHealthCheck", "systemHealthCheck");
+    
+    //If Module Exists => Check State Displayed
+    if(VerifyObjectExists(systemModulesObj)) 
+    {
+      //Get system module based on given system module name
+      var moduleObj = Getchild(systemModulesObj, ["Text", "ClassName"], [systemModuleName, "TextBlock"]);
+      
+      //Click on the given system module name & checked module state is displayed
+      if(ClickOnSystemModuleFromPrimeDisp(systemModuleName) && CheckModuleStateDisplayed())
+      {
+        //Get the parent object of the system module name to click on the module
+        var parentObj = moduleObj["Parent"];
+        
+        //Get the system module state control
+        var systemStateObj = Getchild(parentObj, "AutomationId", "Siemens.Atellica.Model.ModuleState");
+        
+        //Get the module state displayed for the given system module
+        var systemState = GetNativeObjectName(systemStateObj);
+        
+        //Closing the System health check popup
+        if(!CloseSystemModuleState())
+        {
+          Log["Error"]("Unable to close the System Health Check Module Expanded");
+          Log["PopLogFolder"]();
+          return false;
+        }
+
+        Log["PopLogFolder"]();
+        return systemState;        
+      } 
+      else {
+        Log["Error"]("Unable to click on the system module / locate the system module")
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the system modules '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//----------------------------------------------------------------
+
+function GetCurrentTransientStateOfSystemModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("System Health Check :: Get Current Transient State for the System Module '" + moduleType + "'");
+    
+    var systemModuleName = GetActualSystemModuleName(moduleType);
+    
+    //check the system module name is retrieved 
+    if(!systemModuleName)
+    {
+      Log["Error"]("Unable to get the system module name '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Get system health check
+    var systemModulesObj = GetAutomationIDControl("SystemHealthCheck", "systemHealthCheck");
+    
+    //If Module Exists => Check State Displayed
+    if(VerifyObjectExists(systemModulesObj)) 
+    {
+      //Get system module based on given system module name
+      var moduleObj = Getchild(systemModulesObj, ["Text", "ClassName"], [systemModuleName, "TextBlock"]);
+      
+      //Click on the given system module name & checked module state is displayed
+      if(ClickOnSystemModuleFromPrimeDisp(systemModuleName) && CheckModuleStateDisplayed())
+      {
+        //Get the Transient state displayed
+        var transientStateObj = GetAutomationIDControl("SystemHealthCheck", "txtTransientState");
+        
+        //Get the module state displayed for the given system module
+        var systemTransientState = transientStateObj["Text"]["split"]("/")[0]; 
+        
+        //Closing the System health check popup
+        if(!CloseSystemModuleState())
+        {
+          Log["Error"]("Unable to close the System Health Check Module Expanded");
+          Log["PopLogFolder"]();
+          return false;
+        }
+
+        Log["PopLogFolder"]();
+        return systemTransientState;        
+      } 
+      else {
+        Log["Error"]("Unable to click on the system module / locate the system module")
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the system modules '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyTheTrasientStateOfSystemModuleByControlAction(moduleType, controlAction, expectedTransientState)
+{
+  try
+  {
+    
+    //Check the module state control displayed for the system module
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["AppendFolder"]("System Health Check :: Pause the system module '" + moduleType + "' and verify the transient state as '" + expectedTransientState + "'");
+    
+    //Click on the  module state controls - Pause button
+    if(ClickModuleStateControlButton(controlAction))
+    {
+      var isTransientStateSuccess = false;
+      var counterValue = 0;
+      
+      //Get the Transient state displayed
+      var transientStateObj = GetAutomationIDControl("SystemHealthCheck", "txtTransientState");
+      var actualtransientState = aqString["Trim"](transientStateObj["Text"]["split"]("/")[0]);
+        
+      //Wait for the transient status to be verified
+      while(counterValue <= 50 &&  actualtransientState != expectedTransientState)
+      {
+        aqUtils["Delay"](1000,"Wait for the expected transient state to be displayed");
+        
+        transientStateObj = GetAutomationIDControl("SystemHealthCheck", "txtTransientState");
+        actualtransientState = aqString["Trim"](transientStateObj["Text"]["split"]("/")[0]);                
+      }
+          
+      //Verify the transient state of pausing
+      if(actualtransientState == expectedTransientState)
+      {
+        Log["Message"]("Transient State '" + expectedTransientState + "' is displayed for the system module");
+        isTransientStateSuccess = true;
+      } else {
+        Log["Error"]("Actual transient state displayed as '" + actualtransientState + "'");
+        Log["Error"]("System module doesn't displayed the expected transient state '" + expectedTransientState + "' for the module type '" + moduleType + "'");
+        isTransientStateSuccess = false;
+      }
+        
+      //Closing the System health check popup
+      if(!CloseSystemModuleState())
+      {
+        Log["Error"]("Unable to close the System Health Check Module Expanded");
+        Log["PopLogFolder"]();
+        return false;
+      }
+
+      Log["PopLogFolder"]();
+      return isTransientStateSuccess;            
+    } else {
+
+      //Closing the System health check popup
+      if(!CloseSystemModuleState())
+      {
+        Log["Error"]("Unable to close the System Health Check Module Expanded");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["Error"]("Unable to perform the click operation in the pause button");
+      Log["PopLogFolder"]();
+      return false;
+    }      
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function VerifyTheTransientStateOfSystemModule(moduleType,expectedTransientState)
+{
+  try
+  {
+        
+    //Check the module state control displayed for the system module
+    if(!CheckTheModuleStateControlsDisplayed(moduleType))
+    {
+      Log["Error"]("Unable to locate the module state controls in system health check module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["AppendFolder"]("System Health Check :: Check the system module '" + moduleType + "' transient state as '" + expectedTransientState + "'");
+    
+    var isTransientStateSuccess = false;
+    var counterValue = 0;
+      
+    //Get the Transient state displayed
+    var transientStateObj = GetAutomationIDControl("SystemHealthCheck", "txtTransientState");
+    var actualtransientState = aqString["Trim"](transientStateObj["Text"]["split"]("/")[0]);
+        
+    //Wait for the transient status to be verified
+    while(counterValue <= 50 &&  actualtransientState != expectedTransientState)
+    {
+      aqUtils["Delay"](1000,"Wait for the expected transient state to be displayed");
+        
+      transientStateObj = GetAutomationIDControl("SystemHealthCheck", "txtTransientState");
+      actualtransientState = aqString["Trim"](transientStateObj["Text"]["split"]("/")[0]);                
+    }
+          
+    //Verify the transient state as expected
+    if(actualtransientState == expectedTransientState)
+    {
+      Log["Message"]("Transient State '" + expectedTransientState + "' is displayed for the system module");
+      isTransientStateSuccess = true;
+    } else {
+      Log["Error"]("Actual transient state displayed as '" + actualtransientState + "'");
+      Log["Error"]("System module doesn't displayed the expected transient state '" + expectedTransientState + "' for the module type '" + moduleType + "'");
+      isTransientStateSuccess = false;
+    }
+        
+    //Closing the System health check popup
+    if(!CloseSystemModuleState())
+    {
+      Log["Error"]("Unable to close the System Health Check Module Expanded");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    Log["PopLogFolder"]();
+    return isTransientStateSuccess;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}

@@ -1,0 +1,1252 @@
+﻿//USEUNIT Authentication
+//USEUNIT StepDefinitionHydra
+//USEUNIT CommonUtilities
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+
+//******************************************************************************
+//         [1] FEATURE : : 227348 - Modifying TDef
+//******************************************************************************
+function GivenMinimumReplicateSet()
+{
+  try
+  {
+         
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Read data from excel - G0 Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+        var dictColumn=arrTestData[0];
+        var UserName = dictColumn["Item"]("User");
+        var Password = dictColumn["Item"]("Password");
+        
+        //Read data from excel - Min replicates
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_09");
+        var dictColumn=arrTestData[0];
+        var Assay = dictColumn["Item"]("TDefName");
+        var MinReplicates=dictColumn["Item"]("MinimumReplicates");
+           
+        //Verifies if G0 user logged in or not
+        if(!VerifyLoggedInUser(UserName))
+        {
+          //Logs in as G0 user
+          res = StepLogoutAndLogin(UserName,Password);
+          if(!res)
+          {
+            Returnval = false;
+          }
+        }
+        
+        res =StepMinimumReplicateSet(MinReplicates,Assay);
+        if(!res)
+        {
+            Returnval = false;
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  }
+}
+
+function WhenCSEAttemptsToLowerNewLotReplicate()
+{
+  try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+       //Read data from excel - G2 Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG2");
+        var dictColumn=arrTestData[0];
+        var UserName = dictColumn["Item"]("User");
+        var Password = dictColumn["Item"]("Password");
+        
+        //Read data from excel - NewLotReplicate
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_09");
+        var dictColumn=arrTestData[0];
+        var Assay = dictColumn["Item"]("TDefName");
+        var NewLotReplicate=dictColumn["Item"]("NewLotReplicate");
+           
+        //Verifies if G2 user logged in or not
+        if(!VerifyLoggedInUser(UserName))
+        {
+          //Logs in as G2 user
+          res = StepLogoutAndLogin(UserName,Password);
+          if(!res)
+          {
+            Returnval = false;
+          }
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  }
+}
+
+function ThenSystemDoesNotAllowToModifyNewLotReplicate()
+{
+  try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Read data from excel - NewLotReplicate
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_09");
+        var dictColumn=arrTestData[0];
+        var Assay = dictColumn["Item"]("TDefName");
+        var NewLotReplicate=dictColumn["Item"]("NewLotReplicate");
+        
+        res =StepSetNewLotReplicate(NewLotReplicate,Assay);
+        if(!res)
+        {
+            Returnval = false;
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  }
+}
+
+function GivenG4UserLoggedIn()
+{
+  try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Read data from excel - G4 Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG4");
+        var dictColumn=arrTestData[0];
+        var UserName = dictColumn["Item"]("User");
+        var Password = dictColumn["Item"]("Password");
+           
+        //Verifies if G4 user logged in or not
+        if(!VerifyLoggedInUser(UserName))
+        {
+          //Logs in as G4 user
+          res = StepLogoutAndLogin(UserName,Password);
+          if(!res)
+          {
+            Returnval = false;
+          }
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description); 
+      return false;
+  } 
+}
+
+function GivenG5UserLoggedIn()
+{
+  try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Read data from excel - G4 Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG5");
+        var dictColumn=arrTestData[0];
+        var UserName = dictColumn["Item"]("User");
+        var Password = dictColumn["Item"]("Password");
+           
+        //Verifies if G5 user logged in or not
+        if(!VerifyLoggedInUser(UserName))
+        {
+          //Logs in as G5 user
+          res = StepLogoutAndLogin(UserName,Password);
+          if(!res)
+          {
+            Returnval = false;
+          }
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description); 
+      return false;
+  } 
+}
+
+function WhenUserModifiesCentrifugeForRepeat()
+{
+  try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;  
+        
+        //Read data from excel - Assay
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_09");
+        var dictColumn=arrTestData[0];
+        var Assay = dictColumn["Item"]("TDefName");         
+        
+        //Modifies Centrifuge for repeat for Assay
+        res = StepModifyCentrifugeFoRepeat(Assay);
+        if(!res)
+        {
+          Returnval = false;
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  } 
+}
+
+function ThenTdefIsModifiedAndSavedAsAValidTdefFormat()
+{
+   try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;          
+        
+        //Verifies if TDef is modified and saved as valid
+        res = StepCentrifugeFoRepeatIsModifiedAndSaved();
+        if(!res)
+        {
+          Returnval = false;
+        }
+        
+        //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  } 
+}
+
+function loginasG0user()
+{
+try
+  {
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+		
+		//Read data from excel - G0 Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+        var dictColumn=arrTestData[0];
+        var UserName = dictColumn["Item"]("User");
+        var Password = dictColumn["Item"]("Password"); 
+        
+		//StepDefinition
+        res = StepLogoutAndLogin(UserName,Password);
+        if(!res)
+        {
+            Returnval = false;
+        }
+				
+		//Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  }
+}
+
+function THENModifyRegionstatusversionvaluesIA(){
+    try
+    { 
+    
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","IATDefName");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+
+        //Step Select Test in Tdef Grid
+        StepSelectTestinTdef(dictColumn["Item"]("TestName"))     
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","GWT6");
+        dictColumn1=arrTestData1[0];
+             
+        res1 =StepfnModifyRegionstatusversionvaluesIA(dictColumn1["Item"]("Region"),dictColumn1["Item"]("Status"),dictColumn1["Item"]("MinSWTestVersion"))
+        
+        if(!res1){
+          Returnval = false}
+          //Return
+        return Returnval     
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+function THENModifyPrintDisplayLISCalfieldsforIAwithuniquevalue(){
+    try
+    { 
+    
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","GWT7");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+
+        //Step Select Test in Tdef Grid
+        StepSelectTestinTdef(dictColumn["Item"]("TestName"))     
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","GWT7");
+        dictColumn1=arrTestData1[0];
+               
+        res1 =StepfnModifyPrintDisplayLISCalfieldsforIAwithuniquevalue(dictColumn1["Item"]("DisplayName"),dictColumn1["Item"]("PrintName"),dictColumn1["Item"]("LISName"),dictColumn1["Item"]("CalCode"))
+        
+        if(!res1){
+          Returnval = false}
+          //Return
+        return Returnval     
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue(){
+    try
+    { 
+    
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","GWT6");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+
+        //Step Select Test in Tdef Grid
+        StepSelectTestinTdef(dictColumn["Item"]("TestName"))     
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","GWT6");
+        dictColumn1=arrTestData1[0];
+               
+        res1 =StepfnModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue(dictColumn1["Item"]("DisplayName"),dictColumn1["Item"]("PrintName"),dictColumn1["Item"]("LISName"),dictColumn1["Item"]("CalCode"))
+        
+        if(!res1){
+          Returnval = false}
+          //Return
+        return Returnval     
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function GivenG0isloggedin()
+{
+  try{
+    
+   //Initialize Variables
+        var Returnval = true;
+        var res;
+  
+  InitializeMetaDataHYDRA();
+    
+   //Read data from excel - G0 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G0 user logged in or not
+        if(!VerifyLoggedInUser(UserName))
+        {
+          //Logs in as G0 user
+          res = StepLogoutAndLogin(UserName,Password);
+          if(!res)
+          {
+            Returnval = false;
+          }
+        }     //Return
+        return Returnval;
+  }
+  catch(exp)
+  {
+      Log.Error(exp.description) ; 
+      return false;
+  }
+}
+
+function GivenG0OperatorUsersetCalibrationLotInterval()
+{
+  
+   InitializeMetaDataHYDRA();
+    
+   //Read data from excel - G0 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G0 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+    //Logs in as G0 user
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_8_IA_G0");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    var LotCalibrationIntervalDays = dictColumn["Item"]("LotCalibrationIntervalDays") 
+        
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(!StepSetcalibrationLotinterval(LotCalibrationIntervalDays))
+      {return false}
+      else {
+      return true}
+      
+     }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+    return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_8_IA_G0");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    var LotCalibrationIntervalDays = dictColumn["Item"]("LotCalibrationIntervalDays") 
+        
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(!StepSetcalibrationLotinterval(LotCalibrationIntervalDays))
+      {return false}
+      else {
+      return true}
+    }
+}
+
+function WhenG1OperatorIncreaseCalibrationLotInterval()
+{
+  
+  InitializeMetaDataHYDRA();
+    
+   //Read data from excel - G0 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG1");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G1 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+    
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_8_IA_G0");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    var IncreaseLotCalibrationIntervalDays = dictColumn["Item"]("IncreaseLotCalibrationIntervalDays") 
+        
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+	if(!StepIncreasecalibrationLotinterval(IncreaseLotCalibrationIntervalDays))
+      {return false}
+      else {
+      return true}
+      
+     }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+    return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_8_IA_G0");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    var IncreaseLotCalibrationIntervalDays = dictColumn["Item"]("IncreaseLotCalibrationIntervalDays") 
+        
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(!StepIncreasecalibrationLotinterval(IncreaseLotCalibrationIntervalDays))
+      {return false}
+      else {
+      return true}
+    }
+}
+
+function WhenG1OperatorModifyPrintDisplayLISReuseLotcalPackcalValues()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_20");
+	dictColumn=arrTestData[0];
+  var Test = dictColumn["Item"]("TestName")
+  var LotExpirationDays = dictColumn["Item"]("LotExpirationDays")
+  var PackExpirationHours = dictColumn["Item"]("PackExpirationHours")
+  var DisplayName = dictColumn["Item"]("DisplayName")
+  var PrintName = dictColumn["Item"]("PrintName")
+  var LISName = dictColumn["Item"]("LISName")
+  var ResultTimeLimit = dictColumn["Item"]("ResultTimeLimit")
+  
+  if(!StepNavigateToCITestDefinitionCCCommonTab(Test))
+   return false
+  if (!StepModifyPrintDisplayLISReuse(DisplayName,PrintName,LISName,ResultTimeLimit))
+  return false
+else {
+      return true}
+  
+  if(!StepNavigateToCITestDefinitionCCCalibrationGeneralTab(Test))
+      return false
+  if(!StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours))
+  return false
+else {
+      return true}
+
+}
+
+function THENModifyPrintDisplayNewLotReplicateCurrentLotReplicate(){
+    try
+    { 
+    
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_14");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+
+        //Step Select Test in Tdef Grid
+        StepSelectTestinTdef(dictColumn["Item"]("TestName"))     
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_14");
+        dictColumn1=arrTestData1[0];
+    
+        res1 =StepModifyPrintDisplayNewLotReplicateCurrentLotReplicate(dictColumn1["Item"]("DisplayName"),dictColumn1["Item"]("PrintName"),dictColumn1["Item"]("NewLotReplicate"),dictColumn1["Item"]("CurrentLotReplicate"))
+        
+        if(!res1){
+          Returnval = false}
+          //Return
+        return Returnval     
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+
+
+
+
+//******************************************************************************
+//         [2] FEATURE : 227358 - Standalone TDef Editor
+//******************************************************************************
+function WHENOperatorNavigatesToTestDefinition(){
+    try
+    { 
+        //Initialize Variables
+        var Returnval = true;
+        var res
+              
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+           
+        //StepDefinition
+        res =StepOperatorNavigatesToTDef();
+        if(!res){
+            Returnval = false}
+        
+        //Return
+        return Returnval
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureTestDefinitionvalues(){
+    try
+    { 
+    
+        //Initialize Variables
+//        var Returnval = true;
+//        var res1;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+               
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","CITDefName");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn = arrTestData[0];
+
+        //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }
+               
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","TestIdentification");
+        dictColumn1=arrTestData1[0];
+        res1 = StepfnEditTestIDentification(dictColumn1["Item"]("TDefName"),dictColumn1["Item"]("TestType"),dictColumn1["Item"]("TestVersion"),dictColumn1["Item"]("DisplayName"),dictColumn1["Item"]("PrintName"),dictColumn1["Item"]("LISName"),dictColumn1["Item"]("LOINC"),dictColumn1["Item"]("Status"))
+        if(!res1)
+        {
+          return false
+        }                            
+        
+        return true;
+                 
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureTestDefinitionvaluesIA(){
+    try
+    { 
+    
+//        //Initialize Variables
+//        var Returnval = true;
+//        var res;
+//        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","IATDefName");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+
+        //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }
+             
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","TestIdentificationIA");
+        dictColumn1=arrTestData1[0];
+        res1 =StepfnEditTestIDentification(dictColumn1["Item"]("TDefName"),dictColumn1["Item"]("TestType"),dictColumn1["Item"]("TestVersion"),dictColumn1["Item"]("DisplayName"),dictColumn1["Item"]("PrintName"),dictColumn1["Item"]("LISName"),dictColumn1["Item"]("LOINC"),dictColumn1["Item"]("Status"))
+        
+       if(!res1)
+        {
+          return false
+        }
+       
+        return true;
+//        if(!EditTestIDentification(arrTestData1))
+//        Runner["Stop"]();        
+        
+             
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureTestDefinitionvaluesforGeneralSection(){
+    try
+    { 
+    
+//        //Initialize Variables
+//        var Returnval = true;
+//        var res;
+//        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","CITDefName");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+ 
+        //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }
+               
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","Generalsection");
+        dictColumn1 = arrTestData1[0];
+        res1 =StepfnEditGeneralSection(dictColumn1["Item"]("ResultReviewMode"),dictColumn1["Item"]("ResultTimeLimit"),dictColumn1["Item"]("AnalyteStability"))
+       
+        if(!res1)
+        {
+          return false
+        }
+        return true;
+                     
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureTestDefinitionvaluesforGeneralSectionIA(){
+    try
+    { 
+    
+//        //Initialize Variables
+//        var Returnval = true;
+//        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();
+        
+        //Read data
+        arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","IATDefName");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+
+       //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }  
+   
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","GeneralsectionIA");
+        dictColumn1=arrTestData1[0];
+        res1 =StepfnEditGeneralSection(dictColumn1["Item"]("ResultReviewMode"),dictColumn1["Item"]("ResultTimeLimit"),dictColumn1["Item"]("AnalyteStability"))
+        
+       if(!res1)
+        {
+          return false
+        }
+        return true;
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureMeasuringIntervalvalues(){
+    try
+    { 
+    
+//        //Initialize Variables
+//        var Returnval = true;
+//        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();  
+                
+        //Read data
+         //Read data
+        //var arrTestData = GetTestItemsByTestName(TestDataFile,"Inventory_Hydra","DisplayReagentRemaining");
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","CITDefName");
+	      //arrTestData = GetTestItemsByTestName(TestDataFile,"Test_Definition","CITDefName");
+        dictColumn=arrTestData[0];
+        
+        //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }   
+   
+        arrTestData1 = GetTestItemsByTestName(TestDataFile,"TestDefinition","MeasuringInterval");
+        dictColumn1=arrTestData1[0];
+        res1 =StepfnEditMeasuringIntervalvalues(dictColumn1["Item"]("LowMeasuringPlasma"),dictColumn1["Item"]("HighMeasuringPlasma"),dictColumn1["Item"]("LowMeasuringSerum"),dictColumn1["Item"]("HighMeasuringSerum"))
+        //FilterComboBox
+        if(!res1)
+        {
+          return false
+        }
+            return true; 
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureAdvancedIAsection(){
+    try
+    { 
+    
+//        //Initialize Variables
+//        var Returnval = true;
+//        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();  
+                
+        //Read data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","IATDefName");
+	      dictColumn=arrTestData[0];
+        
+        //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }    
+   
+        res1 =StepfnEditAdvacedIASection()
+        
+        if(!res1)
+        {
+          return false
+        }  
+  return true;
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+function THENCaptureAdvancedCCsection(){
+    try
+    { 
+    
+        //Initialize Variables
+        var Returnval = true;
+        var res;
+        
+        //Initialize XMLs
+        InitializeMetaDataHYDRA();  
+                
+        //Read data
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","CITDefName");
+	      dictColumn=arrTestData[0];
+        
+        //Step Select Test in Tdef Grid
+        res = StepSelectTestinTdef(dictColumn["Item"]("TestName"))   
+        if(!res)
+        {
+          return false
+        }
+          
+        res1 =StepfnEditAdvacedCCSection()
+        
+        if(!res1)
+        {
+          return false
+        }   
+       return true;      
+    }catch(exp){
+        Log.Error(exp.description) ; 
+        return false;
+    }
+}
+
+
+
+function GivenG3OperatorUserChecksCalibrationTriggers()
+{
+
+  //Read data from excel - G3 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG3");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G3 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+    //Logs in as G3 user
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G3");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G3");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+}
+
+function WhenG3OperatorModifyCalibrationTriggerValues()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G3");
+	dictColumn=arrTestData[0];
+  var LotExpirationDays = dictColumn["Item"]("LotExpirationDays")
+  var PackExpirationHours = dictColumn["Item"]("PackExpirationHours")
+  return StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+
+}
+
+function GivenG2OperatorUserChecksCalibrationTriggers()
+{
+  //Read data from excel - G2 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG2");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G2 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+    //Logs in as G2 user
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G2");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G2");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+}
+
+function WhenG2OperatorModifyCalibrationTriggerValues()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G2");
+	dictColumn=arrTestData[0];
+  var LotExpirationDays = dictColumn["Item"]("LotExpirationDays")
+  var PackExpirationHours = dictColumn["Item"]("PackExpirationHours")
+  return StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+
+}
+
+function GivenG1OperatorUserChecksCalibrationTriggers()
+{
+   //Read data from excel - G1 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG1");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G1 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+    //Logs in as G1 user
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G1");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G1");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+}
+function WhenG1OperatorModifyCalibrationTriggerValues()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G1");
+	dictColumn=arrTestData[0];
+  var LotExpirationDays = dictColumn["Item"]("LotExpirationDays")
+  var PackExpirationHours = dictColumn["Item"]("PackExpirationHours")
+  return StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+
+}
+
+function GivenG0OperatorUserChecksCalibrationTriggers()
+{
+   //Read data from excel - G0 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G0 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+    //Logs in as G0 user
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G0");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G0");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+  }
+
+}
+
+function WhenG0OperatorModifyCalibrationTriggerValues()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_12_IA_G0");
+	dictColumn=arrTestData[0];
+  var LotExpirationDays = dictColumn["Item"]("LotExpirationDays")
+  var PackExpirationHours = dictColumn["Item"]("PackExpirationHours")
+  return StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+
+}
+
+function US228320_GWT_12Teardown()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","Login");
+  dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User")
+  var Password = dictColumn["Item"]("Password");
+
+  return StepLogoutAndLogin(UserName,Password);
+}
+function WhenG4OperatorAttemptsModifyCalibrationTriggerValues()
+{
+   //Read data from excel - G4 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG4");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G4 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_11_IA_G4");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    return StepVerifyAutoCalibrationTriggerFieldsDisabled()
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_11_IA_G4");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    else
+      return StepVerifyAutoCalibrationTriggerFieldsDisabled()
+  }
+}
+
+function WhenG5OperatorAttemptsModifyCalibrationTriggerValues()
+{
+   //Read data from excel - G5 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG5");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+           
+  //Verifies if G5 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+  {
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_11_IA_G5");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    return StepVerifyAutoCalibrationTriggerFieldsDisabled()
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_11_IA_G5");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCalibrationTab(Test))
+      return false
+    else
+      return StepVerifyAutoCalibrationTriggerFieldsDisabled()
+  }
+}
+
+function GivenG0VerifiesControlBracketedTestField()
+{
+   InitializeMetaDataHYDRA();
+   //Read data from excel - G0 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_11");
+  dictColumn=arrTestData[0];
+  var Test = dictColumn["Item"]("TestName")
+           
+  //Verifies if G0 user logged in or not
+  if(VerifyLoggedInUser(UserName))
+  {
+    if(!StepNavigateToCITestDefinitionIACommonTab(Test))
+      return false
+    return (!StepVerifyControlBracketedTestDisabledEnabled()) // checkbox ControlBracketedTest is disabled
+  }
+  else
+  {
+    if(!StepLogoutAndLogin(UserName,Password))
+      return false
+    if(!StepNavigateToCITestDefinitionIACommonTab(Test))
+      return false
+    else
+      return (!StepVerifyControlBracketedTestDisabledEnabled()) // checkbox ControlBracketedTest is disabled
+  }
+
+}
+
+function WhenG0AttemptsModifyControlLevelField()
+{
+  return (!StepVerifyControlLevelFieldDisabledEnabled()) //combox box Control Level is disabled
+
+}
+
+function GivenG1OperatorUserChecksCCCalibrationTriggers()
+{          
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_26_CC_G1");
+  	dictColumn=arrTestData[0];
+    var Test = dictColumn["Item"]("TestName")
+    if(!StepNavigateToCITestDefinitionCCCalibrationGeneralTab(Test))
+      return false
+    if(StepVerifyCalibrationTriggersIsChecked())
+      return true
+    else
+      return StepSetCalibrationTriggersIsChecked(1)
+}
+
+function WhenG1OperatorModifyCCCalibrationTriggerValues()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition","US228320_GWT_26_CC_G1");
+	dictColumn=arrTestData[0];
+  var LotExpirationDays = dictColumn["Item"]("LotExpirationDays")
+  var PackExpirationHours = dictColumn["Item"]("PackExpirationHours")
+  return StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+
+}
+
+function NavigatesetupandImportTdef()
+{
+ InitializeMetaDataHYDRA();
+ 
+ // var path ="C:\\Siemens\\ARM\\TestDefinition\\Hydra";
+      
+   //Read data from excel - G0 Login
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG1");
+  var dictColumn=arrTestData[0];
+  var UserName = dictColumn["Item"]("User");
+  var Password = dictColumn["Item"]("Password");
+
+  var SheetName = "TDef"
+ // var SheetName = "TestDefinition"
+  if(VerifyLoggedInUser(UserName))
+  {
+    if(!StepNavigateToCITestDefinition())
+      return false
+    if (!StepImportTestDefinitionHydra(SheetName))
+    return false
+  }          
+
+}
+
+function PerformIMDailyMaintenance()
+{ 
+  InitializeMetaDataHYDRA()
+ // if(CheckModuleStatus())
+ // {
+   if (!StepSetMaintenanceActivitiesAsPerform())
+    {
+  return false;
+//}
+    }
+  }
+
+function OperatorDiagnostics()
+{ 
+  InitializeMetaDataHYDRA()
+  if (!StepOperatorDiagnostic())
+      {
+        return false;
+      }
+  
+}

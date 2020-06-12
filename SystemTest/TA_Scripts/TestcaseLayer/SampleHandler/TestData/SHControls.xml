@@ -1,0 +1,195 @@
+<Controls>
+	<Category Name="SH">
+		<Workflow Code="DVSSimulator">
+			<Control Class="Panel">
+				<Text/>
+				<ControlName>pnlRoutine15Tray</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>panelSelectSmallTray</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Panel">
+				<Text/>
+				<ControlName>pnlStatTray</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>panelSelectStatTray</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Panel">
+				<Text/>
+				<ControlName>pnlRoutine55Tray</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>panelSelectLargeTray</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Drawer">
+				<Text/>
+				<ControlName>dwrDrawer1</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>drawer1</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Drawer">
+				<Text/>
+				<ControlName>dwrDrawer2</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>drawer2</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Drawer">
+				<Text/>
+				<ControlName>dwrDrawer3</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>drawer3</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="Drawer">
+				<Text/>
+				<ControlName>dwrDrawer4</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>drawer4</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>Standard Tubes</Text>
+				<ControlName>rdbtnStandardTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioStandardTubes</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>False Bottom Tubes</Text>
+				<ControlName>rdbtnFalseBottomTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioFalseBottomTubes</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="PictureBox">
+				<Text/>
+				<ControlName>pcbxPlainTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>picturePlainTube</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="PictureBox">
+				<Text/>
+				<ControlName>pcbxCappedTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>pictureCappedTube</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="PictureBox">
+				<Text/>
+				<ControlName>pcbxTTSCTube</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>pictureTubeTop</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSButton">
+				<Text>SAVE TRAYS TO FILE</Text>
+				<ControlName>btnSave</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>buttonSave</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtbxBrowse</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>textDestinationFolder</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkFullyPopulated</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>checkFullyPopulate</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>Trinidad Mold 15</Text>
+				<ControlName>rdbtnTrinidadMold15</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioTrinidadMold15</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>Trinidad Mold 55</Text>
+				<ControlName>rdbtnTrinidadMold55</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioTrinidadMold55</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>False Bottom 15</Text>
+				<ControlName>rdbtnFalseBottom15</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioFalseBottom15</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>False Bottom 55</Text>
+				<ControlName>rdbtnFalseBottom55</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioFalseBottom55</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="DVSRadioButton">
+				<Text>Archive</Text>
+				<ControlName>rdbtnArchive</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>radioArchive</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>MAKE STAT</Text>
+				<ControlName>chkbxMakeStat</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>checkMakeStat</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+		</Workflow>
+	</Category>
+</Controls>

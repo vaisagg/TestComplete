@@ -1,0 +1,20 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT Setup
+
+function DisableVirtKeyboard()
+{
+  InitializeMetaData();
+  
+  ReportTestStatusToResultXML("Initialize", "Disable Virtual Keyboard", "I");
+  
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Connectivity");
+  if (!Navigation)
+    ReportTestStatusToResultXML("Initialize", "Disable Virtual Keyboard", "F");
+    
+  var boolValue = DisableVirtualKeyboard();
+  
+  if(boolValue == true)
+    ReportTestStatusToResultXML("Initialize", "Disable Virtual Keyboard", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "Disable Virtual Keyboard", "F");
+}

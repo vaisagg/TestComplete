@@ -1,0 +1,247 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT Authentication
+//USEUNIT TCCSConfigLibrary
+//USEUNIT CommonUtilities
+//USEUNIT Authentication
+//USEUNIT System
+//USEUNIT DecapperLibrary
+//USEUNIT IALibrary
+//USEUNIT SealerLibrary
+
+function InitializeTrinidad()
+{
+  try
+  {
+     ReportTestStatusToResultXML("Initialize", "Start_Atellica", "I");
+    InitializeMetaData();
+
+    //Step 1: Launch PCC     
+    if(InvokePCC() == false)
+      Runner["Halt"]("Unable to invoke Trinidad")
+    
+    EnterUserName(Project["Variables"]["PCCUsername"]);
+    EnterPassword(Project["Variables"]["PCCPassword"])
+    aqUtils["Delay"](120000, "Static delay added to avoid data manager popup");
+    ClickOnSignButton();
+    var sValue=UpdateSecurityQuestions();
+    if(sValue=="Failure")
+    {
+       return false; 
+    }
+	  else if(sValue=="Success")
+    {
+  		if(!EnterUserName(Project["Variables"]["PCCUsername"]))
+  			return false;
+  		if(!EnterPassword(Project["Variables"]["PCCPassword"]))
+  			return false; 
+  		if(!ClickOnSignButton())
+  			return false; 
+    }
+    
+    if(!VerifySignin())
+      return false;
+    
+    //ProjPath = ProjectSuite["Path"];
+    //arrPath  = ProjPath["split"]("Atellica")
+    //var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+    
+    var DeploymentType = GetDeploymentTypeFromFederationConfig()
+   
+    if(CheckSystemStatus(DeploymentType) != true)
+    {
+      
+     Log["Warning"]("All nodes were not in Ready or Standby state");
+      switch(DeploymentType)
+      {
+        case "SCD":
+                    if(!ShutdownCCSim())
+                      return false;
+                    
+                    if(!ShutdownSHSim())
+                      return false;
+                    
+                    if(!ShutDownDecapperSim())
+                      return false;
+                      
+                    if(!PCCShutdown())
+                      return false;
+                    
+                    if(!LaunchCCSim())
+                      return false;
+                    
+                    if(!LaunchSHSim())
+                      return false;
+                    
+                    if(!LaunchAndLoadDecapper())
+                      return false;
+   
+                    if(InvokePCC() == false)
+                      Runner["Halt"]("Unable to invoke Trinidad")
+    
+                    EnterUserName(Project["Variables"]["PCCUsername"]);
+                    EnterPassword(Project["Variables"]["PCCPassword"])
+                    aqUtils["Delay"](150000, "Static delay added to avoid data manager popup");
+                    ClickOnSignButton();
+                    
+                    if(!VerifySignin())
+                      return false;
+                    
+                    if(CheckSystemStatus(DeploymentType))
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "P");
+                    else
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "F");
+                    
+                    break;
+                    
+      case "SCID":
+                    if(!ShutdownCCSim())
+                      return false;
+          
+                    if(!ShutdownIASim())
+                      return false;    
+             
+                    if(!ShutdownSHSim())
+                      return false;
+
+                    if(!ShutDownDecapperSim())
+                      return false;
+  
+                    if(!PCCShutdown())
+                      return false;
+
+                    if(!LaunchCCSim())
+                      return false;
+                    
+                    if(!LaunchIASim())
+                      return false;
+                      
+                    if(!LaunchSHSim())
+                      return false;
+                    
+                    if(!LaunchAndLoadDecapper())
+                      return false;
+   
+                    if(InvokePCC() == false)
+                      Runner["Halt"]("Unable to invoke Trinidad");
+                      
+                    EnterUserName(Project["Variables"]["PCCUsername"]);
+                    EnterPassword(Project["Variables"]["PCCPassword"])
+                    aqUtils["Delay"](150000, "Static delay added to avoid data manager popup");
+                    ClickOnSignButton();
+                    
+                    if(!VerifySignin())
+                      return false;
+                    
+                    if(CheckSystemStatus(DeploymentType))
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "P");
+                    else
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "F");
+                      
+                    break;
+		 case "SCIDR":
+                    if(!ShutdownCCSim())
+                      return false;
+          
+                    if(!ShutdownIASim())
+                      return false;    
+             
+                    if(!ShutdownSHSim())
+                      return false;
+
+                    if(!ShutDownDecapperSim())
+                      return false;
+                      
+                    if(!ShutDownSealerSim())
+                      return false;
+  
+                    if(!PCCShutdown())
+                      return false;
+
+                    if(!LaunchCCSim())
+                      return false;
+                    
+                    if(!LaunchIASim())
+                      return false;
+                      
+                    if(!LaunchSHSim())
+                      return false;
+                    
+                    if(!LaunchAndLoadDecapper())
+                      return false;
+                      
+                    if(!LaunchSealerSim())
+                      return false;
+   
+                    if(InvokePCC() == false)
+                      Runner["Halt"]("Unable to invoke Trinidad");
+                      
+                    EnterUserName(Project["Variables"]["PCCUsername"]);
+                    EnterPassword(Project["Variables"]["PCCPassword"])
+                    aqUtils["Delay"](150000, "Static delay added to avoid data manager popup");
+                    ClickOnSignButton();
+                    
+                    if(!VerifySignin())
+                      return false;
+                    
+                    if(CheckSystemStatus(DeploymentType))
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "P");
+                    else
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "F");
+                      
+                    break;
+		case "SCR":
+                    if(!ShutdownCCSim())
+                      return false;
+                   
+                    if(!ShutdownSHSim())
+                      return false;
+
+                    if(!ShutDownSealerSim())
+                      return false;
+  
+                    if(!PCCShutdown())
+                      return false;
+
+                    if(!LaunchCCSim())
+                      return false;
+                                        
+                    if(!LaunchSHSim())
+                      return false;
+                    
+                    if(!LaunchSealerSim())
+                      return false;
+   
+                    if(InvokePCC() == false)
+                      Runner["Halt"]("Unable to invoke Trinidad");
+                      
+                    EnterUserName(Project["Variables"]["PCCUsername"]);
+                    EnterPassword(Project["Variables"]["PCCPassword"])
+                    aqUtils["Delay"](150000, "Static delay added to avoid data manager popup");
+                    ClickOnSignButton();
+                    
+                    if(!VerifySignin())
+                      return false;
+                    
+                    if(CheckSystemStatus(DeploymentType))
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "P");
+                    else
+                      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "F");
+                      
+                    break;
+        default:
+                  break;
+      }
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Initialize", "Start_Atellica", "P");
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }    
+}
+
+
+

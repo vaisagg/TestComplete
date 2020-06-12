@@ -1,0 +1,1067 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT CommonUtilities
+//USEUNIT StepDefinitionHydra
+//USEUNIT Authentication
+
+function RoundTripE2E(){
+
+try { 
+  
+      //Project file Paths
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      var DBDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls";
+      var DllPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\AppConfigFiles";
+      var IoTPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\IoT";
+      var SimulationPath = "C:\\data\\deploy\\simulation\\";
+      var SequenceSimulationPath="C:\\Siemens\\ARM\\Bin\\Configuration\\Simulator";//Updated as on Apr 5 2019 BVJ
+      var SequenceFolderPath="C:\\Siemens\\ARM\\Bin\\Configuration\\Sequences";
+      var ConfigurationFolderPath="C:\\Siemens\\ARM\\Bin\\Configuration";
+
+//      //Read data - IA Diagnostics Sequence
+//      arrTestDataIA = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq2");
+//      dictColumnIA=arrTestDataIA[0];
+//      var MechNameIA = dictColumnIA["Item"]("MechanismName")
+//      var SeqNameIA = dictColumnIA["Item"]("SeqName")
+//      var ReagentTypeIA = dictColumnIA["Item"]("ReagentType")
+//      
+//      //Read data - IA Ancillary Diagnostics Sequence
+//      arrTestDataIAAnc = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq3");
+//      dictColumnIAAnc=arrTestDataIAAnc[0];
+//      var MechNameIAAnc = dictColumnIAAnc["Item"]("MechanismName")
+//      var SeqNameIAAnc = dictColumnIAAnc["Item"]("SeqName")
+//      var ReagentTypeIAAnc = dictColumnIAAnc["Item"]("ReagentType")
+//      
+//      //Read data - CH Diagnostics Sequence
+//      arrTestDataCC = GetTestItemsByTestName(TestDataFile,"Diagnostics","ExecutePredefinedSeq");
+//      dictColumnCC=arrTestDataCC[0];
+//      var MechNameCC = dictColumnCC["Item"]("MechanismName")
+//      var SeqNameCC = dictColumnCC["Item"]("SeqName")
+//      var ReagentTypeCC = dictColumnCC["Item"]("ReagentType")
+//      
+//      //Read data 
+      arrTestData1 = GetTestItemsByTestName(TestDataFile,"RoundTrip","CreatePO");
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"RoundTrip","LoadReagent");
+      arrIMTTestdata = GetTestItemsByTestName(TestDataFile,"RoundTrip","CreateIMTPO");
+      
+      //Initialize Datafile and XMLS    
+      Log["AppendFolder"]("Initialize datafile and XML's")
+      InitializeMetaDataHYDRA();
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+//    //Run InitializeApp() function first under InitializationARM project
+//   //---------------------------------------------------------------------------------------
+//      
+//      Log["AppendFolder"]("Check IM Mechanism status");
+//
+//      Result.xml - IM Mechanism & Supplies -In progress
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "IM_Mechanism_Supplies", "I");
+//      
+//      Check is IM Mechanism & Supplies are available or not
+//      var IMSubsystemStatus=StepVerifySubsystemIsOK("IM");
+//      if(!IMSubsystemStatus)
+//      {
+//        Log["Error"]("IM Mechanism and Supplies Failed")
+//        ReportTestStatusToResultXML("RoundTripWorkflow", "IM_Mechanism_Supplies", "F");
+//      }
+//      
+//      Result.xml - IM Mechanism & Supplies -Pass
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "IM_Mechanism_Supplies", "P");
+//      
+//      Log["PopLogFolder"]();
+//      
+//      ---------------------------------------------------------------------------------------
+//      
+//      Log["AppendFolder"]("Check CH Mechanism status");
+//      
+//      Result.xml - CH Mechanism & Supplies -In progress
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "CH_Mechanism_Supplies", "I");
+//      
+//      Check is CH Mechanism & Supplies are available or not
+//      var CHSubsystemStatus=StepVerifySubsystemIsOK("CH");
+//      if(!CHSubsystemStatus)
+//      {
+//        Log["Error"]("CH Mechanism and Supplies Failed")
+//        ReportTestStatusToResultXML("RoundTripWorkflow", "CH_Mechanism_Supplies", "F");
+//      }
+//      
+//      Result.xml - CH Mechanism & Supplies -Pass
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "CH_Mechanism_Supplies", "P");
+//      
+//      Log["PopLogFolder"]();
+//      
+//      if both IM and CH fails then stop the script
+//      if(IMSubsystemStatus == false && CHSubsystemStatus == false )
+//      {
+//        Log["Error"]("IM and CH subsystem in error state");
+//        Runner["Stop"]();
+//      }
+//      
+//      ---------------------------------------------------------------------------------------
+//      
+//      Log["AppendFolder"]("Load Hydra Reagents");
+//      
+//      Result.xml - Load Reagents -Inprogress
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Reagents", "I");
+//      
+//      var IMReagentStatus=CheckReagentsAvailability(arrTestData2,"IM");
+//      var CHReagentStatus=CheckReagentsAvailability(arrTestData2,"CH");
+//      var IMAncReagentStatus=CheckReagentsAvailability(arrTestData2,"IMAnc");
+//      var checkIM=true;
+//      var checkIMAnc=true;
+//      var checkCH=true;
+//      
+//      if(CHReagentStatus==false)
+//      {
+//        load CC reagents
+//        if(!LoadingHydraReagents(ReagentTypeCC,MechNameCC,SeqNameCC))
+//        {
+//          Log["Error"]("CC Reagent Loading Failed");
+//          checkCH=false;
+//        }
+//      }
+//      
+//      if(IMReagentStatus==false)
+//      {
+//        load IA Primary reagents
+//        if(!LoadingHydraReagents(ReagentTypeIA,MechNameIA,SeqNameIA))
+//        {
+//          Log["Error"]("IA Reagent Loading Failed");
+//          checkIM=false;      
+//        }
+//      }
+//      
+//      if(IMAncReagentStatus==false)
+//      {
+//        load IA Ancillary reagents
+//        if(!LoadingHydraReagents(ReagentTypeIAAnc,MechNameIAAnc,SeqNameIAAnc))
+//        {
+//          Log["Error"]("IA Ancillary Reagent Loading Failed");
+//          checkIMAnc=false;
+//        }
+//      }
+//      
+//      if(checkIMAnc==true&&checkIM==true&&checkCH==true)  
+//      { 
+//        Result.xml - Load Reagents -Pass
+//        ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Reagents", "P");
+//      }
+//      else
+//      {
+//        ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Reagents", "F");
+//      }
+//      
+//      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Check Hydra Status After Resume");
+      
+      //Result.xml - Module Status -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Hydra_Status", "I");
+      
+      if(!StepResumeHydraToReady())
+      {
+        Log["Error"]("Module Status Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Hydra_Status", "F");
+        Runner["Stop"]();
+      }
+      
+      //Result.xml - Module Status -Pass
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Hydra_Status", "P");
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Check Reagent Inventory Before Aspiration");
+      
+      //Result.xml - Reagent Status 1 -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_1", "I");
+      
+      //Verify the Reagent availability and its Count value
+      var reagentStatus=VerifyReagentStatusForRT(arrTestData2);
+      var counter = arrTestData2["length"]
+      if(reagentStatus==0)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_1", "F");
+        Runner["Stop"]();
+      }
+      else if(reagentStatus<counter)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_1", "F");
+      }
+      else
+      {
+        //Result.xml - Reagent Status -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_1", "P");
+      }
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Move Old Samples to Historical");
+    
+      //Result.xml - Move Old Samples to Historical -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "I");
+      
+      //Moving samples to historical 
+      var Navigation=InvokeWorkflow("Worklist_WorklistOverview");
+      if (!Navigation)
+      {
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "F");
+        Runner["Stop"]();
+      }
+      aqUtils["Delay"](2000,"Removing old samples")
+      if(!MoveAllSamplesToHistoricalHydra())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "F");
+        Runner["Stop"]();
+      }
+      Log["PopLogFolder"](); 
+      
+      //Result.xml - Move Old Samples to Hstorical -Pass
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Move_Old_Samples_To_Historical", "P");
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Create Patient Order");
+      
+      //Result.xml - Create Patient Order -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order", "I");
+      
+      //Create Patient Order -BHAWYA
+      var POEStatus = CreatePatientOrderForRT(arrTestData1)
+      var counterPOE = arrTestData1["length"]
+      if(POEStatus==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order", "F");
+        Runner["Stop"]();
+      }
+      else if(POEStatus<counterPOE)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order", "F");
+      }
+      else
+      {
+        //Result.xml - Create Patient Order -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Create_Patient_Order", "P");
+      }       
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Check Test Affinities");
+//      //Commented for now- need to think of another solution
+//
+//      //Result.xml - Check affinities -Pass
+//     ReportTestStatusToResultXML("RoundTripWorkflow", "Test_Affinities", "I");
+//     
+//    if(!checkTestAffinities())
+//     {
+//       
+//        Log["Error"]("Test Affinities Verification Failed")
+//        ReportTestStatusToResultXML("RoundTripWorkflow", "Test_Affinities", "F");
+//        Runner["Stop"]();
+//      }
+//      
+//      //Result.xml - Check affinities -Pass
+//      ReportTestStatusToResultXML("RoundTripWorkflow", "Test_Affinities", "P");
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Load Samples in Direct Load");
+      
+      //Result.xml - Load Samples -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples", "I");
+          
+      //Direct Load -Shahana
+      if(!LoadSamples(arrTestData1))
+      {
+        Log["Error"]("Sample Loading Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples", "F");
+        Runner["Stop"]();
+      }
+      
+      //Result.xml - Load Samples -Pass
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Load_Samples", "P");
+      
+      //Adding delay
+      aqUtils["Delay"](40000,"Waiting for sample to load")
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Sample Status in Sample List screen");
+      
+      //Result.xml - Sample Aspiration -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Aspiration", "I");
+      
+      //Verify if Sample is aspirated -Shahana
+      var SampleStatus=VerifySampleStatusForRT(arrTestData1);
+      var counterSample = arrTestData1["length"];
+      
+      if(SampleStatus==0)
+      {
+        Log["Error"]("Aspiration Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Aspiration", "F");
+        Runner["Stop"]();
+      }
+      else if(SampleStatus<counterSample)
+      {
+        Log["Error"]("Aspiration Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Aspiration", "F");
+      }
+      else
+      {
+        //Result.xml - Sample Aspiration -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Aspiration", "P");
+      }
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Sample Result in worklist screen");
+      
+      //Result.xml - Sample Result -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Result", "I");
+         
+      //WorkList -BHAWYA
+      var SampleResult = VerifyResultsForRT(arrTestData1);
+      var counterResult = arrTestData1["length"];
+      
+      if(SampleResult==0)
+      {
+        Log["Error"]("Sample Result Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Result", "F");
+        Runner["Stop"]();
+      }
+      else if(SampleResult < counterResult)
+      {
+        Log["Error"]("Sample Result Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Sample Result", "F");
+      }
+      else
+      {
+        //Result.xml - Sample Result -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Sample_Result", "P");
+      }
+      
+      Log["PopLogFolder"]();
+      
+      //---------------------------------------------------------------------------------------
+      
+      Log["AppendFolder"]("Check Reagent Inventory After Aspiration");
+      
+      //Result.xml - Reagent Status 2 -Inprogress
+      ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_2", "I");
+      
+      //Verify the Reagent availability and its Count value
+      var reagentStatus=VerifyReagentStatusForRT(arrTestData2);
+      var counter = arrTestData2["length"]
+      if(reagentStatus==0)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_2", "F");
+        Runner["Stop"]();
+      }
+      else if(reagentStatus<counter)
+      {
+        Log["Error"]("Reagent Verification Failed")
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_2", "F");
+      }
+      else
+      {
+        //Result.xml - Reagent Status 2 -Pass
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Reagent_Status_2", "P");
+      }
+      
+      Log["PopLogFolder"]();
+      
+      //***************************************************************************************
+      // Verify IMT test Processing - Muru
+      //***************************************************************************************
+      Log["AppendFolder"]("Verify IMT Test Processing");
+      ReportTestStatusToResultXML("RoundTripWorkflow", "IMTTestProcessing", "I");
+      if(!VerifyIMTTestProcessing(arrIMTTestdata))
+      {
+         Log["Error"]("IMT Test Processing Failed");
+         ReportTestStatusToResultXML("RoundTripWorkflow", "IMTTestProcessing", "F");
+      }
+      else
+      {
+       Log["Checkpoint"]("IMT Test Processing Completed");
+       ReportTestStatusToResultXML("RoundTripWorkflow", "IMTTestProcessing", "P");       
+      }
+      Log["PopLogFolder"]();   
+      
+    }
+    catch(e)
+    {
+    Log["Error"]("Exception:"+ e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }   
+}
+
+/*-------------------------------------- ROUNDTRIP REUSABLE FUNCTIONS --------------------------------------------------------*/
+
+
+
+
+
+
+
+//'***************************************************************************************************************************
+//*  FunctionName : CreatingAndWritingToTextFile
+//*  Description: CreatingAndWritingToTextFile
+//*  Input: sPath,sContent)
+//*  Output: na
+//*  Example: CreatingAndWritingToTextFile(sPath,sContent)
+//*  Date of Creating: 30/10/2018
+//*  Created By: Bhawya V J
+//'*************************************************************************************************************************** 
+//Currently not used      
+function CreatingAndWritingToTextFile(sPath,sContent)
+{  
+    try{
+      if(aqFile.Create(sPath) == 0){
+        aqFile.WriteToTextFile(sPath, sContent,aqFile["ctANSI"]);
+        Log.Message("The file is created and the specified text is written to it successfully.");}
+      else 
+        Log.Error("The file was not created.");
+    }catch(exp){
+      Log["Error"](exp["description"]);
+      return false;}
+    return true;
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : LaunchAndLoginHydra
+//*  Description: Launch and Login to Hydra
+//*  Input: na
+//*  Output: Boolean
+//*  Example: InitializeARM
+//*  Date of Creating: 10 Sep 2018
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function LaunchAndLoginHydra()
+{  
+
+  try
+    {InitializeMetaDataHYDRA();
+        //Log Open
+        LogHighlight("INITIALIZE :Launch and Login to Hydra");
+
+        //Read data for Login
+        var arrTestData = GetTestItemsByTestName(TestDataFile,"GenericARM","Login");
+        var dictColumn=arrTestData[0];
+    
+        /*---------- LAUNCH -----------*/
+         
+        //Launch Hydra
+        if(!LaunchHydra())
+        {
+          Log["Error"]("Failed in Lauching Hydra");
+          ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "F");
+          Runner["Stop"]()
+        }
+        
+        //Result.xml - Launch_Hydra - Pass
+        ReportTestStatusToResultXML("Initialize", "Launch_Hydra", "P");
+        
+        //Adding delay
+      aqUtils["Delay"](30000,"Adding delay for UIW services to start")
+          
+        /*--------- LOGIN ------------*/
+        
+        //Result.xml - Login_Hydra - Inprogress
+        ReportTestStatusToResultXML("Initialize", "Login_Hydra", "I");
+        
+        //Login to Hydra
+        if(!LoginToHydra(dictColumn["Item"]("User"),dictColumn["Item"]("Password")))
+        {
+          Log["Error"]("Failed in Login Hydra");
+          ReportTestStatusToResultXML("Initialize", "Login_Hydra", "F");
+          Runner["Stop"]()
+        }
+        
+        //Result.xml - Login_Hydra - Pass
+        ReportTestStatusToResultXML("Initialize", "Login_Hydra", "P");
+    
+        /*------ MODULE STATE -------*/
+    
+        //Call Function    
+//        if(!CheckModuleStatus()){
+//          Log["PopLogFolder"]()
+//          return false;
+//        }
+
+        //Log close
+        Log["PopLogFolder"]()
+        return true;
+        
+    }catch(e){
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : checkTestAffinities()
+//*  Description: Checks for affinities status in ARM console
+//*  Input: 
+//*  Output: boolean
+//*  Example: checkTestAffinities()
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+//Currently no using affinities function
+ function checkTestAffinities()
+{
+    try{
+          //Initialize variables
+          Log["Enabled"]="false"
+          if(Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\bin\\ARMConsole.exe", 1)["Exists"])
+          {
+            cmdObj=  Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\bin\\ARMConsole.exe", 1)
+          } 
+          else
+          {
+            cmdObj=  Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\Bin\\ARMConsole.exe", 1)
+          } 
+          Log["Enabled"]="true"
+          
+          //Checking Test affinities status in ARM console
+          if((cmdObj["Exists"]==true))
+          {
+            for(i=1; i < 300; i++)
+            {
+              aqUtils["Delay"](2000, "Waiting for Test Affinities text to load");
+            
+              if (aqString["StrMatches"]("0 Test Affinities available",cmdObj["wText"]))
+              {            
+                //do nothing
+              }
+              else
+              {
+                Log["Message"]( "Test Affinities available");
+                return true;
+              }
+              
+            }
+            
+            //If Test affinities not displayed as expected
+            if(i==300)
+            {
+              Log["Error"](" Test Affinities text is not displayed successfully ");
+              Log["PopLogFolder"]();
+              return false;
+            }
+          }
+    }catch(e)
+    {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    } 
+}  
+
+//'***************************************************************************************************************************
+//*  FunctionName : CreatePatientOrderForRT(arrTestData1)
+//*  Description: Fetches patient order details from Test data and sends to function create patient order
+//*  Input: arrTestData1
+//*  Output: POECount
+//*  Example: CreatePatientOrderForRT(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function CreatePatientOrderForRT(arrTestData1)
+{
+  try
+  {
+    var counter = arrTestData1["length"];
+    var POECount=0;
+  
+    for(i=0;i<arrTestData1["length"];i++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData1[i];
+      var Assay1 = dictColumn1["Item"]("Assay")
+      var Specimen1 = dictColumn1["Item"]("Specimen")
+      var Priority1 = dictColumn1["Item"]("Priority")
+      var Analyzer1 = dictColumn1["Item"]("Analyzer")
+      var SID1 = dictColumn1["Item"]("SampleId")
+      
+      //Create patient order
+      if(StepCreatePatientOrderHydra(SID1,Specimen1,Priority1,Analyzer1,Assay1))
+        POECount=POECount+1;
+    }
+    return POECount;
+  } 
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+} 
+
+//Muru
+function VerifyIMTTestProcessing(arrIMTTestdata)
+{
+  
+  try{      
+    
+         
+        
+          //Initialize variables
+          dictColumn1=arrIMTTestdata[0]
+          var Assay1 = dictColumn1["Item"]("Assay")
+          var Specimen1 = dictColumn1["Item"]("Specimen")
+          var Priority1 = dictColumn1["Item"]("Priority")
+          var Analyzer1 = dictColumn1["Item"]("Analyzer")
+          var SID1 = dictColumn1["Item"]("SampleId")
+      
+          //Create patient order
+          Log["AppendFolder"]("Create Patient Order for IMT Tests");
+          if(!StepCreatePatientOrderHydra(SID1,Specimen1,Priority1,Analyzer1,Assay1))
+            {
+              Log["Error"]("Patient Order Creation for IMT Tests Failed");
+              Log["PopLogFolder"]();
+              return false;
+            }
+          else
+          {
+            Log["Checkpoint"]("Patient Order created Successfully for IMT Tests");
+            Log["PopLogFolder"]();
+          }
+ 
+            
+          //Load Samples     
+          Log["AppendFolder"]("Loading IMT Patient Sample in DL")
+          if(!LoadSamples(arrIMTTestdata))
+          {
+            Log["Error"]("Sample Loading Failed for IMT tests");
+            Log["PopLogFolder"]();
+            return false;
+          }
+          else
+          {
+          //Adding delay
+          aqUtils["Delay"](40000,"Waiting for sample to load");
+          Log["Checkpoint"]("Samples successfully loaded in DL");          
+          Log["PopLogFolder"]();
+          }
+          
+          
+          //Verify Sample status in Sample List screen           
+          Log["AppendFolder"]("Verify IMT Sample Status in SampleList Screen");
+          if(!VerifySampleStatusForRT(arrIMTTestdata))
+          {
+            Log["Error"]("Aspiration Verification Failed");
+            Log["PopLogFolder"]();
+            return false;                  
+          }
+          else
+          {
+           Log["Checkpoint"]("IMT Test Sample successfully Aspirated");
+           Log["PopLogFolder"]();
+          }
+          
+          //Verify Sample status in Worklist Screen
+          Log["AppendFolder"]("Verify Sample Status in Worklist Screen ");
+          if(!VerifyResultsForRT(arrIMTTestdata))
+          {
+            Log["Error"]("Sample Result Verification Failed in Worklist Screen");
+            Log["PopLogFolder"]();
+            return false;                  
+          }
+          else
+          {
+           Log["Checkpoint"]("Sample Result Verification Passed in Worklist Screen");
+           Log["PopLogFolder"]();
+          }               
+         return true;      
+        
+    }
+    catch(e)
+    {
+    Log["Error"]("Exception:"+ e["Description"]);
+    return false;
+    }
+  
+
+}
+
+
+//'***************************************************************************************************************************
+//*  FunctionName : LoadSamples(arrTestData1)
+//*  Description: Fetches patient order details from Test data and sends to function LoadSamplesThroughDL
+//*  Input: arrTestData1
+//*  Output: boolean
+//*  Example: LoadSamples(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function LoadSamples(arrTestData1)
+{
+  try
+  {
+    for(i=0;i<arrTestData1["length"];i++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData1[i];
+      if(i==0)
+      var SID1 = dictColumn1["Item"]("SampleId");
+      else if(i==1)
+      var SID2 = dictColumn1["Item"]("SampleId");
+      else
+      var SID3 = dictColumn1["Item"]("SampleId");
+      }
+      //Load samples through DL
+      if(!StepLoadSamples(SID1,SID2,SID3))
+      return false;
+    
+  } 
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+return true;
+} 
+
+//****************************************************************************************************************************
+//*  FunctionName : VerifySampleStatusForRT(arrTestData1)
+//*  Description: Fetches Sample ID details from Test data and sends to function StepCheckSampleStatus
+//*  Input: arrTestData1
+//*  Output: SampleCount
+//*  Example: VerifySampleStatusForRT(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function VerifySampleStatusForRT(arrTestData1)
+{
+ try
+  {      
+      //Initialize variables       
+      var SampleStatus="Aspirated";
+      var SampleCount=0;
+      var counter = arrTestData1["length"];
+      
+      //Verify Sample status
+      for(z=0;z<counter;z++)
+      {
+        dictColumn1=arrTestData1[z];
+        var SID = dictColumn1["Item"]("SampleId")
+        if(StepCheckSampleStatus(SID,SampleStatus))
+            SampleCount=SampleCount+1;
+      }
+      return SampleCount;
+  }  
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+}
+
+//****************************************************************************************************************************
+//*  FunctionName : VerifyReagentStatusForRT(arrTestData1)
+//*  Description: Navigates to Reagent overview screen. Fetches Assay Name details from Test data and sends to function VerifySampleStatus. Returns number of reagent present
+//*  Input: arrTestData1
+//*  Output: reagentCount
+//*  Example: VerifyReagentStatusForRT(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function VerifyReagentStatusForRT(arrTestData1)
+{
+ try
+  {   
+      
+      //Initialize variables       
+      var counter = arrTestData1["length"]
+      var reagentCount=0;
+      
+      //Verify Reagent status
+      for(z=0;z<counter;z++)
+      {
+        dictColumn1=arrTestData1[z];
+        var Assay1 = dictColumn1["Item"]("Assay")
+        
+        //Verify the Reagent availability and its Count value
+        if(StepGetInventoryCountValueFromReagentGrid(Assay1))
+            reagentCount = reagentCount+1;
+      }
+        return reagentCount;
+  }  
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+}
+
+//****************************************************************************************************************************
+//*  FunctionName : VerifyResultsForRT(arrTestData1)
+//*  Description: Fetches Sample ID details from Test data and sends to function fnVerifyTestResult
+//*  Input: arrTestData1
+//*  Output: blnResult
+//*  Example: VerifyResultsForRT(arrTestData1)
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function VerifyResultsForRT(arrTestData1)
+{
+try
+  {
+    var blnResult = 0;
+  
+    for(i=0;i<arrTestData1["length"];i++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData1[i];
+      var SID1 = dictColumn1["Item"]("SampleId")
+      
+      //Verify sample status
+      var testRes=0;
+      if(StepVerifyTestResult(SID1))
+        blnResult = blnResult+1;
+    }
+    return blnResult;
+  } 
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+} 
+
+//****************************************************************************************************************************
+//*  FunctionName : MoveAllSamplesToHistoricalHydra()
+//*  Description: Moves all samples to historical
+//*  Input: 
+//*  Output: boolean
+//*  Example: MoveAllSamplesToHistoricalHydra()
+//*  Modified By: Shahana
+//'***************************************************************************************************************************
+function MoveAllSamplesToHistoricalHydra()
+{
+  try
+  {
+    Log.AppendFolder("Worklist::MoveAllSamplesToHistorical");
+    //var objctrl =GetControl("Worklist_WorklistOverview","cmbBoxTimeFilter");
+    var objctrl=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("ResultsManagementWin")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("SampleOverviewTab")["WinFormsObject"]("ContentFrame_SampleOverviewTab")["WinFormsObject"]("SampleOverviewCtrl")["WinFormsObject"]("panelDashBoard")["WinFormsObject"]("dashboardCtrl1")["WinFormsObject"]("shellGroupBoxSampleInformation")["WinFormsObject"]("comboBox_TimeFilter");
+    SetComboText(objctrl,"All");
+    
+    aqUtils["Delay"](5000, "Applying filter")
+    
+    Log["Enabled"]="false";
+    var objctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    objctrl["Activate"]();
+    objctrl["Click"](32, 26);
+    Log["Enabled"]="true";
+    
+    aqUtils["Delay"](5000, "Applying filter")
+  
+    var objctrl =GetControl("Worklist_WorklistOverview","btnMoveToHistorical");
+    while (objctrl["Enabled"])
+    {
+      ClickControl(objctrl);
+  
+      var objctrl =GetControl("Worklist_WorklistOverview","btnYes");
+      ClickControl(objctrl);
+      var objctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+      var intSampleCount = GetGridRowCount(objctrl);
+      if(intSampleCount == 0)
+      {
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["PopLogFolder"]();
+        return false;  
+      }
+    } 
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : CheckReagentsAvailability
+//*  Description: Checks if reagent available or not
+//*  Input: arrTestData2,TypeOfReagent
+//*  Output: Boolean
+//*  Example: CheckReagentsAvailability(arrTestData2,TypeOfReagent)
+//*  Date of Creating: 6 Feb 2019
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function CheckReagentsAvailability(arrTestData2,TypeOfReagent)
+{
+  try
+  {
+    var Result=0;
+    var IMReagentCount=0;
+    var IMAncReagentCount=0;
+    var CHReagentCount=0;
+    var blnResult=false;
+  
+    //Navigate to Reagent overview screen 
+    var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+      Runner["Stop"]();
+  
+    //Count reagents
+    for(i=0;i<arrTestData2["length"];i++)
+    {
+      
+      //Initialize variables
+      dictColumn2=arrTestData2[i];
+      var Assay = dictColumn2["Item"]("Assay")
+      var ReagentType = dictColumn2["Item"]("ReagentType")
+      
+      //Counting IM reagents
+      if(ReagentType=="IM")
+      {
+        IMReagentCount=IMReagentCount+1;
+      }
+      
+      //Counting IM Anc reagents
+      if(ReagentType=="IMAnc")
+      {
+        IMAncReagentCount=IMAncReagentCount+1;
+      }
+      
+      //Counting CH reagents
+      if(ReagentType=="CH")
+      {
+        CHReagentCount=CHReagentCount+1;
+      }    
+    }
+    
+    //check if reagents available or not
+    for(i=0;i<arrTestData2["length"];i++)
+    {
+      //Initialize variables
+      dictColumn2=arrTestData2[i];
+      var Assay = dictColumn2["Item"]("Assay")
+      var ReagentType = dictColumn2["Item"]("ReagentType")
+      
+      //Verify IM reagent availability
+      if(TypeOfReagent=="IM"&&ReagentType=="IM")
+      {
+        if(VerifyReagentLoaded(Assay,ReagentType))
+            Result = Result+1;         
+      }
+      
+      //Verify IM Anc reagent availability
+      if(TypeOfReagent=="IMAnc"&&ReagentType=="IMAnc")
+      {
+        if(VerifyReagentLoaded(Assay,ReagentType))
+            Result = Result+1;         
+      }
+      
+      //Verify CH reagent availability
+      if(TypeOfReagent=="CH"&&ReagentType=="CH")
+      {
+        if(VerifyReagentLoaded(Assay,ReagentType))
+          Result = Result+1; 
+      }
+    }
+    
+    if(TypeOfReagent=="IM")
+    {
+      if(IMReagentCount==Result)
+      {
+        blnResult=true;
+        Log["Message"]("Expected IM Reagents to be available : "+IMReagentCount+ ",Actual count is : "+Result)
+      }
+      else
+      {
+        blnResult=false;
+        Log["Message"]("Expected IM Reagents to be available : "+IMReagentCount+ ",Actual count is : "+Result)
+      }
+    }
+    
+    if(TypeOfReagent=="IMAnc")
+    {
+      if(IMAncReagentCount==Result)
+      {
+        blnResult=true;
+        Log["Message"]("Expected IM Reagents to be available : "+IMAncReagentCount+ ",Actual count is : "+Result)
+      }
+      else
+      {
+        blnResult=false;
+        Log["Message"]("Expected IM Reagents to be available : "+IMAncReagentCount+ ",Actual count is : "+Result)
+      }
+    }
+    
+    if(TypeOfReagent=="CH")
+    {
+      if(CHReagentCount==Result)
+      {
+        blnResult=true;
+        Log["Message"]("Expected CH Reagents to be available : "+CHReagentCount+ ",Actual count is : "+Result)
+      }
+      else
+      {
+        blnResult=false;
+        Log["Message"]("Expected CH Reagents to be available : "+CHReagentCount+ ",Actual count is : "+Result)
+      }
+    }
+    
+    return blnResult;
+  } 
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+
+function StepLoadSamples(SID1,SID2,SID3)
+{   
+    Log["AppendFolder"]("Navigate to Simulate Load Rack");
+    //Navigate to Samples->Simulate Load Rack tab
+    //Click Sample tab
+    var SamplesTab=GetControl("Samples_SampleHandler","btnSamples");
+    SamplesTab.Click();
+    aqUtils["Delay"](3000);
+  
+    //Click Simulate Load Rack tab
+    var LoadRackTab=GetControl("Samples_SimulateLoadRack","tbbtnSimulateLoadRack");
+    LoadRackTab.Click();
+    aqUtils["Delay"](1000);
+    Log["PopLogFolder"]();
+        
+    return LoadSamplesThroughDL(SID1,SID2,SID3,'','',''); 
+}

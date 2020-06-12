@@ -1,0 +1,20 @@
+80 WaterTankLevelPercent
+1001 CHBathLevelHighSensorRawADC
+9002 CHBathLevelLowSensorRawADC
+61 WaterPressureHigh
+11 WaterPressureLow
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

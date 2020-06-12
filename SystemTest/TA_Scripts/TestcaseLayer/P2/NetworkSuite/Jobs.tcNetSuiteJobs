@@ -1,0 +1,1069 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="child list">
+			<Node name="tasks">
+				<Node name="item data">
+					<Node name="child list">
+						<Node name="autodatageneration">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="AutoDataGeneration"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{15AD0996-F5C4-408B-ACF3-728D5B2DB81B}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\IA\IA.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="IA\Script\IASimulator\SetAutoDataGeneration"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="35"/>
+							<Prp name="key" type="S" value="{0108E37A-D075-4E0D-A588-8ACEAF02A71F}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="checkwastebinfull">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="CheckWasteBinFull"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperSimulator\CheckWasteBinFull"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="18"/>
+							<Prp name="key" type="S" value="{2E7D9A45-32CB-4EB5-AF1C-5D3C44E78952}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="checkwastebinpresent">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="CheckWasteBinPresent"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperSimulator\CheckWasteBinPresent"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="11"/>
+							<Prp name="key" type="S" value="{91408A36-F485-4C47-89F8-DE08D091D6D5}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="getcapcount">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="GetCapCount"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperLibrary\GetCapCount"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="10"/>
+							<Prp name="key" type="S" value="{AA9D6BF4-070C-4770-A8D9-DAA5961A7337}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="getdcapmmsampleid">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="GetDCapMMSampleID"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DCapModuleManager\DCap_GetlatestSampleID"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="12"/>
+							<Prp name="key" type="S" value="{F5A164D8-AF5B-4F01-A67F-5DE3A2C435E7}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="getdcapmmsampleids">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="GetDCapMMSampleIDs"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DCapModuleManager\DCap_GetlatestSampleIDs"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="13"/>
+							<Prp name="key" type="S" value="{FE2514B1-146D-405B-8ECD-4683948DE491}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="launchdvs">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="LaunchDVS"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\LaunchDVSSimulator\LaunchDVS"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="3"/>
+							<Prp name="key" type="S" value="{CE17D62F-6302-467A-8F8F-AEEFC068F1F3}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="launchdvssh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="LaunchDVSSH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\LaunchDVSSimulator\LaunchDVS"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="26"/>
+							<Prp name="key" type="S" value="{65293444-0808-46A4-9931-1CADAEBE7952}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="loadreagent">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="LoadReagent"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{15AD0996-F5C4-408B-ACF3-728D5B2DB81B}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\IA\IA.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="IA\Script\IASimulator\LoadReagent"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="22"/>
+							<Prp name="key" type="S" value="{692A0BA8-19F4-4F52-9ED1-C0199C39EE4C}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="openclosedrawer">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="OpenCloseDrawer"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\SHEmulator\OpenCloseDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="1"/>
+							<Prp name="key" type="S" value="{FDC54A0B-617A-4EA9-9043-25A22F679C0B}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="openclosedrawersh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="OpenCloseDrawerSH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\SHEmulator\OpenCloseDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="24"/>
+							<Prp name="key" type="S" value="{64946E66-64E7-462E-A86A-8BF038B63AE2}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="placefullypopulatedtray">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="PlaceFullyPopulatedTray"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceOrRemoveTrayInDrawer\SelectPlaceFullyPopulatedOutputTrayInDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="7"/>
+							<Prp name="key" type="S" value="{F51138F8-0E4D-453C-93B6-82E33B9A1631}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="placefullypopulatedtraysh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="PlaceFullyPopulatedTraySH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceOrRemoveTrayInDrawer\SelectPlaceFullyPopulatedOutputTrayInDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="30"/>
+							<Prp name="key" type="S" value="{E9307435-DC6D-4039-9A26-9527D22D9D2F}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="placeoutputtray">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="PlaceOutputTray"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceOrRemoveTrayInDrawer\SelectPlaceOutputTrayInDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="2"/>
+							<Prp name="key" type="S" value="{80D0373B-2117-4D33-85FD-CE4C3B5634CA}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="placeoutputtraysh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="PlaceOutputTraySH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceOrRemoveTrayInDrawer\SelectPlaceOutputTrayInDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="25"/>
+							<Prp name="key" type="S" value="{85368C29-6681-433F-9A43-ED5978459BA3}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="placetube">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="PlaceTube"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceTubeInDVS\PlaceInputTubeInDVS"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="0"/>
+							<Prp name="key" type="S" value="{6065B5F3-B67B-4B75-A868-8D6BF1B8255F}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="placetubesh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="PlaceTubeSH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value=""/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceTubeInDVS\PlaceInputTubeInDVS"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="23"/>
+							<Prp name="key" type="S" value="{7B8914CA-4E58-40EE-A3C6-1DCBD95B9BF5}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="removetray">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="RemoveTray"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceOrRemoveTrayInDrawer\RemoveTrayFromDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="6"/>
+							<Prp name="key" type="S" value="{88A0D5AB-1911-409F-A7E3-0C29E2BBFBA3}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="removetraysh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="RemoveTraySH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\PlaceOrRemoveTrayInDrawer\RemoveTrayFromDrawer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="29"/>
+							<Prp name="key" type="S" value="{CEA28EB0-0C78-4432-A73F-85B6A507EED8}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="removewastebinwhensampleappearsinmm">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="RemoveWasteBinWhenSampleAppearsInMM"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DCapModuleManager\RemoveWasteBinWhenSampleAppearsInMM"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="16"/>
+							<Prp name="key" type="S" value="{3804BFD4-028F-4B3E-BF99-635370BD55A5}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="shutdowncc">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="ShutdownCC"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{4BC0A312-854A-4C48-B8A9-D98855087FCC}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\CCLibrary\CCShutdown"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="32"/>
+							<Prp name="key" type="S" value="{346E4724-D12A-4216-82DC-2CAC7ED1804F}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="shutdowndcap">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="ShutdownDCap"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\DecapperLibrary\DecapperShutdown"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="9"/>
+							<Prp name="key" type="S" value="{A87F2E17-BCC9-4B1F-913B-0D491C09B958}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="shutdownia">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="ShutdownIA"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{15AD0996-F5C4-408B-ACF3-728D5B2DB81B}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\IALibrary\IAShutdown"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="34"/>
+							<Prp name="key" type="S" value="{E8A01A63-C670-4E63-94D2-0A5B3924D0A3}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="shutdownsh">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="ShutdownSH"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\SHLibrary\SHShutdown"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="4"/>
+							<Prp name="key" type="S" value="{A1FF92B5-DA24-4652-A25F-6B62775932F0}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="shutdownsh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="ShutdownSH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\SHLibrary\SHShutdown"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="27"/>
+							<Prp name="key" type="S" value="{28A63CA9-32BE-4F94-B98A-0C64CF5A1D02}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="shutdownslr">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="ShutdownSlr"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{53F5A8B5-EF4C-45C9-B58D-F0F02970644D}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\SealerLibrary\ShutdownSealer"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="37"/>
+							<Prp name="key" type="S" value="{24EF4E2F-D4A4-41B3-A481-2CBE6D50890C}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="startcc">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="StartCC"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{4BC0A312-854A-4C48-B8A9-D98855087FCC}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\InvokeCCSim"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="31"/>
+							<Prp name="key" type="S" value="{8B6D2585-9D07-4A0E-900E-ABA18BE4519E}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="startdcap">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="StartDCap"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\InvokeDCSim"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="8"/>
+							<Prp name="key" type="S" value="{2CB0B316-E80D-4842-A369-C4EBD8B4B79A}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="startia">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="StartIA"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{15AD0996-F5C4-408B-ACF3-728D5B2DB81B}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\InvokeIASim"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="33"/>
+							<Prp name="key" type="S" value="{52D248EA-BA6D-49C7-BD45-CF4F68D1BA6C}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="startsh">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="StartSH"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\InvokeSHSim"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="5"/>
+							<Prp name="key" type="S" value="{5B950B17-4B8D-4D6F-9E37-4E577DE26D1F}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="startsh2">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="StartSH2"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{CD961D27-AFE9-4ADB-B440-D5A0F97547D2}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\InvokeSHSim"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="28"/>
+							<Prp name="key" type="S" value="{2EA132C6-0136-42C7-B0AB-9D40DB959A11}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="startslr">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="StartSlr"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{53F5A8B5-EF4C-45C9-B58D-F0F02970644D}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\InvokeSimApps\InvokeSimApps.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="InvokeSimApps\Script\InvokeSlrSim\InvokeSealerSim"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="36"/>
+							<Prp name="key" type="S" value="{97A30F7D-F323-4D1F-B199-7DF262A25404}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="triggeroverflowsensorwhensampleapperasinmm">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="TriggerOverflowSensorWhenSampleApperasInMM"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DCapModuleManager\TriggerOverflowSensorWhenSampleAppearsInMM"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="19"/>
+							<Prp name="key" type="S" value="{762515C3-4365-4F36-8B19-85196FED5483}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="uncheckwastebinfull">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="UncheckWasteBinFull"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperSimulator\UncheckWasteBinFull"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="20"/>
+							<Prp name="key" type="S" value="{6C879517-1796-4A5C-9DAB-EFA7F46B6D09}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="uncheckwastebinpresent">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="UnCheckWasteBinPresent"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperSimulator\UncheckWasteBinPresent"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="14"/>
+							<Prp name="key" type="S" value="{12ACD0AA-1AC4-4D19-AC1A-B8FCFAA0334B}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="updatedecapperxmlwastebincount">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="UpdateDecapperXMLWasteBinCount"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperLibrary\SetThresholdAndCapCountInDecapper"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="15"/>
+							<Prp name="key" type="S" value="{943A062A-EA83-44F9-BB39-B7DE5077A5D5}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="updatetcs2mainconfigfile">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="UpdateTCS2MainConfigFile"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\SampleHandler\SampleHandler.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="SampleHandler\Script\SHEmulator\SetTCS2SWConfigFile"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="38"/>
+							<Prp name="key" type="S" value="{27817263-3433-4089-8AA7-448EF3B10474}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="verifynosamplesindecapper">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="VerifyNoSamplesInDecapper"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DCapModuleManager\VerifySampleNotLoadedToDecapper"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="17"/>
+							<Prp name="key" type="S" value="{7D7BFE54-8930-4686-803E-BA8920CBD1CE}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+						<Node name="verifyoverflowsensorisnothigh">
+							<Node name="item data">
+								<Node name="settings"/>
+								<Prp name="action after run" type="I" value="3"/>
+								<Prp name="active" type="B" value="-1"/>
+								<Prp name="caption" type="S" value="VerifyOverflowSensorIsNotHigh"/>
+								<Prp name="copy remote log mode" type="I" value="1"/>
+								<Prp name="host" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+								<Prp name="host timeout" type="I" value="3"/>
+								<Prp name="instances" type="I" value="1"/>
+								<Prp name="previous instance mode" type="I" value="1"/>
+								<Prp name="project path" type="S" value="TestcaseLayer\Decapper\Decapper.mds"/>
+								<Prp name="remote application" type="I" value="1"/>
+								<Prp name="signature" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+								<Prp name="tag" type="S" value=""/>
+								<Prp name="test" type="S" value="Decapper\Script\DecapperSimulator\VerifyOverflowSensorIsNotHigh"/>
+								<Prp name="version" type="S" value="12.0"/>
+							</Node>
+							<Prp name="index" type="I" value="21"/>
+							<Prp name="key" type="S" value="{BD03C028-9464-4B7B-8DB3-3FF985AB7230}"/>
+							<Prp name="pluginname" type="S" value="Network Suite"/>
+							<Prp name="type" type="S" value="{23C4D44E-8AC2-4667-BAFD-DAD89D94804E}"/>
+							<Prp name="typename" type="S" value="Task"/>
+						</Node>
+					</Node>
+					<Node name="folders">
+						<Node name="cc">
+							<Node name="folders"/>
+							<Node name="references">
+								<Prp name="{346e4724-d12a-4216-82dc-2cac7ed1804f}" type="S" value=""/>
+								<Prp name="{8b6d2585-9d07-4a0e-900e-aba18be4519e}" type="S" value=""/>
+							</Node>
+							<Prp name="caption" type="S" value="CC"/>
+							<Prp name="description" type="S" value="A logical folder that is used to organize project items and elements."/>
+							<Prp name="moniker" type="S" value=""/>
+						</Node>
+						<Node name="decapper">
+							<Node name="folders"/>
+							<Node name="references">
+								<Prp name="{12acd0aa-1ac4-4d19-ac1a-b8fcfaa0334b}" type="S" value=""/>
+								<Prp name="{2cb0b316-e80d-4842-a369-c4ebd8b4b79a}" type="S" value=""/>
+								<Prp name="{2e7d9a45-32cb-4eb5-af1c-5d3c44e78952}" type="S" value=""/>
+								<Prp name="{3804bfd4-028f-4b3e-bf99-635370bd55a5}" type="S" value=""/>
+								<Prp name="{6c879517-1796-4a5c-9dab-efa7f46b6d09}" type="S" value=""/>
+								<Prp name="{762515c3-4365-4f36-8b19-85196fed5483}" type="S" value=""/>
+								<Prp name="{7d7bfe54-8930-4686-803e-ba8920cbd1ce}" type="S" value=""/>
+								<Prp name="{91408a36-f485-4c47-89f8-de08d091d6d5}" type="S" value=""/>
+								<Prp name="{943a062a-ea83-44f9-bb39-b7de5077a5d5}" type="S" value=""/>
+								<Prp name="{a87f2e17-bcc9-4b1f-913b-0d491c09b958}" type="S" value=""/>
+								<Prp name="{aa9d6bf4-070c-4770-a8d9-daa5961a7337}" type="S" value=""/>
+								<Prp name="{bd03c028-9464-4b7b-8db3-3ff985ab7230}" type="S" value=""/>
+								<Prp name="{f5a164d8-af5b-4f01-a67f-5de3a2c435e7}" type="S" value=""/>
+								<Prp name="{fe2514b1-146d-405b-8ecd-4683948de491}" type="S" value=""/>
+							</Node>
+							<Prp name="caption" type="S" value="Decapper"/>
+							<Prp name="description" type="S" value="A logical folder that is used to organize project items and elements."/>
+							<Prp name="moniker" type="S" value=""/>
+						</Node>
+						<Node name="ia">
+							<Node name="folders"/>
+							<Node name="references">
+								<Prp name="{0108e37a-d075-4e0d-a588-8aceaf02a71f}" type="S" value=""/>
+								<Prp name="{52d248ea-ba6d-49c7-bd45-cf4f68d1ba6c}" type="S" value=""/>
+								<Prp name="{692a0ba8-19f4-4f52-9ed1-c0199c39ee4c}" type="S" value=""/>
+								<Prp name="{e8a01a63-c670-4e63-94d2-0a5b3924d0a3}" type="S" value=""/>
+							</Node>
+							<Prp name="caption" type="S" value="IA"/>
+							<Prp name="description" type="S" value="A logical folder that is used to organize project items and elements."/>
+							<Prp name="moniker" type="S" value=""/>
+						</Node>
+						<Node name="sealer">
+							<Node name="folders"/>
+							<Node name="references">
+								<Prp name="{24ef4e2f-d4a4-41b3-a481-2cbe6d50890c}" type="S" value=""/>
+								<Prp name="{97a30f7d-f323-4d1f-b199-7df262a25404}" type="S" value=""/>
+							</Node>
+							<Prp name="caption" type="S" value="Sealer"/>
+							<Prp name="description" type="S" value="A logical folder that is used to organize project items and elements."/>
+							<Prp name="moniker" type="S" value=""/>
+						</Node>
+						<Node name="sh">
+							<Node name="folders"/>
+							<Node name="references">
+								<Prp name="{5b950b17-4b8d-4d6f-9e37-4e577de26d1f}" type="S" value=""/>
+								<Prp name="{6065b5f3-b67b-4b75-a868-8d6bf1b8255f}" type="S" value=""/>
+								<Prp name="{80d0373b-2117-4d33-85fd-ce4c3b5634ca}" type="S" value=""/>
+								<Prp name="{88a0d5ab-1911-409f-a7e3-0c29e2bbfba3}" type="S" value=""/>
+								<Prp name="{a1ff92b5-da24-4652-a25f-6b62775932f0}" type="S" value=""/>
+								<Prp name="{ce17d62f-6302-467a-8f8f-aeefc068f1f3}" type="S" value=""/>
+								<Prp name="{f51138f8-0e4d-453c-93b6-82e33b9a1631}" type="S" value=""/>
+								<Prp name="{fdc54a0b-617a-4ea9-9043-25a22f679c0b}" type="S" value=""/>
+							</Node>
+							<Prp name="caption" type="S" value="SH"/>
+							<Prp name="description" type="S" value="A logical folder that is used to organize project items and elements."/>
+							<Prp name="moniker" type="S" value=""/>
+						</Node>
+						<Node name="sh2">
+							<Node name="folders"/>
+							<Node name="references">
+								<Prp name="{28a63ca9-32be-4f94-b98a-0c64cf5a1d02}" type="S" value=""/>
+								<Prp name="{2ea132c6-0136-42c7-b0ab-9d40db959a11}" type="S" value=""/>
+								<Prp name="{64946e66-64e7-462e-a86a-8bf038b63ae2}" type="S" value=""/>
+								<Prp name="{65293444-0808-46a4-9931-1cadaebe7952}" type="S" value=""/>
+								<Prp name="{7b8914ca-4e58-40ee-a3c6-1dcbd95b9bf5}" type="S" value=""/>
+								<Prp name="{85368c29-6681-433f-9a43-ed5978459ba3}" type="S" value=""/>
+								<Prp name="{cea28eb0-0c78-4432-a73f-85b6a507eed8}" type="S" value=""/>
+								<Prp name="{e9307435-dc6d-4039-9a26-9527d22d9d2f}" type="S" value=""/>
+							</Node>
+							<Prp name="caption" type="S" value="SH2"/>
+							<Prp name="description" type="S" value="A logical folder that is used to organize project items and elements."/>
+							<Prp name="moniker" type="S" value=""/>
+						</Node>
+					</Node>
+					<Node name="settings"/>
+					<Prp name="active" type="B" value="-1"/>
+					<Prp name="caption" type="S" value="Tasks"/>
+					<Prp name="signature" type="S" value="{E2AF080E-4F10-4DAC-8897-101FF5509E65}"/>
+					<Prp name="version" type="S" value="12.0"/>
+				</Node>
+				<Prp name="index" type="I" value="0"/>
+				<Prp name="key" type="S" value="{13484C46-359C-4750-9358-00296003605D}"/>
+				<Prp name="pluginname" type="S" value="Network Suite"/>
+				<Prp name="type" type="S" value="{E2AF080E-4F10-4DAC-8897-101FF5509E65}"/>
+				<Prp name="typename" type="S" value="Job"/>
+			</Node>
+		</Node>
+		<Node name="folders"/>
+		<Node name="settings"/>
+		<Prp name="signature" type="S" value="{54BD767E-85A4-491D-A3B2-EC88685BF3C8}"/>
+		<Prp name="version" type="S" value="12.0"/>
+	</Node>
+</Nodes>

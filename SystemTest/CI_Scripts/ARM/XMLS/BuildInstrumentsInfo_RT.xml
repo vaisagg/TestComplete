@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<InstrumentsInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <BuildInfo>
+    <NAME>ARM.T.ALL_20190326.1</NAME>
+    <BUILDID>ARM.T.ALL_20190326.1</BUILDID>
+    <BUILD>ARM.T.ALL_20190326.2</BUILD>
+    <DEPLOYMENTTYPE>HYDRA</DEPLOYMENTTYPE>
+    <INSTALLTYPE>Fresh</INSTALLTYPE>
+    <VAPPLINK>NA</VAPPLINK>
+    <Environment>Physical</Environment>
+    <VAPPName>NA</VAPPName>
+    <TESTTYPE>RoundTrip</TESTTYPE>
+  </BuildInfo>
+ <Instruments>
+    <Instrument>
+      <NAME>CSESIEM-4K62FLE</NAME>
+      <IP>192.168.1.7</IP>
+      <TYPE>DL</TYPE>
+      <SERIAL_NO>DL</SERIAL_NO>
+      <PRIMARY>true</PRIMARY>
+    </Instrument>
+    <Instrument>
+      <NAME>HS-SCIRG-SH</NAME>
+      <IP>192.168.1.7</IP>
+      <TYPE>HYDRA</TYPE>
+      <SERIAL_NO>HYDRA1</SERIAL_NO>
+      <PRIMARY>false</PRIMARY>
+      <MODE>Simulator</MODE>
+    </Instrument>  
+  </Instruments>
+</InstrumentsInfo>

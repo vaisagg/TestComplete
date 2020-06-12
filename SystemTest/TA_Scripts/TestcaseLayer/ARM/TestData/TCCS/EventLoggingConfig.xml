@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ConfigData.EventLogging>
+  <UIWEventLogProxy>
+    <!--Event service communicates with IM EventManagerProxy using this port number-->
+    <Port>
+      <!--Any one available/free port from the range of port numbers specified below will be used for logging-->
+      <!--below values are given only as an example, can be changed-->
+      <LowerLimit type="System.Int32">23000</LowerLimit>
+      <UpperLimit type="System.Int32">24000</UpperLimit>
+    </Port>
+    <!--Can be either Tcp(0) or Ipc(1).-->
+    <RemotingChannelType type="Siemens.Trinidad.CCDL.EventLogging.RemotingChannelType">Tcp</RemotingChannelType>
+    <!--Event manager proxy interface name-->
+    <EventManagerProxyUri type="System.String">IMEventManagerProxy</EventManagerProxyUri>
+    <!--IPAddress Empty means localhost.-->
+    <IPAddress type="System.String"></IPAddress>
+    <!--This is the url for the UIW Event Manager Service, Please edit this if your UIW Event Manager Service is running on a different box-->
+    <EventManagerServiceUrl type="System.String">tcp://localhost:20088/LogManagerService</EventManagerServiceUrl>
+    <!--For failed connection: Delay after which proxy should retry the connection, can be changed-->
+    <RetryDelay type="System.Int32">1</RetryDelay>
+    <!--For failed connection: Number of times the connection will be retried, can be changed-->
+    <MaxRetry type="System.Int32">600</MaxRetry>
+  </UIWEventLogProxy>
+</ConfigData.EventLogging>

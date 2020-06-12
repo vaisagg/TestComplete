@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{24B6FA0B-0143-461A-9758-AEB9E9A9428B}" version="14.0" key="{9D7FB7E6-CD97-4B77-9CF9-B874B11533D2}">
+	<children>
+		<child name="Wave1Migration" key="{BDF3E256-0E71-4A97-92E0-861A2188194D}" path="..\TestcaseLayer\Wave1Migration\Wave1Migration.mds" />
+		<child name="InitializationWave1" key="{7B1CDBFF-2B30-4A4E-902E-FD7D6AD10A1E}" path="..\TestcaseLayer\InitializationWave1\InitializationWave1.mds" />
+	</children>
+	<testItems key="{39608A09-8C38-4D33-8396-FCDD8B092256}">
+		<children>
+			<testItem key="{BDF3E256-0E71-4A97-92E0-861A2188194D}" enabled="True" timeout="0" stopOnError="True" description="" />
+			<testItem key="{7B1CDBFF-2B30-4A4E-902E-FD7D6AD10A1E}" enabled="True" timeout="0" stopOnError="True" description="" />
+		</children>
+	</testItems>
+	<variables key="{31888BFF-1C76-4A34-81ED-94C4F793DD97}">
+		<data Version="3" />
+	</variables>
+	<analysis key="{ACBE20F3-1267-4C80-9349-65E5A3266D41}" />
+	<scc key="{C900492B-D218-429C-9AA0-264B7D78CA88}" name="Git Plugin">
+		<data />
+	</scc>
+	<extender key="{1A3FC97E-9A66-4716-B166-35D10B4146E0}">
+		<CrossBrowserTesting Enable="True" />
+	</extender>
+</Root>

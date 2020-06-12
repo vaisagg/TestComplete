@@ -1,0 +1,2510 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+
+
+//------------------------------------Patient Order by Sample Id -------------------------
+
+//***************************************************************************************
+//*   Function Name       : CreatePatientOrder()
+//*   Function Description: This function is used Create Patient order using SampleID
+//*   Input               : SampleId, Specimen, Priority, AssayType, Assay & Replicates
+//*   Output              : return true, if the patient order is successfully
+//*                         return false, if failed to create the patient order
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 10 July 2019
+//*   Created By          : Prabu Ramaraj
+//*   Last Modified By    : Karthik Parthasarathy
+//*****************************************************************************************
+function CreatePatientOrder(SampleId, Specimen, Priority, AssayType, Assay, Replicates,DilutionValue,ismanualDilution)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders::Create Patient Order with sample id '" + SampleId + "' for the assay '" + Assay + "'");
+    
+    //Enter Sample ID
+    if(!EnterSampleId(SampleId)){
+      Log["Error"]("Unable to enter the exact SampleId '" + SampleId + "'in the Sample Id field");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Wait for the page to load the order content for the sample id entered
+    WaitForProgressRingToDisappear(15);  
+    
+    //Select Specimen from combobox
+    if(!SelectSpecimenType(Specimen))
+    {
+      Log["Error"]("Failed to select the specimen type in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Enter ManualDilution for the Test
+    if(DilutionValue != undefined)
+    {
+      if(ismanualDilution=="true")
+      {
+        if(!EnterManualDilution(DilutionValue))
+        {
+          Log["Error"]("Failed to enter manual Dilution");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+    }
+    //Select Order Priority from combobox
+    if(!SelectOrderPriority(Priority))
+    {
+      Log["Error"]("Failed to select the sample priority in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on Add Test
+    if(!ClickOnAddTestButton())
+    {
+      Log["Error"]("Failed to locate / click on the Add Test Button in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Check the add test popup displayed 
+    if(!CheckAddTestPopupDisplayed()) 
+    {
+      Log["Error"]("Add Test Popup dialogue is not displayed to select the test");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select the assay type from combobox
+    if(!SelectAssayType(AssayType))
+    {
+      Log["Error"]("Failed to select assay type in patient order creation step");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select Test
+    if(!SelectAssayByName(Assay)) {
+      Log["Error"]("Unable to select the test '" + Assay + "' in add test popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on Add Test Button
+    if(!SubmitTestSelectedFromAddTestPopup())
+    {
+      Log["Error"]("Unable to click on the add test button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    aqUtils["Delay"](3000);
+    
+    //Check the test is added in the order list datagrid
+    if(VerifyTheTestDisplayedInPatientOrderDatagridDisplayed(Assay)) 
+    {
+      if(Replicates != undefined && Replicates > 0)
+      {
+        UpdateReplicatesByAssayName(Assay,Replicates);
+      }
+    } else {
+      Log["Error"]("Given test name '" + Assay + "' is not displayed in the grid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select Dilution for the Test
+    if(DilutionValue != undefined)
+    {
+      if(ismanualDilution=="false")
+      {
+         if(!UpdateDilutionByAssayName(Assay, DilutionValue))
+         {
+          Log["Error"]("Failed to select Dilution value");
+          Log["PopLogFolder"]();
+          return false;
+         }    
+      }        
+    }
+       
+    //Click on Place Order Button
+    if(!ClickOnPlaceOrderButton())
+    {
+      Log["Error"]("Unable to click on the place order butotn in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Wait for the order to be placed
+    WaitForProgressRingToDisappear(30);
+    
+    //Click Ok on Alert Dialogue to confirm
+    if(!ClickOKOnAlertPopup()) 
+    {
+      Log["Error"]("Failed to locate / click on the ok button in patient order creation success popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    aqUtils["Delay"](1000);
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : EnterSampleId()
+//*   Function Description: This function is used to enter the given sample id
+//*   Input               : SampleId 
+//*   Output              : return true, if the given sample id is entered successfully
+//*                         return false, if failed to enter the given sample id
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function EnterSampleId(sampleId) 
+{
+  try
+  {
+    Log["AppendFolder"]("Enter Sample Id '" + sampleId + "'");
+    
+    //Get sample Id text box control
+    var sampleIdCtrl = GetAutomationIDControl("Orders_PatientOrders", "txtSampleId");
+    
+    //Check the sample id text  box displayed
+    if(VerifyObjectExistance(sampleIdCtrl)) 
+    {
+      //Click on inside the sample id textbox
+      ClickCtrl(sampleIdCtrl);
+      
+      //Get the delete icon control
+      var deleteButtonCtrl = GetAutomationIDControl("Orders_PatientOrders", "textFieldDeleteIcon");
+       
+      //Verify any existing text is displayed in sample id field by checking the delete icon
+      if(VerifyObjectExistance(deleteButtonCtrl)) 
+      {
+        //Clear the existing text by click on the X icon
+        ClickCtrl(deleteButtonCtrl);
+        
+        //Adding delay to clear the text in sample id text box
+        aqUtils["Delay"](1000);
+      }
+       
+       //Enter the sample Id
+       SendKeys(sampleIdCtrl,sampleId);
+       aqUtils["Delay"](1000);
+       
+       //Tab Out to update the other field data
+       SendKeys(sampleIdCtrl, "[Tab]");
+       aqUtils["Delay"](1000);
+       
+       //Verify the sample id is entered properly
+       if(sampleIdCtrl["Text"] == sampleId)
+       {
+          Log["Message"]("Sample Id '" + sampleId + "' successfully entered in the SampleId field");
+          Log["PopLogFolder"]();   
+          return true;
+       } else {
+         Log["Error"]("Unable to enter the given sample id, value displayed after entering the sample id is '" + sampleIdCtrl["Text"] + "'");
+         Log["PopLogFolder"]();   
+         return false;
+       }
+    } else {
+      Log["Error"]("Unable to locate the sample id text field in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : EnterManualDilution()
+//*   Function Description: This function is used to enter the given manual dilution value
+//*   Input               : ManualDilutionValue
+//*   Output              : return true, if the given manual dilution value is entered successfully
+//*                         return false, if failed to enter the given manual dilution value
+//*   Date of Creating    : 01 July 2019
+//*   Last Modified date  : NA
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function EnterManualDilution(manualDilutionValue)
+{
+  try
+  {
+    Log["AppendFolder"]("Enter the Manual Dilution '" + manualDilutionValue + "'");
+    
+    //Get manual dilution control
+    var manualDilutionCtrl = GetAutomationIDControl("Orders_PatientOrders", "txtManualDilution");
+    
+    //Check the manual dilution control displayed
+    if(VerifyObjectExists(manualDilutionCtrl))
+    {
+      Log["Message"]("Manual Dilution control is located");
+      
+      //Enter the manual dilution value in textbox
+      SetValue(manualDilutionCtrl,manualDilutionValue);
+      
+      Log["Message"]("Manual Diluation is entered as '" + manualDilutionValue + "'");
+      
+      if(manualDilutionCtrl["Text"] == manualDilutionValue)
+      {
+        Log["Message"]("Given manual dilution value has been entered successfully");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to enter the given value in the manual dilution field");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+    } else {
+      Log["Error"]("Unable to locate the manual dilution control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : SelectSpecimenType()
+//*   Function Description: This function is used to select the given value from the specimen combobox
+//*   Input               : SpecimenType
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function SelectSpecimenType(specimenType)
+{
+  try
+  {
+    Log["AppendFolder"]("Selecting the speciment type in patient order screen");
+    
+    //Get specimen type combo box
+    var specimenTypeCtrl = GetAutomationIDControl("Orders_PatientOrders", "cbSpecimenType");
+      
+    //Check the specimen type combo box is displayed
+    if(VerifyObjectExists(specimenTypeCtrl)) 
+    {
+      Log["Message"]("Located the combo box to select specimen type");
+      
+      //Select the specimen type from combobox
+      SelectComboBoxItem(specimenTypeCtrl, specimenType);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = specimenTypeCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](specimenType))
+      {
+        Log["Message"]("Given specimen type '" + specimenType + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given speciment type in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the specimen type combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : SelectOrderPriority()
+//*   Function Description: This function is used to select the given priority value from the priority combobox
+//*   Input               : Priority
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function SelectOrderPriority(priority)
+{
+  try
+  {
+    Log["AppendFolder"]("Select the order priority in patient order screen");
+    
+    //Get priority combo box control
+    var priorityCtrl = GetAutomationIDControl("Orders_PatientOrders", "cbPriority");
+      
+    //Check the priority combo box is displayed
+    if(VerifyObjectExists(priorityCtrl))
+    {
+      Log["Message"]("Priority combo box is located in patient order screen");
+      
+      //Select the priority value from the Priority Combo box
+      SelectComboBoxItem(priorityCtrl, priority);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = priorityCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](priority))
+      {
+        Log["Message"]("Given priority '" + priority + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given priority in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the priority combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : ClickOnAddTestButton()
+//*   Function Description: This function is used to click on the add test button
+//*   Input               : NA
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function ClickOnAddTestButton() 
+{
+  try
+  {
+    Log["AppendFolder"]("Click on the Add Test Button in Patient Order Screen");
+    
+    //Get Add Test button
+    var addTestBtnCtrl = GetAutomationIDControl("Orders_PatientOrders", "btnAddTestForPO");
+      
+    //Check the add test button is displayed and visible
+    if(addTestBtnCtrl["Visible"] && VerifyObjectEnabled(addTestBtnCtrl))
+    {
+      Log["Message"]("Add Test button is located in patient order screen and enabled");
+      
+      //Click on the Add Test Button in Patient Order screen
+      ClickCtrl(addTestBtnCtrl);  
+      
+      Log["Message"]("Add Test Button in patient order screen is clicked");
+      Log["PopLogFolder"]();
+      return true;
+      
+    } else {
+      Log["Error"]("Unable to locate the add test button properly / add test button is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : CheckAddTestPopupDisplayed()
+//*   Function Description: This function is used to check the add test popup is displayed
+//*   Input               : NA
+//*   Output              : return true, if the Add Test Popup is displayed
+//*                         return false, if the Add Test Popup failed to display
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function CheckAddTestPopupDisplayed() 
+{
+  try
+  {
+    Log["AppendFolder"]("Checking the Add Test Popup is displayed");
+    
+    //Get the add test popup dialogue control
+    var addTestDialogue = GetAutomationIDControl("Orders_PatientOrders",  "pageAddTestPopup");
+    
+    //Check the add test dialogue is displayed in the screen
+    if(VerifyObjectExistance(addTestDialogue)) 
+    {
+      Log["Message"]("Add Test popup dialogue is displayed to select test");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Add Test Popup dialogue is not displayed to select the test");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : SelectAssayType()
+//*   Function Description: This function is used to select the given assayType from the Combobox
+//*   Input               : AssayType
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function SelectAssayType(assayType) 
+{
+  try
+  {
+    Log["AppendFolder"]("Select the assay type in Add test popup");
+    
+    //Get the assay type ctrl
+    var assayTypeCtrl = GetAutomationIDControl("Orders_PatientOrders","cbAssayType");
+    
+    //Check the assay type control is displayed
+    if(VerifyObjectExists(assayTypeCtrl))
+    {
+      Log["Message"]("Assay type combo box is located to select the value");
+      
+      //Select the given assay type from the AssayType Combobox
+      SelectComboBoxItem(assayTypeCtrl, assayType);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = assayTypeCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](assayType))
+      {
+        Log["Message"]("Given assay type '" + assayType + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given assay type in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the assay type combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : SelectAssayByName()
+//*   Function Description: This function is used to select the given assay name from the list of assays displayed
+//*   Input               : AssayName
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function SelectAssayByName(assayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Select assay '" + assayName + "' from the add test popup");
+    
+    //Get the assay list grid view element
+    var parentelement = GetAutomationIDControl("Orders_PatientOrders", "grdvwSearchAssayGrid");
+    
+    //Get the grid view list items under the assay grid view
+    var testitems = GetAllChildren(parentelement,["ClassName","ObjectIdentifier"],["GridViewItem",assayName]);
+    
+    var isAssaySelected = undefined;
+    
+    //Iterate the list of the assaynames displayed
+    for(i=0;i<testitems.length;i++)
+    {
+      //Verify the assay name matches with the given expected assay name
+      if(assayName == GetNativeObjectName(testitems[i]))
+      {
+        Log["Message"]("Assay name located in the list of tests");
+        
+        //Check the assay name is already selected => if not click it to select
+        if(testitems[i]["IsSelected"] != true)
+        {          
+          Log["Message"]("Click on '"+ assayName + "' Button in All Tests section");
+          
+          //Disabling the log for avoiding the warning message of scroll into view
+          Log["Enabled"] = false;
+          
+          //Scroll the test list to item
+          testitems[i]["ScrollIntoView"]();
+          
+          //Enabling the log
+          Log["Enabled"] = true;
+          
+          aqUtils["Delay"](2000, "Wait for the assay '" + assayName + "' to be located");
+
+          //Check the test name is visible          
+          if(testitems[i]["Visible"])
+          {
+            //Click on the assayname to select
+            ClickCtrl(testitems[i]);  
+          } else {
+            Log["Error"]("Unable to click on the item and it is not visible");
+            return false;
+          }
+          
+          //Check the test is selected
+          if(testitems[i]["IsSelected"] == true)
+          {
+            Log["Message"]("Test '" + assayName + "' is selected successfully");
+            isAssaySelected = true;
+            break;
+          } else {
+            Log["Error"]("Attempt to select the test '" + assayName + "' is failed and unable to select the test");
+            isAssaySelected = false;
+            break;
+          }
+        } else {
+          Log["Message"]("The testname '"+ assayName + "' already selected");
+          isAssaySelected = true;
+          break;
+        }        
+      }
+    }   
+    
+    Log["PopLogFolder"]();
+    return isAssaySelected;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : AddSelectedTest()
+//*   Function Description: This function is used to add the selected test to the patient from from add test popup
+//*   Input               : NA
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function SubmitTestSelectedFromAddTestPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Click on the add test button to add the selected test to patient order");
+    
+    //Get the add test popup as a parent element
+    var parentelement  = GetAutomationIDControl("Orders_PatientOrders", "pageAddTestPopup");
+    
+    //Get the add test button of the add test popup
+    var addTestBtnCtrl = Getchild(parentelement, "AutomationId", "primaryButton");
+    
+    //Check the add test button enabled in the add test popup
+    if(VerifyObjectEnabled(addTestBtnCtrl))
+    {
+      Log["Message"]("Clicking on Place Order Button in Add test Popup page");
+      //Click on the add test button under the add test popup
+      ClickCtrl(addTestBtnCtrl);
+      
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Add Test button in AddEdit Test Popup dialog is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : VerifyTheTestDisplayedInPatientOrderDatagridDisplayed()
+//*   Function Description: This function is used to check the newly added test / assay is displayed in the patient order datagrid
+//*   Input               : expectedTestName
+//*   Output              : return true, if the test is listed in the patient order datagrid
+//*                         return false, if the test doesn't listed in the patient order datagrid
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function VerifyTheTestDisplayedInPatientOrderDatagridDisplayed(expectedTestName)
+{
+  try
+  {
+    Log["AppendFolder"]("Check the test '" + expectedTestName + "' is created and displayed in the pateient order datagrid");
+    
+    var isrecordExists = false;
+    
+    //Get the patient orders datagrid container
+    var testDetailsGridCtrl = GetAutomationIDControl("Orders_PatientOrders","dtgrdPatientOrdersTest"); 
+    
+    //Verify the patient orders datagrid control is displayed
+    if(VerifyObjectExists(testDetailsGridCtrl)) 
+    {
+      
+      //Verify the given testname is displayed in the patient order datagrid row
+      if(VerifyTheRecordExistsInDatagrid(testDetailsGridCtrl, "Orders_PatientOrders", "Test", expectedTestName)) 
+      {
+        Log["Message"]("The test '" + expectedTestName + "' record is displayed in the patient order test datagrid");        
+        isrecordExists =  true;
+      } else {
+        Log["Message"]("Unable to locate the test '" + expectedTestName + "' record in patient order test datagrid");
+        isrecordExists = false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the test datagrid in the patient order screen");
+      isrecordExists =  false;
+    }
+    
+    Log["PopLogFolder"]();
+    return isrecordExists;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : UpdateReplicatesByAssayName()
+//*   Function Description: This function is used to check the newly added test / assay is displayed in the patient order datagrid
+//*   Input               : expectedTestName
+//*   Output              : return true, if the replicates updated
+//*                         return false, if the replicates are not updating / not identifiable
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function UpdateReplicatesByAssayName(assayName,replicates)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrder::Update Replicates for the patient order with test '" + assayName + "'");
+    
+    //Get the patient orders datagrid container
+    var testDetailsGridCtrl = GetAutomationIDControl("Orders_PatientOrders","dtgrdPatientOrdersTest");
+    
+    //check the test details grid displayed
+    if(VerifyObjectExists(testDetailsGridCtrl))
+    {
+          
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(testDetailsGridCtrl);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Get the column index of the column 'Test' from the patient orders test data grid
+      var columnIndex = GetDataGridColumnIndexFromMetadataSheet("Orders_PatientOrders", "Test");  
+      //Get the column index of 'Replicates' column from the Patient Orders test datagrid
+      var replicatesColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Orders_PatientOrders", "Replicates");
+  
+      var isReplicatesUpdated = false;
+      var isAssayNameExist = false;
+    
+      //Iterate the datagrid rows
+      for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++) 
+      {
+        //get the row parent & get the cell details
+        var rowParent = rowDetails[rowIndex];        
+        var dataCellList = GetAllChildren(rowParent, "ClassName", "GridCell").reverse();
+      
+        //Get the actual test name displayed
+        var dataCellCtrl = Getchild(dataCellList[columnIndex], "ClassName", "TextBlock");        
+        var actualRecordValue = GetNativeObjectName(dataCellCtrl);
+      
+        //Check the actual test name matches with the expected test name
+        if(actualRecordValue == assayName)
+        {              
+          isAssayNameExist = true;
+        
+          //Get the replicates number text box control using the replicate column index
+          var replicateObjCtrl = Getchild(dataCellList[replicatesColumnIndex], "AutomationId", "NumberText");
+        
+          //Get the increment btn ctrl for the replicates
+          var incrementBtnCtrl = Getchild(dataCellList[replicatesColumnIndex], "AutomationId", "IncrementButton");
+        
+          //Get the decrement btn ctrl for the replicates
+          var decrementBtnCtrl = Getchild(dataCellList[replicatesColumnIndex], "AutomationId", "DecrementButton");
+        
+          //Check the replicate value until matches the expected count
+          while(replicateObjCtrl["Text"] < replicates)
+          {
+            //CLick on the increment replicate btn
+            ClickCtrl(incrementBtnCtrl);
+          
+            //Refresh / refetch the replicate value
+            replicateObjCtrl = Getchild(dataCellList[replicatesColumnIndex], "AutomationId", "NumberText");
+            Log["Message"]("Replicate value incremented to '" + replicateObjCtrl["Text"] + "'");
+          }
+        
+          //Check the replicates values matches as expected
+          if(replicateObjCtrl["Text"] == replicates)
+          {
+            Log["Message"]("Replicate value is updated to '" + replicateObjCtrl["Text"] + "'");
+            isReplicatesUpdated = true;
+            break;
+          } else {
+            Log["Error"]("Unable to perform setting the replicate value");
+            isReplicatesUpdated = false;
+            break;
+          }
+        }
+      }    
+    } else {
+      Log["Error"]("Unable to locate the test details grid in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check the assay exist and replicates updated
+    if(isAssayNameExist)
+    {
+      if(isReplicatesUpdated)
+      {
+        Log["Message"]("Replicate value for the assay '" + assayName + "' is successfully updated to '" + replicates + "'");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Assay '" + assayName + "' is exists in the patient order test list, But unable to update the replciates value as '" + replicates + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+        Log["Message"]("Unable to locate the test '" + assayName + "' record in patient order test datagrid");
+        Log["PopLogFolder"]();
+        return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : ClickOnPlaceOrderButton()
+//*   Function Description: This function is used to place the order using place order button
+//*   Input               : NA
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function ClickOnPlaceOrderButton() 
+{
+  try
+  {
+    Log["AppendFolder"]("Click on the place order button in patient order screen");
+    
+    //Get the place order button
+    var placeOrderBtnCtrl = GetAutomationIDControl("Orders_PatientOrders", "btnPlacePatientOrder");
+    
+    //Check the place order button exists
+    if(VerifyObjectEnabled(placeOrderBtnCtrl)) 
+    {
+      Log["Message"]("Place Order button is located and enabled");
+      
+      //Click on the place order button
+      ClickCtrl(placeOrderBtnCtrl);
+      
+      Log["Message"]("Clicked on the place order button in patient order screen");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Place Order button is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : ClickOKOnAlertPopup()
+//*   Function Description: This function is used to accept the order placed acknowledgement popup
+//*   Input               : NA
+//*   Output              : NA
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function ClickOKOnAlertPopup()
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Click ok on the success message for the patient order creation");
+    
+    //Refresh the root node of the app to get the popup updated
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the order placed acknowledge popup
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //Get the ok button under the acknowledge popup
+    var okBtnCtrl = Getchild(alertDialog, "AutomationId", "PrimaryButton");
+    
+    //Verify the OK button is displayed
+    if(VerifyObjectExists(okBtnCtrl) && GetNativeObjectName(okBtnCtrl) == "OK") 
+    {
+      Log["Message"]("Ok button on the success message popup is located");
+      
+      //Click on the ok button
+      ClickCtrl(okBtnCtrl);
+      
+      Log["Message"]("Clicked on the ok button on patient order creation success message");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Order placed success message is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }      
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : VerifyAssayIsAvailable(assayName)
+//*   Function Description: This function is used to Verify Assay is Available in the Add Test Popup
+//*   Input               : NA
+//*   Output              : NA
+//*   Date of Creating    : 23 Aug 2019
+//*   Last Modified date  : 23 Aug 2019
+//*   Created By          : Vaisag.G
+//*****************************************************************************************
+function VerifyAssayIsAvailable(assayName)
+{
+  try
+  {
+    //Get the assay list grid view element
+    var parentelement = GetAutomationIDControl("Orders_PatientOrders", "grdvwSearchAssayGrid");
+    
+    //Get the grid view list items under the assay grid view
+    var testitems = GetAllChildren(parentelement,["ClassName","ObjectIdentifier"],["GridViewItem",assayName]);
+    
+    var isAssayAvailable= false;
+    
+    //Iterate the list of the assaynames displayed
+    for(i=0;i<testitems.length;i++)
+    {
+      //Verify the assay name matches with the given expected assay name
+      if(assayName == GetNativeObjectName(testitems[i]))
+      {
+        Log["Message"]("Assay name located in the list of tests");
+        isAssayAvailable=true
+        break;
+      }
+    }   
+    
+    return isAssayAvailable;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+//Added by Vaisag
+function CloseAddTestPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Close Add Test Popup in Patient Order Screen");
+    
+    //Get Close button
+    var cancelBtnCtrl = GetAutomationIDControl("Orders_PatientOrders", "btnCancel");
+      
+    //Check the add test button is displayed and visible
+    if(cancelBtnCtrl["Visible"] && VerifyObjectEnabled(cancelBtnCtrl))
+    {
+      Log["Message"]("Cancel button is located in Add Test Popup");
+      
+      //Click on the Cancel in Add Test Popup screen
+      ClickCtrl(cancelBtnCtrl);  
+      
+      Log["Message"]("Cancel Button in Add Test Popups clicked");
+      Log["PopLogFolder"]();
+      return true;
+      
+    } else {
+      Log["Error"]("Unable to locate the Cancel button in Add Test Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added By: Prabu Ramaraj || Date: 02 July 2019
+function UpdateDilutionByAssayName(assayName, dilutionValue)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrder::Update dilution for the patient order with test '" + assayName + "'");
+    var isDilutionUpdated = true;
+    
+    //Get the patient orders datagrid container
+    var testDetailsGridCtrl = GetAutomationIDControl("Orders_PatientOrders","dtgrdPatientOrdersTest");
+    
+    //check the testdetails grid displayed
+    if(VerifyObjectExists(testDetailsGridCtrl))
+    {        
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(testDetailsGridCtrl);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Get the column index of the column 'Test'  & Dilution from the patient orders test data grid
+      var columnIndex = GetDataGridColumnIndexFromMetadataSheet("Orders_PatientOrders", "Test");      
+      var dilutionColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Orders_PatientOrders", "Dilution");        
+  
+      //Iterate the datagrid rows
+      for(var rowIndex =0; rowIndex<dataRowList.length; rowIndex++) 
+      {
+        //Get the row parent and cell details
+        var rowParent = rowDetails[rowIndex];
+        var dataCellList = GetAllChildren(rowParent, "ClassName", "GridCell").reverse();      
+      
+        //Get the actual native name of the datacell text control
+        var dataCellCtrl = Getchild(dataCellList[columnIndex], "ClassName", "TextBlock");
+        var actualRecordValue = GetNativeObjectName(dataCellCtrl);
+      
+        //Check the actual test name matches with the expected test name
+        if(actualRecordValue == assayName)
+        {
+          //Get the replicates number text box control using the replicate column index
+          var dilutionObjCtrl = Getchild(dataCellList[dilutionColumnIndex], "AutomationId", "PART_DropDownButton");
+        
+          ClickCtrl(dilutionObjCtrl);
+          Log["Message"]("Dilution Drop down clicked for the assay / test '" + assayName + "'");
+        
+          var dilutionListBox = Getchild(dataCellList[dilutionColumnIndex], "AutomationId", "PART_SuggestionPopup");
+          if(VerifyObjectExists(dilutionListBox))
+          {
+            //Get the list items of the dilution list
+            var dilutionListItems = GetAllChildren(dilutionListBox, "ClassName", "ListViewItem");
+            dilutionListItems = dilutionListItems.reverse();
+          
+            for(var i=0; i<dilutionListItems.length; i++)
+            {
+              if(dilutionListItems[i]["ObjectIdentifier"] == dilutionValue)
+              {
+                if(dilutionListItems[i]["IsSelected"] != true)
+                {                
+                  ClickCtrl(dilutionListItems[i]);
+                  Log["Message"]("Selected the dilution value '" + dilutionValue + "' for the assay '" + assayName + "'");
+                }
+              } else {
+                if(dilutionListItems[i]["IsSelected"] == true)
+                {
+                  ClickCtrl(dilutionListItems[i]);
+                  Log["Message"]("Unselected the existing dilution value selected as '" + dilutionListItems[i]["ObjectIdentifier"] + "'");
+                }
+              }
+            }
+          }        
+        } else {
+          Log["Message"]("Unable to locate the test '" + assayName + "' record in patient order test datagrid");
+          Log["PopLogFolder"]();
+          isDilutionUpdated = false;
+        }
+      }
+    } else {
+      Log["Error"]("Unable to locate the test details grid in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Close the dilution list box view
+    if(VerifyObjectExists(dilutionListBox))
+    {
+      //click on the dilution drop down box to close
+      ClickCtrl(dilutionObjCtrl);
+    }
+    
+    Log["PopLogFolder"]();
+    return isDilutionUpdated;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+//----------------------------------------------------------------------------------------
+
+
+
+//-----------------------------------Batch Order by Sample Id ----------------------------
+
+//***************************************************************************************
+//*   Function Name       : CreateBatchOrderBySampleId()
+//*   Function Description: This function is used to create a batch order by sample id with the given information
+//*   Input               : NA
+//*   Output              : true / false
+//*   Date of Creating    : 13 July 2019
+//*   Last Modified date  : NA
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function CreateBatchOrderBySampleId(SampleId,SampleCount,Specimen,AssayType,Assay,Priority)
+{
+  try
+  {
+    Log["AppendFolder"]("BatchOrders::Create Batch Order using sample id");
+    
+    // Select order by sample id
+    if(!SelectOrderBySampleId()) {
+      Log["Error"]("Unable to select the order by radio button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Enter Sample ID
+    if(!EnterSampleId(SampleId)){
+      Log["Error"]("Unable to enter the exact SampleId '" + SampleId + "' in the Sample Id field");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //TODO: Specify the range by number of samples
+    
+    //Enter No of Samples
+    if(!EnterNoOfSamples(SampleCount))
+    {
+      Log["Error"]("Unable to enter no of samples in the No of Sample field");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select Specimen
+    if(!SelectSpecimenTypeBatchOrder(Specimen))
+    {
+      Log["Error"]("Unable to select the specimen type");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select Order Priority
+    if(!SelectOrderPriorityBtachOrders(Priority)) {
+      Log["Error"]("Unable to select the priority value");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on Add Test
+    if(ClickOnAddTestButtonAndVerifyTheAddTestPopupDisplayed())
+    {
+      //Adding test to the batch order
+      if(AddTestToBatchOrder(AssayType, Assay)) 
+      {
+        //Adding delay to load the test details in batch order screen
+        aqUtils["Delay"](2000, "Waiting for the test to be added to the order");
+        
+        //Check the test is added in the order list
+        if(!VerifyTheTestDisplayedInBatchOrderDatagridDisplayed(Assay)) {
+          Log["Error"]("Given test name '" + assay + "' is not displayed in the grid");
+          Log["PopLogFolder"]();
+          return false;
+        }
+        
+        //Click on Place Order
+        if(!ClickOnPlaceOrderButtonOnBatchOrder()) {
+          Log["Error"]("Place order button is not enabled or displayed");
+          Log["PopLogFolder"]();
+          return false;
+        }
+        
+        //Add delay to load the confirmaation popup message
+        aqUtils["Delay"](2000, "Wait for the confirmation success popup to load");
+                 
+        if(!AcceptBatchOrderConfirmationPopup()) {
+          Log["Error"]("Accept batch order confirmation message is not displayed");
+          Log["PopLogFolder"]();
+          return false;
+        }
+        
+        
+        //Click Ok on Alert Dialogue
+        if(!ClickOKOnAlertPopup()) {
+          Log["Error"]("Batch order created success message is not displayed");
+          Log["PopLogFolder"]();
+          return false;  
+        }
+    
+        Log["PopLogFolder"]();
+        return true;      
+      } else {
+        Log["Error"]("Unable to add a test for the batch order");
+        Log["PopLogFolder"]();
+        return false;    
+      }
+    } else {
+      Log["Error"]("Create batch order failed, as the add test popup disalog is not displayed within the timeframe");
+      Log["PopLogFolder"]();
+      return false;    
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectOrderBySampleId()
+{
+  try
+  {    
+    //Get order by sample id radio button
+    var rdoOrderByCtrl = GetAutomationIDControl("Orders_BatchOrders", "rdoBatchOrderSampleId");
+      
+    //Check the radio button is visible and enabled
+    if(VerifyObjectEnabled(rdoOrderByCtrl))
+    {
+      //Check the radio button is already selected
+      if(!rdoOrderByCtrl["IsSelected"])
+      {
+        //Click on the radio button to select
+        ClickCtrl(rdoOrderByCtrl);
+        
+        if(rdoOrderByCtrl["IsSelected"])
+        {
+          Log["Message"]("Order by sample id radio button is successfully selected");
+          return true;
+        } else {
+          Log["Error"]("Unable to select the order by sample id radio button in batch order screen");
+          return false;
+        }
+        
+      } else {
+        Log["Message"]("By Default the sample id radio button is seletced");
+        return true;
+      }      
+    } else {
+      Log["Error"]("Orderby sample id radio button is disabled");
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function EnterNoOfSamples(noOfSamples) 
+{
+  try
+  {
+
+    Log["AppendFolder"]("BatchOrders:: Enter Number of Samples as '" + noOfSamples + "'");
+    
+    //Get number of samples text box
+    var numberOfSampleTxtBoxCtrl = GetAutomationIDControl("Orders_BatchOrders","txtNumberOfSamples")
+    
+    //Verify the number of samples text box is dispalyed & visible
+    if(VerifyObjectExistance(numberOfSampleTxtBoxCtrl)) 
+    {
+      //CLick on the number of samples control
+      ClickCtrl(numberOfSampleTxtBoxCtrl);
+    
+     //Enter the number of sample text
+     SendKeys(numberOfSampleTxtBoxCtrl,noOfSamples);
+
+     //Enter the tab key to go out of the number of samples textbox control       
+     SendKeys(numberOfSampleTxtBoxCtrl, "[Tab]");
+       
+     //Adding delay to laod the values
+     aqUtils["Delay"](1000);
+       
+     //Verify the sample id is entered properly
+     if(numberOfSampleTxtBoxCtrl["Text"] == noOfSamples)
+     {
+        Log["Message"]("No of samples successfully entered");
+        Log["PopLogFolder"]();
+        return true;
+     } else {
+       Log["Error"]("Unable to enter values for no of samples");
+       Log["PopLogFolder"]();
+       return false;
+     }
+    } else {
+      Log["Error"]("Unable to locate the no of samples text field in batch order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectSpecimenTypeBatchOrder(specimenType)
+{
+  try
+  {
+    //Get specimen type combo box
+    var specimenTypeCtrl = GetAutomationIDControl("Orders_BatchOrders", "cbBatchOrderSampleType");
+      
+    //Check the specimen type combo box is displayed
+    if(VerifyObjectExists(specimenTypeCtrl)) 
+    {
+      //Select the specimen type from combobox
+      SelectComboBoxItem(specimenTypeCtrl, specimenType);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = specimenTypeCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](specimenType))
+      {
+        Log["Message"]("Given specimen type '" + specimenType + "' has been selected successfully in combo box");
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given speciment type in combo box");
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the specimen type combo box");
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function SelectOrderPriorityBtachOrders(priority)
+{
+  try
+  {
+    //Get priority combo box control
+    var priorityCtrl = GetAutomationIDControl("Orders_PatientOrders", "cbPriority");
+      
+    //Check the priority combo box is displayed
+    if(VerifyObjectExists(priorityCtrl))
+    {
+      //Select the priority value from the Priority Combo box
+      SelectComboBoxItem(priorityCtrl, priority);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = priorityCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](priority))
+      {
+        Log["Message"]("Given priority '" + priority + "' has been selected successfully in combo box");
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given priority in combo box");
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the priority combo box");
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function ClickOnAddTestButtonAndVerifyTheAddTestPopupDisplayed() 
+{
+  try
+  {
+    //Get add test button in batch order screen
+    var addTestBtnCtrl = GetAutomationIDControl("Orders_BatchOrders", "btnAddTestForBatchOrder");
+    
+    //Check the add test button is enabled
+    if(VerifyObjectEnabled(addTestBtnCtrl))
+    {
+      //Click on the add test button in batch order screen
+      ClickCtrl(addTestBtnCtrl); 
+      
+      //Add delay to load the add test popup
+      aqUtils["Delay"](2000, "Wait for the add test popup to be displayed");
+    
+      //get add test popup control
+      var addtestPopup = GetAutomationIDControl("Orders_PatientOrders", "pageAddTestPopup");
+      
+      //Check the popup is displayed
+      if(VerifyObjectExists(addtestPopup))
+      {
+        Log["Message"]("Add test popup is displayed to select the test for batch order");
+        return true;
+      } else {
+        Log["Error"]("Unable to locate the add test popup");
+        return false;
+      }      
+    } else {
+      Log["Error"]("Add test button is not enabled in the batch order screen");
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function AddTestToBatchOrder(assayType,testName)
+{
+  try
+  {    
+    //Select the assay type from combobox
+    SelectAssayType(assayType);
+    
+    //Select Test
+    SelectAssayByName(testName);
+    
+    //Click on Add Test Button
+    AddSelectedTest();
+    
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function AddSelectedTest()
+{
+  try
+  {
+    //Get the add test popup as a parent element
+    var parentelement  = GetAutomationIDControl("Orders_PatientOrders", "pageAddTestPopup");
+    
+    //Get the add test button of the add test popup
+    var addTestBtnCtrl = Getchild(parentelement, "AutomationId", "primaryButton");
+    
+    //Check the add test button enabled in the add test popup
+    if(VerifyObjectEnabled(addTestBtnCtrl))
+    {
+      Log["Message"]("Clicking on Place Order Button in Add test Popup page");
+      //Click on the add test button under the add test popup
+      ClickCtrl(addTestBtnCtrl);
+    } else {
+      Log["Error"]("Add Test button in AddEdit Test Popup dialog is not enabled");
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function VerifyTheTestDisplayedInBatchOrderDatagridDisplayed(expectedTestName)
+{
+  try
+  {
+    Log["AppendFolder"]("Check the test '" + expectedTestName + "' is created and displayed in the batch order datagrid");
+    
+    //Get the batch orders datagrid
+    var testDetailsGridCtrl = GetAutomationIDControl("Orders_BatchOrders","dtgrdBatchOrdersTest"); 
+    
+    //Check the batch order datagrid is displayed
+    if(VerifyObjectExists(testDetailsGridCtrl)) 
+    {
+      //Check the given testname displayed in the datagrid      
+      if(VerifyTheRecordExistsInDatagrid(testDetailsGridCtrl, "Orders_BatchOrders", "Test", expectedTestName)) 
+      {
+        Log["Message"]("The test '" + expectedTestName + "' record is displayed in the patient order test datagrid");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Message"]("Unable to locate the test '" + expectedTestName + "' record in patient order test datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the test datagrid in the patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnPlaceOrderButtonOnBatchOrder() 
+{
+  try
+  {
+    //Get place order button control
+    var placeOrderBtnCtrl = GetAutomationIDControl("Orders_BatchOrders", "btnPlaceBatchOrder");
+    
+    //Check the button is displayed and enabled
+    if(VerifyObjectEnabled(placeOrderBtnCtrl)) 
+    {
+      //Click on the place order button 
+      ClickCtrl(placeOrderBtnCtrl);
+      
+      Log["Message"]("Place Order button clicked");
+      return true;
+    } else {
+      Log["Error"]("Place Order button is not enabled");
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function AcceptBatchOrderConfirmationPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Click Yes in the batch order confirmation message to accept the number of samples creating");
+    
+    //Refresh the application
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the order placed acknowledge popup
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //Get the ok button under the acknowledge popup
+    var yesBtnCtrl = Getchild(alertDialog, "AutomationId", "PrimaryButton");
+    
+    //Verify the OK button is displayed
+    if(VerifyObjectExists(yesBtnCtrl)) 
+    {
+      //Click on the ok button
+      ClickCtrl(yesBtnCtrl);
+      
+      Log["Message"]("Clicked on the Yes button in batch order confirmation message popup");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Placing order for number of samples mentioned in the sample count confirmation popup is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+//----------------------------------------------------------------------------------------
+
+
+//----------------------------Batch Order by Rack Id--------------------------------------
+
+//***************************************************************************************
+//*   Function Name       : CreateBatchOrderWithRackId()
+//*   Function Description: This function is used to create a batch order by rack id with the given information
+//*   Input               : NA
+//*   Output              : true / false
+//*   Date of Creating    : 25 June 2019
+//*   Last Modified date  : 14 July 2019
+//*   Created By          : Karthik Parthasarathy
+//*   Modified By         : Prabu Ramaraj
+//*****************************************************************************************
+function CreateBatchOrderByRackId(batchName,specimen,rackId,assayType,assay)
+{
+  try
+  {
+    Log["AppendFolder"]("BatchOrders::Create Batch Order by Rack Id '" + rackId + "' and bacth name '" + batchName + "'");
+    
+    // Select order by sample id
+    if(!SelectOrderByRackId()) {
+      Log["Error"]("Unable to select the order by radio button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Enter Batch Name
+    if(!EnterBatchName(batchName)){
+      Log["Error"]("Unable to enter the exact batch name '" + batchName + "' in the BatchName field");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    aqUtils["Delay"](2000);
+    
+    //Select Specimen
+    if(!SelectSpecimentTypeInRackId(specimen)) {
+      Log["Error"]("Unable to select the specimen type '" + specimen + "' in the sample type combobox");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!AddRackIdToBatchOrder(rackId))
+    {
+      Log["Error"]("Unable to enter the exact rack id '" + rackId + "' in the rackid field");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on Add Test
+    if(!ClickOnAddTestButtonAndVerifyTheAddTestPopupDisplayed())
+    {
+      Log["Error"]("Unable to click on the add test button / Unable to locate the add test popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Adding test to the batch order
+    if(!AddTestToBatchOrder(assayType, assay)) 
+    {
+       Log["Error"]("Unable to add a test for the batch order");
+       Log["PopLogFolder"]();
+       return false; 
+    }
+        
+    //Adding delay to load the test details in batch order screen
+    aqUtils["Delay"](2000, "Waiting for the test to be added to the order");
+        
+    //Check the test is added in the order list
+    if(!VerifyTheTestDisplayedInBatchOrderDatagridDisplayed(assay)) {
+      Log["Error"]("Given test name '" + assay + "' is not displayed in the grid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Click on Place Order
+    if(!ClickOnPlaceOrderButtonOnBatchOrder()) {
+      Log["Error"]("Place order button is not enabled or displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Add delay to load the confirmaation popup message
+    aqUtils["Delay"](2000, "Wait for the confirmation success popup to load");
+                  
+    //Click Ok on Alert Dialogue
+    if(!ClickOKOnAlertPopup()) {
+      Log["Error"]("Batch order created success message is not displayed");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    
+    Log["Message"] ("Batch order is successfully created");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectOrderByRackId()
+{
+  try
+  {
+    //Get order by rack id radio button
+    var rdoOrderByCtrl = GetAutomationIDControl("Orders_BatchOrders", "rdoBatchOrderRackId");
+      
+    //Check the radio button is visible and enabled
+    if(VerifyObjectEnabled(rdoOrderByCtrl))
+    {
+      //Check the radio button is already selected
+      if(!rdoOrderByCtrl["IsSelected"])
+      {
+        //Click on the radio button to select
+        ClickCtrl(rdoOrderByCtrl);
+        
+        if(rdoOrderByCtrl["IsSelected"])
+        {
+          Log["Message"]("Order by rack id radio button is successfully selected");
+          return true;
+        } else {
+          Log["Error"]("Unable to select the order by rack id radio button in batch order screen");
+          return false;
+        }
+        
+      } else {
+        Log["Message"]("By Default the rack id radio button is seletced");
+        return false;
+      }      
+    } else {
+      Log["Error"]("Orderby rack id radio button is disabled");
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    return false;
+  }
+}
+
+function EnterBatchName(batchName) 
+{
+  try
+  {
+    Log["AppendFolder"]("Enter batch name '" + batchName + "' in batch name field");
+    
+    //Get the batch name textbox control
+    var batchNameCtrl = GetAutomationIDControl("Orders_BatchOrders", "txtBatchOrderBatchName");
+    
+    //Check the batch name control displayed
+    if(VerifyObjectExists(batchNameCtrl)) 
+    {
+      //Click on the text box to enter text
+       ClickCtrl(batchNameCtrl);
+       
+       //Enter the batch name
+       SendKeys(batchNameCtrl,batchName);
+       
+       //Tab Out to update the other field data
+       SendKeys(batchNameCtrl, "[Tab]");
+       
+       //Verify the sample id is entered properly
+       if(batchNameCtrl["Text"] == batchName)
+       {
+          Log["Message"]("Batch Name '" + batchNameCtrl + "' successfully entered in the field");
+          Log["PopLogFolder"]();   
+          return true;
+       } else {
+         Log["Error"]("Unable to enter the given batch name, value displayed after entering the batch name is '" + batchNameCtrl["Text"] + "'");
+         Log["PopLogFolder"]();
+         return false;
+       }
+    } else {
+      Log["Error"]("Unable to locate the batch name text field in batch order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectSpecimentTypeInRackId(specimenType)
+{
+  try
+  {
+    Log["AppendFolder"]("Select the speciment type as '" + specimenType + "'");
+    
+    //Get specimen type combo box
+    var specimenTypeCtrl = GetAutomationIDControl("Orders_BatchOrders", "cbBatchOrderSpecimenType");
+      
+    //Check the specimen type combo box is displayed
+    if(VerifyObjectExists(specimenTypeCtrl)) 
+    {
+      //Select the specimen type from combobox
+      SelectComboBoxItem(specimenTypeCtrl, specimenType);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = specimenTypeCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](specimenType))
+      {
+        Log["Message"]("Given specimen type '" + specimenType + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given speciment type in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the specimen type combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj
+function ClickOnAddRackIdButton() 
+{
+  try
+  {
+    //Get add / edit rack id button
+    var addrackIdBtnCtrl = GetAutomationIDControl("Orders_BatchOrders", "btnAddEditRackId");
+    
+    //Check the button is enabled
+    if(VerifyObjectEnabled(addrackIdBtnCtrl))
+    {
+      //Click on the add rackId button  
+      ClickCtrl(addrackIdBtnCtrl); 
+      
+      return true;
+    } else {
+      Log["Error"]("Add edit rack id button is not enabled");
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj
+function AddRackIdToBatchOrder(rackId)
+{
+  try
+  {
+    Log["AppendFolder"]("Add Rack id '" + rackId + "' to the batch order");
+    
+    //Click on the add edit rack id button
+    if(ClickOnAddRackIdButton()) 
+    {
+      //Get the ad rack id popup control
+      var addRackIdPopup = GetAutomationIDControl("Orders_BatchOrders", "txtAddEditPopupRackId");
+      
+      //Check the add edit rack id popup displayed
+      if(VerifyObjectExistance(addRackIdPopup))
+      {
+        //Get rack id text box control
+        var rackIdTextBoxCtrl = GetAutomationIDControl("PrimeDispBatchOrdersScreen", "txtAddEditPopupRackId");
+        
+        if(VerifyObjectExistance(rackIdTextBoxCtrl))
+        {
+          //Click on the text box
+          ClickCtrl(rackIdTextBoxCtrl);
+          
+          SetValue(rackIdTextBoxCtrl, rackId);
+          
+          //ok btn control
+          var okBtnCtrl = GetAutomationIDControl("PrimeDispBatchOrdersScreen", "btnOkAddEditPopupRackId");
+          
+          ClickCtrl(okBtnCtrl);
+
+          //Wait for the popup to be dis appeared
+          aqUtils["Delay"](2000, "Wait for the rack id to be added to the order");
+          
+          //Get add edit rack id popup
+          addRackIdPopup = GetAutomationIDControl("PrimeDispBatchOrdersScreen", "txtAddEditPopupRackId");
+          
+          //Check the popup id disappeared
+          if(!VerifyObjectExistance(addRackIdPopup))
+          {
+            Log["Message"]("Add edit rack id popup is closed successfully");
+            Log["PopLogFolder"]();
+            return true;
+          } else {
+            Log["Error"]("The add edit rack id popup is not closed");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        } else {
+          Log["Error"]("Rack id text box is not displayed / enabled to enter the text");
+          Log["PopLogFolder"]();
+          return false;  
+        }
+      } else {
+        Log["Error"]("Unable to locate the add edit rack id popup");
+        Log["PopLogFolder"]();
+        return false;  
+      }
+    } else {
+      Log["Error"]("Failed to add rack id because of Add / edit rack id button not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//----------------------------------------------------------------------------------------
+
+
+
+//---------------------------------View batch Order --------------------------------------
+
+function CheckTheBatchNameListedInViewBatchOrderDataGrid(batchName) 
+{
+  try
+  {
+    Log["AppendFolder"]("BatchOrders:: Check the batch name is listed in the view batch order screen");
+    
+    //Get the view batch order datagrid container 
+    var viewBatchOrderDataGridCtrl = GetAutomationIDControl("Orders_BatchOrders_ViewBatchOrders", "dtgrdViewBatchOrder");
+    
+    //Check the view batch order grid is displayed  
+    if(VerifyObjectExists(viewBatchOrderDataGridCtrl)) 
+    {
+      
+      //Check the given batch name displayed in the datagrid      
+      if(VerifyTheRecordExistsInDatagrid(viewBatchOrderDataGridCtrl, "Orders_BatchOrders_ViewBatchOrders", "BatchName", batchName)) 
+      {
+        Log["Message"]("Batch Name '" + batchName + "' is located in the view batch order datagrid");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Given batch name '" + batchName + "' doesn't located in the view batch order datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+        Log["Error"]("Unable to locate the view batch order datagrid");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+
+
+//----------------------------------------------------------------------------------------
+
+
+
+function ClickOnClearButtonInPatientOrder()
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders :: Click on the clear button to reset the patient order screen");
+    
+    //get the parent control
+    var patientOrderPage = GetAutomationIDControl("Orders_PatientOrders","pagePatientOrders");
+    
+    //get the clear button control
+    var clearBtnCtrl = Getchild(patientOrderPage, ["ClassName","AutomationId"], ["Button","ClearBtn"]);
+    
+    //check the clear button is enabled
+    if(VerifyObjectEnabled(clearBtnCtrl))
+    {
+      Log["Message"]("Clear button is located and enabled in patient order screen");
+      
+      //click on the clear button
+      ClickCtrl(clearBtnCtrl);
+      
+      Log["Message"]("Successfully clicked on the Clear button in the patient order screen")
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Clear button is not enabled to reset the patient order details");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AcceptTheClearConfirmation()
+{
+  try
+  {    
+    Log["AppendFolder"]("PatientOrders :: Click 'OK' on the clear confirmation message");
+    
+    //Refresh the root node of the app to get the popup updated
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the order placed acknowledge popup
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+        
+    //Verify the OK button is displayed
+    if(VerifyObjectExists(alertDialog)) 
+    {
+      //Get the title of the popup displayed
+      var titleText = Getchild(alertDialog, "AutomationId", "AlertTitleTextBlock");
+
+      //Check the alert title as confirmation      
+      if(titleText["Text"] == "Confirmation")
+      {
+        Log["Message"]("Confirmation popup is displayed and control located");
+        
+        //Get the ok button under the acknowledge popup
+        var okBtnCtrl = Getchild(alertDialog, "AutomationId", "PrimaryButton");
+        
+        //Click on the ok button
+        ClickCtrl(okBtnCtrl);
+      
+        Log["Message"]("Clicked on the ok button on patient order creation success message");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Instead of the confirmation alert, Some other alert has been displayed");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Order placed success message is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }      
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterSampleInformationBySampleId(sampleId,specimenType,priority,manualDilutionValue)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders :: Enter the sample information by sample Id for the sample '" + sampleId + "'");
+    
+    //Enter Sample ID
+    if(!EnterSampleId(sampleId))
+    {
+      Log["Error"]("Unable to enter the exact SampleId '" + sampleId + "'in the Sample Id field");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Wait for the page to load the order content for the sample id entered
+    WaitForProgressRingToDisappear(15);  
+    
+    //Select Specimen from combobox
+    if(!SelectSpecimenType(specimenType))
+    {
+      Log["Error"]("Failed to select the specimen type '" + specimenType + "' in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Enter ManualDilution for the Test    
+    if(manualDilutionValue != undefined && manualDilutionValue != "")
+    {
+      if(!EnterManualDilution(manualDilutionValue))
+      {
+        Log["Error"]("Failed to enter manual dilution value of '" + manualDilutionValue + "' in patient order screen");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    
+    //Select Order Priority from combobox
+    if(!SelectOrderPriority(priority))
+    {
+      Log["Error"]("Failed to select the sample priority '" + priority + "' in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AddTestToPatientOrderAndVerify(assayName,assayType)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders :: Add Test to the patient order test list from add test popup and verify the test added");
+    
+    //Click on Add Test
+    if(!ClickOnAddTestButton())
+    {
+      Log["Error"]("Failed to locate / click on the Add Test Button in patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    aqUtils["Delay"](2000, "Wait for the add test popup to be displayed");
+    
+    //Check the add test popup displayed 
+    if(!CheckAddTestPopupDisplayed()) 
+    {
+      Log["Error"]("Add Test Popup dialogue is not displayed to select the test");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select the assay type from combobox
+    if(!SelectAssayType(assayType))
+    {
+      Log["Error"]("Failed to select assay type in patient order creation step");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select Test
+    if(!SelectAssayByName(assayName)) {
+      Log["Error"]("Unable to select the test '" + assayName + "' in add test popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on Add Test Button
+    if(!SubmitTestSelectedFromAddTestPopup())
+    {
+      Log["Error"]("Unable to click on the add test button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    aqUtils["Delay"](3000, "Wait for the add test popup closed and updated in patient order test list");
+    
+    //Check the test is added in the order list datagrid
+    if(VerifyTheTestDisplayedInPatientOrderDatagridDisplayed(assayName)) 
+    {
+      Log["Message"]("Test '" + assayName + "' succcessfully added to the patient order");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Test '" + assayName + "' is not displayed in the patient order test list");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function DuplicateTestByTestName(assayName)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders :: Add duplicate test for '" + assayName + "' displayed in patient order test list by click on the '+' icon");
+
+    //Get the patient orders datagrid container
+    var testDetailsGridCtrl = GetAutomationIDControl("Orders_PatientOrders","dtgrdPatientOrdersTest");
+        
+    //Verify the patient orders datagrid control is displayed
+    if(VerifyObjectExists(testDetailsGridCtrl)) 
+    {
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(testDetailsGridCtrl);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("None of the tests are displayed in the test list of patient order to add the multiple test count");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //get the column index for the column name 'Test'
+      var testNameColumnIndex = GetDataGridColumnIndexFromMetadataSheet("Orders_PatientOrders","Test");
+      
+      var isTestNameExists = false;
+                      
+      //Iterate each row to add the multiple test of the alreay added test
+      for(var rowindex=0; rowIndex<rowDetails.length; rowIndex++)
+      {
+        //get the row parent and cell details
+        var rowparent = rowDetails[rowIndex];        
+        var gridCellList = GetAllChildren(rowparent,"ClassName","GridCell").reverse();
+          
+        //get the testName from the cell list based on the columnindex
+        var testNameCellCtrl = Getchild(gridCellList[testNameColumnIndex],"ClassName","TextBlock");
+          
+        //check the testname exists
+        if(testNameCellCtrl["Text"] == assayName)
+        {
+          //get the plus sign button control to increment the test count
+          var plusIconCtrl = Getchild(dataRowList[i], "AutomationId", "DuplicateTestbutton");
+            
+          //check the plus button is enabled
+          if(VerifyObjectEnabled(plusIconCtrl))
+          {
+            Log["Message"]("Plus icon for the test '" + assayName + "' is located");
+              
+            //click on the plus icon to duplicate the test
+            ClickCtrl(plusIconCtrl);
+                
+            Log["Message"]("Plus icon for the test '" + assayName + "' is clicked");
+            Log["PopLogFolder"]();
+            return true;                            
+          } else {
+            Log["Error"]("Plus icon for the test '" + assayName + "' is found as disabled");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+      }
+                
+      //check the testname doesn't exist to duplicate
+      if(!isTestNameExists)
+      {
+        Log["Error"]("Unable to locate the test '" + assayName + "' from the test list to add more test for the same test name");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the test datagrid in the patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AddMultipleTestToPatientOrderByAssayName(assayType,assayName,duplicateTestCount)
+{
+  try
+  {    
+    Log["AppendFolder"]("PatientOrders :: Add '" + duplicateTestCount + "' number of tests for the patient order with '" + assayName + "'");
+    
+    var testAddedCount = 0;
+    var testTobeAdded = 0;
+    
+    //check the test name is displayed in the patient order test list, if not add the test to the patient order
+    if(!VerifyTheTestDisplayedInPatientOrderDatagridDisplayed(assayName))
+    {
+      Log["Message"]("The test '" + assayName + "' is not exist in the test list of patient order");
+      
+      if(!AddTestToPatientOrderAndVerify(assayName,assayType))
+      {
+        Log["Error"]("Unable to add the test '" + assayName + "' to the patient order test list");
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        testAddedCount = testAddedCount + 1;
+      }
+    }
+    
+    Log["AppendFolder"]("Click on the '+' icon for '" + duplicateTestCount + "' times for the test '" + assayName + "'");
+
+    //Set the test to be added count based on the existing test displayed
+    if(testAddedCount == 1)
+    {      
+      testTobeAdded = duplicateTestCount - 1;
+    } else {
+      testTobeAdded = duplicateTestCount;
+    }
+    
+    for(var i=0; i<testTobeAdded; i++)
+    {
+      if(DuplicateTestByTestName(assayName))
+      {
+        testAddedCount = testAddedCount + 1;
+      } else {
+        Log["Error"]("Failed to click on the '+' icon for the assay due to the icon got disabled");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    Log["PopLogFolder"]();
+    
+    //check the gridRows count is incremented with the number of tests duplicated
+    if(testAddedCount == duplicateTestCount)
+    {
+      Log["Message"]("Test '" + assayName + "' is successfully added for '" + duplicateTestCount + "' number of times");
+      Log["PopLogFolder"]();      
+      return true;                
+    } else {
+      Log["Error"]("Test count is mis mactched with the test count duplicated");
+      Log["PopLogFolder"]();
+      return false;                
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetNumberOfTestAddedToPatientOrder(assayName)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders :: Get the number of '" + assayName + "' test added to the patient order test list");
+    
+    var testDisplayedCount = 0;
+    
+    //Get the patient orders datagrid container
+    var testDetailsGridCtrl = GetAutomationIDControl("Orders_PatientOrders","dtgrdPatientOrdersTest");
+        
+    //Verify the patient orders datagrid control is displayed
+    if(VerifyObjectExists(testDetailsGridCtrl)) 
+    {
+
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(testDetailsGridCtrl);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("None of the tests are displayed in the test list of patient order");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //get the column index for the column name 'Test'
+      var testNameColumnIndex = GetDataGridColumnIndexFromMetadataSheet(testDetailsGridCtrl, "Test");
+        
+      //Iterate each row to add the multiple test of the alreay added test
+      for(var rowIndex=0; rowindex<rowDetails.length; rowDetails++)
+      {
+        //get the rowparent and cell details
+        var rowParent = rowDetails[rowIndex];        
+        var gridCellList = GetAllChildren(rowParent,"ClassName","GridCell").reverse();
+          
+        //get the testName from the cell list based on the columnindex
+        var testNameCellCtrl = Getchild(gridCellList[testNameColumnIndex],"ClassName", "TextBlock");
+          
+        //check the testname exists
+        if(testNameCellCtrl["Text"] == assayName)
+        {
+          testDisplayedCount =  testDisplayedCount + 1;          
+        }
+      }
+        
+      Log["Message"]("Patient order test list is displayed with '" + testDisplayedCount + "' number of '" + assayName + "'");
+      Log["PopLogFolder"]();
+      return true;         
+    } else {
+      Log["Error"]("Unable to locate the test datagrid in the patient order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+ 
+function CreatePatientOrderWithDuplicateTest(sampleId,specimen,priority,assayType,assayName,duplicateTestCount)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("PatientOrders :: Create Patient Order by sample id '" + sampleId + "' with '" + duplicateTestCount + "' tests of '" + assayName + "'");
+    
+    //enter the sample information to create patient order
+    if(!EnterSampleInformationBySampleId(sampleId,specimenType,priority))
+    {
+      Log["Error"]("Failed to create a patient order when entering the sample information");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //add a test with duplicate test in patient order list
+    if(!AddMultipleTestToPatientOrderByAssayName(assayType,assayName,duplicateTestCount))
+    {
+      Log["Error"]("Failed to add the duplicate test to the patient order");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    
+    //Verify the number of duplicate test added    
+    var currentlyDisplayedTestCount = GetNumberOfTestAddedToPatientOrder(assayName);
+    
+    //If the test count displayed is matched to the desired duplicate test count, then place the order to create patient order
+    if(currentlyDisplayedTestCount == duplicateTestCount)
+    {
+      Log["Message"]("Verified successfully that the patient order test list is added with '" + duplicateTestCount + "' of '" + assayName + "'");
+      
+      //Click on Place Order Button
+      if(!ClickOnPlaceOrderButton())
+      {
+        Log["Error"]("Unable to click on the place order butotn in patient order screen");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    
+      //Wait for the order to be placed
+      WaitForProgressRingToDisappear(30);
+    
+      //Click Ok on Alert Dialogue to confirm
+      if(!ClickOKOnAlertPopup()) 
+      {
+        Log["Error"]("Failed to locate / click on the ok button in patient order creation success popup");
+        Log["PopLogFolder"]();
+        return false;
+      }    
+      
+      Log["Message"]("Patient order created successfully for sample id '" + sampleId + "' with '" + duplicateTestCount + "' of '" + assayName + "' tests");
+      Log["PopLogFolder"]();
+      return true;  
+    } 
+    
+    //If the test count displayed does not matched to the desired duplicate test count, then clear the patient order details entered
+    else 
+    {
+      Log["Error"]("Verification failed as the patient order test list is not having '" + duplicateTestCount + "' of '" + assayName + "'");
+        
+      //click on the clear button
+      if(!ClickOnClearButtonInPatientOrder())
+      {
+        Log["Error"]("Unable to click on the clear button to reset the patietn order details entered");
+        Log["PopLogFolder"]();
+        return false;
+      }
+        
+      //Accept the confirmation dialog to clear
+      if(!AcceptTheClearConfirmation())
+      {
+        Log["Error"]("Failed on accepting the clear confirmation popup");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["Error"]("Failed to create the patient order, because of the duplicate test count mismatch for assay '" + assayName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function GetBatchOrderIDs(strSampleID, intSampleCount)
+{
+  try
+  {
+    var arrBatchIDs = new Array();
+    intInitSampleCount = aqConvert["StrToInt"](strSampleID["replace"](/\D*/,"" ));
+    strBatchSample = strSampleID["replace"]( /\d.*/, "" );
+    
+    for(var intCount = 0; intCount < intSampleCount; intCount++)
+    {
+      arrBatchIDs[intCount] = strBatchSample + intInitSampleCount;
+      intInitSampleCount++;
+    }
+    return  arrBatchIDs;
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

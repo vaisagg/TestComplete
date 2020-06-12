@@ -1,0 +1,4020 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+//******************************************************************************
+//                            Batch Orders
+//******************************************************************************
+function BatchOrderBySID()
+{
+  try
+  {
+      //----------------------Read data from Test Data file---------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "BatchOrderBySID");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();  
+
+      
+      //-------------------------Create Batch Order---------------------------
+      Log["AppendFolder"]("Create Batch Order by SID");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId");
+        var SampleCount = dictColumn["Item"]("SampleCount");
+        var Specimen = dictColumn["Item"]("Specimen");
+        var Analyzer = dictColumn["Item"]("Analyzer");
+        var Assay = dictColumn["Item"]("Assay");
+        var Priority = dictColumn["Item"]("Priority");
+      
+        //Create batch order
+        if(StepCreateBatchOrderBySampleId(SampleId, SampleCount, Specimen, Analyzer, Assay, Priority))
+        {
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Batch Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Batch Order Successfully done") 
+      }
+      
+      Log["PopLogFolder"]();
+      
+
+      //--------------------Verify batch order in worklist--------------------
+      Log["AppendFolder"]("Verify Batch Order Created in Worklist");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Check the sample id listed in worklist screen      
+        if(!StepVerifyTheOrderExistsInWorkListGrid(sampleId))
+        {
+          Log["Error"] ("The Sample id '" +  sampleId + "' is not listed in the worklist datagrid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        } 
+        else 
+        {
+          Log["Message"]("The Sample id '" +  sampleId + "' is listed in the worklist datagrid");
+        }
+      }
+      
+      //check if all orders created
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully batch orders created");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to create batch orders");
+          Log["PopLogFolder"]();
+          return false;
+      }
+     
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function BatchOrderByRackID()
+{
+  try
+  {
+  
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","BatchOrderByRackID");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+
+            
+      //-------------------------Create Batch Order by Rack ID---------------------------
+      Log["AppendFolder"]("Create Batch Order by rack ID");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn=arrTestData[i];
+        var BatchName = dictColumn["Item"]("BatchName")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var RackId = dictColumn["Item"]("RackId")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var Assay = dictColumn["Item"]("Assay")
+      
+        //Create batch order
+        if(StepCreateBatchOrderByRackId(BatchName,Specimen,RackId,Analyzer,Assay))
+        {
+          POECount=POECount+1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Batch Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Batch Order Successfully done") 
+      }
+      
+      Log["PopLogFolder"]();
+      
+
+      //----------------Verify batch order in view batch order------------------
+      Log["AppendFolder"]("Verify batch order in view batch order");
+     
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var batchName = dictColumn["Item"]("BatchName");
+
+        //Check the sample id listed in worklist screen      
+        if(!StepCheckBatchNameListedInViewBatchOrders(batchName))
+        {
+          Log["Error"] ("The Batch Name '" +  batchName + "' is not listed in the view batch order datagrid");
+        } 
+        else 
+        {
+          Log["Message"]("The Batch Name '" +  batchName + "' is listed in the view batch order datagrid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        }  
+      }
+      
+      //check if all orders created
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully batch orders created and displayed");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to create batch orders");
+          Log["PopLogFolder"]();
+          return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                            Calibration
+//******************************************************************************
+function Calibration_AddIMCalibrationDefinition()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","Add_IM_CalDef");
+      var totalNumberOfCalDef = arrTestData["length"];
+      var calDefCount = 0;
+      var isAllCalDisplayed =0;
+      
+      //-----------------Verify if calibration definition exists----------------
+      Log["AppendFolder"]("Verify if calibration definition exists");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        
+        //verify if calibration definition exists
+        if(StepVerifyCalibrationDefinitionExists(materialName,materialId,lotNo))
+        {
+          //delete the existing calibration definition
+          if(!StepDeleteCalibrationDefinitionByMaterialName(materialName,materialId,lotNo))
+          {
+            Log["Error"]("Unable to delete the existing cal-def with material name '" + materialName + "'");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //--------------------Add calibration definition--------------------------
+      Log["AppendFolder"]("Add Calibration Definition");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        var assayType = dictColumn["Item"]("AssayType");
+        var date = dictColumn["Item"]("Date");
+        var month = dictColumn["Item"]("Month");
+        var year = dictColumn["Item"]("Year");
+        var isActive = dictColumn["Item"]("IsActive");
+        var assayName = dictColumn["Item"]("AssayName");
+        var checkSumValue = dictColumn["Item"]("CheckSum");
+        var level2 = dictColumn["Item"]("Level2");
+ 
+        //create calibration definition
+        if(!StepAddIMCalibrationDefinition(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2))
+        {
+          Log["Error"]("Unable to create cal-def with material name '" + materialName + "'");
+          calDefCount = calDefCount+1;
+        }
+      }
+      
+      //all cal def created successfully
+      if(calDefCount == totalNumberOfCalDef)
+      {
+        Log["Error"]("Create Calibration definition Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(calDefCount < totalNumberOfCalDef)
+      {
+        Log["Error"]("Few cal definition created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Calibration definition Successfully done") 
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------Verify Calibration definition displayed--------------------
+      Log["AppendFolder"]("Verify calibration definition displayed");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        
+        //verify if calibration definition exists
+        if(StepVerifyCalibrationDefinitionExists(materialName,materialId,lotNo))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition displayed");
+        Log["PopLogFolder"]();
+        return true;     
+      }
+      else
+      {
+        Log["Error"]("Cal definition display failed")   
+        Log["PopLogFolder"]();
+        return false; 
+      }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+function Calibration_DeleteIMCalibrationDefinition()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","Delete_IM_CalDef");
+      var totalNumberOfCalDef = arrTestData["length"];
+      var calDefCount = 0;
+      var isAllCalDisplayed =0;
+      
+      
+      //--------------------Add calibration definition--------------------------
+      Log["AppendFolder"]("Add Calibration Definition");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        var assayType = dictColumn["Item"]("AssayType");
+        var date = dictColumn["Item"]("Date");
+        var month = dictColumn["Item"]("Month");
+        var year = dictColumn["Item"]("Year");
+        var isActive = dictColumn["Item"]("IsActive");
+        var assayName = dictColumn["Item"]("AssayName");
+        var checkSumValue = dictColumn["Item"]("CheckSum");
+        var level2 = dictColumn["Item"]("Level2");
+ 
+        //create calibration definition
+        if(!StepAddIMCalibrationDefinition(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2))
+        {
+          Log["Error"]("Unable to create cal-def with material name '" + materialName + "'");
+          calDefCount = calDefCount+1;
+        }
+      }
+      
+      //all cal def created successfully
+      if(calDefCount == totalNumberOfCalDef)
+      {
+        Log["Error"]("Create Calibration definition Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(calDefCount < totalNumberOfCalDef)
+      {
+        Log["Error"]("Few cal definition created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Calibration definition Successfully done") 
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //-----------------Delete calibration definition--------------------------
+      Log["AppendFolder"]("Delete calibration definition");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+           
+        //delete the existing calibration definition
+        if(!StepDeleteCalibrationDefinitionByMaterialName(materialName,materialId,lotNo))
+        {
+          Log["Error"]("Unable to delete the existing cal-def with material name '" + materialName + "'");
+          Log["PopLogFolder"]();
+          return false;
+        }     
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------Verify Calibration definition is deleted----------------
+      Log["AppendFolder"]("Verify calibration definition is deleted");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        
+        //verify if calibration definition deleted
+        if(!StepVerifyCalibrationDefinitionExists(materialName,materialId,lotNo))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition deleted");
+        Log["PopLogFolder"]();
+        return true;     
+      }
+      else
+      {
+        Log["Error"]("Cal definition deletion failed")   
+        Log["PopLogFolder"]();
+        return false; 
+      }  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function Calibration_ViewIMCalibrationDefinition()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","View_IM_CalDef");
+      var totalNumberOfCalDef = arrTestData["length"];
+      var calDefCount = 0;
+      var isAllCalDisplayed =0;  
+      
+      
+      //--------------------Add calibration definition--------------------------
+      Log["AppendFolder"]("Add Calibration Definition");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        var assayType = dictColumn["Item"]("AssayType");
+        var date = dictColumn["Item"]("Date");
+        var month = dictColumn["Item"]("Month");
+        var year = dictColumn["Item"]("Year");
+        var isActive = dictColumn["Item"]("IsActive");
+        var assayName = dictColumn["Item"]("AssayName");
+        var checkSumValue = dictColumn["Item"]("CheckSum");
+        var level2 = dictColumn["Item"]("Level2");
+ 
+        //create calibration definition
+        if(!StepAddIMCalibrationDefinition(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2))
+        {
+          Log["Error"]("Unable to create cal-def with material name '" + materialName + "'");
+          calDefCount = calDefCount+1;
+        }
+      }
+      
+      //all cal def created successfully
+      if(calDefCount == totalNumberOfCalDef)
+      {
+        Log["Error"]("Create Calibration definition Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(calDefCount < totalNumberOfCalDef)
+      {
+        Log["Error"]("Few cal definition created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Calibration definition Successfully done") 
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------Verify Calibration definition displayed--------------------
+      Log["AppendFolder"]("Verify calibration definition displayed");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        
+        //verify if calibration definition exists
+        if(StepVerifyCalibrationDefinitionExists(materialName,materialId,lotNo))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition displayed");
+        Log["PopLogFolder"]();    
+      }
+      else
+      {
+        Log["Error"]("Cal definition display failed")   
+        Log["PopLogFolder"]();
+      }    
+      
+      
+      //----------------View Calibration definition-----------------------------
+      Log["AppendFolder"]("View calibration definition");
+      var isAllCalDisplayed = 0;
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        var assayType = dictColumn["Item"]("AssayType");
+        var date = dictColumn["Item"]("Date");
+        var month = dictColumn["Item"]("Month");
+        var year = dictColumn["Item"]("Year");
+        var isActive = dictColumn["Item"]("IsActive");
+        var assayName = dictColumn["Item"]("AssayName");
+        var checkSumValue = dictColumn["Item"]("CheckSum");
+        var level2 = dictColumn["Item"]("Level2");
+        
+        //view calibration definition 
+        if(StepEditIMCalibrationDefinitionDetails(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition viewed");
+        Log["PopLogFolder"](); 
+        return true;   
+      }
+      else
+      {
+        Log["Error"]("Cal definition view failed")   
+        Log["PopLogFolder"]();
+        return false;
+      }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+function Calibration_UpdateIMCalibrationDefinition()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","Update_IM_CalDef");
+      var totalNumberOfCalDef = arrTestData["length"];
+      var calDefCount = 0;
+      var isAllCalDisplayed =0;  
+      
+      
+      //--------------------Add calibration definition--------------------------
+      Log["AppendFolder"]("Add Calibration Definition");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        var assayType = dictColumn["Item"]("AssayType");
+        var date = dictColumn["Item"]("Date");
+        var month = dictColumn["Item"]("Month");
+        var year = dictColumn["Item"]("Year");
+        var isActive = dictColumn["Item"]("IsActive");
+        var assayName = dictColumn["Item"]("AssayName");
+        var checkSumValue = dictColumn["Item"]("CheckSum");
+        var level2 = dictColumn["Item"]("Level2");
+ 
+        //create calibration definition
+        if(!StepAddIMCalibrationDefinition(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2))
+        {
+          Log["Error"]("Unable to create cal-def with material name '" + materialName + "'");
+          calDefCount = calDefCount+1;
+        }
+      }
+      
+      //all cal def created successfully
+      if(calDefCount == totalNumberOfCalDef)
+      {
+        Log["Error"]("Create Calibration definition Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(calDefCount < totalNumberOfCalDef)
+      {
+        Log["Error"]("Few cal definition created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Calibration definition Successfully done") 
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------Verify Calibration definition displayed--------------------
+      Log["AppendFolder"]("Verify calibration definition displayed");
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        
+        //verify if calibration definition exists
+        if(StepVerifyCalibrationDefinitionExists(materialName,materialId,lotNo))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition displayed");
+        Log["PopLogFolder"]();    
+      }
+      else
+      {
+        Log["Error"]("Cal definition display failed")   
+        Log["PopLogFolder"]();
+      }    
+      
+      
+      //----------------Update Calibration definition-----------------------------
+      Log["AppendFolder"]("Update calibration definition");
+      var isAllCalDisplayed = 0;
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var materialName = dictColumn["Item"]("MaterialName");
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        var newMaterialName = dictColumn["Item"]("NewMaterialName");    
+        
+        //update calibration definition 
+        if(StepUpdateMaterialNameInCalibrationDefinition(materialName,materialId,lotNo, newMaterialName))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition updated");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Error"]("Cal definition update failed")   
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //----------------Check Updated Calibration definition--------------------
+      Log["AppendFolder"]("Check Calibration Definition Updated or not");
+      var isAllCalDisplayed = 0;
+     
+      //Iterate for the number of calibration definition given in testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var newMaterialName = dictColumn["Item"]("NewMaterialName"); 
+        var materialId = dictColumn["Item"]("MaterialID");
+        var lotNo = dictColumn["Item"]("LotNo");
+        
+        //verify if calibration definition is updated
+        if(StepVerifyCalibrationDefinitionExists(newMaterialName,materialId,lotNo))
+        {
+          isAllCalDisplayed = isAllCalDisplayed+1;
+        }
+      }
+      
+      if(isAllCalDisplayed == totalNumberOfCalDef)
+      {
+        Log["Checkpoint"]("All calibration definition updated");
+        Log["PopLogFolder"]();    
+      }
+      else
+      {
+        Log["Error"]("Cal definition update failed")   
+        Log["PopLogFolder"]();
+      }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                            Dashboard Tiles Update
+//******************************************************************************
+function Dashboard_STATBatchOrderBySampleIdWithReagents()
+{
+  try
+  {
+      //-------------------Read data from Test Data file------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "CreateSTATBatchOrderWithReagentBySID");
+      var sampleIds = new Array();
+      dictColumn=arrTestData[0];      
+      sampleIds[0] = dictColumn["Item"]("SampleId");
+      sampleIds[1] = dictColumn["Item"]("SampleId2");
+      sampleIds[2] = dictColumn["Item"]("SampleId3"); 
+      var expectedSTATsInProcessTileCount = dictColumn["Item"]("StatsTileInProcessCount");
+      var waitTime = dictColumn["Item"]("TileWaitTime");
+     
+      
+      //------------------Verify HYDRA is in Ready State------------------------      
+      Log["AppendFolder"]("Check HYDRA is inReady State");    
+      
+      // Verify Hydra is in ready state
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }   
+      Log["PopLogFolder"]();
+            
+      
+      //-------------------Move Old Samples to Historical-----------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();  
+      
+    
+      //---------------------Create Batch Order by SID--------------------------
+      Log["AppendFolder"]("Create Batch Order by SID");
+      
+      //Iterate for the number of batch records given as a testdata
+      for(i=0;i<arrTestData["length"];i++)
+      {
+        //Initialize variables
+        dictColumn=arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId")
+        var SampleCount = dictColumn["Item"]("SampleCount")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var Assay = dictColumn["Item"]("Assay")
+        var Priority = dictColumn["Item"]("Priority")
+      
+        //Create batch order
+        if(StepCreateBatchOrderBySampleId(SampleId, SampleCount, Specimen, Analyzer, Assay, Priority))
+        {
+          POECount=POECount+1; 
+        }
+      }
+      
+      var counterPOE = arrTestData["length"]
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<counterPOE)
+      {
+        Log["Error"]("Create Batch Order Failed for some samples")
+      }
+      else
+      {
+        Log["Message"]("Create Batch Order successful")
+      }   
+      Log["PopLogFolder"]();      
+
+
+      //--------------------------Load Samples----------------------------------
+      Log["AppendFolder"]("Load Samples Using Hydra DML Simulator");
+       
+      //Load Samples
+      if(!StepLoadSamplesinDMLSimulator(sampleIds))
+      {
+        Log["Error"]("Sample Loading Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](40000,"Waiting for sample to load")
+      
+      Log["PopLogFolder"]();
+     
+      
+      //--------------------Check the STAT in Dashboard Tile Count--------------
+      Log["AppendFolder"]("Verify the In-Process Count in STAT Tile "); 
+      
+      //Verify the STAT Tile Count
+      if(StepCheckSTATsInProcessCountWithPoolingIntervel(waitTime,expectedSTATsInProcessTileCount))
+      {
+        Log["CheckPoint"]("STAT Tile InProcess Count Verification Passed");
+        Log["PopLogFolder"]();
+        return true;      
+      } 
+      else 
+      {
+        Log["Error"]("STAT Tile InProcess Count Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+function Dashboard_STATBatchOrderBySampleIdWithNoReagent()
+{
+  try
+  {
+      //-------------------Read data from Test Data file------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "CreateSTATBatchOrderWithNoReagentBySID");
+      var sampleIds = new Array();
+      dictColumn=arrTestData[0];      
+      sampleIds[0] = dictColumn["Item"]("SampleId");
+      sampleIds[1] = dictColumn["Item"]("SampleId2");
+      sampleIds[2] = dictColumn["Item"]("SampleId3"); 
+      var waitTime = dictColumn["Item"]("TileWaitTime");
+      var isInterventionNeededCountValidated = false;
+      var isTileCountValidated = false;
+      var expectedSTATsInterventionneededTileCount = dictColumn["Item"]("StatsTileInterventionNeededCount");
+      expectedSTATsInterventionneededTileCount = aqConvert["StrToInt"](expectedSTATsInterventionneededTileCount) + aqConvert["StrToInt"](existingInerventionNeededCount);
+      var expectedSTATsTotalCount = dictColumn["Item"]("StatsTileTotalCount");
+      expectedSTATsTotalCount = aqConvert["StrToInt"](expectedSTATsTotalCount) + aqConvert["StrToInt"](existingTotalCount);
+     
+      
+      //------------------Verify HYDRA is in Ready State------------------------      
+      Log["AppendFolder"]("Check HYDRA is in Ready State");    
+      
+      // Verify Hydra is in ready state
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }   
+      Log["PopLogFolder"]();
+            
+      
+      //-------------------Move Old Samples to Historical-----------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //--------------Get the existing tile counts of STAT Samples--------------
+      Log["AppendFolder"]("Get the Existing STAT Tile count details");
+      
+      var existingSTATsInerventionNeededCount = StepCheckSTATsInterventionNeededCountWithPoolingIntervel();
+      var existingSTATsTileTotalCount = StepCheckSTATsTileTotalCountWithPoolingInterval();      
+      
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Create Batch Order by SID--------------------------
+      Log["AppendFolder"]("Create Batch Order by SID");
+      
+      //Iterate for the number of batch records given as a testdata
+      for(i=0;i<arrTestData["length"];i++)
+      {
+        //Initialize variables
+        dictColumn=arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId")
+        var SampleCount = dictColumn["Item"]("SampleCount")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var Assay = dictColumn["Item"]("Assay")
+        var Priority = dictColumn["Item"]("Priority")
+      
+        //Create batch order
+        if(StepCreateBatchOrderBySampleId(SampleId, SampleCount, Specimen, Analyzer, Assay, Priority))
+        {
+          POECount=POECount+1; 
+        }
+      }
+      
+      var counterPOE = arrTestData["length"]
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<counterPOE)
+      {
+        Log["Error"]("Create Batch Order Failed for some samples")
+      }
+      else
+      {
+        Log["Message"]("Create Batch Order successful")
+      }   
+      Log["PopLogFolder"]();  
+      
+      
+      //--------------------------Load Samples----------------------------------
+      Log["AppendFolder"]("Load Samples Using Hydra DML Simulator");
+       
+      //Load Samples
+      if(!StepLoadSamplesinDMLSimulator(sampleIds))
+      {
+        Log["Error"]("Sample Loading Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](40000,"Waiting for sample to load")
+      
+      Log["PopLogFolder"]();
+     
+      
+      //-------------------STAT Tile Intervention Needed Count------------------
+      Log["AppendFolder"]("Verifying the STATs tile sample intervention needed count");
+    
+      //Verify the STAT Tile Count
+      if(StepCheckSTATsInterventionNeededCountWithPoolingIntervel(waitTime,expectedSTATsInterventionneededTileCount))
+      {
+        Log["CheckPoint"]("STAT Tile Sample Intervention Count Verification Passed");
+        Log["PopLogFolder"]();
+        isInterventionNeededCountValidated = true;
+      } 
+      else 
+      {
+        Log["Error"]("STAT Tile Sample Intervention Count Verification Failed");
+        Log["PopLogFolder"]();
+        isInterventionNeededCountValidated = false;
+      }
+      
+      
+      //-----------------Check Sample listed in STAT sample screen--------------
+      Log["AppendFolder"]("Check Sample listed in STAT sample intervention needed grid");
+      
+      for(j=0;j<3;j++)
+      {
+        //Check Samples listed in intervention needed grid
+        if(!StepCheckSampleListedInSTATSampleInterventionNeededGrid(sampleIds[i]))
+        {
+          Log["Error"]("Verification of Sample listed in STAT Sample in Intervention Needed Grid, failed");
+        }
+        else
+        {
+          Log["Checkpoint"]("Verification of Sample listed in STAT Sample in Intervention Needed Grid, pass"); 
+        }
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //--------------------Verify the STATs tile total count-------------------
+      Log["AppendFolder"]("Verify the STATs tile total count");
+  
+      if(StepCheckSTATsTileTotalCountWithPoolingInterval(waitTime, expectedSTATsTotalCount))
+      {
+        Log["CheckPoint"]("STAT Tile Total Count Verification Passed");
+        Log["PopLogFolder"]();
+        isTileCountValidated = true;
+      } 
+      else 
+      {
+        Log["Error"]("STAT Tile Sample Intervention Count Verification Failed");
+        Log["PopLogFolder"]();
+        isTileCountValidated = false;
+      }  
+    
+      
+      //---------------Compare Tile count and STATs sample count----------------
+      Log["AppendFolder"]("Compare STAT Dashboard Tile count and STATs sample count in STATs screen");
+      
+      if(isInterventionNeededCountValidated && isTileCountValidated)
+      {
+        Log["Checkpoint"]("Both the intervention needed count and total tile count validation passed for the STATs Tile");
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else 
+      {
+        Log["Error"]("Intervention needed count or total tile count for the STATs tile verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false; 
+  }
+}
+
+function Dashboard_STATBatchOrderBySIDWithNoReagentTileCount()
+{
+  try
+  {
+      //-------------------Read data from Test Data file------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "CreateSTATBatchWithNoReagent");
+      var sampleIds = new Array();
+      dictColumn = arrTestData[0];      
+      sampleIds[0] = dictColumn["Item"]("SampleId");
+      sampleIds[1] = dictColumn["Item"]("SampleId2");
+      sampleIds[2] = dictColumn["Item"]("SampleId3"); 
+      var expectedTileCount = dictColumn["Item"]("ReagentNeedsTileCount");
+      
+      
+      //------------------Verify HYDRA is in Ready State------------------------      
+      Log["AppendFolder"]("Check HYDRA is in Ready State");    
+      
+      // Verify Hydra is in ready state
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }   
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Move Old Samples to Historical-----------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Create Batch Order by SID--------------------------
+      Log["AppendFolder"]("Create Batch Order by SID");
+      
+      //Iterate for the number of batch records given as a testdata
+      for(i=0;i<arrTestData["length"];i++)
+      {
+        //Initialize variables
+        dictColumn=arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId")
+        var SampleCount = dictColumn["Item"]("SampleCount")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var Assay = dictColumn["Item"]("Assay")
+        var Priority = dictColumn["Item"]("Priority")
+      
+        //Create batch order
+        if(StepCreateBatchOrderBySampleId(SampleId, SampleCount, Specimen, Analyzer, Assay, Priority))
+        {
+          POECount=POECount+1; 
+        }
+      }
+      
+      var counterPOE = arrTestData["length"]
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<counterPOE)
+      {
+        Log["Error"]("Create Batch Order Failed for some samples")
+      }
+      else
+      {
+        Log["Message"]("Create Batch Order successful")
+      }   
+      Log["PopLogFolder"]();
+      
+      
+      //--------------------------Load Samples----------------------------------
+      Log["AppendFolder"]("Load Samples Using Hydra DML Simulator");
+       
+      //Load Samples
+      if(!StepLoadSamplesinDMLSimulator(sampleIds))
+      {
+        Log["Error"]("Sample Loading Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](40000,"Waiting for sample to load")
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify the Reagent Needs Tile Count-------------------
+      Log["AppendFolder"]("Verify the Reagent Needs Tile Count");
+    
+      //Verify the ReagentNeeds Tile Count
+      if(StepVerifyReagentNeedsTileCount(expectedTileCount))
+      {
+        Log["CheckPoint"]("ReagentNeeds Tile Count Verification Passed");
+        Log["PopLogFolder"]();
+        return true;      
+      } 
+      else 
+      {
+        Log["Error"]("ReagentNeeds Tile Count Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false; 
+  }
+}
+
+function Dashboard_RoutineBatchOrderBySIDWithNoReagentsOnboarded()
+{
+  try
+  {
+      //-------------------Read data from Test Data file------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "CreateRoutineBatchOrderWithNoReagentBySID");
+      var sampleIds = new Array();
+      dictColumn = arrTestData[0];      
+      sampleIds[0] = dictColumn["Item"]("SampleId");
+      sampleIds[1] = dictColumn["Item"]("SampleId2");
+      sampleIds[2] = dictColumn["Item"]("SampleId3"); 
+      var waitTime = dictColumn["Item"]("TileWaitTime");
+      var isInterventionNeededCountValidated = false;
+      var isTileCountValidated = false;
+      var expectedRoutineSamplesTileInterventionneededCount = dictColumn["Item"]("RoutineSamplesIntervetionNeededCount");
+      expectedRoutineSamplesTileInterventionneededCount = aqConvert["StrToInt"](expectedRoutineSamplesTileInterventionneededCount) + aqConvert["StrToInt"](patientInterventionNeededCount);
+      var expectedRoutineSamplesTileTotalCount = dictColumn["Item"]("RoutineSamplesTotalCount");
+      expectedRoutineSamplesTileTotalCount = aqConvert["StrToInt"](expectedRoutineSamplesTileTotalCount) + aqConvert["StrToInt"](existingTotalCount);
+     
+      
+      //------------------Verify HYDRA is in Ready State------------------------      
+      Log["AppendFolder"]("Check HYDRA is in Ready State");    
+      
+      // Verify Hydra is in ready state
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }   
+      Log["PopLogFolder"]();
+            
+      
+      //-------------------Move Old Samples to Historical-----------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //-------------Get the existing tile counts of Routine Samples------------
+      Log["AppendFolder"]("Get the Existing Routine Tile count details");
+      
+      var existingPatientInerventionNeededCount = StepCheckRoutineSampleTilePatientInterventionNeededCountWithPoolingInterval();
+      var existingRoutineTileTotalCount = StepCheckRoutineSamplesTileTotalCountWithPoolingInterval();     
+      
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Create Batch Order by SID--------------------------
+      Log["AppendFolder"]("Create Batch Order by SID");
+      
+      //Iterate for the number of batch records given as a testdata
+      for(i=0;i<arrTestData["length"];i++)
+      {
+        //Initialize variables
+        dictColumn=arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId")
+        var SampleCount = dictColumn["Item"]("SampleCount")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var Assay = dictColumn["Item"]("Assay")
+        var Priority = dictColumn["Item"]("Priority")
+      
+        //Create batch order
+        if(StepCreateBatchOrderBySampleId(SampleId, SampleCount, Specimen, Analyzer, Assay, Priority))
+        {
+          POECount=POECount+1; 
+        }
+      }
+      
+      var counterPOE = arrTestData["length"]
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<counterPOE)
+      {
+        Log["Error"]("Create Batch Order Failed for some samples")
+      }
+      else
+      {
+        Log["Message"]("Create Batch Order successful")
+      }   
+      Log["PopLogFolder"]();  
+      
+      
+      //--------------------------Load Samples----------------------------------
+      Log["AppendFolder"]("Load Samples Using Hydra DML Simulator");
+       
+      //Load Samples
+      if(!StepLoadSamplesinDMLSimulator(sampleIds))
+      {
+        Log["Error"]("Sample Loading Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](40000,"Waiting for sample to load")
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Routine Tile Intervention Needed Count----------------
+      Log["AppendFolder"]("Verifying the Routine tile sample intervention needed count");
+    
+      //Verify the Routine Tile Count
+      if(StepCheckRoutineSampleTilePatientInterventionNeededCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileInterventionneededCount))
+      {
+        Log["CheckPoint"]("Routine Tile Sample Intervention Count Verification Passed");
+        Log["PopLogFolder"]();
+        isInterventionNeededCountValidated = true;
+      } 
+      else 
+      {
+        Log["Error"]("Routine Tile Sample Intervention Count Verification Failed");
+        Log["PopLogFolder"]();
+        isInterventionNeededCountValidated = false;
+      }
+      
+      
+      //----------------Check Sample listed in Routine sample screen------------
+      Log["AppendFolder"]("Check Sample listed in Routine sample intervention needed grid");
+      
+      for(j=0;j<3;j++)
+      {
+        //Check Samples listed in intervention needed grid
+        if(!StepCheckSampleListedInRoutineInterventionNeededDataGrid(sampleIds[i]))
+        {
+          Log["Error"]("Verification of Sample listed in Routine Sample in Intervention Needed Grid, failed");
+        }
+        else
+        {
+          Log["Checkpoint"]("Verification of Sample listed in Routine Sample in Intervention Needed Grid, pass"); 
+        }
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //--------------------Verify the Routine tile total count-------------------
+      Log["AppendFolder"]("Verify the Routine tile total count");
+  
+      if(StepCheckRoutineSamplesTileTotalCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileTotalCount))
+      {
+        Log["CheckPoint"]("Routine Tile Total Count Verification Passed");
+        Log["PopLogFolder"]();
+        isTileCountValidated = true;
+      } 
+      else 
+      {
+        Log["Error"]("Routine Tile Sample Intervention Count Verification Failed");
+        Log["PopLogFolder"]();
+        isTileCountValidated = false;
+      }  
+    
+      
+      //---------------Compare Tile count and Routine sample count--------------
+      Log["AppendFolder"]("Compare Routine Dashboard Tile count and Routine sample count in Routine screen");
+      
+      if(isInterventionNeededCountValidated && isTileCountValidated)
+      {
+        Log["Checkpoint"]("Both the intervention needed count and total tile count validation passed for the Routine Tile");
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else 
+      {
+        Log["Error"]("Intervention needed count or total tile count for the Routine tile verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false; 
+  }
+}
+
+function Dashboard_RoutineBatchOrderBySIDWithNoReagentTileCount()
+{
+  try
+  {
+      //-------------------Read data from Test Data file------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "CreateRoutineBatchWithNoReagent");
+      var sampleIds = new Array();
+      dictColumn = arrTestData[0];      
+      sampleIds[0] = dictColumn["Item"]("SampleId");
+      sampleIds[1] = dictColumn["Item"]("SampleId2");
+      sampleIds[2] = dictColumn["Item"]("SampleId3"); 
+      var expectedTileCount = arrTestData[0]["Item"]("ReagentNeedsTileCount");
+      
+      
+      //------------------Verify HYDRA is in Ready State------------------------      
+      Log["AppendFolder"]("Check HYDRA is in Ready State");    
+      
+      // Verify Hydra is in ready state
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }   
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Move Old Samples to Historical-----------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Create Batch Order by SID--------------------------
+      Log["AppendFolder"]("Create Batch Order by SID");
+      
+      //Iterate for the number of batch records given as a testdata
+      for(i=0;i<arrTestData["length"];i++)
+      {
+        //Initialize variables
+        dictColumn=arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId")
+        var SampleCount = dictColumn["Item"]("SampleCount")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var Assay = dictColumn["Item"]("Assay")
+        var Priority = dictColumn["Item"]("Priority")
+      
+        //Create batch order
+        if(StepCreateBatchOrderBySampleId(SampleId, SampleCount, Specimen, Analyzer, Assay, Priority))
+        {
+          POECount=POECount+1; 
+        }
+      }
+      
+      var counterPOE = arrTestData["length"]
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<counterPOE)
+      {
+        Log["Error"]("Create Batch Order Failed for some samples")
+      }
+      else
+      {
+        Log["Message"]("Create Batch Order successful")
+      }   
+      Log["PopLogFolder"]();
+      
+      
+      //--------------------------Load Samples----------------------------------
+      Log["AppendFolder"]("Load Samples Using Hydra DML Simulator");
+       
+      //Load Samples
+      if(!StepLoadSamplesinDMLSimulator(sampleIds))
+      {
+        Log["Error"]("Sample Loading Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](40000,"Waiting for sample to load")
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify the Reagent Needs Tile Count-------------------
+      Log["AppendFolder"]("Verify the Reagent Needs Tile Count");
+    
+      //Verify the ReagentNeeds Tile Count
+      if(StepVerifyReagentNeedsTileCount(expectedTileCount))
+      {
+        Log["CheckPoint"]("ReagentNeeds Tile Count Verification Passed");
+        Log["PopLogFolder"]();
+        return true;      
+      } 
+      else 
+      {
+        Log["Error"]("ReagentNeeds Tile Count Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false; 
+  }
+}
+
+
+//******************************************************************************
+//                            Event Log
+//******************************************************************************
+function EventLog_LoginMessage()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData1 = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+      dictColumn1 = arrTestData1[0];
+      var Username = dictColumn1["Item"]("User");
+      var Password = dictColumn1["Item"]("Password");
+      
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","LoginEventLog");
+      dictColumn2 = arrTestData2[0];
+      var code = dictColumn2["Item"]("Code");
+      var message = dictColumn2["Item"]("Message");
+      
+      
+      //-------------------Restart HYDRA & Login as G0--------------------------  
+      Log["AppendFolder"]("Restart HYDRA & Login as G0");
+      
+      if(!StepRestartAndLoginToHydra(Username,Password)()) 
+      {
+        Log["Error"]("Restart Hydra failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();  
+      
+      
+      //-------------------Verify login message in Event Log--------------------  
+      Log["AppendFolder"]("Verify login message in Event Log");
+      
+      if(StepVerifyTheEventMessageInEventLogGrid(code,message))
+      {
+        Log["Checkpoint"]("Log message is displaying in Event Log Grid for Login");
+        Log["PopLogFolder"]();     
+      } 
+      else
+      {
+        Log["Error"]("Log message is not displaying in Event Log Grid for Login");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //-----------------Post Run - Verify HYDRA is in Ready State--------------  
+      Log["AppendFolder"]("Post Run : Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();
+      return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+function EventLog_MaintenanceMessage()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData1 = GetTestItemsByTestName(TestDataFile,"Regression","MaintenanceEventLog");
+      dictColumn1 = arrTestData1[0];
+      var activityName = dictColumn1["Item"]("ActivityName");
+      var code = dictColumn1["Item"]("Code");
+      var message = dictColumn1["Item"]("Message");
+      
+      var arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn2=arrTestData2[0];
+      var moduleType = dictColumn2["Item"]("ModuleTypeHydra");
+      var stateMaintenance = dictColumn2["Item"]("StateMaintenance");
+      var stateReady = dictColumn2["Item"]("StateReady");
+      var stateStop = dictColumn2["Item"]("StateStop");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------Perform Maintenance Activity-------------------------  
+      Log["AppendFolder"]("Perform Maintenance Activity");
+      
+      if(!StepPerformActivityByActivityName(activityName)) 
+      {
+        Log["Error"]("Perform Maintenance Activity failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //---------------------Verify Hydra is in Maintenance State-------------------  
+      Log["AppendFolder"]("Verify Hydra is in Maintenance State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateMaintenance))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Maintenance");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the Maintenance Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code,message))
+      {
+        Log["Checkpoint"]("Maintenance Log message is displaying in Event Log");
+        Log["PopLogFolder"]();     
+      } 
+      else
+      {
+        Log["Error"]("Maintenance Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //---------------------Post Run : Stop HYDRA system-----------------------    
+      Log["AppendFolder"]("Post Run : Perform Stop on HYDRA system");
+      
+      if(!StepPerformStopActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the stop hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Post Run : Verify Hydra is in Stopped State-----------  
+      Log["AppendFolder"]("Post Run : Verify Hydra is in Stopped State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Post run : Play /Resume HYDRA system-----------------    
+      Log["AppendFolder"]("Post Run : Play / Resume the HYDRA system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //-----------------Post Run : Verify Hydra is in Ready State-------------- 
+      Log["AppendFolder"]("Post Run : Verify Hydra is in Ready State"); 
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      return true;
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      return false; 
+  }
+}
+
+function EventLog_StopAndResumeHydra()
+{
+  try
+  {   
+      //---------------------Read data from test data---------------------------
+      var arrTestData1 = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn1 = arrTestData1[0];
+      var moduleType = dictColumn1["Item"]("ModuleTypeHydra");
+      var stateStop = dictColumn1["Item"]("StateStop");
+      var stateReady = dictColumn1["Item"]("StateReady");
+      
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","StopAndResumeHydra");
+      dictColumn2 = arrTestData2[0];
+      var code1 = dictColumn2["Item"]("Code");
+      var message1 = dictColumn2["Item"]("Message");
+      var code2 = dictColumn2["Item"]("Code2");
+      var message2 = dictColumn2["Item"]("Message2");
+      
+      
+      //------------------Verify HYDRA is in Ready State------------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Stop HYDRA system----------------------------------    
+      Log["AppendFolder"]("Perform Stop on HYDRA system");
+      
+      if(!StepPerformStopActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the stop hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify Hydra is in Stopped State-------------------  
+      Log["AppendFolder"]("Verify Hydra is in Stopped State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the Hydra Stop Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code1,message1))
+      {
+        Log["Checkpoint"]("Hydra Stop Log message is displaying in Event Log");
+        Log["PopLogFolder"]();     
+      } 
+      else
+      {
+        Log["Error"]("Hydra Stop Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //-----------------------Play /Resume HYDRA system------------------------    
+      Log["AppendFolder"]("Play / Resume the HYDRA system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify Hydra is in Ready State--------------------- 
+      Log["AppendFolder"]("Verify Hydra is in Ready State"); 
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the Hydra Resume Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code2,message2))
+      {
+        Log["Checkpoint"]("Hydra Resume Log message is displaying in Event Log");
+        Log["PopLogFolder"]();   
+        return true;  
+      } 
+      else
+      {
+        Log["Error"]("Hydra Resume Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function EventLog_PauseAndResumeHydra()
+{
+  try
+  {
+      //---------------------Read data from test data---------------------------
+      var arrTestData1 = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn1 =arrTestData1[0];
+      var moduleType = dictColumn1["Item"]("ModuleTypeHydra");
+      var stateStop = dictColumn1["Item"]("StateStop");
+      var stateReady = dictColumn1["Item"]("StateReady");
+      
+      var arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","PauseAndResumeHydra");
+      var dictColumn2 = arrTestData2[0];
+      var code1 = dictColumn2["Item"]("Code");
+      var message1 = dictColumn2["Item"]("Message");
+      var code2 = dictColumn2["Item"]("Code2");
+      var message2 = dictColumn2["Item"]("Message2");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------------Pause HYDRA system------------------------------
+      Log["AppendFolder"]("Pause the HYDRA system ");
+      
+      if(!StepPerformPauseActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing stop action on hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify hydra is in Stopped state----------------------
+      Log["AppendFolder"]("Verify hydra is in Stopped state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the Hydra Pause Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code1,message1))
+      {
+        Log["Checkpoint"]("Hydra Pause Log message is displaying in Event Log");
+        Log["PopLogFolder"]();     
+      } 
+      else
+      {
+        Log["Error"]("Hydra Pause Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //---------------------Play /Resume HYDRA system--------------------------
+      Log["AppendFolder"]("Perform Play / Resume on HYDRA system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify hydra is in Ready state----------------------
+      Log["AppendFolder"]("Verify hydra is in Ready state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the Hydra Resume Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code2,message2))
+      {
+        Log["Checkpoint"]("Hydra Resume Log message is displaying in Event Log");
+        Log["PopLogFolder"]();   
+        return true;  
+      } 
+      else
+      {
+        Log["Error"]("Hydra Resume Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function EventLog_StopAndResumeDL()
+{
+  try
+  {   
+      //---------------------Read data from test data---------------------------
+      var arrTestData1 = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn1 = arrTestData1[0];
+      var moduleType = dictColumn1["Item"]("ModuleTypeDL");
+      var stateStop = dictColumn1["Item"]("StateStop");
+      var stateReady = dictColumn1["Item"]("StateReady");
+      
+      arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","StopAndResumeDL");
+      dictColumn2 = arrTestData2[0];
+      var code1 = dictColumn2["Item"]("Code");
+      var message1 = dictColumn2["Item"]("Message");
+      var code2 = dictColumn2["Item"]("Code2");
+      var message2 = dictColumn2["Item"]("Message2");
+      
+      
+      //------------------Verify HYDRA is in Ready State------------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Stop DL system-------------------------------------    
+      Log["AppendFolder"]("Perform Stop on DL system");
+      
+      if(!StepPerformStopActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the stop DL module");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify DL is in Stopped State----------------------  
+      Log["AppendFolder"]("Verify DL is in Stopped State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the DL State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the DL Stop Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code1,message1))
+      {
+        Log["Checkpoint"]("DL Stop Log message is displaying in Event Log");
+        Log["PopLogFolder"]();     
+      } 
+      else
+      {
+        Log["Error"]("DL Stop Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //-----------------------Play /Resume DL system---------------------------    
+      Log["AppendFolder"]("Play / Resume the DL system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume DL module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify DL is in Ready State--------------------- 
+      Log["AppendFolder"]("Verify DL is in Ready State"); 
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the DL State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the DL Resume Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code2,message2))
+      {
+        Log["Checkpoint"]("DL Resume Log message is displaying in Event Log");
+        Log["PopLogFolder"]();   
+        return true;  
+      } 
+      else
+      {
+        Log["Error"]("DL Resume Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function EventLog_PauseAndResumeDL()
+{
+  try
+  {
+      //---------------------Read data from test data---------------------------
+      var arrTestData1 = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn1 =arrTestData1[0];
+      var moduleType = dictColumn1["Item"]("ModuleTypeDL");
+      var stateStop = dictColumn1["Item"]("StateStop");
+      var stateReady = dictColumn1["Item"]("StateReady");
+      
+      var arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","PauseAndResumeDL");
+      var dictColumn2 = arrTestData2[0];
+      var code1 = dictColumn2["Item"]("Code");
+      var message1 = dictColumn2["Item"]("Message");
+      var code2 = dictColumn2["Item"]("Code2");
+      var message2 = dictColumn2["Item"]("Message2");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------------Pause DL system---------------------------------
+      Log["AppendFolder"]("Pause the DL system ");
+      
+      if(!StepPerformPauseActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing stop action on DL module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify DL is in Stopped state-------------------------
+      Log["AppendFolder"]("Verify DL is in Stopped state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the DL State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the DL Pause Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code1,message1))
+      {
+        Log["Checkpoint"]("DL Pause Log message is displaying in Event Log");
+        Log["PopLogFolder"]();     
+      } 
+      else
+      {
+        Log["Error"]("DL Pause Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //---------------------Play /Resume DL system-----------------------------
+      Log["AppendFolder"]("Perform Play / Resume on DL system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify DL is in Ready state---------------------------
+      Log["AppendFolder"]("Verify DL is in Ready state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the DL State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Verify message in Event Log-------------------------- 
+      Log["AppendFolder"]("Verify the DL Resume Log Entry in Event Log ");
+       
+      if(StepVerifyTheEventMessageInEventLogGrid(code2,message2))
+      {
+        Log["Checkpoint"]("DL Resume Log message is displaying in Event Log");
+        Log["PopLogFolder"]();   
+        return true;  
+      } 
+      else
+      {
+        Log["Error"]("DL Resume Log message is not displaying in Event Log");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+
+//******************************************************************************
+//                          Maintenance
+//******************************************************************************
+function Maintenance_VerifyCurrentDateAndActivities()
+{
+  try
+  {   
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-----------------------Verify Current Date------------------------------
+      Log["AppendFolder"]("Verify Current Date in Maintenance Screen");
+      
+      //Get current date
+      var CurDate=aqDateTime["Today"]();  
+    
+      //Converting the currentdate into the date format in Maintenance screen
+      CurDate=aqConvert.DateTimeToFormatStr(CurDate,"%d %B %Y")
+      
+      if(!StepVerifyTheDateDisplayedInMaintenanceScreen(CurDate)) 
+      {
+        Log["Error"]("Current Date verification in Maintennance failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-----------------------Verify Activities--------------------------------
+      Log["AppendFolder"]("Activities Displayed in Maintenance Screen");
+      
+      if(StepGetCountOfDisplayedMaintenanceActivities() > 0) 
+      {
+        Log["Message"]("Maintenance Activties are available in Maintenance screen");
+        Log["PopLogFolder"](); 
+        return true;
+      }
+      else
+      {
+        Log["Error"]("Maintenance Activties are not available in Maintenance screen");  
+        Log["PopLogFolder"](); 
+        return false;
+      }
+      
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      return false; 
+  }
+}
+
+function Maintenance_ActivityDetails()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","ActivityDetails");
+      dictColumn = arrTestData[0];
+      var activityName = dictColumn["Item"]("ActivityName");
+      var expectedDescription = dictColumn["Item"]("Description");
+      var expectedStatus = dictColumn["Item"]("Status");
+      var expectedDate=aqConvert.DateTimeToFormatStr(aqDateTime["Today"](),"%d %B %Y")
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-----------------------Verify Activity Details--------------------------
+      Log["AppendFolder"]("Verify Maintenance Activity Details");
+      
+      if(StepCheckTheMaintenaceActivityDetailsByActivityName(activityName,expectedDescription,expectedStatus,expectedDate)) 
+      {
+        Log["Message"]("Maintenance Activity details are available in Maintenance screen");
+        Log["PopLogFolder"](); 
+        return true;
+      }
+      else
+      {
+        Log["Error"]("Maintenance Activity details are not available in Maintenance screen");  
+        Log["PopLogFolder"](); 
+        return false;
+      }
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      return false; 
+  }
+}
+
+function Maintenance_PerformAction()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","Perform");
+      dictColumn = arrTestData[0];
+      var activityName = dictColumn["Item"]("ActivityName");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //--------------------------Perform Activity------------------------------
+      Log["AppendFolder"]("Perform Activity");
+      
+      if(StepPerformActivityByActivityName(activityName)) 
+      {
+        Log["Message"]("Perform Activity successful");
+        Log["PopLogFolder"](); 
+        return true;
+      }
+      else
+      {
+        Log["Error"]("Perform Activity failed");  
+        Log["PopLogFolder"](); 
+        return false;
+      }
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      return false; 
+  }
+}
+
+function Maintenance_NotPerformActionWithoutComments()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","NotPerformWithoutComments");
+      dictColumn = arrTestData[0];
+      var activityName = dictColumn["Item"]("ActivityName");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //--------------------------Not Perform Activity--------------------------
+      Log["AppendFolder"]("Not Perform Activity by activity name without comments");
+      
+      if(StepNotPerformActivityByActivityNameWithoutComments(activityName)) 
+      {
+        Log["Message"]("Not Perform Activity by activity name without comments successful");
+        Log["PopLogFolder"](); 
+        return true;
+      }
+      else
+      {
+        Log["Error"]("Not Perform Activity by activity name without comments failed");  
+        Log["PopLogFolder"](); 
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false; 
+  }
+}
+
+function Maintenance_NotPerformActionWithComments()
+{
+  try
+  {
+      //-----------------------Read data from Test Data file--------------------
+      arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","NotPerformWithComments");
+      dictColumn = arrTestData[0];
+      var activityName = dictColumn["Item"]("ActivityName");
+      var commentBoxComment = dictColumn["Item"]("Comment");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //--------------------------Not Perform Activity--------------------------
+      Log["AppendFolder"]("Not Perform Activity by activity name with comments");
+      
+      if(StepNotPerformActivityByActivityNameWithComments(activityName,commentBoxComment)) 
+      {
+        Log["Message"]("Not Perform Activity by activity name with comments successful");
+        Log["PopLogFolder"](); 
+        return true;
+      }
+      else
+      {
+        Log["Error"]("Not Perform Activity by activity name with comments failed");  
+        Log["PopLogFolder"](); 
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false; 
+  }
+}
+
+
+//******************************************************************************
+//                          Operator Diagnostics
+//******************************************************************************
+function OperatorDiagnostics_PerformDiagnosticActivityForIM()
+{
+  try
+  {
+      //----------------------Read data from test data--------------------------
+      var arrTestData1 = GetTestItemsByTestName(TestDataFile,"Regression","PerformDiagnosticforIM");
+      var dictColumn1 = arrTestData1[0];
+      var subSystemName = dictColumn1["Item"]("Subsystem");
+      var diagnosticName = dictColumn1["Item"]("DiagnosticName");
+      
+      var arrTestData2 = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn1 = arrTestData2[0];
+      var hydraModule = dictColumn2["Item"]("ModuleTypeHydra");
+      var stateDiagnostics = dictColumn2["Item"]("StateDiagnostics");
+      var stateStop = dictColumn2["Item"]("StateStop");
+      var stateReady = dictColumn2["Item"]("StateReady");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //----------------------Enter Diagnostic Mode-----------------------------  
+      Log["AppendFolder"]("Enter Diagnostic Mode for Hydra module");
+      
+      if(!StepPerformEnterDiagnosticsMode(hydraModule)) 
+      {
+        Log["Error"]("Module failed to enter in diagnostic state");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------Verify HYDRA is in Diagnostic State------------------  
+      Log["AppendFolder"]("Check HYDRA is in Diagnostics State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(hydraModule,stateDiagnostics)) 
+      {
+        Log["Error"]("Hydra module failed to enter in diagnostics state");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------Perform Diagnostics Operation------------------------  
+      Log["AppendFolder"]("Perform Diagnostics Operation");
+      
+      var moduleName = StepGetActualSystemModuleName(hydraModule);
+      
+      if(!StepPerformAndVerifyOperatorDiagnosticsAction(moduleName, subSystemName, diagnosticName)) 
+      {
+        Log["Error"]("Perform Diagnostics Operation failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------------Exit Diagnostic Mode------------------------------  
+      Log["AppendFolder"]("Enter Diagnostic Mode for Hydra module");
+      
+      if(!StepPerformExitDiagnosticsMode(hydraModule)) 
+      {
+        Log["Error"]("Module failed to exit diagnostic state");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------Verify HYDRA is in Stopped State---------------------  
+      Log["AppendFolder"]("Check HYDRA is in Stopped State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(hydraModule,stateStop)) 
+      {
+        Log["Error"]("Hydra module failed to enter in diagnostics state");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //-----------------------Play /Resume HYDRA system------------------------    
+      Log["AppendFolder"]("Post Run :Play / Resume the HYDRA system");
+      
+      if(!StepPerformResumeActionOnSystemModule(hydraModule))
+      {
+        Log["Error"]("Failed on performing the resume hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify Hydra is in Ready State--------------------- 
+      Log["AppendFolder"]("Verify Hydra is in Ready State"); 
+      if(!StepVerifySystemToBeInExpectedStatus(hydraModule,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                            Patient Orders
+//******************************************************************************
+function PatientOrderForIM()
+{
+  try
+  {
+      //----------------------Read data from Test Data--------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "PatientOrderForIM");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();  
+
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Creating '" + numberOfPatientOrder + "' Number of Patient Order");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create patient order
+        if(StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution)){
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Patient Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Patient Order Successfully done") 
+      }     
+      Log["PopLogFolder"]();
+      
+
+      //--------------------Verify patient order in worklist--------------------
+      Log["AppendFolder"]("Verify Patient Order Created in Worklist");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Check the sample id listed in worklist screen      
+        if(!StepVerifyTheOrderExistsInWorkListGrid(sampleId))
+        {
+          Log["Error"] ("The Sample id '" +  sampleId + "' is not listed in the worklist datagrid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        } 
+        else 
+        {
+          Log["Message"]("The Sample id '" +  sampleId + "' is listed in the worklist datagrid");
+        }
+      }
+      
+      //check if all orders created
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully patient orders created");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to create patient orders");
+          Log["PopLogFolder"]();
+          return false;
+      }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function PatientOrderForCH()
+{
+  try
+  {
+      //----------------------Read data from Test Data file---------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "PatientOrderForCH");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();  
+
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Creating '" + numberOfPatientOrder + "' Number of Patient Order");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create patient order
+        if(StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution)){
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Patient Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Patient Order Successfully done") 
+      }
+      
+      Log["PopLogFolder"]();
+      
+
+      //--------------------Verify patient order in worklist--------------------
+      Log["AppendFolder"]("Verify Patient Order Created in Worklist");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Check the sample id listed in worklist screen      
+        if(!StepVerifyTheOrderExistsInWorkListGrid(sampleId))
+        {
+          Log["Error"] ("The Sample id '" +  sampleId + "' is not listed in the worklist datagrid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        } 
+        else 
+        {
+          Log["Message"]("The Sample id '" +  sampleId + "' is listed in the worklist datagrid");
+        }
+      }
+      
+      //check if all orders created
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully patient orders created");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to create patient orders");
+          Log["PopLogFolder"]();
+          return false;
+      }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//******************************************************************************
+//                           Run ID Settings
+//******************************************************************************
+function RunIDSettings_BatchOrderBySampleIDWithRunID()
+{
+  try
+  {
+      //----------------------Read data from Test Data file---------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "BatchOrderBySampleIdWithRunID");
+      var POECount = 0;
+      dictColumn = arrTestData[0];
+      var numberOfPatientOrder = arrTestData["length"];
+      var runId = dictColumn["Item"]("RunID");
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+      
+      
+      //------------------------------Set Run ID--------------------------------
+      Log["AppendFolder"]("Set Run ID");
+      
+      //set Run ID
+      if(!StepCreateRunIDForAllPatientOrders(runId))
+      {
+        Log["Error"]("Set Run ID Failed");
+        StepDisableRunIdSettingsForAllPatientOrders();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+      
+      
+      //-----------Create Batch Order By SID With Run ID------------------------
+      Log["AppendFolder"]("Create Batch Order By Sample ID With Run ID Settings");
+      
+      //Iterate for the number of batch order records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create batch order with Run ID
+        if(StepCreateBatchOrderBySampleIdWithRunIdSetting(sampleId,sampleCount,specimen,analyzer,assay,priority,runId))
+        {
+          POECount = POECount + 1; 
+        }
+      }
+    
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        StepDisableRunIdSettingsForAllPatientOrders();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("only few Batch Order created");
+      }
+      else
+      {
+        Log["Checkpoint"]("Batch Order with run ID created");
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //------------------------Verify Run ID in Worklist-----------------------
+      Log["AppendFolder"]("Verify Run ID in Worklist");
+    
+      //Check the each run id generated is added to the worklist screen
+      for(i=0;i<arrTestData1["length"];i++)
+      {
+        //Initialize variables
+        dictColumn1=arrTestData1[i];
+        var runId = dictColumn1["Item"]("RunID")
+      
+        //Verify Run ID in worklist
+        if(StepVerifyRunIdInWorkListScreen(runId))
+        {
+          Log["Message"]("Batch Order with run ID "+runId+"is present");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1; 
+        }
+      }
+      if(isAllSamplesDisplayed < numberOfPatientOrder)
+      {
+        Log["Error"]("Batch order with Run ID in worklist failed");
+      }
+      else
+      {
+        Log["Checkpoint"]("All Batch Order with run ID displayed in worklist");
+      } 
+      
+      Log["PopLogFolder"]();
+ 
+      
+      //------------------------Post Run - Disable Run ID-----------------------
+      Log["AppendFolder"]("Post Run - Disable Run ID");
+      
+      //Disable Run ID
+      if(!StepDisableRunIdSettingsForAllPatientOrders())
+      {
+        Log["Error"]("Post run : Disable Run ID Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function RunIDSettings_BatchOrderByRackIDWithRunID()
+{
+  try
+  {
+      //----------------------Read data from Test Data file---------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile, "Regression", "BatchOrderByRackIdWithRunID");
+      var POECount = 0;
+      dictColumn = arrTestData[0];
+      var numberOfPatientOrder = arrTestData["length"];
+      var runId = dictColumn["Item"]("RunID");
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+      
+      
+      //------------------------------Set Run ID--------------------------------
+      Log["AppendFolder"]("Set Run ID");
+      
+      //set Run ID
+      if(!StepCreateRunIDForAllPatientOrders(runId))
+      {
+        Log["Error"]("Set Run ID Failed");
+        StepDisableRunIdSettingsForAllPatientOrders();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+      
+      
+      //-----------Create Batch Order By Rack ID With Run ID--------------------
+      Log["AppendFolder"]("Create Batch Order By Rack ID With Run ID Settings");
+      
+      //Iterate for the number of batch order records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var batchName = dictColumn["Item"]("BatchName");
+        var specimen = dictColumn["Item"]("Specimen")
+        var rackId = dictColumn["Item"]("RackId");
+        var analyzer = dictColumn["Item"]("Analyzer")
+        var assay = dictColumn["Item"]("Assay")
+        var runId = dictColumn["Item"]("RunID")
+      
+        //Create batch order with Run ID
+        if(StepCreateBatchOrderByRackIdWithRunIdSetting(batchName, specimen, rackId, analyzer, assay, runId))
+        {
+          POECount = POECount + 1; 
+        }
+      }
+    
+      if(POECount==0)
+      {
+        Log["Error"]("Create Batch Order Failed");
+        StepDisableRunIdSettingsForAllPatientOrders();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("only few Batch Order created");
+      }
+      else
+      {
+        Log["Checkpoint"]("Batch Order with run ID created");
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //------------------------Verify Run ID in Worklist-----------------------
+      Log["AppendFolder"]("Verify Run ID in Worklist");
+    
+      //Check the each run id generated is added to the worklist screen
+      for(i=0;i<arrTestData1["length"];i++)
+      {
+        //Initialize variables
+        dictColumn1=arrTestData1[i];
+        var runId = dictColumn1["Item"]("RunID")
+      
+        //Verify Run ID in worklist
+        if(StepVerifyRunIdInWorkListScreen(runId))
+        {
+          Log["Message"]("Batch Order with run ID "+runId+"is present");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1; 
+        }
+      }
+      if(isAllSamplesDisplayed < numberOfPatientOrder)
+      {
+        Log["Error"]("Batch order with Run ID in worklist failed");
+      }
+      else
+      {
+        Log["Checkpoint"]("All Batch Order with run ID displayed in worklist");
+      } 
+      
+      Log["PopLogFolder"]();
+ 
+      
+      //------------------------Post Run - Disable Run ID-----------------------
+      Log["AppendFolder"]("Post Run - Disable Run ID");
+      
+      //Disable Run ID
+      if(!StepDisableRunIdSettingsForAllPatientOrders())
+      {
+        Log["Error"]("Post run : Disable Run ID Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//******************************************************************************
+//                            Sample List
+//******************************************************************************
+function SampleListDetailsVerification()
+{
+  try
+  { 
+      //----------------------Read data from test data--------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","SampleListVerification");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      var arrSID= new Array();
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Creating '" + numberOfPatientOrder + "' Number of Patient Order");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create patient order
+        if(StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution)){
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Patient Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Patient Order Successfully done") 
+      }     
+      Log["PopLogFolder"]();
+      
+     
+      //-----------------Load Samples in DML Simulator---------------------------
+      Log["AppendFolder"]("Load Samples in DML Simulator");
+      
+      //add all sample IDs to array
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        arrSID = dictColumn["Item"]("SampleId")
+      }
+        
+      //Load Samples
+      if(!StepLoadSamplesinDMLSimulator(arrSID))
+      {
+        Log["Error"]("Sample Loading Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+ 
+  
+      //--------------Check Sample Status in SampleList Screen------------------
+      Log["AppendFolder"]("Sample Status in Sample List screen");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var SampleId = dictColumn["Item"]("SampleId");
+        var sampleStatus = dictColumn["Item"]("SampleStatus");
+        
+        //check if sample aspirated
+        if(StepCheckSampleStatusinSampleList(sampleId,sampleStatus))
+        {
+          isAllSamplesDisplayed=isAllSamplesDisplayed+1;
+        }
+      } 
+      
+      //check if all sample status is displayed
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Sample List Verification Successful");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Sample List Verification Failed");
+          Log["PopLogFolder"]();
+          return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+//******************************************************************************
+//                             System Health Check
+//******************************************************************************
+function SystemHealthCheck_StopAndResume_DL()
+{
+  try
+  {  
+      //----------------------Read data from test data--------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn=arrTestData[0];
+      var moduleType = dictColumn["Item"]("ModuleTypeDL");
+      var stateStop = dictColumn["Item"]("StateStop");
+      var stateReady = dictColumn["Item"]("StateReady");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();   
+      
+      
+      //----------------------Stop DL system------------------------------------
+      Log["AppendFolder"]("Perform Stop on DL system");
+  
+      if(!StepPerformStopActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on the Stop Action");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //----------------Verify if DL is in stopped state------------------------
+      Log["AppendFolder"]("Verify if DL is in stopped state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();    
+      
+      
+      //----------------------Play /Resume DL system----------------------------
+      Log["AppendFolder"]("Perform Play / Resume on the DL system ");
+  
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume actio");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //----------------Verify if DL is in Ready state------------------------
+      Log["AppendFolder"]("Verify if DL is in Ready state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();    
+      
+      return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"](); 
+    return false;  
+  }
+}
+
+function SystemHealthCheck_PauseAndResume_DL()
+{
+  try
+  {
+      //---------------------Read data from test data---------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn=arrTestData[0];
+      var moduleType = dictColumn["Item"]("ModuleTypeDL");
+      var stateStop = dictColumn["Item"]("StateStop");
+      var stateReady = dictColumn["Item"]("StateReady");
+      
+      
+      //------------------Verify HYDRA is in Ready State------------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //------------------------Pause DL system---------------------------------
+      Log["AppendFolder"]("Perform Pause on DL system");
+       
+      if(!StepPerformPauseActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the pause action");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify if DL is in stopped state----------------------
+      Log["AppendFolder"]("Verify if DL is in stopped state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the State as Pause");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();      
+      
+      
+      //----------------------Play /Resume DL system----------------------------
+      Log["AppendFolder"]("Resume the DL system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();  
+      
+      
+      //------------------Verify if DL is in Ready state------------------------ 
+      Log["AppendFolder"]("Verify if DL is in Ready state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      }  
+      Log["PopLogFolder"]();
+      
+      return true;   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"](); 
+    return false;  
+  }
+}
+
+function SystemHealthCheck_StopAndResume_HYDRA()
+{
+  try
+  {   
+      //---------------------Read data from test data---------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn=arrTestData[0];
+      var moduleType = dictColumn["Item"]("ModuleTypeHydra");
+      var stateStop = dictColumn["Item"]("StateStop");
+      var stateReady = dictColumn["Item"]("StateReady");
+      
+      
+      //------------------Verify HYDRA is in Ready State------------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Stop HYDRA system----------------------------------    
+      Log["AppendFolder"]("Perform Stop on HYDRA system");
+      
+      if(!StepPerformStopActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the stop hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify Hydra is in Stopped State-------------------  
+      Log["AppendFolder"]("Verify Hydra is in Stopped State");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //-----------------------Play /Resume HYDRA system------------------------    
+      Log["AppendFolder"]("Play / Resume the HYDRA system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Verify Hydra is in Ready State--------------------- 
+      Log["AppendFolder"]("Verify Hydra is in Ready State"); 
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function SystemHealthCheck_PauseAndResume_HYDRA()
+{
+  try
+  {
+      //---------------------Read data from test data---------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn=arrTestData[0];
+      var moduleType = dictColumn["Item"]("ModuleTypeHydra");
+      var stateStop = dictColumn["Item"]("StateStop");
+      var stateReady = dictColumn["Item"]("StateReady");
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------------Pause HYDRA system------------------------------
+      Log["AppendFolder"]("Pause the HYDRA system ");
+      
+      if(!StepPerformPauseActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing stop action on hydra module");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify hydra is in Stopped state----------------------
+      Log["AppendFolder"]("Verify hydra is in Stopped state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateStop))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Stopped");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //---------------------Play /Resume HYDRA system--------------------------
+      Log["AppendFolder"]("Perform Play / Resume on HYDRA system");
+      
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on hydra module");
+        Log["PopLogFolder"]();
+
+
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify hydra is in Ready state----------------------
+      Log["AppendFolder"]("Verify hydra is in Ready state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function SystemHealthCheck_LoadSampleProcessing()
+{
+  try
+  {
+      //---------------------Read data from test data---------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","SystemHealthCheck");
+      var dictColumn = arrTestData[0];
+      var moduleType = dictColumn["Item"]("ModuleTypeHydra");
+      var stateProcess = dictColumn["Item"]("StateProcess");
+      var Assay = dictColumn["Item"]("Assay")
+      var Specimen = dictColumn["Item"]("Specimen");
+      var Priority = dictColumn["Item"]("Priority");
+      var Analyzer = dictColumn["Item"]("Analyzer");
+      var SampleId = dictColumn["Item"]("SampleId");
+      var Replicates = dictColumn["Item"]("Replicates");
+      var dilutionValue = dictColumn["Item"]("Dilution");
+      var isManualDilution = dictColumn["Item"]("IsManualDilution");    
+      var sampleStatus = dictColumn["Item"]("SampleStatus");   
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Create Patient Order");
+      
+      if(!StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution))
+      {
+        Log["Error"]("Create patient order Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------------Load Patient Sample----------------------------
+      Log["AppendFolder"]("Load Patient Sample");
+      
+      if(!StepLoadSamplesinDMLSimulator(SampleId))
+      {
+        Log["Error"]("Load patient sample Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //------------------Verify Sample Status in Sample List-------------------
+      Log["AppendFolder"]("Verify Sample Status in Sample List");
+      
+      if(!StepCheckSampleStatusinSampleList(SampleId,sampleStatus))
+      {
+        Log["Error"]("Sample Status in Sample List Failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      
+      
+      //------------------Verify hydra is in Processing state-------------------
+      Log["AppendFolder"]("Verify hydra is in Processing state");
+      
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateProcess))
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Processing");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      
+      //------------------Verify hydra is back to Ready state--------------------
+      Log["AppendFolder"]("Verify hydra is back to Ready state");
+      var count=0;
+      
+      //loop for max 12 minutes (72x10=720 seconds)
+      while(count<72)
+      {
+        if(!StepVerifySystemToBeInExpectedStatus(moduleType,stateReady))
+        {
+          count=count+1;
+          //Adding delay
+          aqUtils["Delay"](10000,"Waiting for Hydra to come to ready state")
+        }
+        else
+        {
+          break;
+        }
+      }
+      
+      if(count==72)
+      {
+        Log["Error"]("Failed on Verifying the Hydra State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["PopLogFolder"]();
+      
+      return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+
+//******************************************************************************
+//                            Worklist
+//******************************************************************************
+function MoveToHistoricalBySID()
+{
+  try
+  {
+      //----------------------Read data from test data--------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","MoveToHistorical");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Creating '" + numberOfPatientOrder + "' Number of Patient Order");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create patient order
+        if(StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution)){
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Patient Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Patient Order Successfully done") 
+      }
+      
+      Log["PopLogFolder"]();
+      
+      
+      //--------------------Move to Historical by SID---------------------------
+      Log["AppendFolder"]("Move to Historical by Sample ID");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Move the SID to historical      
+        if(StepMoveToHistoricalBySampleID(sampleId))
+        {
+          Log["Message"] ("The Sample id '" +  sampleId + "' is moved to historical");
+        } 
+        else 
+        {
+          Log["Error"]("Failed : The Sample id '" +  sampleId + "' to move to historical");
+        }
+      }
+      
+      //----------------Verify moved order should not exists in grid------------
+      Log["AppendFolder"]("Verify moved order should not exists in grid");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Verify if the order does not exists in worklist screen      
+        if(!StepVerifyTheOrderExistsInWorkListGrid(sampleId))
+        {
+          Log["Message"] ("The Sample id '" +  sampleId + "' does not exists in worklist grid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        } 
+        else 
+        {
+          Log["Error"]("Failed : The Sample id '" +  sampleId + "'exists in worklist grid");
+        }
+      }
+      
+      //check if all SID are moved to historical
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully SID moved to historical");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to Move to historical by SID");
+          Log["PopLogFolder"]();
+          return false;
+      } 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function DeleteOrderBySID()
+{
+  try
+  {
+      //----------------------Read data from test data--------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","DeleteOrder");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Creating '" + numberOfPatientOrder + "' Number of Patient Order");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create patient order
+        if(StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution)){
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Patient Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Patient Order Successfully done") 
+      }
+      
+      Log["PopLogFolder"]();
+      
+      
+      //-----------------------Delete Order by SID------------------------------
+      Log["AppendFolder"]("Delete Order By Sample ID");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Move the SID to historical      
+        if(StepDeleteOrderBySampleID(sampleId))
+        {
+          Log["Message"] ("The Sample id '" +  sampleId + "' is deleted");
+        } 
+        else 
+        {
+          Log["Error"]("Failed : The Sample id '" +  sampleId + "' not deleted");
+        }
+      }
+      
+      
+      //----------------Verify deleted order should not exists in grid------------
+      Log["AppendFolder"]("Verify deleted order should not exists in grid");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId")
+      
+        //Verify if the order does not exists in worklist screen      
+        if(!StepVerifyTheOrderExistsInWorkListGrid(sampleId))
+        {
+          Log["Message"] ("The Sample id '" +  sampleId + "' does not exists in worklist grid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        } 
+        else 
+        {
+          Log["Error"]("Failed : The Sample id '" +  sampleId + "'exists in worklist grid");
+        }
+      }
+      
+      //check if all SID are deleted
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully SID deleted");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to delete Sample");
+          Log["PopLogFolder"]();
+          return false;
+      } 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function VerifyThePatientSampleDetails()
+{
+  try
+  {
+    //----------------------Read data from test data--------------------------
+      var arrTestData = GetTestItemsByTestName(TestDataFile,"Regression","PatientSampleDetails");
+      var POECount = 0;
+      var numberOfPatientOrder = arrTestData["length"];
+      var isAllSamplesDisplayed = 0;
+      
+      
+      //-------------------Verify HYDRA is in Ready State-----------------------  
+      Log["AppendFolder"]("Check HYDRA is in Ready State");
+      
+      if(!StepCheckAllSystemModulesReadyState()) 
+      {
+        Log["Error"]("All modules ready state verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      
+      //----------------------Move Old Samples to Historical--------------------
+      Log["AppendFolder"]("Move Old Samples to Historical");
+      
+      //Move old samples to historical
+      if(!StepMoveAllSamplesToHistorical())
+      {
+        Log["Error"]("Move to Historical Verification Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }  
+      Log["PopLogFolder"](); 
+      
+      
+      //-------------------------Create Patient Order---------------------------
+      Log["AppendFolder"]("Creating '" + numberOfPatientOrder + "' Number of Patient Order");
+      
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<numberOfPatientOrder; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var Assay = dictColumn["Item"]("Assay")
+        var Specimen = dictColumn["Item"]("Specimen")
+        var Priority = dictColumn["Item"]("Priority")
+        var Analyzer = dictColumn["Item"]("Analyzer")
+        var SampleId = dictColumn["Item"]("SampleId")
+        var Replicates = dictColumn["Item"]("Replicates")
+        var dilutionValue = dictColumn["Item"]("Dilution")
+        var isManualDilution = dictColumn["Item"]("IsManualDilution")
+      
+        //Create patient order
+        if(StepCreatePatientOrder(SampleId, Specimen, Priority, Analyzer, Assay, Replicates,dilutionValue,isManualDilution))
+        {
+          POECount = POECount + 1; 
+        }
+      }
+           
+      if(POECount==0)
+      {
+        Log["Error"]("Create Patient Order Failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else if(POECount<numberOfPatientOrder)
+      {
+        Log["Error"]("Few Patient Order created")        
+      }
+      else
+      {
+        Log["Checkpoint"]("Create Patient Order Successfully done") 
+      }
+      
+      Log["PopLogFolder"]();
+      
+      
+      //----------------Verify Patient Sample Details in View/Edit--------------
+      Log["AppendFolder"]("Verify Patient Sample Details in View/Edit Sample Screen");
+
+      //Iterate for the number of patient records given as a testdata
+      for(i=0; i<arrTestData["length"]; i++)
+      {
+        //Initialize variables
+        dictColumn = arrTestData[i];
+        var sampleId = dictColumn["Item"]("SampleId");
+        var rackID = dictColumn["Item"]("RackID");
+        var specimen = dictColumn["Item"]("Specimen");
+        var priority = dictColumn["Item"]("Priority");
+        var testName = dictColumn["Item"]("TestName");
+      
+        //Verify if the order does not exists in worklist screen      
+        if(!StepVerifyThePatientSampleDetailsInViewEditScreen(sampleId,rackID,specimen,priority,testName))
+        {
+          Log["Message"] ("The Sample id '" +  sampleId + "' does not exists in worklist grid");
+          isAllSamplesDisplayed = isAllSamplesDisplayed+1;
+        } 
+        else 
+        {
+          Log["Error"]("Failed : The Sample id '" +  sampleId + "'exists in worklist grid");
+        }
+      }
+      
+      //check if all SID are deleted
+      if (isAllSamplesDisplayed==numberOfPatientOrder)
+      {
+          Log["Checkpoint"]("Successfully SID deleted");
+          Log["PopLogFolder"]();
+          return true;
+      }
+      else
+      {
+          Log["Error"]("Failed to delete Sample");
+          Log["PopLogFolder"]();
+          return false;
+      } 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+
+
+

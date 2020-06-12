@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{24B6FA0B-0143-461A-9758-AEB9E9A9428B}" version="14.0" key="{39910354-8E81-4D7F-B143-623D56CEA215}">
+	<children>
+		<child name="ARM" key="{FB30A0F3-4C50-4C8C-8F5C-75304A217D0D}" path="..\TestcaseLayer\ARM\ARM.mds" />
+		<child name="InitializationARM" key="{5F610F21-B4E4-4DFA-8ED8-35E1F39A7457}" path="..\TestcaseLayer\InitializationARM\InitializationARM.mds" />
+	</children>
+	<testItems key="{553E5A5F-D3DC-4254-9B76-D54FA28598B8}">
+		<children>
+			<testItem key="{FB30A0F3-4C50-4C8C-8F5C-75304A217D0D}" enabled="True" timeout="0" stopOnError="True" description="" />
+			<testItem key="{5F610F21-B4E4-4DFA-8ED8-35E1F39A7457}" enabled="True" timeout="0" stopOnError="True" description="" />
+		</children>
+	</testItems>
+	<variables key="{C4DCA6D0-6E3D-45A7-B5A4-3AEE89A7CA80}">
+		<data Version="3" />
+	</variables>
+	<analysis key="{C1E23298-4048-4D1A-8163-3E897F90B2A5}" />
+	<scc key="{C900492B-D218-429C-9AA0-264B7D78CA88}" name="Git Plugin">
+		<data />
+	</scc>
+	<extender key="{1A3FC97E-9A66-4716-B166-35D10B4146E0}">
+		<CrossBrowserTesting Enable="True" />
+	</extender>
+</Root>

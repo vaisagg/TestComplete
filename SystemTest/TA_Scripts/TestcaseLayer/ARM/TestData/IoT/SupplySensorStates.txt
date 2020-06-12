@@ -1,0 +1,20 @@
+0 PrimaryWasteFullSensorWet
+0 PrimaryWasteOverflowSensorWet
+0 SecondaryWasteFullSensorWet
+0 SecondaryWasteOverflowSensorWet
+1 CuvettePresentAtDropChute
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 

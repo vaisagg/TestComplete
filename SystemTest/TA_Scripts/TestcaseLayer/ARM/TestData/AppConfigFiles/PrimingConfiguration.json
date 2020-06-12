@@ -1,0 +1,18 @@
+{
+  "$type": "Arm.ConfigurationManagement.SchedulerConfiguration.PrimingConfiguration, DotNetStandardCommonInterfacesCSharp",
+  "ReagentProbeCleaningPrimingConfiguration": {
+    "$type": "Arm.ConfigurationManagement.SchedulerConfiguration.ReagentProbeCleaningPrimingFunctionConfiguration, DotNetStandardCommonInterfacesCSharp",
+    "EngineId": "",
+    "CleaningSolutionPrimingAnalyzerFunctionName": "",
+    "NumberOfCuvettesForCleaningSolution": 1,
+    "WashFluidTransferAnalyzerFunctionName": "",
+    "WashFluidTransferAnalyzerAndCleanFunctionName": "",
+    "NumberOfCuvettesForWashFluid": 1,
+    "ShortPrimeAnalyzerFunctionName": "",
+    "LongPrimeAnalyzerFunctionName": "",
+    "ShortPrimeMinIdleTimeInSeconds": 900,
+    "LongPrimeMinIdleTimeInSeconds": 21600
+  },
+  "TypeName": "PrimingConfiguration",
+  "Version": 0.0
+}

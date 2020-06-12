@@ -1,0 +1,686 @@
+﻿//USEUNIT LocalizationUtilities
+var objWorkflowsXML;
+var objControlsXML;
+var objNameMappingDictionary;
+
+
+function GetControl(WorkflowCode,ControlName)
+
+{
+//var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+//InitializeControlXML(strControlXMLPath);
+  try
+  {    
+    if (WorkflowCode=="")
+    {
+      var objWFControlsItem=objControlsXML["selectNodes"]("//Control[ControlName='"+ControlName+"']")
+    }
+    else
+    {
+      var objWFControlsItem=objControlsXML["selectNodes"]("/Controls/Category/Workflow[@Code='"+WorkflowCode+"']")
+    }
+    
+    var obj=objWFControlsItem["item"](0)
+    var objControlItem =obj["selectSingleNode"]("//Control[ControlName='"+ControlName+"']")
+    //var objControlItem =obj["selectSingleNode"]("./Control[ControlName='"+ControlName+"']")
+    var ControlName  = objControlItem["selectSingleNode"]("ControlName")["text"];
+    var AccessibilityName =objControlItem["selectSingleNode"]("Accessibility")["text"];
+    var Class = objControlItem["getAttribute"]("Class"); 
+    var AccessType = objControlItem["selectSingleNode"]("AccessType")["text"];
+    
+	//Added ControlType for HYDRA purpose to handle AutomationId -SHAHANA
+    var ControlType=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("ControlType");
+    if (ControlType=="WPFAutomationObject"||ControlType=="AutomationObject")
+    {
+      var objItem =GetAutomationIDControl(WorkflowCode,ControlName);
+      return (objItem);
+    }
+    else
+    {
+	if(Class=="WinShellGridView")
+    {
+      var GridRow=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("GridRow");
+      var GridColumn=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("GridColumn"); 
+    
+    }
+   
+    if(AccessType=="NM")
+    {
+      var ControlObj = objNameMappingDictionary["Item"](ControlName);  
+      if(aqString["ToUpper"](ControlObj["Exists"])=="TRUE")
+      {
+        return (ControlObj);
+      }
+      else
+      {
+         return(false);
+      }
+	  }
+    else if((AccessType=="XML") && (AccessibilityName == ""))  // for controls that are not having accessibility and are formed during run-time based on text
+    {
+      var strMessageCode = objControlItem["selectSingleNode"]("MessageCode")["text"];
+      var transControlText="";
+      if (!(WorkflowCode=="DCapSimulator"||WorkflowCode=="DCapModuleManager"))     //Translation DB is not available in Decapper Machine
+      {
+		if(strMessageCode!="")
+		{
+			transControlText = GetTranslatedStringFromMessageCode(strMessageCode,"")
+		} 
+		else
+		{
+			transControlText=objControlItem["selectSingleNode"]("Text")["text"];;
+		} 
+      }
+      //IF block added by TANMAY. Reason : Message code is shown in UI where the text is not localized/translation not available 
+      if(transControlText == "")
+      {
+        transControlText = strMessageCode;
+      }
+	  
+	    switch(Class)
+      {
+        case "TextBlock":
+        case "RadioButton":
+        case "TabItem":
+        case "Button":
+                  var WPFControlOrdinalNo=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("WPFControlOrdinalNo");
+//                  var ControlType=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("ControlType");
+//                  if (ControlType=="Window")
+//                  {
+//                    proparr=["wndClass","wndCaption"];
+//                    vararr=[Class, transControlText];
+//                  }
+                  if (!(WPFControlOrdinalNo==null))
+                  {
+                    proparr=["ClrClassName","WPFControlText","WPFControlOrdinalNo"];
+                    vararr=[Class, transControlText,WPFControlOrdinalNo];
+                  }
+                  else
+                  {
+                    proparr=["ClrClassName","WPFControlText"];
+                    vararr=[Class, transControlText];
+                  }
+                  break;
+        case "Label":
+        case "CheckBox":
+        case "GroupBox":
+                  proparr=["ClrClassName","WPFControlText"];
+                  vararr=[Class, transControlText];
+                  break;
+		    
+        case "SampleProcessingConfigurationView":
+        case "SampleWorkflowConfigurationView":
+        case "TestSortGroupsConfigurationView":
+        case "ErrorSortGroupsConfigurationView":
+        case "CapSortGroupsConfigurationView":
+        case "AlarmConfigurationView":
+        case "NewSortCodeDialogView":
+        
+                  proparr=["ClrClassName", "Visible"];
+                  vararr=[Class, "True"];
+                  break;
+                           		
+		    case "HwndSource":
+                  proparr=["ClrClassName","WndCaption"];
+                  vararr=[Class, transControlText];
+                  break;
+                  
+         case "ShellButton":
+                  proparr = ["ClrClassName","WinFormsControlName","Enabled"];
+                  vararr=[Class, transControlText,"True"];
+                  break;
+      }
+      var shellObj=Sys["WaitProcess"]("Shell");
+      if (WorkflowCode=="DCapSimulator")
+      {
+       shellObj=Sys["Process"]("NodeNetworkSimulator")["WPFObject"]("HwndSource: MainWindow", "Simulator");
+      }
+      else if (WorkflowCode=="DCapModuleManager")
+      {
+        shellObj=Sys["Process"]("Decapper.ModuleManagerApplication")["WPFObject"]("HwndSource: ShellWindow", "Siemens - Module Manager");
+      }
+	  else if (WorkflowCode=="SealerMM")
+      {
+        var shellObj=Sys["Process"]("Sealer.ModuleManagerApplication")["WPFObject"]("HwndSource: ShellWindow", "Siemens - Module Manager");
+      }
+      else if (WorkflowCode=="SealerSimulator")
+      {
+        var shellObj=Sys["Process"]("Sealer Simulator")["WPFObject"]("HwndSource: MainWindow", "Sealer Simulator");
+      }
+      var objItem = shellObj["Find"](proparr,vararr,35);
+      if (objItem["Exists"]==true)
+      {
+        return (objItem);        
+      }
+      else
+      {
+        return(false);
+      }
+    }
+    else
+    {
+      if (WorkflowCode=="DVSSimulator")
+      {
+        var dvsObj = Sys["WaitProcess"]("PCM.DrawerVisionSystemSimulator")["WinFormsObject"]("Form1")
+      }
+      else if (WorkflowCode=="Decapper")
+      {
+        var dcObj=Sys["WaitProcess"]("NodeNetworkSimulator");
+      }
+      else if (WorkflowCode=="DCapSimulator")
+      {
+        var DCapSim=Sys["Process"]("NodeNetworkSimulator")["WPFObject"]("HwndSource: MainWindow", "Simulator");
+      }
+      else if (WorkflowCode=="DCapModuleManager")
+      {
+        var DCapMM=Sys["Process"]("Decapper.ModuleManagerApplication")["WPFObject"]("HwndSource: ShellWindow", "Siemens - Module Manager");
+      }
+      else if (WorkflowCode=="AMSim")
+      {
+        var AmSimObj=Sys["WaitProcess"]("AMSimulator");
+      }
+      else if (WorkflowCode=="SealerMM")
+      {
+        var SealerMM=Sys["Process"]("Sealer.ModuleManagerApplication")["WPFObject"]("HwndSource: ShellWindow", "Siemens - Module Manager");
+      }
+      else if (WorkflowCode=="SealerSimulator")
+      {
+        var SealerSim=Sys["Process"]("Sealer Simulator")["WPFObject"]("HwndSource: MainWindow", "Sealer Simulator");
+      }
+      
+	  else
+      {
+      var shellObj=Sys["WaitProcess"]("Shell");
+      }
+      
+      switch(Class)
+        {
+        
+          case "ShellTextBox":
+          case "ShellTabButton":
+          case "TabPage":
+          case "QCTabPage":
+          case "QCTabControl":
+          case "MenuStrip":
+          case "RichTextBox":
+          case "MainForm" :
+		  case "FlowFrame":
+                          proparr=["WinFormsControlName","Enabled"];
+                          vararr =[AccessibilityName,"True"]
+                          break;
+          case "ShellButton":
+						  proparr=["WinFormsControlName"];
+                          vararr =[AccessibilityName]
+                          break;
+          case "TransitioningContentControl":
+          case "Grid":
+          case "DataGrid":
+          case "DataGridEx":
+          case "ListBox":
+          case "ComboBox":
+		      case "ItemsControl":
+          case "Grid":
+          case "WPFTextBox":
+		      case "CheckBox":
+          case "ScrollViewer":
+    		  case "TextBlock":
+    		  case "TextBox":
+            						var ControlType=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("ControlType");
+
+            						if (ControlType=="WinFormsObject")
+            						{
+            						  proparr=["WinFormsControlName"];
+            						  vararr=[AccessibilityName]; 
+            						}
+            						else
+            						{
+            						  proparr=["WPFControlName"];
+            						  vararr =[AccessibilityName]
+            						}
+                        break;
+                        
+          case "TabControl":
+          						  proparr=["WPFControlName","VisibleOnScreen"];
+          						  vararr =[AccessibilityName,"True"];
+                        break;  
+
+          case "DMUITabCtrl":
+                        				  proparr=["WinFormsControlName","Visible"];
+          						  vararr =[AccessibilityName,"True"];
+         		break;
+
+          case "CalibratorLotDefinitionDialogView":
+          case "AddCommentsCtrlW":
+          case "CapColorConfigurationDialogView":
+		  case "ArchiveTrayEmptyDialogView":
+
+                          proparr=["WPFControlName","Enabled"];
+                          vararr =[AccessibilityName,"True"]
+                          break;
+          case "Label":
+                          var ControlType=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("ControlType");
+                            
+                          if (ControlType=="WinFormsObject")
+                          {
+                            proparr=["WinFormsControlName","Enabled"];
+                            vararr=[AccessibilityName,"True"]; 
+                          }
+                            
+//                          proparr=["Text","Enabled"];
+//                          vararr=[AccessibilityName,"True"];   
+//                          var objItem = shellObj["Find"](proparr,vararr,35);
+//                          if (objItem["Exists"]==true)
+//                          {
+//                            return (objItem);        
+//                          }
+                          break;
+          case "Edit":
+          case "Button":
+                          var ControlType=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("ControlType");
+                            
+                          if (ControlType=="WinFormsObject")
+                          {
+                            proparr=["WinFormsControlName","Visible"];
+                            vararr=[AccessibilityName,"True"]; 
+                          }  
+                          else
+                          {
+                            proparr=["WPFControlName","Visible"];
+                            vararr=[AccessibilityName,"True"]; 
+                          }                         
+                          break;
+
+          case "RadioButton":
+                          proparr=["WPFControlName","VisibleOnScreen"];
+                          vararr =[AccessibilityName,"True"]
+                          break;
+                          
+          case "WinShellGridView":
+                          proparr=["WinFormsControlName","Visible"];
+                          vararr=[AccessibilityName,"True"];                          
+                          break;
+          case "ShellWindow":
+                          //proparr=["WinFormsControlName","VisibleOnScreen"];
+						  proparr=["WinFormsControlName","Visible"];
+                          vararr=[AccessibilityName,"True"];                          
+                          break;   
+                          
+          case "DVSRadioButton":
+          case "DVSButton":     
+                          proparr=["WinFormsControlName","Enabled"];
+                          vararr =[AccessibilityName,"True"]
+                          break;
+
+          case "Panel":
+          case "Drawer":
+          case "PictureBox":
+          case "GridFrame":
+          case "DMUITabCtrl":
+                          proparr=["WinFormsControlName","Visible"];
+                          vararr=[AccessibilityName,"True"];                          
+                          break; 
+                          
+          case "WpfDatePicker":    
+		  case "CapColorConfigurationDialogView": 
+           case "ListView": 
+                          proparr=["WPFControlName","Enabled"];
+            						  vararr =[AccessibilityName,"True"];
+                          break;                 
+          default:
+                          proparr=["AccessibleName","VisibleOnScreen"];
+                          vararr=[AccessibilityName,"True"];
+                          break;
+        }
+        
+      if (WorkflowCode=="DVSSimulator")
+      {
+        var objItem = dvsObj["Find"](proparr,vararr,35);
+      }
+      else if (WorkflowCode=="Decapper")
+      {
+       var objItem = dcObj["Find"](proparr,vararr,35);
+      }
+      else if (WorkflowCode=="DCapSimulator")
+      {
+        var objItem = DCapSim["Find"](proparr,vararr,35);
+      }
+      else if (WorkflowCode=="DCapModuleManager")
+      {
+        var objItem = DCapMM["Find"](proparr,vararr,35);
+      }
+      else if (WorkflowCode=="AMSim")
+      {
+        var objItem = AmSimObj["Find"](proparr,vararr,35);
+      }
+      else if (WorkflowCode=="SealerMM")
+      {
+        var objItem = SealerMM["Find"](proparr,vararr,35);
+      }
+      else if (WorkflowCode=="SealerSimulator")
+      {
+        var objItem = SealerSim["Find"](proparr,vararr,35);
+      }
+      else
+      {
+        var objItem = shellObj["Find"](proparr,vararr,35);
+      }
+
+      if (objItem["Exists"]==true)
+      {
+        return (objItem);        
+      }
+      else
+      {
+        return(false);
+      }
+                  
+    }   
+    }//Hydra if end
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception - " + exp["Description"]);
+  }
+}
+
+
+
+// *******************************************************************************************************************
+// Function Name       : Getchild(Parent,proparr,vararr)
+// Function Description: This function find a child Control from the parent Control using the Property values. 
+// Inputs              : Parent -> Parent Control name
+//                     : proparr -> Array containing the Propery Names
+//                     : vararr -> Array containing the Property Values
+// ********************************************************************************************************************
+function Getchild(Parent,proparr,vararr)
+{
+  var objshell = eval(Parent);
+  var objItem = objshell["Find"](proparr,vararr,35);
+  if (objItem["Exists"]==true)
+  {
+    return(objItem)
+  }
+  else
+  {
+    return(false);
+  } 
+}
+
+// *******************************************************************************************************************
+// Function Name       : Getchild(Parent,proparr,vararr)
+// Function Description: This function find a child Control from the parent Control using the Property values. 
+// Inputs              : Parent -> Parent Control name
+//                     : proparr -> Array containing the Propery Names
+//                     : vararr -> Array containing the Property Values
+// ********************************************************************************************************************
+function GetFindchild(Parent,proparr,vararr,depth)
+{
+  var objshell = eval(Parent);
+  var objItem = objshell["FindChild"](proparr,vararr,depth,true);
+  if (objItem["Exists"]==true)
+  {
+    return(objItem)
+  }
+  else
+  {
+    return(false);
+  } 
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : AddNameMappingObjects
+//*
+//*  Description: Add NameMappingObjects into dictionary
+//*  
+//*  Input: NA
+//*
+//*  Output: objNameMappingDictionary
+//*
+//*  Example: AddNameMappingObjects()
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function AddNameMappingObjects()
+{
+  //strKey = "txtB_ConnectedToPCC";
+  // Add keys and items.
+  objNameMappingDictionary = new ActiveXObject("Scripting.Dictionary");
+//  var SystemWindow=Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SystemWindow"]
+//  var SamplesWindow=Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SampleManagementWin"]
+//  var CalibrationWindow=Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["CalibrationWindow"]
+//  var ReagentWindow=Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["Reagent"]
+   
+//  objNameMappingDictionary["Add"]("txtBoxMaterialName",Aliases.Shell.HwndSource_Window.Window.Grid.WrapPanel.txtBoxMaterialName );
+//  objNameMappingDictionary["Add"]("txtBoxMaterialID",Aliases.Shell.HwndSource_Window.Window.Grid.WrapPanel.txtBoxMaterialID);
+
+  objNameMappingDictionary["Add"]("txtBlockCapped", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SampleManagementWin"]["Root"]["Root_PAGES"]["SHSampleListTab"]["ContentFrame_SHSampleList"]["SHSampleListViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["TextblockCapped"]);
+  objNameMappingDictionary["Add"]("listBoxStatus", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SystemWindow"]["Root"]["Root_PAGES"]["Status"]["ContentFrame_SystemStatus"]["SystemStatusViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["PART_Selector"]);
+  objNameMappingDictionary["Add"]("cmbBoxPanel", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["cmbBoxPanel"]);
+  objNameMappingDictionary["Add"]("radioBtnActive", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["radioBtnActive"]);
+//  objNameMappingDictionary["Add"]("radioBtnCombinedQueue",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["radioBtnCombinedQueue"]);
+//  objNameMappingDictionary["Add"]("radioBtnSeparateQueue",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["radioBtnSeparateQueue"]);
+//  objNameMappingDictionary["Add"]("chkBoxSuspendSorting", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["chkBoxSuspendSorting"]);
+//  objNameMappingDictionary["Add"]("radioBtn15Rack", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["Grid"]["AssignSortGroupsView"]["grdRowConfig"]["radioBtn15Rack"]);
+//  objNameMappingDictionary["Add"]("radioBtn55Rack", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["Grid"]["AssignSortGroupsView"]["grdRowConfig"]["radioBtn55Rack"]);
+  objNameMappingDictionary["Add"]("btnDrawer1B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter1"]["ItemsControl"]["ContentPresenter1"]["btnDrawer1B"]);
+  objNameMappingDictionary["Add"]("btnDrawer1F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter1"]["ItemsControl"]["ContentPresenter2"]["btnDrawer1F"]);
+  objNameMappingDictionary["Add"]("btnDrawer2B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter2"]["ItemsControl"]["ContentPresenter1"]["btnDrawer2B"]);
+  objNameMappingDictionary["Add"]("btnDrawer2F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter2"]["ItemsControl"]["ContentPresenter2"]["btnDrawer2F"]);
+  objNameMappingDictionary["Add"]("btnDrawer3B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter3"]["ItemsControl"]["ContentPresenter1"]["btnDrawer3B"]);
+  objNameMappingDictionary["Add"]("btnDrawer3F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter3"]["ItemsControl"]["ContentPresenter2"]["btnDrawer3F"]);
+  objNameMappingDictionary["Add"]("btnDrawer4B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter4"]["ItemsControl"]["ContentPresenter1"]["btnDrawer4B"]);
+  objNameMappingDictionary["Add"]("btnDrawer4F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]["ContentPresenter4"]["ItemsControl"]["ContentPresenter2"]["btnDrawer4F"]);
+  
+  
+  /*
+  //The below objects were added due to a change in Object hierarchy in the first Wave 2 SIM UI build 
+  objNameMappingDictionary["Add"]("cmbBoxPanel", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["cmbBoxPanel"]);
+  objNameMappingDictionary["Add"]("radioBtnActive", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["radioBtnActive"]);
+  objNameMappingDictionary["Add"]("btnDrawer1B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter1"]["ItemsControl"]["ContentPresenter1"]["btnDrawer1B"]);
+  objNameMappingDictionary["Add"]("btnDrawer1F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter1"]["ItemsControl"]["ContentPresenter2"]["btnDrawer1F"]);
+  objNameMappingDictionary["Add"]("btnDrawer2B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter2"]["ItemsControl"]["ContentPresenter1"]["btnDrawer2B"]);
+  objNameMappingDictionary["Add"]("btnDrawer2F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter2"]["ItemsControl"]["ContentPresenter2"]["btnDrawer2F"]);
+  objNameMappingDictionary["Add"]("btnDrawer3B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter3"]["ItemsControl"]["ContentPresenter1"]["btnDrawer3B"]);
+  objNameMappingDictionary["Add"]("btnDrawer3F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter3"]["ItemsControl"]["ContentPresenter2"]["btnDrawer3F"]);
+  objNameMappingDictionary["Add"]("btnDrawer4B", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter4"]["ItemsControl"]["ContentPresenter1"]["btnDrawer4B"]);
+  objNameMappingDictionary["Add"]("btnDrawer4F", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ItemsControl"]["ContentPresenter4"]["ItemsControl"]["ContentPresenter2"]["btnDrawer4F"]);
+  */
+  objNameMappingDictionary["Add"]("grdRowConfig", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["Grid"]["AssignSortGroupsView"]["grdRowConfig"]);
+  //objNameMappingDictionary["Add"]("grdRowConfig", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["AssignSortGroupsView"]["grdRowConfig"]);
+  objNameMappingDictionary["Add"]("grdDrawerConfig", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["DrawerItemsControl"]);
+  objNameMappingDictionary["Add"]("btnSaveDrawerConfig", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["btnSaveDrawerConfig"]);
+  //objNameMappingDictionary["Add"]("btnSaveDrawerConfig", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["btnSaveDrawerConfig"]);
+  
+  objNameMappingDictionary["Add"]("btnAddGroup",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["btnAddGroup"]);
+  objNameMappingDictionary["Add"]("dlgNewSortGroup",Aliases["Shell"]["HwndSource_NewSortGroupDialogView"]["dlgNewSortGroup"]);
+  objNameMappingDictionary["Add"]("lstErrorSortGroups",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["lstErrorSortGroups"]);
+  //objNameMappingDictionary["Add"]("lstErrorSortGroups",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["ErrorSortGroupsConfigurationView"]["lstErrorSortGroups"]);
+  objNameMappingDictionary["Add"]("btnSave",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["btnSave"]);
+  
+ //objNameMappingDictionary["Add"]("lstTestSortGroups",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["lstErrorSortGroups"]);
+  objNameMappingDictionary["Add"]("lstTestSortGroups",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["TestSortGroupsConfigurationView"]["Grid"]["Grid"]["Grid"]["lstTestSortGroups"]);
+  objNameMappingDictionary["Add"]("dlgNewTestSortGroup",Aliases["Shell"]["HwndSource_NewTestSortGroupDialogView"]["NewTestSortGroupDialogView"]);
+  //objNameMappingDictionary["Add"]("lstTestsInGroup",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["TestsInGroup"]);
+  objNameMappingDictionary["Add"]("lstTestsInGroup", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["TestSortGroupsConfigurationView"]["Grid"]["Grid"]["StackPanel"]["TestsInGroup"]);
+  objNameMappingDictionary["Add"]("txtBoxMaterialName",Aliases.Shell.HwndSource_Window.Window.Grid.WrapPanel.txtBoxMaterialName );
+  objNameMappingDictionary["Add"]("txtBoxMaterialID",Aliases.Shell.HwndSource_Window.Window.Grid.WrapPanel.txtBoxMaterialID);
+  objNameMappingDictionary["Add"]("dpLotExpiration",Aliases.Shell.HwndSource_Window.Window.Grid.WrapPanel.dpLotExpiration );
+  objNameMappingDictionary["Add"]("txtBoxRevision",Aliases.Shell.HwndSource_Window.Window.Grid.WrapPanel.txtBoxRevision );
+  objNameMappingDictionary["Add"]("btnCalDefSave",Aliases.Shell.HwndSource_Window.Window.btnSave );
+  objNameMappingDictionary["Add"]("itemsCtrlSelectTests",Aliases.Shell.HwndSource_Window.Window.CaliberationMethodSelectorControl.SelectTests);
+  
+  objNameMappingDictionary["Add"]("tabItemRacks",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SampleManagementWin"]["Root"]["Root_PAGES"]["SHOverviewTab"]["ContentFrame_SHOverview"]["SHOverviewViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["TabControl"]["tabItemRacks"]);
+  objNameMappingDictionary["Add"]("grdProblemsAssociated",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SampleManagementWin"]["Root"]["Root_PAGES"]["SHSampleListTab"]["ContentFrame_SHSampleList"]["SHSampleListViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainLayoutGrid"]["Grid"]["DataGrid"]);
+  objNameMappingDictionary["Add"]("btnConfirmCalQcStorageContents",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SystemWindow"]["Root"]["Root_PAGES"]["Status"]["ContentFrame_SystemStatus"]["SystemStatusViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["btnConfirmCalQcStorageContents"]);
+  objNameMappingDictionary["Add"]("grdSampleDetails", Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SampleManagementWin"]["Root"]["Root_PAGES"]["SHSampleListTab"]["ContentFrame_SHSampleList"]["SHSampleListViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainLayoutGrid"]["Grid"]["SampleHandlerSampleDetailsView"]["Grid"]["grdSampleDetails"]);
+    
+  objNameMappingDictionary["Add"]("cmbBoxDataInjectMode",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["ModuleConfigurationFrame"]["ModuleConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["StackPanel"]["cmbBoxDataInjectMode"]);
+  objNameMappingDictionary["Add"]("chkCalibrationRequired",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["ModuleConfigurationFrame"]["ModuleConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["StackPanel"]["chkCalibrationRequired"]);
+//  objNameMappingDictionary["Add"]("chkQCRequired",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["ModuleConfigurationFrame"]["ModuleConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["StackPanel2"]["chkQCRequired"]);
+//  objNameMappingDictionary["Add"]("chkSimulatePackBarcodeReader",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["ModuleConfigurationFrame"]["ModuleConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["StackPanel2"]["chkSimulatePackBarcodeReader"]);
+  
+  objNameMappingDictionary["Add"]("edtFileName",Aliases["NodeNetworkSimulator"]["dlgOpen"]["cbxFileName"]["ComboBox"]["Edit"]);
+   objNameMappingDictionary["Add"]("btnOpen",Aliases["NodeNetworkSimulator"]["dlgOpen"]["btnOpen"])
+  objNameMappingDictionary["Add"]("dlgOpen",Aliases["NodeNetworkSimulator"]["dlgOpen"]);
+  objNameMappingDictionary["Add"]("SampleList_ErrorGrid",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SampleManagementWin"]["Root"]["Root_PAGES"]["SHSampleListTab"]["ContentFrame_SHSampleList"]["SHSampleListViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainLayoutGrid"]["Grid"]["DataGrid"]);
+  //objNameMappingDictionary["Add"]("",);
+  
+  objNameMappingDictionary["Add"]("cmbBoxSampleReadyForArchive",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SystemConfigurationFrame"]["SystemConfigurationLayoutViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["cmbBoxSampleReadyForArchive"]);
+  //objNameMappingDictionary["Add"]("cpSortCodeContentPresenter",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["TDefFrame"]["TDefFrame_PAGES"]["SortTestDefinitionFrame"]["SortTestDefinitionViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["ItemsControl"]["ContentPresenter"]);
+  objNameMappingDictionary["Add"]("scrViewerSortCodes",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["TDefFrame"]["TDefFrame_PAGES"]["SortTestDefinitionFrame"]["SortTestDefinitionViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["ScrollViewer"]);
+  
+  objNameMappingDictionary["Add"]("cmbBoxDecapTubes",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SetupWindow"]["Root"]["Root_PAGES"]["SettingsFrame"]["SettingsFrame_PAGES"]["SHConfigurationFrame"]["SHConfigurationViewHost"]["wpfElementHost"]["HwndSource_AdornerDecorator"]["AdornerDecorator"]["MainTabControl"]["TestSortGroupsConfigurationView"]["Grid"]["Grid"]["StackPanel"]["cmbBoxDecapTubes"]);
+  
+  objNameMappingDictionary["Add"]("pPopupRoot",Aliases["Shell"]["HwndSource_PopupRoot"]["PopupRoot"]);
+  objNameMappingDictionary["Add"]("winSystem",Aliases["Shell"]["ShellForm"]["zMDICLIENT_"]["SystemWindow"]);
+  
+  
+}
+
+/*-------------------------------------- HYDRA Functions -------------------------------------*/
+
+/*-------
+ SHAHANA 
+ -------*/
+
+// *************************************************************************************************
+// Function Name       : GetAutomationIDControl(WorkflowCode,ControlName)
+// Function Description: This function find a Control using the Automation ID Property values. 
+// *************************************************************************************************
+function GetAutomationIDControl(WorkflowCode,ControlName)
+{
+  try
+  {
+     if (WorkflowCode=="")
+    {
+      var objWFControlsItem=objControlsXML["selectNodes"]("//Control[ControlName='"+ControlName+"']")
+    }
+    else
+    {
+      var objWFControlsItem=objControlsXML["selectNodes"]("/Controls/Category/Workflow[@Code='"+WorkflowCode+"']")
+    }
+    
+    var obj=objWFControlsItem["item"](0)
+    var objControlItem =obj["selectSingleNode"]("//Control[ControlName='"+ControlName+"']")
+    //var objControlItem =obj["selectSingleNode"]("./Control[ControlName='"+ControlName+"']")
+    var ControlName  = objControlItem["selectSingleNode"]("ControlName")["text"];
+    var AccessibilityName =objControlItem["selectSingleNode"]("Accessibility")["text"];
+    var Class = objControlItem["getAttribute"]("Class"); 
+    var AccessType = objControlItem["selectSingleNode"]("AccessType")["text"];
+  
+    var ControlType=objControlItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("ControlType");
+
+       
+    if(ControlType=="WPFAutomationObject")
+    {
+      var shellObj=Sys["WaitProcess"]("Shell");
+      switch(Class)
+      {
+        case "CheckBox":
+        case "ComboBox":
+			      {
+						  proparr=["WPFControlAutomationId"];
+						  vararr =[AccessibilityName]
+						}
+            break;
+        default:
+            proparr=["WPFControlAutomationId","Enabled"];
+            vararr=[AccessibilityName,"True"];
+            break;  
+      }
+      
+    } 
+    else if(ControlType == "PrimeDispAutomationObject") 
+    { 
+      //Added by prabu for Primary Display Application GetControl
+      var shellObj = Sys["WaitProcess"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+      switch (Class)
+      {
+        case "TextBox":
+        case "Button":
+        case "ComboBox":
+        case "GridView":
+        case "CheckBox":
+        case "RadioButton":
+          proparr=["AutomationId","Visible"];
+          vararr=[AccessibilityName,"True"];
+          break;
+        case "CustomClass":
+          proparr=["ClassName","AutomationId","Visible"];
+          vararr=[Class,AccessibilityName,"True"];
+        case "CustomObj":          
+        default:
+          proparr=["AutomationId"];
+          vararr=[AccessibilityName];
+          break;
+      }      
+    } 
+    else if(ControlType=="DMLAutomationObject")
+    {
+      var shellObj = Sys["Process"]("HydraDMLSimulatorUI");
+       switch (Class) 
+       {
+          case ("TabItem"): 
+            proparr = ["WPFControlText", "Enabled"];
+            vararr = [AccessibilityName, "True"];
+            break;
+
+          default:
+           proparr = ["WPFControlAutomationId", "Enabled"];
+           vararr = [AccessibilityName, "True"];
+           break;
+        }
+    }
+    else 
+    { 
+      var shellObj=Sys["WaitProcess"]("DiagnosticsClient");
+      proparr=["AutomationId"];
+      vararr=[AccessibilityName]; 
+    } 
+    
+    var objItem = shellObj["Find"](proparr,vararr,200);
+
+      if (objItem["Exists"]==true)
+      {
+        return (objItem);        
+      }
+      else
+      {
+        return(false);
+      }
+    
+  } 
+  catch(exp)
+  {
+    Log["Message"]("Exception - " + exp["Description"]);
+    return false;
+  }
+} 
+
+// *******************************************************************************************************************
+// Function Name       : GetAllChildren(Parent,proparr,vararr)
+// Function Description: This function finds all Child Control from the parent Control using the Property values. 
+// Inputs              : Parent -> Parent Control name
+//                     : proparr -> Array containing the Propery Names
+//                     : vararr -> Array containing the Property Values
+// Date of Creating    : 14 June 2019
+// Last Modified date  : NA
+// Created By          : Prabu Ramaraj
+// ********************************************************************************************************************
+function GetAllChildren(Parent, proparr, vararr, depth) {
+	var objCtrl = eval(Parent);
+	if (!depth) {
+		depth = 35;
+	}
+  Parent["Refresh"]();
+  var objItems = objCtrl["FindAllChildren"](proparr, vararr, depth, true);
+	var childElements = objItems.toArray();
+
+	if (childElements.length > 0) {
+		return (childElements);
+	} else {
+		return (false);
+	}
+}

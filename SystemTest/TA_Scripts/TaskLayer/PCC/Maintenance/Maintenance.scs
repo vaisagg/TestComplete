@@ -1,0 +1,544 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT CommonUtilities
+
+function SetMaintenanceActivitiesAsNotPerformed()
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance::SetMaintenanceActivitiesAsNotPerformed");
+    var objControl = GetControl("Maintenance_Schedule", "grdMonitoring");
+    SelectGridRow(objControl, 0);
+    objControl["Click"](17, 25);
+    
+    var objctrl =GetControl("Maintenance_Schedule","btnNotPerform");
+    if(VerifyObjectEnabled(objctrl))
+    {
+      ClickControl(objctrl);
+      aqUtils["Delay"](3000, "Sync for dialog window");
+/*
+      var objctrl = GetControl("Maintenance_Schedule","wndCommentsControl");
+      if(!VerifyObjectExists(objctrl))
+      {
+        Log["Warning"]("Unable to set maintenance activities as Not Performed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+
+      //GetChild of comment control
+      var proparr=["ClrClassName", "Enabled"];
+      var vararr=["TextBox", "True"];
+      var objCommentTextBox = Getchild(objctrl,proparr,vararr);
+
+      //Enter text
+      SetText(objCommentTextBox, "Postponing the activities for automated script execution.");
+*/
+      //Perform a Click on button "Set as not performed"
+      var objctrl = GetControl("Maintenance_Schedule","btnSetAsNotPerformed");
+      ClickControl(objctrl);
+      Log["Message"]("Maintenance activities are set as not performed for today");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"]("NOT PERFORM button is not enabled");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function DisableAutomaticMaintenanceActivities()
+{
+  try
+  {     
+   Log["AppendFolder"]("Maintenance::DisableAutomaticMaintenanceActivities");
+   var CCMaintenancePath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\CC\\CCDailyMaintenanceActivity.xml";
+   var CCDailyTestMaintenancePath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\CC\\CCDailyTestMaintenanceActivity.xml"
+   var CCIMTRoutineCleanActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\CC\\CCIMTRoutineCleanActivity.xml"
+   var CCWeeklyMaintenanceActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\CC\\CCWeeklyMaintenanceActivity.xml"
+   
+   var DCSelfDiagActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\Decapper\\Decapper_SelfDiagActivity.xml"
+   var SHSelfDiagActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\SH\\SH_SelfDiagActivity.xml"
+   var VMMSelfDiagActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\VMM\\VMM_SelfDiagActivity.xml"
+   var SHCSelfDiagActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\SHC\\SHC_SelfDiagActivity.xml"
+   
+   var IADailyCleaningActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\IA\\IADailyCleaningActivity.xml"
+   var IAQuickCheckActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\IA\\IAQuickCheckActivity.xml"
+   var IAWeeklyCleaningActivityPath="C:\\Siemens\\Bin\\RegisterIM\\MaintenanceActivities\\IA\\IAWeeklyCleaningActivity.xml"
+   
+   //CCMaintenancePath
+   if(!UpdateAutoStartAndReadOnlyMaskAttributes(CCMaintenancePath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for CC Daily maintenance activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for CC Daily maintenance activity")
+   } 
+   
+   //CCDailyTestMaintenancePath
+   if(!UpdateAutoStartAndReadOnlyMaskAttributes(CCDailyTestMaintenancePath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for CC Daily test maintenance activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for CC Daily test maintenance activity")
+   } 
+   
+   //CCIMTRoutineCleanActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(CCIMTRoutineCleanActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for CC IMT routine clean activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for CC IMT routine clean activity")
+   } 
+   
+   //CCWeeklyMaintenanceActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(CCWeeklyMaintenanceActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for CC weekly maintenance activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for CC weekly maintenance activity")
+   } 
+   
+   //DCSelfDiagActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(DCSelfDiagActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for Decapper self diag activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for Decapper self diag activity")
+   } 
+   
+   //SHSelfDiagActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(SHSelfDiagActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for SH self diag activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for SH self diag activity")
+   } 
+   
+   //VMMSelfDiagActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(VMMSelfDiagActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for VMM Self Diag activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for VMM Self Diag activity")
+   } 
+   
+   //SHCSelfDiagActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(SHCSelfDiagActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for SHC Self Diag activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for SHC Self Diag activity")
+   } 
+   
+   //IADailyCleaningActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(IADailyCleaningActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for IA Daily Cleaning activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for IA Daily Cleaning activity")
+   } 
+   
+   //IAQuickCheckActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(IAQuickCheckActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for IA Quick Check Activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for IA Quick Check Activity")
+   } 
+   
+   //IAWeeklyCleaningActivityPath
+    if(!UpdateAutoStartAndReadOnlyMaskAttributes(IAWeeklyCleaningActivityPath,"false","false"))
+   {
+     Log["Error"]("Unable to disable automatic maintenance for IA Weekly Cleaning Activity")
+     Log["PopLogFolder"]();
+     return false;
+   }
+   else
+   {
+     Log["Message"]("Disabled automatic maintenance for IA Weekly Cleaning Activity")
+   } 
+   
+   //Delete the latest RegisterIM log file
+   var sRegisterIMFolderpath="F:\\InstrumentOutput\\UIW\\Logs";
+   var sLatestFileName=GetLatestRegisterIMLogFile();
+   
+   if(!(sLatestFileName==""))
+   {
+    aqFileSystem["DeleteFile"](sRegisterIMFolderpath+"\\"+sLatestFileName)
+    Log["Message"](sLatestFileName+" file got deleted")
+    aqUtils["Delay"](10000,"Deleting Register IM Log file")
+   }
+    
+  var objWS = Sys["OleObject"]("WScript.Shell");
+  var oShell=Sys["OleObject"]("Shell.Application");
+  
+  oShell.ShellExecute("C:\\Siemens\\Bin\\RegisterIM.exe","/ForceMSL","C:\\Siemens\\Bin","runas",5);
+   
+   var proparr=["WndClass", "wndCaption"];
+   var vararr=["ConsoleWindowClass", "Register IM"];
+    //var cmdObj =Sys["Find"](proparr,vararr,35);
+	
+
+    aqUtils["Delay"](5000,"Waiting for Register IM window")
+	  var cmdObj=Sys["Process"]("RegisterIM")["Window"]("ConsoleWindowClass", "Register IM", 1)
+    
+    var i=0
+    while((cmdObj["Exists"])&& (i<36))
+    {
+      if(aqString["StrMatches"]("Successfully Registered IM.",cmdObj["wText"]))
+      {
+         Log["Message"]("Register IM registered successfully")
+         Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Register IM registered successfully")
+         if(cmdObj["Exists"])
+          {
+            cmdObj["Activate"]();
+            cmdObj["Close"]();
+            aqUtils["Delay"](5000,"Waiting for cmd window to close")
+          }
+        Log["PopLogFolder"]();
+        //return true;
+      } 
+      else
+      {
+        aqUtils["Delay"](10000,"Waiting for RegisterIM to complete");
+        i=i+1;
+      } 
+     
+    }
+    
+    if (VerifyRegisterIMMessageInLogs())
+    {
+      Log["Message"]("Verified success message in Register IM logs");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"]("Unable to get success message in Register IM logs");
+      Log["PopLogFolder"]();
+      return false;
+      
+    }
+   
+   Log["Warning"]("Register IM is not done successfully");
+   Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Register IM not done successfully")
+   Log["PopLogFolder"]();
+   return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }    
+} 
+
+function UpdateAutoStartAndReadOnlyMaskAttributes(sXMLPath,bAutoStartValue,bReadOnlyMask)
+{
+  try
+  {
+    var objMaintenanceXML = ReadXML(sXMLPath);
+    var objXML=objMaintenanceXML["selectSingleNode"]("MaintActivityDefinition/AutoStart");
+    objXML["text"]=bAutoStartValue;
+  
+    var objXML=objMaintenanceXML["selectSingleNode"]("MaintActivityDefinition/ReadOnlyMask");
+    objXML["text"]=bReadOnlyMask;
+  
+    objMaintenanceXML["save"](sXMLPath);
+    return true;
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    return false;
+  } 
+} 
+
+
+function GetLatestRegisterIMLogFile()
+{
+  try
+  {
+    var sRegisterIMFolderpath="F:\\InstrumentOutput\\UIW\\Logs";
+    var oFolderobj=aqFileSystem["GetFolderInfo"](sRegisterIMFolderpath);
+    var oFileItems=oFolderobj["Files"]
+    var arrLastModifiedtTime=new Array()
+    var m=0
+    
+    if(oFileItems!=null)
+    {
+      for(var i=0;i<oFileItems["Count"];i++)
+      {
+        if(oFileItems["Item"](i).Name.search("RegisterIM*")==0)
+        {
+          arrLastModifiedtTime[m]=oFileItems["Item"](i)["DateLastModified"];
+          //RegisterIMFiles[m]=oFileItems["Item"](i);
+          m=m+1;
+        } 
+      } 
+      var sGreater=arrLastModifiedtTime[0];
+      var sGreatest=0;
+      var sLatestFileName="";
+      for(m=0;m<arrLastModifiedtTime["length"];m++)
+      {
+        if(sGreater<arrLastModifiedtTime[m])
+        {
+          //sGreater=arrLastModifiedtTime[m];
+          sGreatest=m;
+        } 
+      } 
+      var sLatestFileName=oFileItems["Item"](sGreatest)["Name"];
+    }
+    else
+    {
+      var sLatestFileName="";
+    }
+    
+    return sLatestFileName;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    return false;
+  } 
+}
+function VerifyRegisterIMMessageInLogs()
+{
+    try
+    {
+      var sRegisterIMFolderpath="F:\\InstrumentOutput\\UIW\\Logs";
+ 
+       var sLatestFileName=GetLatestRegisterIMLogFile()
+       
+       for(var i=0;i<30;i++)
+       {
+          sText=aqFile["ReadWholeTextFile"](sRegisterIMFolderpath+"\\"+sLatestFileName,22)
+    
+          if(aqString["Find"](sText,"Successfully Registered IM.")>0)
+          {
+            return true;
+          } 
+          else
+          {
+            aqUtils["Delay"](50000,"Waiting for Register Im success message in logs");
+          } 
+       }
+       if(i>=30)
+       {
+         return false;
+       }
+    } 
+    catch(exp)
+    {
+      Log["Error"]("Exception: " + exp["description"]);
+      return false;
+    } 
+    
+} 
+
+function SetMaintenanceActivitiesAsPerform(sActivityName)
+{
+  try
+  {
+   Log["AppendFolder"]("Maintenance::SetMaintenanceActivitiesAsPerform");
+   
+   //Select ModuleType as Hydra
+    var Moduletype = Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("MaintenanceWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("MaintScheduleTab")["WinFormsObject"]("ContentFrame_MaintSchedule")["WinFormsObject"]("MaintScheduleControl")["WinFormsObject"]("elementHost1")["WPFObject"]("HwndSource: AdornerDecorator", "elementHost1")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("MaintenanceScheduleCtrl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Grid", "", 2)["WPFObject"]("Grid", "", 1)["WPFObject"]("_cmbModuleList")
+    Moduletype["set_SelectedIndex"](2);
+   
+   //Select IM Daily Maintenance
+    var objControl = GetControl("Maintenance_Schedule", "grdMonitoring");
+    //SelectGridRow(objControl, 1);
+    var row = CheckTextonGridReturnRowNo(objControl,"Name", sActivityName); // modified by shrutika to parametrize activity name
+    SelectGridRow(objControl, row);// modified by shrutika to parametrize activity name
+      
+     aqUtils["Delay"](200, "Sync for dialog window");
+     
+    //Verify Perform button is enabled or not
+    var objctrl =GetControl("Maintenance_Schedule","btnPerformMaint");
+        
+    if(VerifyObjectEnabled(objctrl))
+    {
+      ClickControl(objctrl);
+      aqUtils["Delay"](200, "Sync for dialog window");
+      
+      var objctrl = GetControl("Maintenance_Schedule","btnYesMaint");
+      ClickControl(objctrl);
+      aqUtils["Delay"](200, "Sync for dialog window");
+      
+      var objctrl = GetControl("Maintenance_Schedule","btnNoMaint");
+      ClickControl(objctrl);
+          
+      aqUtils["Delay"](1000, "Sync for dialog window");
+      
+    VerifyPerformMaintenancewindow()
+    
+     //verify the functionality after maintenace performed as currently not implemented
+               
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"](" PERFORM button is not enabled");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyPerformMaintenancewindow()
+{         
+      //Verify Automa
+      Log["AppendFolder"]("Verify AutoMaintActPerform window is displayed" );
+      objctrlmm = GetControl("","winAutoMaintActPerform");
+                  
+       try{         
+            if((objctrlmm)["Exists"])
+            {
+                var Msg1 = objctrlmm["get_Text"]();
+                Log["Enabled"] =true;
+                if(aqString["ToLower"](Msg1) == aqString["ToLower"]("Performing Maintenance"))
+                
+                {
+                    Log["Message"]("Maintenance is performing");                  
+                }
+            else
+				        {
+                    Log["Error"]("Maintenance is not performing");
+                    // Runner["Stop"]();
+                    Log["PopLogFolder"]();
+                    return false;
+				         }
+            }
+            
+        }catch(e){
+                  Log["Error"]("Exception",exp["description"]);
+                  Log["PopLogFolder"]();
+                  return false;
+                  }
+         Log["PopLogFolder"]();
+         return true;
+}
+
+function OperatorDiagnostics()
+{
+  try
+  {
+     //Navigate to Operator Diagnostics (Not working as perform disabled)
+    //InvokeWorkflow("System_OperatorDiagnostics"); 
+  
+    // Navigate to Operator Diagnostics
+    var objctrl = GetControl("","btnSystem");
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("","btnOperatorDiagnostics");
+    ClickControl(objctrl);
+    
+    Log["AppendFolder"]("System:OperatorDiagnostics");
+           
+    var Layout = Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("CCOperatorDiagnosticsTab")["WinFormsObject"]("ContentFrame_CCOperatorDiagnostics")["WinFormsObject"]("DiagnosticToolsLayoutViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("DiagnosticToolsLayoutView", "", 1)["WPFObject"]("Grid", "", 1)
+                 //Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("CCOperatorDiagnosticsTab")["WinFormsObject"]("ContentFrame_CCOperatorDiagnostics")["WinFormsObject"]("DiagnosticToolsLayoutViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("DiagnosticToolsLayoutView", "", 1)["WPFObject"]("Grid", "", 1)
+  
+    var Hydra = Layout["WPFObject"]("ModuleSelectorControl")["WPFObject"]("ModuleSelectorView", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("PART_Selector")["WPFObject"]("ListBoxItem", "", 2)["WPFObject"]("LayoutRoot")
+    Hydra["Click"]();
+    
+    var IATab = Layout["WPFObject"]("DiagnosticToolsControl")["WPFObject"]("DiagnosticToolsView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("HydraOperatorDiagnosticsTabControl")["WPFObject"]("TabItem", "Immunoassay", 1)
+    IATab["Click"]();                
+    
+    var Grid = Layout["WPFObject"]("DiagnosticToolsControl")["WPFObject"]("DiagnosticToolsView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("HydraOperatorDiagnosticsTabControl")["WPFObject"]("Grid", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("DataGrid", "", 1)
+    SelectGridRow(Grid, 1);
+    
+    var Performbutton = Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("CCOperatorDiagnosticsTab")["WinFormsObject"]("ContentFrame_CCOperatorDiagnostics")["WinFormsObject"]("DiagnosticToolsLayoutViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("DiagnosticToolsLayoutView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("DiagnosticToolsControl")["WPFObject"]("DiagnosticToolsView", "", 1)["WPFObject"]("Button", "Perform", 1)
+    Performbutton["Click"]();
+     
+    // Below steps assuming the functinality will be after clicking on Perform button , popups are displayed
+    var objctrl =GetControl("Maintenance_Schedule","btnPerformMaint");
+    if(VerifyObjectEnabled(objctrl))
+    {
+      ClickControl(objctrl);
+      aqUtils["Delay"](200, "Sync for dialog window");
+      
+      var objctrl = GetControl("Maintenance_Schedule","btnYesMaint");
+      ClickControl(objctrl);
+      aqUtils["Delay"](200, "Sync for dialog window");
+      
+      var objctrl = GetControl("Maintenance_Schedule","btnNoMaint");
+      ClickControl(objctrl);
+          
+      aqUtils["Delay"](3000, "Sync for dialog window");
+
+      Log["Message"]("PrimeIM Reagent Probe performed");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Warning"](" PERFORM button is not enabled");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

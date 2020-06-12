@@ -1,0 +1,581 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+
+//******************************************************************************
+//                              Sample List 
+//******************************************************************************
+function VerifySampleStatusInSampleList(sampleId,sampleStatus)
+{
+  try
+  {
+    Log["AppendFolder"]("SamplesList::Checking the Sample list grid for SampleID: " +sampleId);
+    
+    aqUtils["Delay"](60000,"Waiting for Sample to be displayed");
+      
+    //Get Sample list datagrid control
+    var datagridCtrl = GetAutomationIDControl("SampleList", "dtgrdSampleList");
+    
+    //Get reference columnIndex for column 'SampleId' & 'Status'
+    var sampleIdColIndex = GetDataGridColumnIndexFromMetadataSheet("SampleList", "SampleId");    
+    var statusColIndex = GetDataGridColumnIndexFromMetadataSheet("SampleList", "Status");
+    
+    var isStatus = false;
+    var isStatusError = false;
+    var isRecordExist = false;
+    var count = 0;
+    
+    //get the row details from the datagrid    
+    var rowDetails = GetSFGridRowDetails(datagridCtrl);
+    
+    if(!rowDetails)
+    {
+      Log["Error"]("There are no records displayed in the datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //iterate for count 96 with 5sec wait per iteration (8 mins per sample)
+    while(count < 96) 
+    {    
+      //Iterate the datarows
+      for(var rowIndex=0; rowIndex < rowDetails.length; rowIndex++) 
+      {
+        var rowParent = rowDetails[rowIndex];
+        var gridCellList = GetAllChildren(rowParent,"ClassName", "GridCell").reverse();
+        
+        //get actual sample id from the row
+        var actualSampleIdCtrl = Getchild(gridCellList[sampleIdColIndex],"AutomationId", "Position");
+        var actualSampleId = GetNativeObjectName(actualSampleIdCtrl)
+        
+        //Verifying the Sample ID displayed in the row matching expected sample id
+        if(actualSampleId == sampleId)
+        {
+          Log["Message"]("Sample ID '" + sampleId + "' located in the samples list datagrid");
+          isRecordExist = true;
+          
+          //get the actual status displayed for the sample id in the row
+                    
+          var actualStatusCtrl = Getchild(gridCellList[statusColIndex],"ClassName", "TextBlock");
+          var actualStatus = GetNativeObjectName(actualStatusCtrl);
+          
+          //Verifying the status 
+          if ((actualStatus == "Intervention Needed" || actualStatus == "Assay error" || actualStatus == "No Orders") && (actualStatus != sampleStatus))
+          {
+            //if the sample status is( "Intervention Needed" or "Assay Error" or "No Orders") and the expected status is not ("Intervention Needed" or "Assay Error" or "No Orders")
+            Log["Enabled"] = true;
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample status for " + sampleId + " is displayed as: " + actualStatus);
+            isStatus = false;
+            isStatusError = true;
+            break;
+          } else if (actualStatus != sampleStatus && actualStatus != "Complete") {
+            //if the sample status is not the expected status and sample status is not "Complete"
+            Log["Enabled"] = true;
+            aqUtils["Delay"](5000, "Waiting to the sample '" + sampleId + "' to get processed, Waiting Count Iteration : " + count);
+            //count= count+1;
+            Log["Enabled"] = false;
+            break;
+          } else {
+            //if the sample status matches the expected status
+            Log["Enabled"] = true;
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample status for " + sampleId + " is displayed as: " + actualStatus);
+            isStatus = true;
+            break;
+          }          
+        }
+      }
+      
+      //check if record exists until 5 iteration of while loop
+      if(!isRecordExist && count >= 5)
+      {
+        Log["Message"]("Sample doesn't listed in the sample list screen with the iteration count '" + count + "' completed");
+        break;
+      } else {
+        Log["Message"]("Verification for the sample listed in sample list screen with iteration count '" + count + "' completed")
+        count = count + 1;
+      }
+      
+      //Verify the status is matching with the expected status for the given sample id -> else continue the loop to next row
+      if(isStatus) 
+      {
+          break;
+      } else if (isStatusError) {
+          break;
+      } else {
+          //Get the row detaisl again to retain the record positions and updated the row details with the object
+          rowDetails = GetSFGridRowDetails(datagridCtrl);
+      }             
+    }
+    
+    Log["Enabled"] = true;
+    //Validate based on the status retrived for the given sample id
+    if(isStatus) 
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sampleId + " is showing up on the Sample list with the status of '" + sampleStatus + "'");
+      Log["PopLogFolder"]();
+      return true;
+    } else if(!isStatus && !isRecordExist) {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sampleId + " is not showing up on the Sample list after waiting for 8 minutes");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sampleId + " is showing up on the Sample list, But status does not match as expected");
+      Log["PopLogFolder"]();
+      return false;
+    }        
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//******************************************************************************
+//                              STATs Screen
+//******************************************************************************
+function CheckSampleListedInSTATSampleInterventionNeededGrid(sampleId)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("STATs Screen :: Check the sample '" + sampleId + "' listed");
+    
+    //Expand the inprocess accordion if not expanded
+    if(!ExpandSTATSampleInterventionNeededAccordion())
+    {
+      Log["Error"]("Unable to expand the STAT Sample Intervention Needed Accordion to view the datagrid");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+        
+    var isrecordExists = false;
+    
+    //Get the intervention Needed data grid object
+    var interventionNeededDataGridCtrl = GetAutomationIDControl("STATsScreen","dtgrdSTATSampleInterventionNeeded");
+    
+    //Verify the sample intervention needed datagrid control is displayed
+    if(VerifyObjectExists(interventionNeededDataGridCtrl)) 
+    {
+      
+      //Verify the given sampleid is displayed in the samples intervention needed datagrid row
+      if(VerifyTheRecordExistsInDatagrid(interventionNeededDataGridCtrl, "SampleList_StatSamplesNeedingIntervention", "SampleId", sampleId)) 
+      {
+        Log["Message"]("The sample '" + sampleId + "' is displayed in the samples intervention needed datagrid");        
+        isrecordExists =  true;
+      } else {
+        Log["Message"]("Unable to locate the sample '" + sampleId + "' in the samples intervention needed datagrid");
+        isrecordExists = false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the samples intervention needed datagrid in the Stats screen");
+      isrecordExists =  false;
+    }
+    
+    Log["PopLogFolder"]();
+    return isrecordExists;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function CheckSampleListedInSTATSampleInProcessGrid(sampleId)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("STATs Screen :: Check the sample '" + sampleId + "' listed");
+    
+    //Expand the inprocess accordion if not expanded
+    if(!ExpandSTATSampleInterventionNeededAccordion())
+    {
+      Log["Error"]("Unable to expand the STAT Sample InProcess Accordion to view the datagrid");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+        
+    var isrecordExists = false;
+    
+    //Get the intervention Needed data grid object
+    var inprocessGridCtrl = GetAutomationIDControl("STATsScreen","dtgrdSTATSamplesInprocess");
+    
+    //Verify the sample intervention needed datagrid control is displayed
+    if(VerifyObjectExists(inprocessGridCtrl)) 
+    {
+      
+      //Verify the given sampleid is displayed in the samples intervention needed datagrid row
+      if(VerifyTheRecordExistsInDatagrid(inprocessGridCtrl, "SampleList_StatSamplesInprocess", "SampleId", sampleId)) 
+      {
+        Log["Message"]("The sample '" + sampleId + "' is displayed in the samples intervention needed datagrid");        
+        isrecordExists =  true;
+      } else {
+        Log["Message"]("Unable to locate the sample '" + sampleId + "' in the samples intervention needed datagrid");
+        isrecordExists = false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the samples intervention needed datagrid in the Stats screen");
+      isrecordExists =  false;
+    }
+    
+    Log["PopLogFolder"]();
+    return isrecordExists;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function ExpandSTATSampleInterventionNeededAccordion()
+{
+  try
+  {
+    Log["AppendFolder"]("STATs Screen: Expanding the STAT Sample Intervention Needed Accordion");
+    
+    //Get the intervention needed accordion control
+    var interventionNeededAccCtrl = GetAutomationIDControl("STATsScreen", "statInterventionNeedeAccordian");
+   
+    //Check the intervention needed accordion control displayed
+    if(VerifyObjectExists(interventionNeededAccCtrl))
+    {
+      //Scroll to the samples intervention needed accordion
+      ScrollIntoView(inprocessAccCtrl);
+          
+      //check the toggle state of the intervention needed accordion status      
+      if(GetToggleState(interventionNeededAccCtrl) == 0)
+      {
+        Log["Message"]("Intervention Needed Accordion is located in STATs screen");
+       
+        //Click on the accordion to expand
+        ClickCtrl(interventionNeededAccCtrl);
+       
+        Log["Message"]("STATs Intervention Needed Accordion is clicked to expand");         
+      } else {
+        Log["Message"]("STATs Intervention Needed Accordion is already in expanded state");
+      }
+      
+      //Get the STAT Intervention Needed daatgrid ctrl
+      var interventionNeededDatagridCtrl = GetAutomationIDControl("STATsScreen","dtgrdSTATSampleInterventionNeeded");
+
+      //Check the intervention needed datagrid displayed
+      if(VerifyObjectExists(interventionNeededDatagridCtrl))
+      {
+        Log["Message"]("STATs intervention needed accordion is expanded and the datagrid is located");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to expand the STATs intervention needed accordion / the datagrid is not located");
+        Log["PopLogFolder"]();
+        return false;
+      }                 
+    } else {
+     Log["Error"]("Unable to locate the STATs Intervention Needed Accordion");
+     Log["PopLogFolder"]();
+     return false;
+    }     
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log['PopLogFolder']();
+    return false; 
+  }
+}
+
+function ExpandSTATSampleInprocessAccordion()
+{
+  try
+  {
+    Log["AppendFolder"]("STATs Screen: Expanding the STAT Sample Inprocess Accordion");
+    
+    //Get the samples inprocess accordion control
+    var inprocessAccCtrl = GetAutomationIDControl("STATsScreen", "statInprocessAccordian");
+   
+    //Check the samples inprocess accordion control displayed
+    if(VerifyObjectExists(inprocessAccCtrl))
+    {          
+      //Scroll to the samples inprocess accordion
+      ScrollIntoView(inprocessAccCtrl);
+
+      //check the toggle state of the samples inprocess accordion status      
+      if(GetToggleState(inprocessAccCtrl) == 0)
+      {
+        Log["Message"]("STAT Samples Inprocess Accordion is located in STATs screen");
+       
+        //Click on the accordion to expand
+        ClickCtrl(inprocessAccCtrl);
+       
+        Log["Message"]("STATs Inprocess Accordion is clicked to expand");        
+      } else {
+        Log["Message"]("STATs Inprocess Accordion is already in expanded state");
+      }
+      
+      //Get the STAT sample inprocess datagrid ctrl
+      var inprocessDatagridCtrl = GetAutomationIDControl("STATsScreen","dtgrdSTATSamplesInprocess");
+
+      //Check the intervention needed datagrid displayed
+      if(VerifyObjectExists(inprocessDatagridCtrl))
+      {
+        Log["Message"]("STAT Samples Inprocess Accordion is expanded and the datagrid is located");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to expand the STAT Samples Inprocess Accordion / the datagrid is not located");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the STATs Inprocess Accordion");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log['PopLogFolder']();
+    return false; 
+  }
+}
+
+
+//******************************************************************************
+//                              Routine Screen
+//******************************************************************************
+function CheckSampleListedInRoutineInterventionNeededDataGrid(sampleId)
+{
+  try
+  {
+    Log["AppendFolder"]("Routine Samples : Check the sample '" + sampleId + "' listed");
+    
+    //Expand the inprocess accordion if not expanded
+    if(!ExpandRoutinePatientInterventionNeededAccordion())
+    {
+      Log["Error"]("Unable to expand the Routine Sample Intervention Needed Accordion to view the datagrid");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    
+    //Get the intervention Needed data grid object
+    var patientInterventionNeededGridCtrl = GetAutomationIDControl("RoutineScreen","dtgrdPatientInterventionNeeded");
+    
+    var isrecordExists = false;
+    
+    //Verify the patient sample intervention needed datagrid control is displayed
+    if(VerifyObjectExists(patientInterventionNeededGridCtrl)) 
+    {
+      
+      //Verify the given sampleid is displayed in the patient samples intervention needed datagrid row
+      if(VerifyTheRecordExistsInDatagrid(patientInterventionNeededGridCtrl, "SampleList_RoutinePatientSamplesNeedingIntervention", "SampleId", sampleId))
+      {
+        Log["Message"]("The sample '" + sampleId + "' is displayed in the patient samples intervention needed datagrid");        
+        isrecordExists =  true;
+      } else {
+        Log["Message"]("Unable to locate the sample '" + sampleId + "' in the patient samples intervention needed datagrid");
+        isrecordExists = false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the patient samples intervention needed datagrid in the routine samples screen");
+      isrecordExists =  false;
+    }
+    
+    Log["PopLogFolder"]();
+    return isrecordExists;   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function ExpandRoutinePatientInterventionNeededAccordion()
+{
+  try
+  {
+    Log["AppendFolder"]("Routine Samples :: Expanding the Routine Sample Intervention Needed Accordion");
+    
+    //Get the intervention needed accordion control
+    var interventionNeededAccCtrl = GetAutomationIDControl("RoutineScreen", "patientInterventionNeededAccordian");
+   
+    //Check the intervention needed accordion control displayed
+    if(VerifyObjectExists(interventionNeededAccCtrl))
+    {
+      
+      //Scroll to the patient samples intervention needed accordion
+      ScrollIntoView(interventionNeededAccCtrl);
+          
+      //Check the toggle state of the intervention needed accordion
+      if(GetToggleState(interventionNeededAccCtrl) == 0)
+      {
+        Log["Message"]("Intervention Needed Accordion is located in Routine Sample screen");
+       
+        //Click on the accordion to expand
+        ClickCtrl(interventionNeededAccCtrl);
+       
+        Log["Message"]("Routine Samples Intervention Needed Accordion is clicked to expand");         
+      } else {
+        Log["Message"]("Routine Samples Intervention Needed Accordion is already in expanded state");
+      }
+      
+      //Get the Routine Samples Intervention Needed daatgrid ctrl
+      var interventionNeededDatagridCtrl = GetAutomationIDControl("RoutineScreen","dtgrdPatientInterventionNeeded");
+
+      //check the patient intervention needed datagrid is displayed       
+      if(VerifyObjectExists(interventionNeededDatagridCtrl))
+      {
+        Log["Message"]("Routine Samples intervention needed accordion is expanded and the datagrid is located");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Message"]("Unable to expand the Routine Samples intervention needed accordion / the datagrid is not located");
+        Log["PopLogFolder"]();
+        return false;
+      }  
+    } else {
+      Log["Message"]("Unable to locate the Routine Samples Intervention Needed Accordion");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log['PopLogFolder']();
+    return false; 
+  }
+}
+
+
+function VerifySampleStatusInSampleListWithOnly20secsDelayForASampleToShowInGrid(sampleId,sampleStatus)
+{
+  try
+  {
+    Log["AppendFolder"]("SamplesList::Checking the Sample list grid for SampleID: " +sampleId);
+    
+    aqUtils["Delay"](20000,"Waiting for Sample to be displayed");
+      
+    //Get Sample list datagrid control
+    var datagridCtrl = GetAutomationIDControl("SampleList", "dtgrdSampleList");
+    
+    //Get reference columnIndex for column 'SampleId' & 'Status'
+    var sampleIdColIndex = GetDataGridColumnIndexFromMetadataSheet("SampleList", "SampleId");    
+    var statusColIndex = GetDataGridColumnIndexFromMetadataSheet("SampleList", "Status");
+    
+    var isStatus = false;
+    var isStatusError = false;
+    var isRecordExist = false;
+    var count = 0;
+    
+    //get the row details from the datagrid    
+    var rowDetails = GetSFGridRowDetails(datagridCtrl);
+    
+    if(!rowDetails)
+    {
+      Log["Error"]("There are no records displayed in the datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //iterate for count 108 with 5sec wait per iteration (9 mins per sample)
+    while(count < 108) 
+    {    
+      //Iterate the datarows
+      for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++) 
+      {
+        var rowParent = rowDetails[rowIndex];
+        var gridCellList = GetAllChildren(rowParent,"ClassName", "GridCell").reverse();
+        
+        //get actual sample id from the row
+        var actualSampleIdCtrl = Getchild(gridCellList[sampleIdColIndex],"AutomationId", "Position");
+        var actualSampleId = GetNativeObjectName(actualSampleIdCtrl)
+        
+        //Verifying the Sample ID displayed in the row matching expected sample id
+        if(actualSampleId == sampleId)
+        {
+          Log["Message"]("Sample ID '" + sampleId + "' located in the samples list datagrid");
+          isRecordExist = true;
+          
+          //get the actual status displayed for the sample id in the row
+                    
+          var actualStatusCtrl = Getchild(gridCellList[statusColIndex],"ClassName", "TextBlock");
+          var actualStatus = GetNativeObjectName(actualStatusCtrl);
+          
+          //Verifying the status 
+          if ((actualStatus == "Intervention Needed" || actualStatus == "Assay error" || actualStatus == "No Orders") && (actualStatus != sampleStatus))
+          {
+            //if the sample status is( "Intervention Needed" or "Assay Error" or "No Orders") and the expected status is not ("Intervention Needed" or "Assay Error" or "No Orders")
+            Log["Enabled"] = true;
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample status for " + sampleId + " is displayed as: " + actualStatus);
+            isStatus = false;
+            isStatusError = true;
+            break;
+          } else if (actualStatus != sampleStatus && actualStatus != "Complete") {
+            //if the sample status is not the expected status and sample status is not "Complete"
+            Log["Enabled"] = true;
+            aqUtils["Delay"](5000, "Waiting to the sample '" + sampleId + "' to get processed, Waiting Count Iteration : " + count);
+            //count= count+1;
+            Log["Enabled"] = false;
+            break;
+          } else {
+            //if the sample status matches the expected status
+            Log["Enabled"] = true;
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample status for " + sampleId + " is displayed as: " + actualStatus);
+            isStatus = true;
+            break;
+          }          
+        }
+      }
+      
+      //check if record exists until 5 iteration of while loop
+      if(!isRecordExist && count >= 5)
+      {
+        break;
+      } else {
+        count = count + 1;
+      }
+      
+      //Verify the status is matching with the expected status for the given sample id -> else continue the loop to next row
+      if(isStatus) 
+      {
+          break;
+      } else if (isStatusError) {
+          break;
+      } else {
+          rowDetails = GetSFGridRowDetails(datagridCtrl);
+      }             
+    }
+    
+    Log["Enabled"] = true;
+    //Validate based on the status retrived for the given sample id
+    if(isStatus) 
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sampleId + " is showing up on the Sample list with the status of '" + sampleStatus + "'");
+      Log["PopLogFolder"]();
+      return true;
+    } else if(!isStatus && !isRecordExist) {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sampleId + " is not showing up on the Sample list after waiting for 8 minutes");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), sampleId + " is showing up on the Sample list, But status does not match as expected");
+      Log["PopLogFolder"]();
+      return false;
+    }        
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

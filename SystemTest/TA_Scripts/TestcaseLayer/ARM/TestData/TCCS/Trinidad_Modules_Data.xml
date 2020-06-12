@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Modules xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Module>
+    <Name>CSESIEM-$DL</Name>
+    <SerialNumber>CSESIEM-4K62FLE$DL</SerialNumber>
+    <ModuleType>DL</ModuleType>
+    <MaterialNumber>11068008</MaterialNumber>
+    <DeviceModel>DIRECT LOAD</DeviceModel>
+    <DeviceType>Trinidad</DeviceType>
+  </Module>
+  <Module>
+    <Name>CSESIEM-$HYDRA</Name>
+    <SerialNumber>CSESIEM-4K62FLE$HYDRA</SerialNumber>
+    <ModuleType>HYDRA</ModuleType>
+    <MaterialNumber>12345678</MaterialNumber>
+    <DeviceModel>Hydra Analyzer</DeviceModel>
+    <DeviceType>Trinidad</DeviceType>
+  </Module>
+</Modules>

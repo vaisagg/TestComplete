@@ -1,0 +1,103 @@
+﻿//USEUNIT CommonUtilities
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeTCS2
+//*
+//*  Description: Invoke TCS2 application
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeTCS2()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 14/03/2018
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeTCS2(strAppPath,strProcessName)
+{
+   try
+   {
+//   var strAppPath ="C:\\hydra.dev\\drop\\Bin\\TCS2.MainProject.exe"; 
+//   strProcessName="TCS2.MainProject";
+   if(Sys["WaitProcess"](strProcessName,2000)["Exists"] == true)
+   {
+      Sys.Process(strProcessName)["Refresh"]();
+      Log["Message"]("Application "+strProcessName+" has already started");
+      return true;
+   }
+    
+      var wShell=Sys.OleObject("WScript.Shell");
+      flg= wShell.Run(strAppPath);
+      aqUtils.Delay(5000)
+       
+       if(strProcessName!="")
+       {
+          if(Sys["WaitProcess"](strProcessName,15000)["Exists"] == true)
+          {
+            Log["Message"]("Application "+strProcessName+" has started successfully");
+            return true;
+            }
+          }
+          else
+          {           
+            Log["Error"]("Unable to start the application "+strProcessName);
+            return false;
+          }
+       }
+   catch(exp)
+   {
+      Log["Error"]("Exception "+exp["description"]);    
+   }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : VerifyTCS2Initialized
+//*
+//*  Description: Verify TCS2 application is initialized
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: VerifyTCS2Initialized()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 14/03/2018
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function VerifyTCS2Initialized()
+{
+   try
+   { 
+   strProcessName="TCS2.MainProject";
+   if(Sys["WaitProcess"](strProcessName,100000)["Exists"] == true)
+   {
+      App=Sys.Process("TCS2.MainProject").Window("ConsoleWindowClass", "TCS2.Software");
+      if (App.wText!="")
+      {
+        Log["Message"]("TCS2 software is Initialized successfully");
+        return true;
+      }
+      else
+      {
+        Log["Message"]("TCS2 software is NOT Initialized successfully");
+        return false;
+      } 
+   }
+   else
+      {
+        Log["Message"]("TCS2 software is NOT available");
+        return false;
+      }
+   } 
+ 
+    catch(exp)
+   {
+      Log["Error"]("Exception "+exp["description"]);    
+   }
+}

@@ -1,0 +1,15 @@
+<TestResults>
+	<TestResult startdatetime="" enddatetime="" ExecutionStatus="">
+		<EnvDetails>
+			<BuildID></BuildID>
+			<Build/>
+			<DeploymentType></DeploymentType>
+			<Environment>Physical</Environment>
+			<DeploymentMode>Fresh Install</DeploymentMode>
+			<VAPPLINK>NA</VAPPLINK>
+			<RunID>0</RunID>
+		</EnvDetails>
+		<Tests>
+		</Tests>
+	</TestResult>
+</TestResults>

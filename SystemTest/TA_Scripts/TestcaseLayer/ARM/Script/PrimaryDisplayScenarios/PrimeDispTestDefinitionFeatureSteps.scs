@@ -1,0 +1,4671 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra");
+var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+
+function GivenModuleIsInReadyState(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);   
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);  
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[0];    
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    
+    //Get the user credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password"); 
+   //------------------------------------------------------------------------------------
+    
+   //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+user+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+   //-------------------------------------------------------------------------------------
+   
+   //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as 'LoginG0' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+    
+   //-----------------------------Check current Module state-------------------------------
+    Log["AppendFolder"]("Step :: Verify '"+moduleType+"' Is In 'Ready' State");
+    
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+    
+    if(moduleState == false || moduleState != "Ready")
+    {
+      Log["Message"]("Current Module state is '"+moduleState+"'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      
+      Log["Message"]("Module State is changed to 'Ready'")
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("System Module is in Ready State");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    
+    Log["Message"]("Module State is changed to 'Ready'")
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenCIStatusAndDisplayNameIsModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Modify CIStatus and DisplayName")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition";
+    var imStatus = TDefTestData[0]["Item"]("CIStatus");
+    var displayName = TDefTestData[0]["Item"]("DisplayName");  
+    //------------------------------------------------------------------------------------
+   
+    //modify IMStatus value
+    if(!StepModifyCIStatusAndDisplayNameInDefinition(assayType,assayName,tDefScreen,imStatus,displayName))
+    {
+      Log["Error"]("Failed to modify IMStatus and DisplayName")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTDefSuccessSavePopupAndExit(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Tdef Save Success Popup and Exit from Tdef")
+    
+    //Verify the success alert is displayed
+    if(!StepVerifyTDefSuccessSavePopup())
+    {
+      Log["Error"]("Failed to verify the success save popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef after saving")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyCIStatusAndDisplayNameIsModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify CIStatus and DisplayName Is Modified")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition"
+    var ciStatus = TDefTestData[0]["Item"]("CIStatus");
+    var displayName = TDefTestData[0]["Item"]("DisplayName");
+    
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------------Verify CIStatus and DisplayName------------------------
+    if(!StepVerifyCIStatusAndDisplayNameIsModified(assayType,assayName,tDefScreen,ciStatus,displayName))
+    {
+      Log["Error"]("Failed to verify CIStatus and DisplayName is Modified")
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Verified CIStatus and DisplayName modification")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTDefFailedSaveAndExit(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Save Failed Popup and exit from TDef")
+    
+    //Check the Tderf save failed popup
+    if(!StepVerifyTDefFailedSavePopup())
+    {
+      Log["Error"]("Failed to verify the success save popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on finish and exit from Tdef
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef after saving")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyDisplayNameIsNotModified(testName)
+{
+  try
+  {
+     Log["AppendFolder"]("Step :: Verify DisplayName Is Not Modified")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition"
+    var displayName = TDefTestData[0]["Item"]("DisplayName");
+    
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------------Verify DisplayName is not modified------------------------
+    if(!StepVerifyDisplayNameIsNotModified(assayType,assayName,tDefScreen,displayName))
+    {
+      Log["Error"]("Failed to verify DisplayName is not modified")
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Verified DisplayName Is not modified")
+      Log["PopLogFolder"]();
+      return true;
+    }   
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenCBTIsUnchecked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: UnCheck CBT")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition";
+   //------------------------------------------------------------------------------------
+    
+    //Uncheck the Control Bracketed test field
+    if(!StepUncheckControlBracketedTest(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to UnCheck CBT")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyControlLevelIsDisabled(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Control Level Is Disabled")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition"
+   //------------------------------------------------------------------------------------
+    
+    //Uncheck the Control Bracketed test field
+    if(!StepVerifyControlLevelisDisabled(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to UnLock Control Level")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenDisplayNameIsModifiedThenVerifyTDefISaved(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);        
+    var assayType=TDefTestData[0]["Item"]("AssayType");   
+    var assayName=TDefTestData[0]["Item"]("AssayName");  
+    var displayName = TDefTestData[0]["Item"]("DisplayName")["split"](";"); 
+    var tDefScreen="Definition"  
+    var user=TDefTestData[0]["Item"]("User")["split"](";");  
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Modify DisplayName and Verify tDef Is Saved For User G1 and G2")  
+    
+    for(var i=0;i<user.length;i++)
+    {
+      //get the User credentials
+      var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user[i]); 
+      var username = user_Credentials[0]["Item"]("User");
+      var password = user_Credentials[0]["Item"]("Password"); 
+      
+      Log["AppendFolder"]("Step :: Modify DisplayName and Verify TDef Is Saved For User '"+username+"'")  
+            
+      //-------------------------------Logoff ------------------------------------------------
+      Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+      //Logout current User
+      if(!StepLogoutCurrentUser())
+      {
+        Log["Error"]("Failed to Logout current User")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+       
+      //-------------------------------------------------------------------------------------
+   
+      //----------------------Login to the Primary UI---------------------------------------
+      Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+      //Login to the primary ui with the given user name and password
+      if(!StepLoginToHydra(username,password))
+      {
+        Log["Error"]("Failed to Login to PrimaryUI");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      //--------------------------------------------------------------------------------------
+    
+      //-----------------------------Modify Display Name-------------------------------------
+      //modify DisplayName TextBox
+      Log["AppendFolder"]("Step :: Moifying DisplayName")
+      if(!StepModifyDisplayNameInDefinition(assayType,assayName,tDefScreen,displayName[i]))
+      {
+        Log["Error"]("Failed to modify DisplaName")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+     //------------------------------------------------------------------------------------
+      
+      aqUtils["Delay"](2000, "Wait for the Sucess save popup");
+      
+     //-----------------------------Verify Success popup-------------------------------------
+      Log["AppendFolder"]("Step :: Verify Success Popup")
+      //Verify the success alert is displayed
+      if(!StepVerifyTDefSuccessSavePopup())
+      {
+        Log["Error"]("Failed to verify the success save popup");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      //-----------------------------Verify DisplayName modified--------------------------------
+      Log["AppendFolder"]("Step :: Verify DisplayName Is Modified")
+      if(!StepVerifyDisplayNameIsModified(assayType,assayName,tDefScreen,displayName[i]))
+      {
+        Log["Error"]("Failed to verify DisplayName is saved")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      
+      Log["PopLogFolder"]();
+   
+    }
+       
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function WhenDisplayNameIsModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Moifying DisplayName")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);        
+    var assayType=TDefTestData[0]["Item"]("AssayType");   
+    var assayName=TDefTestData[0]["Item"]("AssayName");  
+    var displayName = TDefTestData[0]["Item"]("DisplayName"); 
+    var tDefScreen="Definition"  
+    var user=TDefTestData[0]["Item"]("User")["split"](";");  
+    //------------------------------------------------------------------------------------
+
+    //-----------------------------Modify Display Name-------------------------------------
+    //modify DisplayName TextBox
+    if(!StepModifyDisplayNameInDefinition(assayType,assayName,tDefScreen,displayName))
+    {
+      Log["Error"]("Failed to modify DisplaName")
+      Log["PopLogFolder"]();
+      return false;
+    }
+   //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserTriesToModifyControlLevel(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: User Tries To Modify Control Level")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition"
+   //------------------------------------------------------------------------------------
+    
+    //Unlock the Control Level
+    if(!StepUnLockControlLevelInDefinition(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to UnLock Control Level")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenCalibrationLotIntervalIsSet(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: G0 User Sets th Calibration Lot Interval")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[0];  
+    var CalibrationLotInterval = TDefTestData[0]["Item"]("CalibrationLotInterval")["split"](";")[0];  
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");   
+    //------------------------------------------------------------------------------------
+   
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------ 
+    
+    //---------------------------------Set Calibration Lot Interval-----------------------
+    Log["AppendFolder"]("Step :: Set Calibration Lot Inteval as "+CalibrationLotInterval+"")
+    if(!StepSetCalibrationLotInterval(assayType,assayName,tDefScreen,CalibrationLotInterval))
+    {
+      Log["Error"]("Failed to set Calibration lot interval")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+     
+        
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function UserIncreasesCalibrationLotInterval(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: G1 User Increases Calibration Lot Interval")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[1];  
+    var CalibrationLotInterval = TDefTestData[0]["Item"]("CalibrationLotInterval")["split"](";")[1];  
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");   
+    //------------------------------------------------------------------------------------
+   
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------ 
+    
+    //---------------------------------Increase Calibration Lot Interval-----------------------
+    Log["AppendFolder"]("Step :: Increase Calibration Lot Inteval as '"+CalibrationLotInterval+"' And Verify Calibration Lot Interval Cannot Be Increased")
+    if(!StepIncreaseCalibrationLotInterval(assayType,assayName,tDefScreen,CalibrationLotInterval))
+    {
+      Log["Error"]("Failed to verify Calibration Lot Interval modification")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenMinimumReplicatesIsSet(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: G0 User Sets the Minimum Replicates")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[0];  
+    var MinimumReplicates = TDefTestData[0]["Item"]("MinimumReplicates"); 
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");   
+    //------------------------------------------------------------------------------------
+   
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------ 
+    
+    //---------------------------------Set Minimum Replicates-----------------------------
+    Log["AppendFolder"]("Step :: Set Minimum Replicates as "+MinimumReplicates+"")
+    if(!StepSetMinimumReplicates(assayType,assayName,tDefScreen,MinimumReplicates))
+    {
+      Log["Error"]("Failed to set Calibration lot interval")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+     
+        
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserSetsNewReplicatesLessThanMinimumReplicates(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: G2 User Sets New Lot Replicates")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[1];  
+    var newLotReplicates = TDefTestData[0]["Item"]("NewLotReplicates");  
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");   
+    //------------------------------------------------------------------------------------
+   
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------ 
+    
+    //-------------Set New Lot Replicates More than Minimum Replicates Set----------------
+    Log["AppendFolder"]("Step :: Set New Lot Replicates as "+newLotReplicates+"")
+    if(!StepSetNewLotReplicatesLessThanMinimumReplicates(assayType,assayName,tDefScreen,newLotReplicates))
+    {
+      Log["Error"]("Failed to verify Calibration Lot Interval modification")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+function GivenCalibrationTriggersAreChecked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: G0 User Sets the Calibration Triggers")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[0];  
+    var CalibrationTrigger = TDefTestData[0]["Item"]("CalibrationTrigger")["split"](";");  
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");   
+    //------------------------------------------------------------------------------------
+   
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //-------------------------------------------------------------------------------------- 
+    
+    //---------------Check the Calibration Trigger Checkboxes--------------------------------
+    Log["AppendFolder"]("Step :: Check Calibration Trigger Checkboxes")
+    if(!StepCheckCalibrationTriggerCheckbox(assayType,assayName,tDefScreen,CalibrationTrigger))
+    {
+      Log["Error"]("Failed to check the Calibration Trigger checkboxes")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    aqUtils["Delay"](2000, "Wait for the Sucess save popup");
+    
+    //-----------------------------Verify Success popup and Exit-------------------------------------
+    Log["AppendFolder"]("Step :: Verify Success Popup")
+    //Verify the success alert is displayed
+    if(!StepVerifyTDefSuccessSavePopup())
+    {
+      Log["Error"]("Failed to verify the success save popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef after saving")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------
+      
+    //-----------------------------Verify Calibration Trigger Checked--------------------------------
+    Log["AppendFolder"]("Step :: Verify Calibration Trigger Is Modified")
+    if(!StepVerifyCalibrationTrigger(assayType,assayName,tDefScreen,CalibrationTrigger))
+    {
+      Log["Error"]("Failed to verify DisplayName is saved")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+    //-----------------------------------------------------------------------------------------------
+        
+    //-----------------------------Verify Success popup and Exit-------------------------------------
+    Log["AppendFolder"]("Step :: Exit TDef Setup")
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef after saving")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------
+      
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function UserModifiesCalibrationTriggerAndVerifyTDefIsSaved(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);        
+    var assayType=TDefTestData[0]["Item"]("AssayType");   
+    var assayName=TDefTestData[0]["Item"]("AssayName");  
+    var tDefScreen="Calibration"  
+    
+    var UserList = new Array();
+    UserList["push"](TDefTestData[0]["item"]("User")["split"](";")[1]);
+    UserList["push"](TDefTestData[0]["item"]("User")["split"](";")[2]);
+    UserList["push"](TDefTestData[0]["item"]("User")["split"](";")[3]);
+        
+    var calibrationTriggerList = new Array();
+    calibrationTriggerList["push"](TDefTestData[0]["item"]("CalibrationTrigger")["split"](";")[0]);
+    calibrationTriggerList["push"](TDefTestData[0]["item"]("CalibrationTrigger")["split"](";")[1]);
+    calibrationTriggerList["push"](TDefTestData[0]["item"]("CalibrationTrigger")["split"](";")[2]);
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Modify Calibration Trigger And Verify TDef Is Saved")    
+    for(var i=0;i<UserList.length;i++)
+    {
+      //get the User credentials
+      var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",UserList[i]); 
+      var username = user_Credentials[0]["Item"]("User");
+      var password = user_Credentials[0]["Item"]("Password"); 
+      
+      Log["AppendFolder"]("Step :: Modify Calibration Trigger and Verify tDef Is Saved For User '"+username+"'")  
+            
+      //-------------------------------Logoff ------------------------------------------------
+      Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+      //Logout current User
+      if(!StepLogoutCurrentUser())
+      {
+        Log["Error"]("Failed to Logout current User")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+       
+      //-------------------------------------------------------------------------------------
+   
+      //----------------------Login to the Primary UI---------------------------------------
+      Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+      //Login to the primary ui with the given user name and password
+      if(!StepLoginToHydra(username,password))
+      {
+        Log["Error"]("Failed to Login to PrimaryUI");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      //--------------------------------------------------------------------------------------
+    
+      //-----------------------------Modify Calibration Trigger-------------------------------------
+      //modify DisplayName TextBox
+      Log["AppendFolder"]("Step :: Modify Calibration Trigger")
+      var calibrationTrigger = new Array();
+      calibrationTrigger["push"](calibrationTriggerList[i]);
+      if(!StepUnCheckCalibrationTriggerCheckbox(assayType,assayName,tDefScreen,calibrationTrigger))
+      {
+        Log["Error"]("Failed to modify Calibration Trigger")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+     //------------------------------------------------------------------------------------
+   
+      aqUtils["Delay"](2000, "Wait for the Sucess save popup");
+      
+     //-----------------------------Verify Success popup-------------------------------------
+      Log["AppendFolder"]("Step :: Verify Success Popup")
+      //Verify the success alert is displayed
+      if(!StepVerifyTDefSuccessSavePopup())
+      {
+        Log["Error"]("Failed to verify the success save popup");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      //-----------------------------------------------------------------------------------------------
+      
+      //-----------------------------Verify Calibration Trigger UnChecked--------------------------------
+      Log["AppendFolder"]("Step :: Verify Calibration Trigger Is Modified")
+      var calibrationTrigger = new Array();
+      calibrationTrigger["push"](calibrationTriggerList[i]);
+      if(!StepVerifyCalibrationTriggerNotChecked(assayType,assayName,tDefScreen,calibrationTrigger))
+      {
+        Log["Error"]("Failed to verify Calibration Trigger is saved")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+   
+      //-----------------------------------------------------------------------------------------------
+      
+      //-----------------------------------------Exit TDef----------------------------------------------
+      Log["AppendFolder"]("Step :: Click Finish And Exit TDef")
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      //-----------------------------------------------------------------------------------------------
+      
+      Log["PopLogFolder"]();
+    }
+       
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function UserModifiesCalibrationTriggerAndVerifyTDefIsNotSaved(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);        
+    var assayType=TDefTestData[0]["Item"]("AssayType");   
+    var assayName=TDefTestData[0]["Item"]("AssayName");  
+    var tDefScreen="Calibration"  
+        
+    var UserList = new Array();
+    UserList["push"](TDefTestData[0]["item"]("User")["split"](";")[4]);
+    UserList["push"](TDefTestData[0]["item"]("User")["split"](";")[5]);
+    
+    var calibrationTriggerList = new Array();
+    calibrationTriggerList["push"](TDefTestData[0]["item"]("CalibrationTrigger")["split"](";")[3]);
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Modify Calibration Trigger And Verify TDef Is Not Modified")    
+    for(var i=0;i<UserList.length;i++)
+    {
+      //get the User credentials
+      var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",UserList[i]); 
+      var username = user_Credentials[0]["Item"]("User");
+      var password = user_Credentials[0]["Item"]("Password"); 
+      
+      Log["AppendFolder"]("Step :: Modify Calibration Trigger and Verify tDef Is Not Modified For User '"+username+"'")  
+            
+      //-------------------------------Logoff ------------------------------------------------
+      Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+      //Logout current User
+      if(!StepLogoutCurrentUser())
+      {
+        Log["Error"]("Failed to Logout current User")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+       
+      //-------------------------------------------------------------------------------------
+   
+      //----------------------Login to the Primary UI---------------------------------------
+      Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+      //Login to the primary ui with the given user name and password
+      if(!StepLoginToHydra(username,password))
+      {
+        Log["Error"]("Failed to Login to PrimaryUI");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      //--------------------------------------------------------------------------------------
+    
+      //-----------------------------Modify Calibration Trigger-------------------------------------
+      //modify DisplayName TextBox
+      Log["AppendFolder"]("Step :: Verifiy Calibration Trigger Checkbox Not Modified")
+      var calibrationTrigger = new Array();
+      calibrationTrigger["push"](calibrationTriggerList[0]);
+      if(!StepVerifyCalibrationTriggerCheckboxNotModified(assayType,assayName,tDefScreen,calibrationTrigger))
+      {
+        Log["Error"]("Calibration Trigger modification verification failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+     //------------------------------------------------------------------------------------
+     
+      //-----------------------------Exit TDef----------------------------------------------
+      Log["AppendFolder"]("Step :: Click Finish And Exit TDef")
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+      //-----------------------------------------------------------------------------------------------
+      Log["PopLogFolder"]();
+    }
+       
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+
+function GivenUserAttemptsToModifyCentrifugeForRepeat(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition";
+    var user = TDefTestData[0]["item"]("User")["split"](";");
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Verify CentrifugeForRepeat CheckBox Is Editable For The User G4 and G5") 
+    
+    for(var i=0;i<user.length;i++)
+    {
+      //get the User credentials
+      var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user[i]); 
+      var username = user_Credentials[0]["Item"]("User");
+      var password = user_Credentials[0]["Item"]("Password"); 
+      
+      Log["AppendFolder"]("Step :: Verify CentrifugeForRepeat Is Enabled For User '"+username+"'")  
+            
+      //-------------------------------Logoff ------------------------------------------------
+      Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+      //Logout current User
+      if(!StepLogoutCurrentUser())
+      {
+        Log["Error"]("Failed to Logout current User")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+       
+      //-------------------------------------------------------------------------------------
+   
+      //----------------------Login to the Primary UI---------------------------------------
+      Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+      //Login to the primary ui with the given user name and password
+      if(!StepLoginToHydra(username,password))
+      {
+        Log["Error"]("Failed to Login to PrimaryUI");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      //--------------------------------------------------------------------------------------
+    
+     //---------------------------------Verify the CentrifugeForRepeat checkbox---------------
+     Log["AppendFolder"]("Step :: Verify CentrifugeForRepeat Checkbox ");
+     
+     //verify CentrifugeForRepeat CheckBox Is Enabled
+      if(!StepVerifyCentrifugeForRepeatCheckBoxIsEnabled(assayType,assayName,tDefScreen))
+      {
+        Log["Error"]("Failed to verify CentrifugeForRepeat checkbox")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+     //--------------------------------------------------------------------------------
+   
+     //-----------------------------Exit TDef Setup-------------------------------------
+     Log["AppendFolder"]("Step :: Click Finish And Exit")
+    
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        return false;
+      }
+     Log["PopLogFolder"]();
+      
+     Log["PopLogFolder"]();
+   
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserModifyCentrifugeForRepeatThenVerifyTDefIsSaved(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition";
+    var user = TDefTestData[0]["item"]("User")["split"](";");
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Verify CentrifugeForRepeat CheckBox Is Modified By The User G4 and G5") 
+    
+    for(var i=0;i<user.length;i++)
+    {
+      //get the User credentials
+      var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user[i]); 
+      var username = user_Credentials[0]["Item"]("User");
+      var password = user_Credentials[0]["Item"]("Password"); 
+      
+      Log["AppendFolder"]("Step :: Verify CentrifugeForRepeat Is Modified By User '"+username+"'")  
+            
+      //-------------------------------Logoff ------------------------------------------------
+      Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+      //Logout current User
+      if(!StepLogoutCurrentUser())
+      {
+        Log["Error"]("Failed to Logout current User")
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+       
+      //-------------------------------------------------------------------------------------
+   
+      //----------------------Login to the Primary UI---------------------------------------
+      Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+      //Login to the primary ui with the given user name and password
+      if(!StepLoginToHydra(username,password))
+      {
+        Log["Error"]("Failed to Login to PrimaryUI");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"](); 
+      //--------------------------------------------------------------------------------------
+    
+      //-------------------------------Get CentrifugeForRepeat checkbox Status----------------
+      Log["AppendFolder"]("Step :: Get CentrifugeForRepeat Checkbox Status");
+     
+       //Get CentrifugeForRepeat CheckBox status
+      var CentrifugeForRepeatStatusBeforeChange = StepGetCentrifugeForRepeatCheckBoxStatus(assayType,assayName,tDefScreen);
+     
+      if(CentrifugeForRepeatStatusBeforeChange == false)
+      {
+        Log["Error"]("Failed to get CentrifugeForRepeat Checkbox Status");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      if(CentrifugeForRepeatStatusBeforeChange == "Checked")
+      {
+        Log["Message"]("CentrifugeForRepeat checkbox is in Checked state");
+      }
+      else
+      {
+        Log["Message"]("CentrifugeForRepeat checkbox is in UnChecked state")
+      }
+      Log["PopLogFolder"]();
+      
+      //--------------------------------------------------------------------------------------
+      
+     //---------------------------------Modify the CentrifugeForRepeat checkbox---------------
+     Log["AppendFolder"]("Step :: Modify CentrifugeForRepeat Checkbox And Save");
+     
+     //verify CentrifugeForRepeat CheckBox Is Enabled
+      if(!StepModifyCentrifugeForRepeatCheckBoxAndSave(assayType,assayName,tDefScreen))
+      {
+        Log["Error"]("Failed to verify CentrifugeForRepeat checkbox")
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+     //--------------------------------------------------------------------------------
+     
+     aqUtils["Delay"](2000, "Wait for the Sucess save popup");
+     
+     //-----------------------------Verify Success popup-------------------------------------
+     Log["AppendFolder"]("Step :: Verify Success Popup")
+    
+      //Verify the success alert is displayed
+      if(!StepVerifyTDefSuccessSavePopup())
+      {
+        Log["Error"]("Failed to verify the success save popup");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+    
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef after saving")
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+     Log["PopLogFolder"]();
+     
+     //---------------------------------Verify CentrifugeForRepeat checkbox Modified-----------
+     Log["AppendFolder"]("Step :: Verify CentrifugeForRepeat Checkbox Modified");
+     
+     //Get CentrifugeForRepeat CheckBox status
+      var CentrifugeForRepeatStatusAfterChange = StepGetCentrifugeForRepeatCheckBoxStatus(assayType,assayName,tDefScreen);
+     
+      if(CentrifugeForRepeatStatusAfterChange == false)
+      {
+        Log["Error"]("Failed to get CentrifugeForRepeat Checkbox Status");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(CentrifugeForRepeatStatusAfterChange != CentrifugeForRepeatStatusBeforeChange)
+      {
+        Log["Message"]("CentrifugeForRepeat checkbox is modified");
+      }
+      else
+      {
+        Log["Error"]("CentrifugeForRepeat checkbox is not modified");
+      }
+      Log["PopLogFolder"]();
+      
+      //--------------------------------------------------------------------------------------
+      
+      //-------------------------------------Exit TDef Setup-------------------------------------
+      Log["AppendFolder"]("Step :: Exit TDef Setup")
+
+      //Click Finish and Exit
+      if(!StepFinishAndExitAssaySetup())
+      {
+        Log["Error"]("Failed to Exit TDef Setup")
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+     Log["PopLogFolder"]();
+     
+     
+     Log["PopLogFolder"]();
+   
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+function GivenAssayComparisonCorrelationIsEnabledForIM(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enable Assay Comparison Correlation");
+    
+    //--------------------------------Fetching Testdata ---------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition"
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------Enable Assay Comparison Correlation-------------------------
+    if(!StepEnableAssayComparisonCorrelationForIM(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to enable Assay Comparison Correlation");
+      Log["PopLogFolder"]();
+      return false;
+    }
+   //-------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAssayComparisonCorrelationIsDisabledForIM(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Disable Assay Comparison Correlation");
+    
+    //--------------------------------Fetching Testdata ---------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Definition"
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------Disable Assay Comparison Correlation-------------------------
+    if(!StepDisableAssayComparisonCorrelationForIM(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed disable Assay Comparison Correlation");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenNavigatedToCalculationTab(testName)
+{
+   try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation";
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[1];  
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Navigate To Calculation Tab") 
+  
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password"); 
+                 
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //--------------------------------------------------------------------------------------
+    
+    //-------------------------------Navigate to Calculation Tab-----------------------------
+    Log["AppendFolder"]("Step :: Navigate To Calculation Tab");
+    if(!StepNavigateToViewEditTdefScreen(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to naviagte to Calculation Tab")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"](); 
+    //--------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenNavigatedToCalibrationTab(testName)
+{
+   try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration";
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[1];  
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Navigate To Calibration Tab") 
+  
+    //get the User credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password"); 
+                 
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as '"+username+"'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //-------------------------------------------------------------------------------------
+   
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as '"+username+"' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //--------------------------------------------------------------------------------------
+    
+    //-------------------------------Navigate to Calibration Tab-----------------------------
+    Log["AppendFolder"]("Step :: Navigate To Calibration Tab");
+    if(!StepNavigateToViewEditTdefScreen(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to naviagte to Calibration Tab")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"](); 
+    //--------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyUnitIsEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Unit Is Editable")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);
+    var assayType = TDefTestData[0]["Item"]("AssayType");       
+   //------------------------------------------------------------------------------------
+    
+    //---------------------Verify the Unit is editable-----------------------------------
+    if(!StepVerifyUnitIsEditable(assayType))
+    {
+      Log["Error"]("Failed to verify that unit can be modified")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyUnitIsNotEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Unit Is Not Editable")
+    
+    //------------------------------Fetching Testdata ----------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);
+    var assayType = TDefTestData[0]["Item"]("AssayType");   
+   //------------------------------------------------------------------------------------
+   
+   //---------------------Verify the Unit is not editable--------------------------------
+    if(!StepVerifyUnitIsNotEditable(assayType))
+    {
+      Log["Error"]("Failed to verify Unit is note editable")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAssayComparisonCorrelationIsEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Assay Comparison Correlation Is Editable")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var AssayComparisonCorrelation = TDefTestData[0]["Item"]("AssayComparisonCorrelation");    
+           
+    var CorrelationCoefficient = AssayComparisonCorrelation["split"](":")[0];
+    var CorrelationCoefficientValue = AssayComparisonCorrelation["split"](":")[1];
+    //------------------------------------------------------------------------------------
+    
+    //--------------------------Verify Assay Comparison Correlation is editable-----------
+    if(!StepVerifyAssayComparisonCorrelationIsEditable(CorrelationCoefficient,CorrelationCoefficientValue))
+    {
+      Log["Error"]("Failed to Modify Assay Comparison Correlation")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //--------------------------------------------------------------------------------------
+    
+    //-------------------------------------Exit TDef Setup-------------------------------------
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //--------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function ThenVerifyAssayComparisonCorrelationForIMIsEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Assay Comparison Correlation In IM Is Editable")
+    
+    //-------------Verify Assay Comparison Correlation for IM is editable----------------
+    if(!StepVerifyAssayComparisonCorrelationForIMIsEditable())
+    {
+      Log["Error"]("Failed to Modify Assay Comparison Correlation")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAssayComparisonCorrelationForIMIsNotEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Assay Comparison Correlation Is Not Editable");
+    
+    //-------------Verify Assay Comparison Correlation fo IM is not editable-------------
+    if(!StepVerifyAssayComparisonCorrelationForIMIsNotEditable())
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation as not editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyHILIsEditableWhenEnabled(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify HIL Is Editable When Enabled")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation";
+    var HILName = TDefTestData[0]["Item"]("HILName"); 
+    var HILThreshold =  TDefTestData[0]["Item"]("HILThreshold");  
+    //------------------------------------------------------------------------------------
+       
+    //------------------------------------Enable HIL---------------------------------------
+    if(!StepEnableHILInCalculation(assayType,assayName,tDefScreen,HILName))
+    {
+      Log["Error"]("Failed to enable HIL");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    //-----------------------------Verify HIL Threshold can be modified------------------
+    if(!StepVerifyHILThresholdIsEditable(assayType,assayName,tDefScreen,HILThreshold))
+    {
+      Log["Error"]("Failed to Verify HIL Threshold modification");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function GivenUnitsAreSameAsMasterCurveUnit(testName)
+{
+ try
+ {
+   Log["AppendFolder"]("Step :: Set Unit Same As Master Curve Unit")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation"
+    //------------------------------------------------------------------------------------
+    
+    //---------------Set Unit Value Same as MC Unit Vlaue----------------------------------
+    if(!StepSetUnitValueAsMasterCurveUnit(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to set Unit as Master Curve Unit");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Unit is as Master Curve Unit successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    //------------------------------------------------------------------------------------
+ }
+ catch (exp)
+ {
+  Log["Error"]("Exception : " + exp["description"]);
+  Log["PopLogFolder"]();
+  return false;
+ } 
+}
+
+function GivenUnitsAreNotSameAsMasterCurveUnit(testName)
+{
+ try
+ {
+   Log["AppendFolder"]("Step :: Set Unit Not Same As Master Curve Unit")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var unit = TDefTestData[0]["Item"]("Unit");
+    var tDefScreen = "Calculation"
+    //------------------------------------------------------------------------------------
+    
+    //---------------Set Unit Value not Same as MC Unit Vlaue-----------------------------
+    if(!StepSetUnitValueNotSameAsMasterCurveUnit(assayType,assayName,tDefScreen,unit))
+    {
+      Log["Error"]("Failed to set Unit not same as Master Curve Unit");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+    
+ }
+ catch (exp)
+ {
+  Log["Error"]("Exception : " + exp["description"]);
+  Log["PopLogFolder"]();
+  return false;
+ } 
+}
+
+function GivenDecimalPlacesAreLocked(testName)
+{
+  try
+  {
+   Log["AppendFolder"]("Step :: Set Decimal Places As Locked")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation"
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Set Decimal Places as not locked------------------------------
+    if(!StepDecimalPlacesAreLocked(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to lock Decimal places");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    else
+    {
+      Log["Checkpoint"]("Successfully locked decimal places");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    
+ }
+ catch (exp)
+ {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+ } 
+}
+
+function GivenDecimalPlacesAreNotLocked(testName)
+{
+  try
+  {
+   Log["AppendFolder"]("Step :: Set Decimal Places As Not Locked")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation"
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Set Dicimal Places as not locked------------------------------
+    if(!StepDecimalPlacesAreNotLocked(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to Unlock Decimal places");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+ }
+ catch (exp)
+ {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+ } 
+}
+
+function GivenHILIsDisabled(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Disable HIL In Calculation");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);  
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation"    
+    var HILName = TDefTestData[0]["Item"]("HILName"); 
+    //------------------------------------------------------------------------------------
+       
+    //-------------------------------------Disable HIL-------------------------------------
+    if(!StepDisableHILInCalculation(assayType,assayName,tDefScreen,HILName))
+    {
+      Log["Error"]("Failed to disable HIL");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenHILIsEnabled(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enable HIL In Calculation");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation"     
+    var HILName = TDefTestData[0]["Item"]("HILName"); 
+    //------------------------------------------------------------------------------------
+       
+    //----------------------------------Enable HIL----------------------------------------
+    if(!StepEnableHILInCalculation(assayType,assayName,tDefScreen,HILName))
+    {
+      Log["Error"]("Failed to enable HIL");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenDisplayedResultTypeIsSet(testName)
+{
+  try
+  {
+   Log["AppendFolder"]("Step :: Display ResultType Is Set");
+    
+   //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation";
+    var displayResultType = TDefTestData[0]["Item"]("DisplayResultType");
+   //------------------------------------------------------------------------------------
+       
+    //--------------------------Set display result type----------------------------------
+    if(!StepSetDisplayedResultType(assayType,assayName,tDefScreen,displayResultType))
+    {
+      Log["Error"]("Failed to set Displayed Result type");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenResultTypeIsSet(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Result Type Is Set");  
+      
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calculation";
+    var resultType = TDefTestData[0]["Item"]("ResultType");
+   //------------------------------------------------------------------------------------
+       
+    //----------------------------------Set result type-----------------------------------
+    if(!StepSetResultType(assayType,assayName,tDefScreen,resultType))
+    {
+      Log["Error"]("Failed to set Result type");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyDecimalPlaceIsEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Decimal Place Is Editable");
+    
+    //-----------------verify Decimal Places is editable--------------------
+    if(!StepVerifyDecimalPlaceIsEditable())
+    {
+      Log["Error"]("Failed to verify decimal places as editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+   //----------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyDecimalPlaceIsNotEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Decimal Place Is Not Editable");
+    
+    //-----------------verify Decimal Places is not editable--------------------
+    if(!StepVerifyDecimalPlaceIsNotEditable())
+    {
+      Log["Error"]("Failed to verify decimal places as not editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+   //----------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyDecimalPlaceIsModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Decimal Place Is Modified to 3");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var concentrationDecimal = TDefTestData[0]["Item"]("ConcentrationDecimal");
+    var indexDecimal = TDefTestData[0]["Item"]("IndexDecimal");
+   //------------------------------------------------------------------------------------
+    
+    //-------------------------Verify Decimal Place is editable -------------------------
+    if(!StepVerifyDecimalPlaceIsModified(concentrationDecimal,indexDecimal))
+    {
+      Log["Error"]("Failed to verify decimal places is modified");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyHILIsEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify HIL Is Editable")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);    
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var HILName = TDefTestData[0]["Item"]("HILName"); 
+    //------------------------------------------------------------------------------------
+       
+    //-----------------------------Verify HIL can be modified-------------------
+    if(!StepVerifyHILIsEditable(assayType,HILName))
+    {
+      Log["Error"]("Failed to Verify HIL Threshold Is Editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyHILIsNotEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify HIL Is Not Editable")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);    
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var HILName = TDefTestData[0]["Item"]("HILName");  
+    //------------------------------------------------------------------------------------
+       
+    //-----------------------------Verify HIL cannot be modified-------------------
+    if(!StepVerifyHILIsNotEditable(assayType,HILName))
+    {
+      Log["Error"]("Failed to Verify HIL Threshold Is Not Editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyDisplayResultTypeIsEditable()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Display Result Type Is Editable");
+    //------------------------verify Display Result Type is editable----------------------
+    if(!StepVerifyDisplayResultTypeIsEditable())
+    {
+      Log["Error"]("Failed to verify Display Result Type as Editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyDisplayResultTypeIsNotEditable()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Display Result Type Is Not Editable");
+    
+    //---------------------Verify Displayed Result Type iss not editable----------------------
+    if(!StepVerifyDisplayResultTypeIsNotEditable())
+    {
+      Log["Error"]("Failed to verify Display Result Type as Not Editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyResultTypeIsEditable()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Result Type Is Editable");
+    
+    //-------------------Verify Result Type is editable----------------------------------
+    if(!StepVerifyResultTypeIsEditable())
+    {
+      Log["Error"]("Failed to verify Result Type as Editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyResultTypeIsNotEditable()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Result Type Is Not Editable");
+    
+    //-------------------Verify Result Type is not editable-------------------------------
+    if(!StepVerifyResultTypeIsNotEditable())
+    {
+      Log["Error"]("Failed to verify Result Type as  Not Editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyResultTypeValue(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Result Type Value");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);    
+    var resultType =  TDefTestData[0]["Item"]("ResultType");  
+    //------------------------------------------------------------------------------------
+    
+    //verify result type
+    if(!StepVerifyResultTypeValue(resultType))
+    {
+      Log["Error"]("Failed to verify Result Type");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifySlopAndInterceptIsAvailable()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Slope And Intercept Is Available")
+    
+    //--------------Verify the Slope/Intercept is available--------------------
+    if(!StepVerifySlopeAndInterceptIsAvailable())
+    {
+      Log["Error"]("Failed to verify Slope and Intercept as available")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //---------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyConversionFactorIsEditable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Conversion Factor Is Editable");
+    
+    //------------------Verify Conversion Factor Is Editable-----------------------------
+    if(!StepVerifyConversionFactorIsEditable())
+    {
+      Log["Error"]("Failed to verify conversion factor as editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+function GivenRefrigeratedOBSHrsIsAvailable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Regrigerated OBS Hrs Is Available");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    if(!StepVerifyRefrigeratedOBSHrsAvailable(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to verify Refrigerated OBS Hrs");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenUnRefrigeratedOBSHrsIsAvailable(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: UnRegrigerated OBS Hrs Is Available");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    if(!StepVerifyUnRefrigeratedOBSHrsAvailable(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to verify UnRefrigerated OBS Hrs");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function GivenPackCalIntervalWithinInternalTimeframe(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Pack Cal Interval Is Within Internal Timeframe");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    var PackCalInterval = TDefTestData[0]["Item"]("PackCalInterval");
+    //------------------------------------------------------------------------------------
+    
+    if(!StepSetPackCalIntervalWithinInternalTimeframe(assayType,assayName,tDefScreen,PackCalInterval))
+    {
+      Log["Error"]("Failed to set Pack Cal Interval value Within Internal Timeframe");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function GivenLotCalibrationIntervalIsLocked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step ::  Lot Calibration Interval Is Locked");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var lotCalibrationLockStatus = StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,"LotCalibrationInterval")
+    
+    if(lotCalibrationLockStatus== false)
+    {
+      Log["Error"]("Failed to get the lockstatus of Lot Calibration Interval control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Calibration lot interval is in locked state
+    if(lotCalibrationLockStatus == "Locked")
+    {
+      Log["Message"]("Lot Calibration Interval control is already in locked state")
+    }
+    else
+    {
+      if(!StepLockCalibrationControl("LotCalibrationInterval"))
+      {
+        Log["Error"]("Failed to Lock the control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Locked that Lot Calibration Interval Control");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenLotCalibrationIntervalIsNotLocked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Lot Calibration Interval Is Not Locked");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var lotCalibrationLockStatus = StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,"LotCalibrationInterval")
+
+    if(lotCalibrationLockStatus == false)
+    {
+      Log["Error"]("Failed to get the lockstatus of Lot Calibration Interval control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Calibration lot interval is in unlocked state
+    if(lotCalibrationLockStatus == "UnLocked")
+    {
+      Log["Message"]("Lot Calibration Interval control is already in Unlocked state")
+    }
+    else
+    {
+      if(!StepUnLockCalibrationControl("LotCalibrationInterval"))
+      {
+        Log["Error"]("Failed to UnLock the control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("UnLocked Lot Calibration Interval Control");
+      }
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenExtendCalOptionIsNotLocked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Extend Cal Option Is Not Locked");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var ExtendCalLockStatus = StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,"ExtendCalibration")
+    
+    if(ExtendCalLockStatus== false)
+    {
+      Log["Error"]("Failed to get the lockstatus of Extend Cal Option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Extend Cal is in unlocked state
+    if(ExtendCalLockStatus == "UnLocked")
+    {
+      Log["Message"]("Extend Cal Option control is already in Unlocked state")
+    }
+    else
+    {
+      if(!StepUnLockCalibrationControl("ExtendCalibration"))
+      {
+        Log["Error"]("Failed to UnLock the control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("UnLocked Extend Cal Control");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenExtendCalOptionIsLocked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Lot Calibration Interval Is Locked");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var ExtendCalLockStatus = StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,"ExtendCalibration")
+    
+    if(ExtendCalLockStatus==false)
+    {
+      Log["Error"]("Failed to get the lock status of Extend Cal Option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Extend Cal is in locked state
+    if(ExtendCalLockStatus == "Locked")
+    {
+      Log["Message"]("Extend Cal Option control is already in locked state")
+    }
+    else
+    {
+      if(!StepLockCalibrationControl("ExtendCalibration"))
+      {
+        Log["Error"]("Failed to Lock the control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Locked Extend Cal Control");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenExtendCalOptionIsTurnedOn(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Extend Cal Option Is On");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var ExtendCalCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"ExtendCalibration")
+    
+    if(ExtendCalCheckBoxStatus == false)
+    {
+      Log["Error"]("Failed to get the checkbox status of Extend Cal option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Extend Cal CheckBox Status
+    if(ExtendCalCheckBoxStatus == "Checked")
+    {
+      Log["Message"]("Extend Cal option is already turned On")
+    }
+    else
+    {
+      if(!StepTurnOnCalibrationCheckboxControl("ExtendCalibration"))
+      {
+        Log["Error"]("Failed to turn On Extend Cal option");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Extend Cal Option is turned On");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenExtendCalOptionIsTurnedOff(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Extend Cal Option Is Off");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var ExtendCalCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"ExtendCalibration")
+    
+    if(ExtendCalCheckBoxStatus == false)
+    {
+      Log["Error"]("Failed to get the checkbox status of Extend Cal option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Extend Cal CheckBox Status
+    if(ExtendCalCheckBoxStatus == "UnChecked")
+    {
+      Log["Message"]("Extend Cal option is already turned Off")
+    }
+    else
+    {
+      if(!StepTurnOffCalibrationCheckboxControl("ExtendCalibration"))
+      {
+        Log["Error"]("Failed to turn Off Extend Cal option");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Extend Cal Option is turned off");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAutoExcludeOptionIsTurnedOff(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Auto Exclude Cal Replicates option Is Off");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var autoExcludeCalReplicatesCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"AutoExcludeCalReplicate")
+    
+    if(autoExcludeCalReplicatesCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the Checkstatus of AutoExclude Cal Replicates option checkbox control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Calibration lot interval is in locked state
+    if(autoExcludeCalReplicatesCheckBoxStatus == "UnChecked")
+    {
+      Log["Message"]("AutoExclude Cal Replicates checkbox control is already in turned off state")
+    }
+    else
+    {
+      if(!StepTurnOffCalibrationCheckboxControl("AutoExcludeCalReplicate"))
+      {
+        Log["Error"]("Failed to turn off AutoExclude Cal Replicates checkbox control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("AutoExclude Cal Replicates checkbox is turned off");
+      }
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAutoExcludeOptionIsTurnedOn(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Auto Exclude option Is On");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var autoexcludeCheckboxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"AutoExcludeCalReplicate")
+    
+    if(autoexcludeCheckboxStatus==false)
+    {
+      Log["Error"]("Failed to get the Checkstatus of Lot Calibration Interval checkbox control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check auto exclude checkbox status
+    if(autoexcludeCheckboxStatus == "Checked")
+    {
+      Log["Message"]("Auto exclude Cal Replicate checkbox control is already in turned On state")
+    }
+    else
+    {
+      if(!StepTurnOnCalibrationCheckboxControl("AutoExcludeCalReplicate"))
+      {
+        Log["Error"]("Failed to turn On Auto exclude Cal Replicate checkbox control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Auto exclude Cal Replicate checkbox is turned On");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAutoexcludeOptionIsLocked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Auto exclude Option Is Locked");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var AutoexcludeLockStatus = StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,"AutoExcludeCalReplicate")
+    
+    if(AutoexcludeLockStatus==false)
+    {
+      Log["Error"]("Failed to get the lock status of Auto Exclude Option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Extend Cal is in unlocked state
+    if(AutoexcludeLockStatus == "Locked")
+    {
+      Log["Message"]("Auto Exclude Option is already in locked state")
+    }
+    else
+    {
+      if(!StepLockCalibrationControl("AutoExcludeCalReplicate"))
+      {
+        Log["Error"]("Failed to Lock the control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Locked AutoExclude Cal Replicate Control");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAutoexcludeOptionIsNotLocked(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Auto exclude Option Is Not Locked");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var AutoexcludeLockStatus = StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,"AutoExcludeCalReplicate")
+    
+    if(AutoexcludeLockStatus==false)
+    {
+      Log["Error"]("Failed to get the lock status of Auto Exclude Option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Extend Cal is in unlocked state
+    if(AutoexcludeLockStatus == "UnLocked")
+    {
+      Log["Message"]("Auto Exclude Option is already in Not locked state")
+    }
+    else
+    {
+      if(!StepUnLockCalibrationControl("AutoExcludeCalReplicate"))
+      {
+        Log["Error"]("Failed to UnLock the control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("UnLocked AutoExclude Cal Replicate Control");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAcceptCalOptionIsTurnedOff(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Accept Cal option Is Off");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var AcceptCalCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"AcceptCal")
+    
+    if(AcceptCalCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the Checkstatus of Accept Cal checkbox control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Accept Cal is in UnChecked state
+    if(AcceptCalCheckBoxStatus == "UnChecked")
+    {
+      Log["Message"]("Accept Cal checkbox control is already in turned off state")
+    }
+    else
+    {
+      if(!StepTurnOffCalibrationCheckboxControl("AcceptCal"))
+      {
+        Log["Error"]("Failed to turn off AcceptCal checkbox control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Accept Cal checkbox is turned off");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAcceptCalOptionIsTurnedOn(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Accept Cal option Is On");
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var AcceptCalCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"AcceptCal")
+    
+    if(AcceptCalCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the Checkstatus of Accept Cal checkbox control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Accept Cal is in locked state
+    if(AcceptCalCheckBoxStatus == "Checked")
+    {
+      Log["Message"]("Accept Cal checkbox control is already in turned 'On' state")
+    }
+    else
+    {
+      if(!StepTurnOnCalibrationCheckboxControl("AcceptCal"))
+      {
+        Log["Error"]("Failed to turn On AcceptCal checkbox control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Accept Cal checkbox is turned On");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenPerfomQCWithCalibrationIsTurnedOff(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Perfom QC With Calibration option Is Off");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var PerformQCWithCalibrationCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"PerformQCWithCalibration")
+    
+    if(PerformQCWithCalibrationCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the Checkstatus of PerformQCWithCalibration checkbox control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check PerformQCWithCalibration is in Off state
+    if(PerformQCWithCalibrationCheckBoxStatus == "UnChecked")
+    {
+      Log["Message"]("PerformQCWithCalibration checkbox control is already in turned off state")
+    }
+    else
+    {
+      if(!StepTurnOffCalibrationCheckboxControl("PerformQCWithCalibration"))
+      {
+        Log["Error"]("Failed to turn off PerformQCWithCalibration checkbox control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("PerformQCWithCalibration checkbox is turned off");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenPerfomQCWithCalibrationIsTurnedOn(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Perfom QC With Calibration option Is On");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    var PerformQCWithCalibrationCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"PerformQCWithCalibration")
+    
+    if(PerformQCWithCalibrationCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the Checkstatus of PerformQCWithCalibration checkbox control");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check PerformQCWithCalibration is in on state
+    if(PerformQCWithCalibrationCheckBoxStatus == "Checked")
+    {
+      Log["Message"]("PerformQCWithCalibration checkbox control is already in turned On state")
+    }
+    else
+    {
+      if(!StepTurnOnCalibrationCheckboxControl("PerformQCWithCalibration"))
+      {
+        Log["Error"]("Failed to turn On PerformQCWithCalibration checkbox control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("PerformQCWithCalibration checkbox is turned On");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAutomaticAcceptanceIsTurnedOn(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Automatic Acceptance Option Is On");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    //Get AutomaticAcceptance checkbox status
+    var AutomaticAcceptanceCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"AutomaticAcceptance")
+    
+    if(AutomaticAcceptanceCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the checkbox status of Automatic Acceptance option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Automatic Acceptance CheckBox Status
+    if(AutomaticAcceptanceCheckBoxStatus == "Checked")
+    {
+      Log["Message"]("Automatic Acceptance option is already turned On")
+    }
+    else
+    {
+      if(!StepTurnOnCalibrationCheckboxControl("AutomaticAcceptance"))
+      {
+        Log["Error"]("Failed to turn On Automatic Acceptance option");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Automatic Acceptance Option is turned On");
+      }
+    }
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenAutomaticAcceptanceIsTurnedOff(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Automatic Acceptance Option Is Off");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    //Get AutomaticAcceptance checkbox status
+    var AutomaticAcceptanceCheckBoxStatus = StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,"AutomaticAcceptance")
+    
+    if(AutomaticAcceptanceCheckBoxStatus==false)
+    {
+      Log["Error"]("Failed to get the checkbox status of Automatic Acceptance option");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check Automatic Acceptance CheckBox Status
+    if(AutomaticAcceptanceCheckBoxStatus == "UnChecked")
+    {
+      Log["Message"]("Automatic Acceptance option is already turned Off")
+    }
+    else
+    {
+      if(!StepTurnOffCalibrationCheckboxControl("AutomaticAcceptance"))
+      {
+        Log["Error"]("Failed to turn On Automatic Acceptance option");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["Message"]("Automatic Acceptance Option is turned Off");
+      }
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef Setup")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function ThenVerifyExtendCalOptionCanBeModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Extend Cal Option Is Editable");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify ExtendCal Option Is Editable--------------------------- 
+    if(StepVerifyCalibrationCheckBoxIsEditable("ExtendCalibration"))
+    {
+      Log["Message"]("Extend Cal option is editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Extend Cal option is not editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyExtendCalOptionCannotBeModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Extend Cal Option Is Not Editable");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify ExtendCal Option Is Editable--------------------------- 
+    if(StepVerifyCalibrationCheckBoxIsNotEditable("ExtendCalibration"))
+    {
+      Log["Message"]("Extend Cal option is Not editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Extend Cal option is editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAutoExcludeOptionCannotBeModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Auto Exclude Option Is Not Editable");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify AutoExcludeCalReplicate Option Is Not Editable--------------------------- 
+    if(StepVerifyCalibrationCheckBoxIsNotEditable("AutoExcludeCalReplicate"))
+    {
+      Log["Message"]("Auto Exclude Cal Replicate option is not editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Auto Exclude Cal Replicate option is editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAutoExcludeOptionCanBeModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Auto Exclude Option Is Editable");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = "Calibration"
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify AutoExcludeCalReplicate Option Is Editable--------------------------- 
+    if(StepVerifyCalibrationCheckBoxIsEditable("AutoExcludeCalReplicate"))
+    {
+      Log["Message"]("Auto Exclude Cal Replicate option is editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Auto Exclude Cal Replicate option is editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAcceptCalCanBeModified()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Accept Cal Option Is Editable");
+    
+    //-----------------------Verify AcceptCal Option Is Editable--------------------------- 
+    if(StepVerifyCalibrationCheckBoxIsEditable("AcceptCal"))
+    {
+      Log["Message"]("Accept Cal option is editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Accept Cal option is not editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyPerformQCWithCalibrationOptionCanBeModified()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Perform QC With Calibration Option Is Editable");
+    
+    //-----------------------Verify Perform QC With Calibration Option Is Editable----------
+    if(StepVerifyCalibrationCheckBoxIsEditable("PerformQCWithCalibration"))
+    {
+      Log["Message"]("Perform QC With Calibration option is editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Perform QC With Calibration option is not editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAutomaticAcceptanceOptionCanBeModified()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Automatic Acceptance Option Is Editable");
+    
+    //-----------------------Verify Automatic Acceptance Option Is Editable----------
+    if(StepVerifyCalibrationCheckBoxIsEditable("AutomaticAcceptance"))
+    {
+      Log["Message"]("Automatic Acceptance option is editable");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Automatic Acceptance option is not editable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------  
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyUnRefrigeratedOBSCanBeDecreased(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify UnRefrigerated OBS Hrs Can be Decreased");
+    
+    //verify UnRefrigerated OBS Hrs can be decreased
+    if(!StepVerifyCalibrationFeildCanBeDecreased("UnRefrigeratedOBSHrs"))
+    {
+      Log["Error"]("Failed to Verify UnRefrigerated OBS Hrs can be decreased");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Verified that UnRefrigerated OBS Hrs can be decreased ")
+      Log["PopLogFolder"]();
+      return true;
+    }    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyRefrigeratedOBSCanBeDecreased(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Refrigerated OBS Hrs Can be Decreased");
+    
+    //verify Refrigerated OBS Hrs can be decreased
+    if(!StepVerifyCalibrationFeildCanBeDecreased("RefrigeratedOBSHrs"))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Hrs can be decreased");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Verified that Refrigerated OBS Hrs can be decreased ")
+      Log["PopLogFolder"]();
+      return true;
+    }    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyUnRefrigeratedOBSCannotBeIncreased(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify UnRefrigerated OBS Hrs Cannot be Increased");
+    
+    //Verify UnRefrigerated OBS Hrs cannot be Increased
+    if(!StepVerifyCalibrationFeildCannotBeIncreased("UnRefrigeratedOBSHrs"))
+    {
+      Log["Error"]("Failed to Verify UnRefrigerated OBS Hrs cannot be decreased");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Verified that UnRefrigerated OBS Hrs cannot be decreased ")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyRefrigeratedOBSCannotBeIncreased(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Refrigerated OBS Hrs Cannot be Increased");
+    
+    //verify Refrigerated OBS Hrs cannot be increased
+    if(!StepVerifyCalibrationFeildCannotBeIncreased("RefrigeratedOBSHrs"))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Hrs cannot be decreased");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Verified that Refrigerated OBS Hrs cannot be decreased ")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyLotCalibrationIntervalCanBeDecreased(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Lot Calibration Interval Can be Decreased");
+    
+    //verify lot calibration interval value can be decreased
+    if(!StepVerifyCalibrationFeildCanBeDecreased("LotCalibrationInterval"))
+    {
+      Log["Error"]("Failed to Verify Lot Calibration Interval can be decreased");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Verified that Lot Calibration Interval can be decreased ")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyPackCalIntervalCanBeDecreased(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Pack Cal Interval Can be Decreased");
+    
+    //verify Pack Cal Interval value can be decreased
+    if(!StepVerifyCalibrationFeildCanBeDecreased("PackCalInterval"))
+    {
+      Log["Error"]("Failed to Verify Pack Cal Interval can be decreased");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Verified that Pack Cal Interval can be decreased ")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyLotCalibrationIntervalCannotBeModified(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify Lot Calibration Interval Cannot Be Modified");
+    
+    //verify calibration interval Textbox cannot be modified
+    if(!StepVerifyLotCalibrationIntervalCannotBeModified())
+    {
+      Log["Error"]("Failed to verify Lot calibration interval cannot be modified");
+      Log["PopLogFolder"]();
+      return false
+    }
+    else
+    {
+      Log["Message"]("Verified that Lot calibration interval cannot be modified");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Post-runs
+
+function ExitTDefAfterSaving()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Exit TDef After Saving");
+    
+    //Click Finish button in TDef screen and click 'Yes' button in confirmation alert to exit from TDef screen
+    if(!StepClickFinishAndExitAfterSaving())
+    {
+      Log["Error"]("Failed to Exit TDef after saving")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Exited from TDef screen");
+      Log["PopLogFolder"]()
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ExitTDefWithoutSaving(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Exit TDef Without Saving");
+    
+    //Click Finish button in TDef screen and click 'No' button in confirmation alert to exit from TDef screen
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef without saving");
+      //if Finish and exist failes,relaunch Primedisp and Login
+      ExitTDefFailurePostRun(testName);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Successfully Exited from TDef screen");
+      Log["PopLogFolder"]()
+      return true;
+    }
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ExitTDefFailurePostRun(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Relaunch And Login To Primary UI");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);   
+    var user = TDefTestData[0]["Item"]("User")["split"](";")[0];    
+    
+    //Get the user credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM",user); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password"); 
+    //------------------------------------------------------------------------------------
+    
+    //Kills Primary UI  
+    if(!StepKillPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to terminate Primary UI")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Primary UI is Closed")
+    }
+    
+    //launch Primary UI
+    if(!StepLaunchPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to launch Primary UI")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Primary UI is Launched")
+    }
+    
+    //Login to Primary UI
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to Primary UI")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Logged In to Primary UI Successfully")
+      Log["PopLogFolder"]()
+      return true;
+    }
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MoveAllSamplesToHistorical()
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Move All Samples To Historical");
+    if(!StepMoveAllSamplesToHistorical())
+    {
+      Log["Error"]("Failed to Move samples to Historical")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ResetDisplayName(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+      var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);        
+      var assayType=TDefTestData[0]["Item"]("AssayType");   
+      var assayName=TDefTestData[0]["Item"]("AssayName");
+      var tDefScreen="Definition"  
+    //------------------------------------------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Reset Display Name To Default")  
+    
+    //-----------------------------Set Display Name-------------------------------------
+    //modify DisplayName TextBox
+    Log["AppendFolder"]("Step :: Moifying DisplayName")
+    if(!StepModifyDisplayNameInDefinition(assayType,assayName,tDefScreen,assayName))
+    {
+      Log["Error"]("Failed to modify DisplaName")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+   
+    aqUtils["Delay"](2000, "Wait for the Sucess save popup");
+     
+    //-----------------------------Verify Success popup-------------------------------------
+    Log["AppendFolder"]("Step :: Verify Success Popup")
+    //Verify the success alert is displayed
+    if(!StepVerifyTDefSuccessSavePopup())
+    {
+      Log["Error"]("Failed to verify the success save popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click Finish and Exit
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef after saving")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//SURESH
+function GivenThereExistsATestWithActiveWorkOrder(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("There exists a test with active WorkOrder");
+    
+    //------------------------------Fetching Testdata -------------------
+    
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");
+    
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleId = patientOrderTestData[0]["Item"]("SampleId");
+    var specimen = patientOrderTestData[0]["Item"]("Specimen");
+    var priority = patientOrderTestData[0]["Item"]("Priority");
+    var analyzer = patientOrderTestData[0]["Item"]("Analyzer");
+    var assay = patientOrderTestData[0]["Item"]("Assay");
+    var replicates = patientOrderTestData[0]["Item"]("Replicates");
+   
+    //-------------------------------Logoff ------------------------------------------------
+    Log["AppendFolder"]("Step :: Logout the current User to LogIn as 'LoginG0'");
+    
+    //Logout current User
+    if(!StepLogoutCurrentUser())
+    {
+      Log["Error"]("Failed to Logout current User")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+   //-------------------------------------------------------------------------------------
+   
+   //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as 'LoginG0' user");
+
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+
+    //-------------------------Create a Patient Order-------------------------
+     
+    Log["AppendFolder"]("Step :: Create Patient Order for Sample");
+      
+    //Create multiple patient orders
+    if(!StepCreatePatientOrder(sampleId, specimen, priority, analyzer, assay, replicates))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }     
+    Log["PopLogFolder"]();
+    
+    //--------------------------------------------------------------------------------------------
+
+    Log["Checkpoint"]("Created a test with active work order");
+    Log["PopLogFolder"]();
+    return true;
+        
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception : " + exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+function GivenThereExistsATestWithNoActiveWorkOrder(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("There exists a test with no active WorkOrder");
+   
+    //---------------------Fetching Test Data-----------------------------
+    
+     var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);        
+     var assayName = TDefTestData[0]["Item"]("AssayName")["split"](";")[1];
+
+    //---------------------Remove test from worklist-----------------------
+    
+    Log["AppendFolder"]("Step :: Moving all "+assayName+" to historical")
+    
+    if(!StepMoveSpecificSamplesToHistorical(assayName))
+    {
+      Log["Error"]("Failed to move "+assayName+" to historical");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"]();
+    
+    //----------------------------------------------------------------------
+
+    Log["Checkpoint"]("Created a test with no active work order");
+    Log["PopLogFolder"]();
+    return true;
+          
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception : " + exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+function WhenModifiedDisplayNameForTestWithActiveWorkOrder(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Modify DisplayName for Test in TDef")
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+           
+    var assayType=TDefTestData[0]["Item"]("AssayType");   
+    var assayName=TDefTestData[0]["Item"]("AssayName")["split"](";")[0];  
+    var displayName = TDefTestData[0]["Item"]("DisplayName"); 
+    var tDefScreen="Definition"  
+    
+    //-----------------------------Modify Display Name-------------------------------------
+    //modify DisplayName TextBox
+    if(!StepModifyDisplayNameInDefinition(assayType,assayName,tDefScreen,displayName))
+    {
+      Log["Error"]("Failed to modify DisplaName")
+      Log["PopLogFolder"]();
+      return false;
+    }
+   //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;   
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTDefIsModifiedForTestWithNoActiveWorkOrder(testName)
+{
+  try
+  {  
+   //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName); 
+           
+    var assayType=TDefTestData[0]["Item"]("AssayType");   
+    var assayName=TDefTestData[0]["Item"]("AssayName")["split"](";")[1];  
+    var displayName = TDefTestData[0]["Item"]("DisplayName"); 
+    var tDefScreen="Definition"  
+  
+    //-----------------------------Modify Display Name-------------------------------------
+    Log["AppendFolder"]("Modify DisplayName for Test in TDef");
+    
+    if(!StepModifyDisplayNameInDefinition(assayType,assayName,tDefScreen,displayName))
+    {
+      Log["Error"]("Failed to modify DisplaName")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+   //-------------------------------Verify Tdef success and exit----------------------------
+   
+    if(!ThenVerifyTDefSuccessSavePopupAndExit())
+    {
+      Log["Error"]("Failed to verify Tdef success save popup and exit");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //------------------------------------------------------------------------------
+     
+    Log["Checkpoint"]("Successfully modief displayname in Tdef for assay: "+assayName);
+    Log["PopLogFolder"]();
+    return true;  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//*********************************TDef - Reagents Paramters****************************
+
+function WhenNavigatedToTDefTab(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);      
+    var assayType = TDefTestData[0]["Item"]("AssayType");    
+    var assayName = TDefTestData[0]["Item"]("AssayName");
+    var tDefScreen = TDefTestData[0]["Item"]("TDefToNavigate");
+  
+    //-------------------------------Navigate to TDef Tab-----------------------------
+    Log["AppendFolder"]("Step :: Navigate To '"+tDefScreen+"' Tab");
+    
+    if(!StepNavigateToViewEditTdefScreen(assayType,assayName,tDefScreen))
+    {
+      Log["Error"]("Failed to naviagte to '"+tDefScreen+"' Tab")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("Navigated to '"+tDefScreen+"' in Tdef for the assaytype '"+assayType+"' and assayname '"+assayName+"'");
+    Log["PopLogFolder"](); 
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAncillaryDiluentReagentNotDisplayed(testName)
+{
+  try
+  {
+     //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);               
+    var reagentType = TDefTestData[0]["Item"]("ReagentToNotDisplay")["split"](";");
+    var isAllVerified = true;
+    
+    Log["AppendFolder"]("Step : Verify Ancillary/Diluent reagents are not displayed in Tdef - Regents");
+   
+    //Verify reagent is not displayed
+    for(var reagent = 0;reagent < reagentType.length; reagent++)
+    {
+      Log["AppendFolder"]("Step : Verify "+reagentType[reagent]+" reagent is not displayed");
+      if(!StepVerifyAncillaryDiluentReagentNotDisplayed(reagentType[reagent]))
+      {
+        isAllVerified = false;
+      }
+      Log["PopLogFolder"]();
+    }
+    
+    if(!isAllVerified)
+    {
+      Log["Error"]("Reagent type Ancillary/Diluent is displayed in Tdef - Regents");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Reagent type Ancillary/Diluent is not displayed in Tdef - Regents");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyPrimaryReagentDetailsDisplayedForG0(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step : Verify Primary reagent details for G0 user in Tdef - Reagents");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);            
+    var fileName = TDefTestData[0]["Item"]("AssayName");
+    
+    //Reading reagents data from Tdef file
+    Log["AppendFolder"]("Step : Read reagents data from "+fileName+" Tdef file");
+    var tdefReagentsData = StepReadReagentParametersFromXML(fileName);
+    if(typeof tdefReagentsData == "boolean")
+    {
+      Log["Error"]("Failed to read reagent details from "+fileName+" TDef file")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Assigning values readed to variables
+    var ReagentName = tdefReagentsData[0]["ReagentName"];  
+    var reagentCode = tdefReagentsData[0]["ProductCode"];
+    var solidWell = tdefReagentsData[0]["WellSolid"];
+    var solidVolume = tdefReagentsData[0]["VolumeSolid"];
+    var liteWell = tdefReagentsData[0]["WellLite"];
+    var liteVolume = tdefReagentsData[0]["VolumeLite"];
+    var ancillaryWell = tdefReagentsData[0]["WellAncillary"];
+    var ancillaryVolume = tdefReagentsData[0]["VolumeAncillary"]; 
+    
+    //Verifying Primary reagent details
+    Log["AppendFolder"]("Step : Verify Primary Reagents Details");
+    if(!StepVerifyPrimaryReagentDetails(ReagentName,reagentCode,solidWell,solidVolume,liteWell,liteVolume,ancillaryWell,ancillaryVolume))
+    {
+      Log["Error"]("Primary reagent details verification failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["Checkpoint"]("Successfully verified Primary reagent details in Tdef-Reagents");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyPrimaryReagentDetailsDisplayedForG1(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step : Verify Primary reagent details for G1 user in Tdef - Reagents");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);            
+    var fileName = TDefTestData[0]["Item"]("AssayName");
+    
+    //Reading reagents data from Tdef file
+    Log["AppendFolder"]("Step : Read reagents data from "+fileName+" Tdef file");
+    var tdefReagentsData = StepReadReagentParametersFromXML(fileName);
+    if(typeof tdefReagentsData == "boolean")
+    {
+      Log["Error"]("Failed to read reagent details from "+fileName+" TDef file")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Assigning values readed from TDef file to variables
+    var ReagentName = tdefReagentsData[0]["ReagentName"];  
+    var reagentCode = tdefReagentsData[0]["ProductCode"];
+ 
+    Log["AppendFolder"]("Step : Verify Primary reagent details")
+    if(!StepVerifyPrimaryReagentDetails(ReagentName,reagentCode))
+    {
+      Log["Error"]("Primary reagent details verification failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["Checkpoint"]("Successfully verified Primary reagent details in Tdef-Reagents");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAncillaryDiluentReagentDetailsDisplayedG0(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);             
+    var fileName = TDefTestData[0]["Item"]("AssayName");
+    var reagentTypes = TDefTestData[0]["Item"]("AncDilReagentType")["split"](";");
+    var isDetailsVerified = true; 
+    var reagentType = null;
+    var reagentName = null;
+    var productCode = null;
+    var obsTrigger   = null;
+    var Volume = null;
+   // var obsUsage = null;
+  
+    Log["AppendFolder"]("Step : Verify Ancillary/Diluent reagent details for user G0 in Tdef - Reagents");
+   
+     //Reading reagents data from Tdef file
+    Log["AppendFolder"]("Step : Read reagents data from "+fileName+" Tdef file");
+    var tdefReagentsData = StepReadReagentParametersFromXML(fileName);
+    if(typeof tdefReagentsData == "boolean")
+    {
+      Log["Error"]("Failed to read reagent details from "+fileName+" TDef file")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+ 
+    //Verify Ancillary/Diluent reagent details
+    for(var i =0; i<reagentTypes.length; i++)
+    {
+      for(var j =0;j<tdefReagentsData.length;j++)
+      {
+        if(tdefReagentsData[j]["ReagentTypeID"] == reagentTypes[i])
+        {
+          reagentType = tdefReagentsData[j]["ReagentTypeID"];
+          reagentName = tdefReagentsData[j]["ReagentName"];
+          productCode = tdefReagentsData[j]["ProductCode"];
+          obsTrigger = tdefReagentsData[j]["StartStabilityCountingID"];
+          Volume = tdefReagentsData[j]["VolumeAncillary"];
+          
+          Log["AppendFolder"]("Step : Verify reagent with reagentype '"+reagentType+"',reagentname '"+reagentName+"',productCode '"+productCode+"',OBS trigger '"+obsTrigger+"',Volume '"+Volume+"'")
+          if(!StepVerifyAncillaryAndDiluentDetails(reagentType,reagentName,productCode,obsTrigger,Volume))//obsUsage)
+          {
+            isDetailsVerified = false;
+          }
+          Log["PopLogFolder"]();
+        }
+      }
+    }
+    
+    
+    if(!isDetailsVerified)
+    {
+      Log["Error"]("Ancillary/Diluent reagent details in Tdef - Reagents, failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Successfully verified Ancillary/Diluent reagent for user G0 details in Tdef - Reagents");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAncillaryDiluentReagentDetailsDisplayedG1(testName)
+{
+  try
+  {
+    //------------------------------Fetching Testdata ------------------------------------
+    var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);             
+    var fileName = TDefTestData[0]["Item"]("AssayName");
+    var reagentTypes = TDefTestData[0]["Item"]("AncDilReagentType")["split"](";");
+    var isDetailsVerified = true; 
+    var reagentType = null;
+    var reagentName = null;
+    var productCode = null;
+    var obsTrigger   = null;
+    var Volume = null;
+    
+    Log["AppendFolder"]("Step : Verify Ancillary/Diluent reagent details for user G1 in Tdef - Reagents");
+   
+     //Reading reagents data from Tdef file
+    Log["AppendFolder"]("Step : Read reagents data from "+fileName+" Tdef file");
+    var tdefReagentsData = StepReadReagentParametersFromXML(fileName);
+    if(typeof tdefReagentsData == "boolean")
+    {
+      Log["Error"]("Failed to read reagent details from "+fileName+" TDef file")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    for(var i =0; i<reagentTypes.length; i++)
+    {
+      for(var j =0;j<tdefReagentsData.length;j++)
+      {
+        if(tdefReagentsData[j]["ReagentTypeID"] == reagentTypes[i])
+        {
+          reagentType = tdefReagentsData[j]["ReagentTypeID"];
+          reagentName = tdefReagentsData[j]["ReagentName"];
+          productCode = tdefReagentsData[j]["ProductCode"];
+          obsTrigger = tdefReagentsData[j]["StartStabilityCountingID"];
+          Volume = tdefReagentsData[j]["VolumeAncillary"];
+          
+          Log["AppendFolder"]("Step : Verify reagent with reagentype '"+reagentType+"',reagentname '"+reagentName+"',productCode '"+productCode+"',OBS trigger '"+obsTrigger+"',Volume '"+Volume+"'")
+          if(!StepVerifyAncillaryAndDiluentDetails(reagentType,reagentName,productCode,obsTrigger,Volume))
+          {
+            isDetailsVerified = false;
+          }
+          Log["PopLogFolder"]();
+        }
+      }
+    }
+    
+    if(!isDetailsVerified)
+    {
+      Log["Error"]("Ancillary/Diluent reagent details for user G1 in Tdef - Reagents, failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Checkpoint"]("Successfully verified Ancillary/Diluent reagent details for user G1 in Tdef - Reagents");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyCalCodeAndUseForInventory(testName)
+{
+  try
+  {
+     Log["AppendFolder"]("Step : Verify Cal Code and Use for Inventory in Tdef - Reagents");  
+    
+     //------------------------------Fetching Testdata ------------------------------------
+     var TDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);  
+     var fileName = TDefTestData[0]["Item"]("AssayName"); 
+     
+     //Reading reagents data from Tdef file
+     Log["AppendFolder"]("Step :: Read Cal Code from "+fileName+" Tdef file");
+     var calCode = StepReadCalCodeFromXML(fileName);
+      if(typeof calCode == "boolean")
+      {
+        Log["Error"]("Failed to read reagent details from "+fileName+" TDef file")
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      Log["PopLogFolder"]();
+     
+     Log["AppendFolder"]("Step :: Verify Cal Code in Tdef - Reagents")
+      //Verifying Reagent Code
+     if(!StepVerifyReagentCalCode(calCode))
+     {
+       Log["Error"]("Verification of Cal Code "+calCode+", failed")
+       Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+       return false;
+     }
+     Log["PopLogFolder"]();
+     
+     Log["AppendFolder"]("Step :: Verify Use for inventory is selected");
+     //Verify Reagent Use for Inventory is selected
+     if(!StepVerifyReagentUseForInventoryIsSelected())
+     {
+       Log["Error"]("Verification of if Use For Inventory is Selected, failed");
+       Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+       return false;
+     }
+     Log["PopLogFolder"]();
+   
+     Log["Checkpoint"]("Successfully verified Cal Code '"+calCode+"' and if UseForInventory is selected in Tdef - Reagents")
+     Log["PopLogFolder"]();
+     return true;     
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+

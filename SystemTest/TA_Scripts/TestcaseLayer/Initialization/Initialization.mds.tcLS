@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="data">
+			<Node name="{1e681fbc-a4c1-4644-83b9-efd409916071}">
+				<Node name="variables">
+					<Node name="datav3">
+						<Node name="var0">
+							<Node name="value">
+								<Prp name="boolvalue" type="B" value="0"/>
+							</Node>
+							<Prp name="name" type="S" value="StartCCStatus"/>
+						</Node>
+						<Node name="var1">
+							<Node name="value">
+								<Prp name="boolvalue" type="B" value="0"/>
+							</Node>
+							<Prp name="name" type="S" value="ShutdownCCStatus"/>
+						</Node>
+						<Node name="var2">
+							<Node name="value">
+								<Prp name="strvalue" type="H" value="5400720075006500"/>
+							</Node>
+							<Prp name="name" type="S" value="TaskStatus"/>
+						</Node>
+						<Node name="var3">
+							<Node name="value">
+								<Prp name="strvalue" type="H" value="36002F00310032002F003200300031003900200035003A00310032003A0034003800200041004D00"/>
+							</Node>
+							<Prp name="name" type="S" value="SystemTime"/>
+						</Node>
+					</Node>
+					<Prp name="version" type="I" value="3"/>
+				</Node>
+			</Node>
+			<Node name="logs">
+				<Prp name="key" type="S" value="{039F150F-D4CD-451B-94C8-C43096ACD629}"/>
+				<Prp name="relpath" type="S" value="\LogFiles\TCCSConfigEditor"/>
+			</Node>
+			<Node name="variables">
+				<Node name="datav3">
+					<Node name="var0">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="43003A005C005C005300690065006D0065006E0073005C005C00420069006E005C005C00540043004300530043006F006E00660069006700750072006100740069006F006E0045006400690074006F0072002E00650078006500"/>
+						</Node>
+						<Prp name="name" type="S" value="TCCSConfigEditorPath"/>
+					</Node>
+					<Node name="var1">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="5300690065006D0065006E00730053006500720076006900630065005500730065007200"/>
+						</Node>
+						<Prp name="name" type="S" value="UserName"/>
+					</Node>
+					<Node name="var10">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="540041005F005000520043005F0045004C005F004C004F0043005F004700650074004D0065007300730061006700650053007400720069006E006700"/>
+						</Node>
+						<Prp name="name" type="S" value="Event_Log_SP"/>
+					</Node>
+					<Node name="var11">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="5300690065006D0065006E00730031003200330034003500360037002100"/>
+						</Node>
+						<Prp name="name" type="S" value="PCCPassword"/>
+					</Node>
+					<Node name="var2">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="5300690065006D0065006E00730031003200330034003500360037002100"/>
+						</Node>
+						<Prp name="name" type="S" value="Password"/>
+					</Node>
+					<Node name="var3">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="5300690065006D0065006E00730049006E007400650072006E0061006C00"/>
+						</Node>
+						<Prp name="name" type="S" value="PCCUsername"/>
+					</Node>
+					<Node name="var4">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="500072006F00760069006400650072003D00530051004C004F004C004500440042003B004400610074006100200053006F0075007200630065003D002E003B0049006E0069007400690061006C00200043006100740061006C006F0067003D004200750073005F0044004D003B0049006E007400650067007200610074006500640020005300650063007500720069007400790020003D00200053005300500049003B006E00440061007400610054007900700065003D0054007200750065003B00"/>
+						</Node>
+						<Prp name="name" type="S" value="Connectionstring"/>
+					</Node>
+					<Node name="var5">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="730065006C0065006300740020004C0061006E00670075006100670065005F00490044002000660072006F006D002000640062006F002E005500490057005F005400410042005F004C004F0043005F00430075007200720065006E007400530065007400740069006E0067007300"/>
+						</Node>
+						<Prp name="name" type="S" value="LangIDQuery"/>
+					</Node>
+					<Node name="var6">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="540041005F005000520043005F004C004F0043005F004700650074004D0065007300730061006700650053007400720069006E006700"/>
+						</Node>
+						<Prp name="name" type="S" value="SP"/>
+					</Node>
+					<Node name="var7">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="2E00"/>
+						</Node>
+						<Prp name="name" type="S" value="SQLServerName"/>
+					</Node>
+					<Node name="var8">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="4200750073005F0044004D00"/>
+						</Node>
+						<Prp name="name" type="S" value="DatabaseName"/>
+					</Node>
+					<Node name="var9">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="540041005F005000520043005F004C004F0043005F004700650074004D0065007300730061006700650053007400720069006E006700"/>
+						</Node>
+						<Prp name="name" type="S" value="Bus_DM_SP"/>
+					</Node>
+				</Node>
+				<Prp name="version" type="I" value="3"/>
+			</Node>
+		</Node>
+		<Prp name="signature" type="S" value="{49FC0C30-9EF7-4DBD-97A8-B7A00E79A2AF}"/>
+	</Node>
+</Nodes>

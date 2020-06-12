@@ -1,0 +1,1024 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT PrimeDispAssaySetup
+//USEUNIT PrimeDispAuthentication
+
+//==================Navigation to System Settings & Configuration Screen =================
+
+function CheckSystemSettingsAndConfigurationPoupDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("SystemSettings :: Check the system settings and configuration popup displayed");
+    
+    //get the system settings popup control
+    var systemSettingsPopup = GetAutomationIDControl("HowDoI_SystemSettings", "systemSettingsConfigurationPopup");
+    
+    //check the system settings popup displayed
+    if(VerifyObjectExists(systemSettingsPopup))
+    {
+      Log["Message"]("System settings popup is located and displayed");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Unable to locate the system settings popup displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnTheSystemSettingsByTabName(settingsTabName)
+{
+  try
+  {
+    Log["AppendFolder"]("SystemSettings :: Click on the tab name '" + settingsTabName + "' from the system settings popup");
+    
+    //get the system settings navigation panel control
+    var systemSettingsNavigationPanel = GetAutomationIDControl("HowDoI_SystemSettings", "systemSettingsNavigationPanel");
+    
+    //check the system settings navigation panel displayed
+    if(VerifyObjectExists(systemSettingsNavigationPanel))
+    {
+      //get the tab Name control
+      var tabControl = Getchild(systemSettingsNavigationPanel, ["AutomationId","Text"], ["txtHeader",settingsTabName]);
+      
+      //check the tab name control is exist
+      if(VerifyObjectExists(tabControl))
+      {
+        Log["Message"]("Tab name '" + settingsTabName + "' is located to click");
+        
+        //click on the tab name
+        ClickCtrl(tabControl);
+        
+        Log["Message"]("Tab name '" + settingsTabName + "' is successfully clicked");
+        Log["PopLogFolder"]();
+        return true;        
+      } else {
+        Log["Error"]("Unable to locate the tab name in the navigation panel of the system settings and configuration popup");
+        Log["PopLogFolder"]();
+        return false;
+      }
+         
+    } else {
+      Log["Error"]("Unable to locate the system settings navigation panel displayed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckTheSystemSettingsAndConfigurationTabContentDisplayed(settingsTabName)
+{
+  try
+  {
+    Log["AppendFolder"]("SystemSettings :: Check the settings tab '" + settingsTabName + "' is displayed");
+    
+    var tabNameCtrlId = undefined;
+    
+    switch (settingsTabName)
+    {
+      case "Software Updates":
+        tabNameCtrlId = "softwareVersionGrid";
+        break;    
+      case "Accounts and Security":
+        tabNameCtrlId = "AccountsViewRoot";    
+        break;      
+    }
+    
+    //get the system settings popup control
+    var systemSettingsPopup = GetAutomationIDControl("HowDoI_SystemSettings", "systemSettingsConfigurationPopup");
+    
+    //check the system settings popup is displayed
+    if(VerifyObjectExists(systemSettingsPopup))
+    {
+      //get the tab content
+      var tabContent = Getchild(systemSettingsPopup, "AutomationId", tabNameCtrlId);
+      
+      //check the tab content control is exist
+      if(VerifyObjectExists(tabContent))
+      {
+        Log["Message"]("Content for the tab '" + settingsTabName + "' has been loaded and displayed");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to locate the tab content for the tab '" +  settingsTabName + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the system settings and configurations popup");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function NavigateToSystemSettingsAndConfiguration(settingsTabName)
+{
+  try
+  {
+    Log["AppendFolder"]("Assay Setup :: Navigate to System Settings & COnfigurations Popup from How Do I");
+    
+    //Navigation for How Do I Screen
+    if(!InvokeWorkFlowInPrimeDisp("HowDoI")){
+      return false;
+    }
+    
+    //Select System Settings & Configurations from workflow
+    if(!SelectWorkflowFromWorkflowDataGrid("System Settings & Configurations")) {
+      Log["Error"]("Unable to select the Assay Setup from the workflow wizard datagrid in How Do I screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Launch System Settings & Configuration
+    if(!ClickOnLaunchButtonAtHowDoI()) 
+    {  
+      Log["Error"]("Unable to navigate to Tdef modify screen, due to the launch button not enabled in How Do I screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Check the System Settings & Configuration popup displayed
+    if(!CheckSystemSettingsAndConfigurationPoupDisplayed())
+    {
+      Log["Error"]("Failed to locate the system settings popup after click on launch button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on the required settings tab Name
+    if(!ClickOnTheSystemSettingsByTabName(settingsTabName))
+    {
+      Log["Error"]("Failed to locate / click on the settings tab name '" + settingsTabName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check the required tab content is loaded
+    if(!CheckTheSystemSettingsAndConfigurationTabContentDisplayed(settingsTabName))
+    {
+      Log["Error"]("Failed to locate the tab content of the accounts and security tab in the system settings popup");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Navigation completed successfully to the '" + settingsTabName + "'");
+      Log["PopLogFolder"]();
+      return true;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//========================================================================================
+
+
+
+
+//============================Create Account Popup =======================================
+
+function ClickOnCreateAccountButton()
+{
+  try
+  {
+    Log["AppendFolder"]("AccountsAndSecurity :: Click on the Create Account button")
+    
+    //get the create account button ctrl
+    var createAccountBtn = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity", "btnCreateAccount");
+    
+    //check the button is displayed and enabled
+    if(VerifyObjectEnabled(createAccountBtn))
+    {
+      Log["Message"]("Create account button is located and found enabled");
+      
+      //click on the create account btn
+      ClickCtrl(createAccountBtn);
+      
+      Log["Message"]("Create Account button is successfully clicked");
+      Log["PopLogFolder"]();
+      return true;      
+    } else if(VerifyObjectExists(createAccountBtn))
+    {
+      Log["Error"]("Create account button is displayed in the screen, But in disabled state");
+      Log["PopLogFolder"]();
+      return false;      
+    } else {
+      Log["Error"]("Unable to locate the create account button in accounts and settings - account tab");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckCreateAccountPopupDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Check the create account popup is displayed");
+    
+    //get the create account popup is displayed
+    var createAccountPopupCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","popupCreateAccount");
+    
+    //check the popup is displayed
+    if(VerifyObjectExists(createAccountPopupCtrl))
+    {
+      Log["Message"]("Create Account popup is displayed in the screen");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the Create Account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectMemberOfGroupInCreateAccountPopup(memberOfGroup)
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Select member of group in create account popup as '" + memberOfGroup + "'");
+    
+    //G5: Night Time Operators  //G3: Chief Technicians //G1: Laboratory Managers //G0: Siemens Internal Personnel  //G4: Day Time Operators
+    var groupName = memberOfGroup;
+//    switch (memberOfGroup)
+//    {
+//      case "G0":
+//        groupName = "G0: Siemens Internal Personnel";
+//        break;    
+//      case "G1":
+//        groupName = "G1: Laboratory Managers";
+//        break;
+//      case "G3":
+//        groupName = "G3: Chief Technicians";
+//        break;
+//      case "G4":
+//        groupName = "G4: Day Time Operators";
+//        break;
+//      case "G5":
+//        groupName = "G5: Night Time Operators";
+//        break;
+//    }
+    
+    
+    //get the member of group combo box control 
+    var memberOfGroupCtrl  = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount", "cbBoxMemberOfGroup");
+    
+    //Check the member of group combo box is displayed
+    if(VerifyObjectExists(memberOfGroupCtrl)) 
+    {
+      Log["Message"]("Located the combo box to select member of group");
+      
+      //Select the member of group from combobox
+      SelectComboBoxItem(memberOfGroupCtrl, groupName);
+      
+      //Get the selected text value from member of group combobox
+      var selectedValue = memberOfGroupCtrl["Selection"].toArray()[0];
+      
+      //Check the selected member of group is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](groupName))
+      {
+        Log["Message"]("Given member of group '" + groupName + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given member of group in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the member of group combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterOperatorIdInCreateAccountPopup(operatorId)
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Enter the operator id '" + operatorId + "' in the text field");
+    
+    //get the operator id text fiel ctrl    
+    var operatorIdCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","txtCreateAccountOperatorId");
+    
+    //check the operator id text field displayed
+    if(VerifyObjectExists(operatorIdCtrl))
+    {
+      //Click on inside the operator id textbox
+      ClickCtrl(operatorIdCtrl);
+      
+      //Enter the operator Id
+       SendKeys(operatorIdCtrl,operatorId);
+       aqUtils["Delay"](1000);
+       
+       //Tab Out to update the other field data
+       SendKeys(operatorIdCtrl, "[Tab]");
+       aqUtils["Delay"](1000);
+      
+       //Verify the operator id is entered properly
+       if(operatorIdCtrl["Text"] == operatorId)
+       {
+          Log["Message"]("Operator Id '" + operatorId + "' successfully entered in to the create account popup");
+          Log["PopLogFolder"]();   
+          return true;
+       } else {
+         Log["Error"]("Unable to enter the given operator id, value displayed after entering the operator id is '" + operatorIdCtrl["Text"] + "'");
+         Log["PopLogFolder"]();   
+         return false;
+       }
+    } else {
+      Log["Error"]("Unable to locate the operator id text field in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterPasswordInCreateAccountPopup(password)
+{
+ try
+ {
+   Log["AppendFolder"]("CreateAccount :: Enter the given text in the password text field");
+   
+   //get the password field
+   var passwordCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","txtCreateAccountPassword");
+   
+   //check the password field in displayed
+   if(VerifyObjectExists(passwordCtrl))
+   {
+     Log["Message"]("Password text field is located in create account popup");
+     
+     //Enter the password
+     SendKeys(passwordCtrl,password);
+     
+     //Tab Out to update the other field data
+     SendKeys(passwordCtrl, "[Tab]");
+       
+     Log["Message"]("Password is successfully entered in the password text field");
+     Log["PopLogFolder"]();
+     return true;     
+   } else {
+     Log["Error"]("Unable to locate the password text field in the create account popup");
+     Log["PopLogFolder"]();
+     return false;
+   }   
+ }
+ catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function EnterConfirmPasswordInCreateAccountPopup(confirmPassword)
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Enter the given text in the confirm password text field");
+   
+   //get the password field
+   var confirmPasswordCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","txtCreateAccountConfirmPassword");
+   
+   //check the confirm password field in displayed
+   if(VerifyObjectExists(confirmPasswordCtrl))
+   {
+     Log["Message"]("Confirm Password text field is located in create account popup");
+     
+     //Enter the confirm password
+     SendKeys(confirmPasswordCtrl,confirmPassword);
+     
+     //Tab Out to update the other field data
+     SendKeys(confirmPasswordCtrl, "[Tab]");
+       
+     Log["Message"]("Confirm Password is successfully entered in the password text field");
+     Log["PopLogFolder"]();
+     return true;     
+   } else {
+     Log["Error"]("Unable to locate the confirm password text field in the create account popup");
+     Log["PopLogFolder"]();
+     return false;
+   }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterFullNameOfOperatorInCreateAccountPopup(operatorFullName)
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Enter the full name of the operator as '" + operatorFullName + "'");
+    
+    //get the full name ctrl
+    var fullNameCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","txtCreateAccountFullName");
+    
+    //check the full name text field is exists
+    if(VerifyObjectExists(fullNameCtrl))
+    {
+      Log["Message"]("Operator Full name text field is located");
+      
+      //enter the full name
+      SendKeys(fullNameCtrl,operatorFullName);
+      
+      //Tab Out to update the other field data
+      SendKeys(fullNameCtrl, "[Tab]");
+      
+      Log["Message"]("Full name is successfully entered in create account popup");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Failed to locate the full name control in create account popup");
+      Log["PopLogFolder"]();
+      return false;      
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ChoosePasswordChangeOptionAtNextSignIn(optionValue)
+{
+  try
+  {
+    //true = select //false = unselect
+    Log["AppendFolder"]("CreateAccount :: Select / unselect the option of Password Change on Next Sign in");
+    
+    //get the checkbox ctrl 
+    var passwordChangeCheckBoxCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","checkBoxOperatorMustChangePassword");
+    
+    if(VerifyObjectExists(passwordChangeCheckBoxCtrl))
+    {
+      Log["Message"]("Password change on next sign in check box is located");
+      
+      //Select
+      if(optionValue)
+      {
+        if(GetToggleState(passwordChangeCheckBoxCtrl) == 0)
+        {
+          //click on the check box to select
+          ClickCtrl(passwordChangeCheckBoxCtrl);
+          
+          Log["Message"]("Clicked on the checkbox to select");
+        }
+        
+        //check the checkbos is selected succesfully
+        if(GetToggleState(passwordChangeCheckBoxCtrl) == 1)
+        {
+          Log["Message"]("Change password on next sign in checkbox is successfully selected");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Change password on next sign in checkbox is failed to select");
+          Log["PopLogFolder"]();
+          return false;
+        }        
+      } else {
+        //Unselect
+        
+        //check the toggle state of the checkbox
+        if(GetToggleState(passwordChangeCheckBoxCtrl) == 1)
+        {
+          //click on the check box to un select
+          ClickCtrl(passwordChangeCheckBoxCtrl);
+          
+          Log["Message"]("Clicked on the sheckbox to unselect");
+        }
+        
+        //check the checkbos is selected succesfully
+        if(GetToggleState(passwordChangeCheckBoxCtrl) == 0)
+        {
+          Log["Message"]("Change password on next sign in checkbox is successfully un selected");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Change password on next sign in checkbox is failed to unselect");
+          Log["PopLogFolder"]();
+          return false;
+        } 
+      }      
+    } else {
+      Log["Error"]("Unable to locate the password change on next sign in checkbox");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ChooseOperatorAccountDisableOption(optionValue)
+{
+  try
+  {
+    //true = select //false = unselect
+    Log["AppendFolder"]("CreateAccount :: Select / Unselect the Opearor Account Disable checkbox");
+    
+    //get the disable checkbox ctrl
+    var disableAccountCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","checkBoxDisableAccount");
+    
+    //check the checkbox is disaplyed
+    if(VerifyObjectExists(disableAccountCtrl))
+    {
+      Log["Message"]("Operator account disable check box is located");
+      
+      //Select
+      if(optionValue)
+      {
+        if(GetToggleState(disableAccountCtrl) == 0)
+        {
+          //click on the check box to select
+          ClickCtrl(disableAccountCtrl);
+          
+          Log["Message"]("Clicked on the checkbox to select");
+        }
+        
+        //check the checkbos is selected succesfully
+        if(GetToggleState(disableAccountCtrl) == 1)
+        {
+          Log["Message"]("Operator account disable checkbox is successfully selected");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Operator account disable checkbox is failed to select");
+          Log["PopLogFolder"]();
+          return false;
+        }        
+      } else {
+        //Unselect
+        
+        //check the toggle state of the checkbox
+        if(GetToggleState(disableAccountCtrl) == 1)
+        {
+          //click on the check box to un select
+          ClickCtrl(disableAccountCtrl);
+          
+          Log["Message"]("Clicked on the sheckbox to unselect");
+        }
+        
+        //check the checkbos is selected succesfully
+        if(GetToggleState(disableAccountCtrl) == 0)
+        {
+          Log["Message"]("Operator account disable checkbox is successfully un selected");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Operator account disable checkbox is failed to unselect");
+          Log["PopLogFolder"]();
+          return false;
+        } 
+      }         
+    } else {
+      Log["Error"]("Unable to locate the disabled operator account checkbox in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnSaveButtonInCreateAccountPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Click on the save button in create account popup");
+    
+    //get the save button ctrl
+    var saveBtnCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount","btnSaveNewAccount");
+    
+    //check the button is exists and enabled
+    if(VerifyObjectEnabled(saveBtnCtrl))
+    {
+      Log["Message"]("Save button is located and enabled in create account popup");
+      
+      //click on the save button
+      ClickCtrl(saveBtnCtrl);
+      
+      Log["Message"]("Clicked on the save button in create account popup to save account details");      
+      Log["PopLogFolder"]();
+      return true;
+    } else if(VerifyObjectExists(saveBtnCtrl)) {
+      Log["Error"]("Save button is exists but not enabled to save information in the create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Error"]("Unable to locate the save button in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AcceptUserAccountCreatedSuccessfullyAlert()
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Accept the success message for the user created successfully");
+    
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterDetailsInCreateNewOperatorAccount(memberOfGroup,operatorId,password,operatorFullName,changePasswordAtNextSignIn,accountStatus)
+{
+  try
+  {
+    Log["AppendFolder"]("CreateAccount :: Enter the account information to create a new account");
+    
+    //check the create account popup is displayed
+    if(!CheckCreateAccountPopupDisplayed())
+    {
+      Log["Error"]("Failed to locate the create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //select the member of group
+    if(!SelectMemberOfGroupInCreateAccountPopup(memberOfGroup))
+    {
+      Log["Error"]("Failed to select the member of group in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //enter the operator id
+    if(!EnterOperatorIdInCreateAccountPopup(operatorId))
+    {
+      Log["Error"]("Failed to enter the operator id in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //enter the password
+    if(!EnterPasswordInCreateAccountPopup(password))
+    {
+      Log["Error"]("Failed to enter the password in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //enter the confirm password
+    if(!EnterConfirmPasswordInCreateAccountPopup(password))
+    {
+      Log["Error"]("Failed to enter the confirm password in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //enter the fullname
+    if(!EnterFullNameOfOperatorInCreateAccountPopup(operatorFullName))
+    {
+      Log["Error"]("Failed to enter the operator full name in create account popup");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+        
+    //select the password change on next signin option
+    if(!ChoosePasswordChangeOptionAtNextSignIn(changePasswordAtNextSignIn))
+    {
+      Log["Error"]("Failed to choose the option for change password on next signin in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //seelct the account status
+    if(!ChooseOperatorAccountDisableOption(accountStatus))
+    {
+      Log["Error"]("Failed to choose the option for operator account enable / disable option in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //click on the save button
+    if(!ClickOnSaveButtonInCreateAccountPopup())
+    {
+      Log["Error"]("Failed to click on the save button in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    Log["PopLogFolder"]();
+    return true;      
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//========================================================================================
+
+
+//=========================Accounts & Security - Accounts Tab=============================
+
+function ClickOnAccountsTabFromAccountsAndSecurityScreen()
+{
+  try
+  {
+    Log["AppendFolder"]("SystemSettings :: Click on the 'Account' tab from the accounts and security screen");
+    
+    //get the system settings popup ctrl
+    var systemSettingsNavigationPanel = GetAutomationIDControl("HowDoI_SystemSettings", "systemSettingsNavigationPanel");
+    
+    //check the system settings popup is displayed
+    if(VerifyObjectExists(systemSettingsNavigationPanel))
+    {
+      //Get the accounts view control
+      var accountViewCtrl = Getchild(systemSettingsNavigationPanel, "AutomationId", "AccountsViewRoot");
+      var accountsTabCtrl = Getchild(accountViewCtrl, ["AutomationId","ClassName"], ["Accounts", "PivotItem"]);
+      
+      //click on the accounts tab name
+      ClickCtrl(accountsTabCtrl);
+      
+      Log["Message"]("Clicked on the accounts tab name under the accounts & security screen");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Unable to locate the system settings popup");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+//
+//function CheckTheAccountsDataGridDisplayed()
+//{
+//  try
+//  {
+//    Log["AppendFolder"]("SystemSettings :: Check the accounts daat grid is displayed");
+//    
+//    //get the account datagrid control
+//    var accountGridCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity","dtgrdAccounts");
+//    
+//    //check the grid is displayed
+//    if(VerifyObjectExists(accountGridCtrl))
+//    {
+//      Log["Message"]("Accounts data grid is displayed");
+//      Log["PopLogFolder"]();
+//      return true;      
+//    } else {
+//      Log["Error"]("Unable to locate the accounts datagrid in system settings - account & security tab");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//  }
+//  catch (e)
+//  {
+//    Log["Error"]("Exception : "  + e["description"]);
+//    Log["PopLogFolder"]();
+//    return false;
+//  }
+//}
+
+function CheckTheOperatorAccountIsListedInAccountsDatagrid(operatorId,groupName)
+{
+  try
+  {
+    Log["AppendFolder"]("SystemSettings :: Check the operator account '" + operatorId + "' is exists and listed in the accounts datagrid");
+    
+    //get the accounts daatgrid control
+    var accountsGridCtrl = GetAutomationIDControl("HowDoI_SystemSettings_AccountsAndSecurity","dtgrdAccounts");
+    
+    //check the accounts datagrid is displayed
+    if(VerifyObjectExists(accountsGridCtrl))
+    {
+      //get the row details from the datagrid    
+      var rowDetails = GetSFGridRowDetails(accountsGridCtrl);
+    
+      if(!rowDetails)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      groupName = aqString["Trim"](groupName["split"](":")[1]);      
+
+      //Get the column index of the column 'OperatorId, fullName, groupName, status from the accounts data grid
+      var operatorIdColIndex = GetDataGridColumnIndexFromMetadataSheet("SystemSettings_AccountsAndSecurity_Accounts", "OperatorId");  
+      var fullNameColIndex = GetDataGridColumnIndexFromMetadataSheet("SystemSettings_AccountsAndSecurity_Accounts", "FullName");
+      var groupNameColIndex = GetDataGridColumnIndexFromMetadataSheet("SystemSettings_AccountsAndSecurity_Accounts", "Group");  
+      var statusColIndex = GetDataGridColumnIndexFromMetadataSheet("SystemSettings_AccountsAndSecurity_Accounts", "Status");
+      
+      
+      var isOperatorAccountExists = false;
+      
+      for(var i=0; i<rowDetails.length; i++)
+      {
+        //get the cell details of the row
+        var cellDetails = GetAllChildren(rowDetails[i],"ClassName","GridCell").reverse();
+        
+        var operatorIdCtrl = Getchild(cellDetails[operatorIdColIndex-1],"ClassName","TextBlock");
+        var actualOperatorId = operatorIdCtrl["Text"];
+        var groupNameCtrl = Getchild(cellDetails[groupNameColIndex-1],"ClassName","TextBlock");
+        var actualGroupName = groupNameCtrl["Text"];
+          
+        if(actualOperatorId == operatorId && actualGroupName == groupName)
+        {
+          Log["Message"]("Operator Id '" + operatorId + "' is located in the grid with the group '" + groupName + "'");
+          
+          var statusCtrl = Getchild(cellDetails[statusColIndex-1],"ClassName","TextBlock");
+          var actualStatus = statusCtrl["Text"];
+          
+          if(actualStatus == "Enabled")
+          {
+            isOperatorAccountExists = true;
+            Log["Message"]("Status of the operator account '" + operatorId + "' is enabled");
+            break
+          } else {
+            Log["Error"]("Operator account is found as 'Disabled' state in accounts");
+            break;
+          }
+        }        
+      }
+            
+      //check the operator account exists
+      if(isOperatorAccountExists)
+      {
+        Log["Message"]("Operator account '" + operatorId + " is exists and listed in accounts list");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Operator account '" + operatorId + "' doesn't listed in the operator account list");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the accounts datagrid in system settings - account & security tab");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }  
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CreateNewOperatorAccount()//memberOfGroup,operatorId,password,operatorFullName,changePasswordAtNextSignIn,accountStatus)
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    
+    var memberOfGroup = "G5: Night Time Operators";
+    var operatorId = "NightTimeOperator";
+    var password = "Siemens1234567!";
+    var operatorFullName = "NightTimeOperator";
+    var changePasswordAtNextSignIn = false;
+    var accountStatus = false;
+  
+  
+    Log["AppendFolder"]("SystemSettings :: Create a 'New Account' from accounts & security");
+    
+    //navigate to accounts
+    if(!NavigateToSystemSettingsAndConfiguration("Accounts and Security"))
+    {
+      Log["Error"]("navigation failed for the tab name '" + settingsTabName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //click on the accounts tab
+    if(!ClickOnAccountsTabFromAccountsAndSecurityScreen())
+    {
+      Log["Error"]("failed to click on the accounts tab from accounts and security");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Click on the create new account button 
+    if(!ClickOnCreateAccountButton())
+    {
+      Log["Error"]("Failed to click on the create account button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+           
+    //Submit the account details
+    if(!EnterDetailsInCreateNewOperatorAccount(memberOfGroup,operatorId,password,operatorFullName,changePasswordAtNextSignIn,accountStatus))
+    {
+      Log["Error"]("Failed to fill the infromation in create account popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+//    //acknowledge the sucess / warning popup
+//    if(AcceptUserAccountCreatedSuccessfullyAlert())
+//    {
+//      Log["Message"]("Successfully accepted the user account creation success popup");
+//    } else {
+//      Log["Error"]("Failed to locate the success confirmation popup for the user account creation");
+//      Log["PopLogFolder"]();
+//      return false;
+//    } 
+    
+    //check the user account created successfully and user is displayed in account data grid
+    if(!CheckTheOperatorAccountIsListedInAccountsDatagrid(operatorId,memberOfGroup))
+    {
+      Log["Error"]("Unable to locate the operator in the accounts grid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : "  + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+//========================================================================================

@@ -1,0 +1,93 @@
+﻿//USEUNIT Authentication
+//USEUNIT Inventory
+//USEUNIT InventoryFeatureSteps
+//USEUNIT TCNativeLibraries
+//USEUNIT DiagnosticsFeature
+//USEUNIT TCCSConfigLibrary    
+//USEUNIT InstallARM         
+//USEUNIT UserAccountSetup 
+                                 
+                 /*^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       INITIALIZE RT
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^*/    
+                          
+function InitializeRT(){
+    
+    //fnUpdateBuildDetails
+    fnUpdateBuildDetails()
+    
+    //fnDisableIPsecRule
+    fnDisableIPsecRule()
+    
+    //fnInstallDiagnostics
+    fnInstallDiagnostics()
+    
+    //KeyboardLayoutExample
+    KeyboardLayoutExample()
+    
+    //Run TCCS & App Config Settings
+    if(!PreRunHydra()){
+      Log["Error"]("Prerun Failed -TCCS/System Configurations")
+      Runner["Stop"]()
+    }
+    
+    //First time login -Disable
+    AddPasscodeInRegistry();
+    InsertSecurityQuestionsInDB(); 
+    
+    //Install-DMLContent    
+    Log["AppendFolder"]("Install-DMLContent");  
+    var IotPath =  "C:\\Siemens\\ARM\\Bin\\IoT_Content"
+    var oShell=Sys["OleObject"]("Shell.Application");
+    oShell.ShellExecute("Install-DMLContent.cmd","",IotPath,"runas",1);
+    aqUtils["Delay"](20000,"Install-DMLContent")
+    Log["Checkpoint"]("ran Install-DMLContent.cmd sucessfully")
+    Log["PopLogFolder"]()
+    
+
+}
+
+
+                 /*^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       INITIALIZE SMOKE
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^^*/  
+                
+function InitializeSmoke(){
+    
+    //fnUpdateBuildDetails
+    fnUpdateBuildDetails
+    
+    //fnDisableIPsecRule
+    fnDisableIPsecRule()
+    
+    //KeyboardLayoutExample
+    KeyboardLayoutExample()
+    
+    //Run TCCS & App Config Settings
+    if(!PreRunHydra()){
+      Log["Error"]("Prerun Failed -TCCS/System Configurations")
+      Runner["Stop"]()
+    }
+    
+    //First time login -Disable
+    AddPasscodeInRegistry();
+    InsertSecurityQuestionsInDB(); 
+
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+    
+    //Launch and Login to ARM
+    if(!InitializeHydra()){
+      Log["Error"]("STOP EXECUTION")
+      Log["Error"]("Initialize Login Failed")
+      Runner["Stop"]()
+    }
+    
+	  //LoadIMandCHReagents -DML Simulator 
+    LoadIMandCHReagents()
+
+    //User setup for G0,G2,G3,G4,G5 users before running any scaneario for these users
+    UserSetupForG0G2G3G4G5()
+
+}
+

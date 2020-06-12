@@ -1,0 +1,27 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT Inventory
+
+function ReplaceSupplies()
+{
+  InitializeMetaData();
+  ReportTestStatusToResultXML("Initialize", "Replace CC Supplies", "I");
+  var ProjPath = Project["Path"];
+  var TestDataFile =  ProjPath + "TestData\\TestData.xls";
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"Supplies","LoadSupplies")
+  var dictColumn=arrTestData[0];
+  var Lot = dictColumn["Item"]("Lot");
+  var Sequence = dictColumn["Item"]("Sequence");
+  var IMTSensorLot = dictColumn["Item"]("IMTSensorLot");
+  
+  var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+  if (!Navigation)
+    ReportTestStatusToResultXML("Initialize", "Replace CC Supplies", "F");
+  
+  var boolValue = ReplaceCCSupplies(Lot, Sequence,IMTSensorLot);
+  
+  if(boolValue == true)
+    ReportTestStatusToResultXML("Initialize", "Replace CC Supplies", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "Replace CC Supplies", "F");
+}

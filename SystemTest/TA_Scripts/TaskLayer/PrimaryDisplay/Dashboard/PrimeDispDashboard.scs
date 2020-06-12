@@ -1,0 +1,609 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+
+
+function GetTileCountByTileName(tileName)
+{
+  try
+  {
+    Log["AppendFolder"]("Dashboard :: Getting the tile count for the tile '" + tileName + "'");
+    
+    var tileCtrlName = undefined;
+    
+    //get the tile control based on the tile name
+    switch (tileName)
+    {
+      case "Stats":
+        tileCtrlName = "tileSTATTotalCount";
+        break;
+      case "Routines":
+        tileCtrlName = "tileRountineSamplesTotalCount";
+        break;
+      case "Maintenance":
+        tileCtrlName = "tileMaintenanceTotalCount";
+        break;
+      case "SupplyNeeds":
+        tileCtrlName = "tileSupplyNeedsTotalCount";
+        break;
+      case "ReagentNeeds":
+        tileCtrlName = "tileReagentNeedsTotalCount";
+        break;
+    }
+    
+    //Get the tile count control
+    var tileCountCtrl = GetAutomationIDControl("DashboardTiles",tileCtrlName);
+    
+    if(VerifyObjectExists(tileCountCtrl))
+    {
+      Log["Message"]("Tile count control for the tile '" + tileName + "' is located");
+      
+      var tileCount = tileCountCtrl["Text"];
+      
+      Log["Message"]("Total count displayed for the tile '" + tileName + "' is '" + tileCount + "'");
+      Log["PopLogFolder"]();
+      return tileCount;      
+    } else {
+      Log["Error"]("Unable to locate the tile count controls for the tile '" + tileName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : GetMaintenanceTileTotalCount()
+//*   Function Description: This function is used get the STATs tile total count
+//*   Input               : NA
+//*   Output              : TileCount => returns the tile count 
+//*                         returns false, if there is any exception on accessing the tile count control
+//*   Date of Creating    : 29 July 2019
+//*   Created By          : Ramani Paulsamy
+//*****************************************************************************************
+function GetMaintenanceTileTotalCount()
+{
+  try
+  {
+    Log["AppendFolder"]("Dashboard :: Maintenance Tile Total count"); 
+     
+    //Get the STATs tile Total count control
+    var tileCountCtrl = GetAutomationIDControl("DashboardTiles", "tileCountMaintenance");
+    var tileCount = undefined;
+    
+    //Check the tile count control is displayed
+    if( VerifyObjectExists(tileCountCtrl)) 
+    {
+      //Get tile count from tile control
+      tileCount = tileCountCtrl["Text"];
+      Log["Message"]("Maintenance Tile Total count :" +tileCount)
+    } 
+    else 
+    {
+      tileCount = false;
+      Log["Message"]("Unable to locate the Maintenance tile count in dashbaord");
+    }
+    
+    Log["PopLogFolder"]();
+    return tileCount;   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+//***************************************************************************************
+//*   Function Name       : GetReagentNeedsTileCount()
+//*   Function Description: This function is used get the Reagent Needs tile total count
+//*   Input               : NA
+//*   Output              : TileCount => returns the tile count 
+//*                         returns false, if there is any exception on accessing the tile count control
+//*   Date of Creating    : 17 July 2019
+//*   Last Modified date  : 27 July 2019
+//*   Created By          : Ramani Paulsamy
+//*****************************************************************************************
+function GetReagentNeedsTileCount()
+{
+  try
+  {
+      Log["AppendFolder"]("Dashboard Tile :: Getting Reagent Needs Tile Count"); 
+    
+      //Get the Reagent Needs Total count control
+      var tileCountCtrl = GetAutomationIDControl("DashboardTiles", "tileReagentNeedsTotalCount");
+    
+      //Check the tile count control is displayed
+      if( VerifyObjectExists(tileCountCtrl)) 
+      {
+        //Get tile count from tile control
+        var tileCount = tileCountCtrl["Text"];
+        
+        Log["Message"]("Reagent Needs tile count displayed as : " + tileCount);
+        Log["PopLogFolder"]();
+        return tileCount;      
+      } 
+      else 
+      {
+        Log["Message"]("Unable to locate the Reagent Needs tile count in dashbaord");
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" +e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name       : VerifyReagentNeedsTileCount()
+//*   Function Description: This function is used Verify the Reagent Needs tile  count
+//*   Input               : expectedReagentNeedsTileTotalCount
+//*   Output              : returns true, if Actual and Expected count is same
+//*                         returns false, if Actual and Expected count is not same
+//*   Date of Creating    : 17 July 2019
+//*   Last Modified date  : 17 July 2019
+//*   Created By          : Ramani Paulsamy
+//*****************************************************************************************
+function VerifyReagentNeedsTileCount(expectedReagentNeedsTileTotalCount)
+{
+  try
+  {
+    //Get the Reagent Needs Total Count
+    var totalCount = GetReagentNeedsTileCount();
+      
+    Log["AppendFolder"]("Dashboard Tile :: Reagent Needs Tile Count Verification");
+      
+    //Verify the Reagent Needs Total Count
+    if(totalCount == expectedReagentNeedsTileTotalCount)
+    {
+      Log["Message"]("Reagent Needs Tile is displaying the CorrectCount");
+      Log["Message"]("Expected Reagent Needs Total Count : " + expectedReagentNeedsTileTotalCount);
+      Log["Message"]("Actual Reagent Needs Total Count : " + totalCount);
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Message"]("Reagent Needs Tile is not displaying the Correct In Process Count")
+      Log["Message"]("Expected Reagent Needs Total Count : " + expectedReagentNeedsTileTotalCount);
+      Log["Message"]("Actual Reagent Needs Total Count : " + totalCount);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" +e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function CheckSTATsInProcessCountWithPoolingIntervel(waitTime, expectedSTATsInProcessTileCount)
+{
+  try
+  {
+    Log["AppendFolder"]("Dashboard Tiles :: Check the STATs Tile InProcess Sample Count as expected with pooling intervel"); 
+      
+    //Get the STATs Tile Inprocess Control
+    var statTileInProcessBlock = GetAutomationIDControl("DashboardTiles","tileSTATInProcessCount");
+      
+    //Verify the STATs tile Inprocess control exists
+    if(VerifyObjectExists(statTileInProcessBlock))
+    {
+      //Get the text of Inprocess control
+      var getSTATTileInProcessText = statTileInProcessBlock["Text"];
+        
+      //Get the Inprocess Count
+      var inProcessCount = getSTATTileInProcessText["split"](" ")[0];
+        
+      Log["Message"]("STATs Tile InProcess Sample Count Displayed as '" + inProcessCount + "'");
+      
+      var startPoolCount = 0;
+      var isExpectedCountDisplayed = true;
+      
+      while((inProcessCount != expectedSTATsInProcessTileCount) && (startPoolCount<=waitTime))
+      {
+        //refresh and get the latest value
+        statTileInProcessBlock["Refresh"]();
+        getSTATTileInProcessText = statTileInProcessBlock["Text"];
+        inProcessCount = getSTATTileInProcessText["split"](" ")[0];
+        
+        //increment the counter
+        startPoolCount = startPoolCount + 1;
+        
+        if(inProcessCount == expectedSTATsInProcessTileCount)
+        {
+          Log["Message"]("Waited for pooling time:"+startPoolCount);
+          Log["Message"]("In Process count displayed:"+inProcessCount+" is as expected: "+expectedSTATsInProcessTileCount);      
+          break;
+        }
+        
+        if(startPoolCount>waitTime)
+        {
+          Log["Error"]("Exceeded pooling time: "+waitTime);
+          Log["Error"]("Process count displayed: "+inProcessCount+" is not the expected: "+expectedSTATsInProcessTileCount);
+          isExpectedCountDisplayed = false;
+          break;
+        }        
+      }
+      
+      //Check the tile count displayed as expected
+      if(isExpectedCountDisplayed)
+      {
+        Log["Message"]("STAT Tile Inprocess Count validation passed");
+        Log["Message"]("Expected STAT Count : " + expectedSTATsInProcessTileCount);
+        Log["Message"]("Actual STAT Count : " + inProcessCount);  
+        Log["PopLogFolder"]();
+        return true;         
+      } else {
+        Log["Message"]("STAT Tile Inprocess Count validation failed");
+        Log["Error"]("Expected STAT InProcess Count : " + expectedSTATsInProcessTileCount);
+        Log["Error"]("Actual STAT  InProcess Count : " + inProcessCount);      
+        Log["PopLogFolder"]();
+        return false;
+      }   
+    } else {
+      Log["Error"]("STATs Tile InProcess text block is not exists");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckSTATsInterventionNeededCountWithPoolingIntervel(waitTime, expectedSTATsInterventionNeededCount)
+{
+  try
+  {
+    Log["AppendFolder"]("Dashboard Tiles :: Check the STATs Tile Intervention Needed Sample Count as expected with pooling intervel"); 
+      
+    //Get the STATs Tile intervention needed Control
+    var statTileInterventionNeededBlock = GetAutomationIDControl("DashboardTiles","tileSTATInterventionNeededCount");
+      
+    //Verify the STATs tile intervention needed control exists
+    if(VerifyObjectExists(statTileInterventionNeededBlock))
+    {
+      //Get the text of Inprocess control
+      var interventionNeedeText = statTileInterventionNeededBlock["Text"];
+        
+      //Get the Inprocess Count
+      var interventionNeededCount = interventionNeedeText["split"](" ")[0];
+        
+      if(waitTime == undefined && expectedSTATsInterventionNeededCount == undefined)
+      {
+        Log["Message"]("STATs Tile Intervention Needed Sample Count Displayed as '" + interventionNeededCount + "'");
+        Log["PopLogFolder"]();
+        return interventionNeededCount;
+      }
+      
+      Log["Message"]("STATs Tile Intervention Needed Sample Count Displayed as '" + interventionNeededCount + "'");
+      
+      var startPoolCount = 0;
+      var isExpectedCountDisplayed = true;
+      
+      while((interventionNeededCount != expectedSTATsInterventionNeededCount) && (startPoolCount<=waitTime))
+      {
+        //refresh and get the latest value
+        statTileInterventionNeededBlock["Refresh"]();
+        interventionNeedeText = statTileInterventionNeededBlock["Text"];
+        interventionNeededCount = interventionNeedeText["split"](" ")[0];
+        
+        //increment the counter
+        startPoolCount = startPoolCount + 1;
+        
+        if(interventionNeededCount == expectedSTATsInterventionNeededCount)
+        {
+          Log["Message"]("Waited for pooling time:"+startPoolCount);
+          Log["Message"]("Intervention Needed sample count displayed:"+interventionNeededCount+" is as expected: "+expectedSTATsInterventionNeededCount);
+          break;
+        }
+        
+        if(startPoolCount>waitTime)
+        {
+          Log["Error"]("Exceeded pooling time: "+waitTime);
+          Log["Error"]("Process count displayed: "+interventionNeededCount+" is not the expected: "+expectedSTATsInterventionNeededCount);
+          isExpectedCountDisplayed = false;
+          break;
+        }        
+      }
+      
+      //Check the tile count displayed as expected
+      if(isExpectedCountDisplayed)
+      {
+        Log["Message"]("STAT Tile Intervention Needed Count is validated successfully");
+        Log["Message"]("Expected STAT Count : " + expectedSTATsInterventionNeededCount);
+        Log["Message"]("Actual STAT Count : " + interventionNeededCount);  
+        Log["PopLogFolder"]();
+        return true;         
+      } else {
+        Log["Message"]("STAT Tile Intervention Needed Count validation failed");
+        Log["Error"]("Expected STAT InProcess Count : " + expectedSTATsInterventionNeededCount);
+        Log["Error"]("Actual STAT  InProcess Count : " + interventionNeededCount);      
+        Log["PopLogFolder"]();
+        return false;
+      }   
+    } else {
+      Log["Error"]("STATs Tile Intervention Needed text block does not exists");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckSTATsTileTotalCountWithPoolingInterval(waitTime, expectedTotalCount)
+{
+  try
+  {
+    Log["AppendFolder"]("Dashboard Tiles :: Check the STATs Tile Total Count as expected with pooling intervel"); 
+      
+    //Get the STATs tile Total count control
+    var tileCountCtrl = GetAutomationIDControl("DashboardTiles", "tileSTATTotalCount");
+      
+    //Check the tile count control is displayed
+    if( VerifyObjectExists(tileCountCtrl)) 
+    {
+      //Get tile count from tile control
+      var tileCount = tileCountCtrl["Text"];
+        
+      if(waitTime == undefined && expectedTotalCount == undefined)
+      {
+        Log["Message"]("STATs Tile Total Count Displayed as '" + tileCount + "'");
+        Log["PopLogFolder"]();
+        return tileCount;
+      }
+      
+      Log["Message"]("STATs Tile Total Count Displayed as '" + tileCount + "'");
+      
+      var startPoolCount = 0;
+      var isExpectedCountDisplayed = true;
+      
+      while((tileCount != expectedTotalCount) && (startPoolCount<=waitTime))
+      {
+        //refresh and get the latest value
+        tileCountCtrl["Refresh"]();
+        tileCount = tileCountCtrl["Text"];
+        
+        //increment the counter
+        startPoolCount = startPoolCount + 1;
+        
+        if(tileCount == expectedTotalCount)
+        {
+          Log["Message"]("Waited for pooling time:"+startPoolCount);
+          Log["Message"]("Total count displayed:"+tileCount+" is as expected: "+expectedTotalCount);      
+          break;
+        }
+        
+        if(startPoolCount>waitTime)
+        {
+          Log["Error"]("Exceeded pooling time: "+waitTime);
+          Log["Error"]("Process count displayed: "+tileCount+" is not the expected: "+expectedTotalCount);
+          isExpectedCountDisplayed = false;
+          break;
+        }        
+      }
+      
+      //Check the tile count displayed as expected
+      if(isExpectedCountDisplayed)
+      {
+        Log["Message"]("STAT Tile Total Count is validated successfully");
+        Log["Message"]("Expected STAT Total Count : " + expectedTotalCount);
+        Log["Message"]("Actual STAT Total Count : " + tileCount);  
+        Log["PopLogFolder"]();
+        return true;         
+      } else {
+        Log["Message"]("STAT Tile Total Count validation failed");
+        Log["Error"]("Expected STAT Total Count : " + expectedTotalCount);
+        Log["Error"]("Actual STAT  Total Count : " + tileCount);      
+        Log["PopLogFolder"]();
+        return false;
+      }   
+    } else {
+      Log["Error"]("STATs Tile Total Count text block does not exists");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckRoutineSamplesTileTotalCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileTotalCount)
+{
+try
+{
+    Log["AppendFolder"]("Routine Samples Tile Total count");
+    
+    //Get the Routine Samples tile Total count control
+    var tileCountCtrl = GetAutomationIDControl("DashboardTiles", "tileRoutineSampleTotalCount");
+    
+    //Check the tile count control is displayed
+    if( VerifyObjectExists(tileCountCtrl)) 
+    {
+      //Get tile count from tile control
+      var tileCount = tileCountCtrl["Text"];
+      
+      //Get the Total Count
+      var totalTileCount = tileCount["split"](" ")[0];
+        
+      if(waitTime == undefined && expectedRoutineSamplesTileTotalCount == undefined)
+      {
+        Log["Message"]("Routine Samples Tile Total Count Displayed as : '" + totalTileCount + "'");
+        Log["PopLogFolder"]();
+        return totalTileCount;
+      }
+      
+      Log["Message"]("Routine samples tile total count Displayed as '" + totalTileCount + "'");
+      
+      var startPoolCount = 0;
+      var isExpectedCountDisplayed = true;
+      
+      while((totalTileCount != expectedRoutineSamplesTileTotalCount) && (startPoolCount<=waitTime))
+      {
+        //refresh and get the latest value
+        tileCountCtrl["Refresh"]();
+        tileCount = tileCountCtrl["Text"];
+        totalTileCount = tileCount["split"](" ")[0];
+        
+        //increment the counter
+        startPoolCount = startPoolCount + 1;
+        
+        if(totalTileCount == expectedRoutineSamplesTileTotalCount)
+        {
+          Log["Message"]("Waited for pooling time:"+startPoolCount);
+          Log["Message"]("Total count displayed:"+totalTileCount+" is as expected: "+expectedRoutineSamplesTileTotalCount);
+          break;
+        }
+        
+        if(startPoolCount>waitTime)
+        {
+          Log["Message"]("Exceeded pooling time: "+waitTime);
+          Log["Message"]("Total count displayed: "+totalTileCount+" is not the expected: "+expectedRoutineSamplesTileTotalCount);
+          isExpectedCountDisplayed = false;
+          break;
+        }        
+      }
+
+      //Verify The routine samples total count
+      if(isExpectedCountDisplayed)
+      {
+        Log["Message"]("Routine Samples Tile is displaying the Correct In Process Count");
+        Log["Message"]("Expected Routine Samples Total Count : " + expectedRoutineSamplesTileTotalCount);
+        Log["Message"]("Actual Routine Samples Total Count : " + totalTileCount);        
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Message"]("Routine Samples Tile is not displaying the Correct In Process Count")
+        Log["Message"]("Expected Routine Samples Total Count : " + expectedRoutineSamplesTileTotalCount);
+        Log["Message"]("Actual Routine Samples Total Count : " + totalTileCount);
+        Log["PopLogFolder"]();
+        return false;
+      }                  
+    } else {
+      Log["Error"]("Unable to locate the Routine Samples tile count in dashbaord");
+      Log["PopLogFolder"]();
+      return false;
+    }      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function CheckRoutineSampleTilePatientInterventionNeededCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileInterventionneededCount)
+{
+   try
+  {
+      Log["AppendFolder"]("Routine Samples Tile Intervention Needed count");
+      
+      //Get the Routine Samples Tile Intervention Needed Control
+      var routineTileTileInterventionNeededCount = GetAutomationIDControl("DashboardTiles","tileRoutineSamplePatientInterventionNeeded");
+      
+       //Verify the Routine Samples Tile Intervention Needed Control exists
+      if(VerifyObjectExists(routineTileTileInterventionNeededCount))
+      {       
+          //Get the text of Intervention Needed Count control
+          var getRoutineTileInterventionNeededCount = routineTileTileInterventionNeededCount["Text"];
+        
+          //Get the Intervention Needed Count
+          var interventionNeededCount = getRoutineTileInterventionNeededCount["split"](" ")[0];
+        
+          if(waitTime == undefined && expectedRoutineSamplesTileInterventionneededCount == undefined)
+          {
+            Log["Message"]("Routine Samples : Patient Intervention Needed Tile Count Displayed as : '" + interventionNeededCount + "'");
+            Log["PopLogFolder"]();
+            return interventionNeededCount;
+          }
+      
+          Log["Message"]("Routine samples tile intervention needed count Displayed as '" + interventionNeededCount + "'");
+      
+          var startPoolCount = 0;
+          var isExpectedCountDisplayed = true;
+      
+          while((interventionNeededCount != expectedRoutineSamplesTileInterventionneededCount) && (startPoolCount<=waitTime))
+          {
+            //refresh and get the latest value
+            routineTileTileInterventionNeededCount["Refresh"]();
+            getRoutineTileInterventionNeededCount = routineTileTileInterventionNeededCount["Text"];
+            interventionNeededCount = getRoutineTileInterventionNeededCount["split"](" ")[0];
+        
+            //increment the counter
+            startPoolCount = startPoolCount + 1;
+        
+            if(interventionNeededCount == expectedRoutineSamplesTileInterventionneededCount)
+            {
+              Log["Message"]("Waited for pooling time:"+startPoolCount);
+              Log["Message"]("Intervention Needed count displayed:"+interventionNeededCount+" is as expected: "+expectedRoutineSamplesTileInterventionneededCount);
+              break;
+            }
+        
+            if(startPoolCount>waitTime)
+            {
+              Log["Error"]("Exceeded pooling time: "+waitTime);
+              Log["Error"]("Intervention Needed count displayed: "+interventionNeededCount+" is not the expected: "+expectedRoutineSamplesTileInterventionneededCount);
+              isExpectedCountDisplayed = false;
+              break;
+            }        
+          } 
+      
+          //Verify the Routine Samples Intervention Needed Count
+          if(isExpectedCountDisplayed)
+          {
+            Log["Message"]("Routine Samples Tile is displaying the Correct In Process Count");
+            Log["Message"]("Expected Routine Samples Count : " + expectedRoutineSamplesTileInterventionneededCount);
+            Log["Message"]("Actual Routine Samples Count : " + interventionNeededCount);
+            Log["PopLogFolder"]();
+            return true;
+          } 
+          else 
+          {
+            Log["Message"]("Routine Samples Tile is not displaying the Correct In Process Count")
+            Log["Message"]("Expected Routine Samples InProcess Count : " + expectedRoutineSamplesTileInterventionneededCount);
+            Log["Message"]("Actual Routine Samples  InProcess Count : " + interventionNeededCount);
+            Log["PopLogFolder"]();
+            return false;
+          }    
+      } 
+      else 
+      {
+      Log["Error"]("Routine Samples Tile does not exists");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+

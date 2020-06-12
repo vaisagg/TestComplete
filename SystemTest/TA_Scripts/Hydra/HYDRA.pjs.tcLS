@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="data">
+			<Node name="{24b6fa0b-0143-461a-9758-aeb9e9a9428b}">
+				<Prp name="default project" type="S" value="{FB30A0F3-4C50-4C8C-8F5C-75304A217D0D}"/>
+			</Node>
+			<Node name="{5f610f21-b4e4-4dfa-8ed8-35e1f39a7457}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\InitializationARM\InitializationARM.mds.tcLS"/>
+			</Node>
+			<Node name="{8dc78142-0e45-42b1-b268-adf1e1c45cc1}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\InitializationARM\InitializeARM.mds.tcLS"/>
+			</Node>
+			<Node name="{fb30a0f3-4c50-4c8c-8f5c-75304a217d0d}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\ARM\ARM.mds.tcLS"/>
+			</Node>
+			<Node name="{fb941af5-86ea-441c-823f-6323019dc839}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Hydra\ARM.mds.tcLS"/>
+			</Node>
+			<Node name="envmngrlogs">
+				<Prp name="key" type="S" value="{35735790-1C53-4EA3-BF9F-9864A0D8A7D4}"/>
+			</Node>
+			<Node name="logs">
+				<Prp name="key" type="S" value="{C1000F2F-3B43-41EC-8A73-615278C6CB69}"/>
+				<Prp name="relpath" type="S" value="Log"/>
+			</Node>
+			<Node name="variables"/>
+		</Node>
+		<Prp name="signature" type="S" value="{71078212-FAEB-4856-A901-B237C89E6B5C}"/>
+	</Node>
+</Nodes>

@@ -1,0 +1,216 @@
+﻿//USEUNIT InitializePCC
+//USEUNIT InitializeTCCSConfiguration
+//USEUNIT InvokeSimulators
+//USEUNIT ConfigureCHModule
+//USEUNIT DisableOnscreenKeyboard
+//USEUNIT LoadReagents
+//USEUNIT LoadSupplies
+//USEUNIT SHConfiguration
+//USEUNIT PostponeMaintenance
+
+function InitializeApps()
+{
+  DisableMaintenanceAutoStart();
+  SetNetworkHostProjFileName();
+  MakeLegacyScreenVisible();
+  TCRemoting();
+  SynchDcapDateTime();
+  
+  if( Sys["WaitProcess"]("Shell")["Exists"] == false )
+  {
+	EnableDisableModule("IA","False");
+  
+    InvokeAllSimulators();
+    InitializeTrinidad();
+  }
+  else
+  {
+    InitializeMetaData();
+    strDepType = GetDeploymentTypeFromFederationConfig();
+    ShutdownAllSimApps();
+    InvokeAllSimulators();
+    InitializeTrinidad();
+
+    if(!CheckSystemStatus(strDepType))
+    {
+      ShutdownAllSimApps();
+      InvokeAllSimulators();
+      InitializeTrinidad();
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Initialize", "Start_SH", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_DECAPPER", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_IA", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_CC", "P");
+    }
+  }
+}
+
+function SealerSetUp()
+{
+  SetNetworkHostProjFileName();
+
+  TCRemoting();
+  
+  InitializeMetaData();
+  
+if( Sys["Process"]("Shell")["Exists"] == false )
+  {
+	  EnableDisableModule("IA","False");
+    InvokeAllSimulators();
+    CopyVMMTrackFiles();
+    InitializeTrinidad();
+  }
+  else
+  {
+    InitializeMetaData();
+    strDepType = GetDeploymentTypeFromFederationConfig();
+    
+     ShutdownAllSimApps();
+     InvokeAllSimulators();
+	 CopyVMMTrackFiles();
+     InitializeTrinidad();
+     
+    if(!CheckSystemStatus(strDepType))
+    {
+      ShutdownAllSimApps();
+      InvokeAllSimulators();
+      CopyVMMTrackFiles();
+      InitializeTrinidad();
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Initialize", "Start_SH", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_DECAPPER", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_SEALER", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_IA", "P");
+      ReportTestStatusToResultXML("Initialize", "Start_CC", "P");
+    }
+  }
+  ConfigureCCModule();
+  
+  ReplaceSupplies();
+  
+  LoadCCAnalyzerReagents();
+  
+  DisableVirtKeyboard();
+} 
+//This module needs to be executed for a fresh installation. 
+function GlobalSetup()
+{
+
+  //SetMaintenanceAsNotPerformed();
+
+  ConfigureCCModule();
+  
+  ReplaceSupplies();
+  
+  LoadCCAnalyzerReagents();
+  
+  DisableVirtKeyboard();
+  
+  SetupDefaultDrawerConfiguration();
+} 
+
+function SetNetworkHostProjFileName()
+{
+    Projpath=Project["Path"]; 
+    length=(aqString["Find"](Projpath,"\\TestcaseLayer",0,false))
+    path=(aqString["SubString"](Projpath,0,length))
+    for(i=0;i<NetworkSuite["Hosts"]["Count"];i++)
+      {
+        NetworkSuite["Hosts"]["Items"](i)["BasePath"]=path;    //Setting Basepth to make relative project file name in Network Tasks
+      } 
+} 
+function MakeLegacyScreenVisible()
+{
+try
+{
+  
+  RegKey=Storages["Registry"]("SOFTWARE\\Siemens\\Trinidad",HKEY_LOCAL_MACHINE,1,false);
+  RegKey["SetOption"]("LegacyScreens",1);
+} 
+catch(ex)
+{
+  Log["Warning"]("Legacy screen enable function failed");
+} 
+  
+} 
+
+
+function ShutdownAllSimApps()
+{
+  
+var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  switch(DeploymentType)
+  {
+      case "SCD":
+            if(!ShutdownCCSim())
+              return false;
+            
+            if(!ShutdownSHSim())
+              return false;
+            
+            if(!ShutDownDecapperSim())
+              return false;
+  
+             if(!PCCShutdown())
+              return false;
+            else
+              return true;
+              
+           break;
+           
+      case "SCID":
+            if(!ShutdownCCSim())
+              return false;
+          
+            if(!ShutdownIASim())
+              return false;    
+             
+             if(!ShutdownSHSim())
+              return false;
+   
+           if(!ShutDownDecapperSim())
+              return false;
+  
+            if(!PCCShutdown())
+              return false;
+            else
+              return true;
+              
+           break;
+		   
+	 case "SCIDR":
+            if(!ShutdownCCSim())
+              return false;
+          
+            if(!ShutdownIASim())
+              return false;    
+             
+             if(!ShutdownSHSim())
+              return false;
+   
+           if(!ShutDownDecapperSim())
+              return false;
+              
+           if(!ShutDownSealerSim())
+            return false;
+  
+            if(!PCCShutdown())
+              return false;
+            else
+              return true;
+              
+           break;
+           
+      default:
+                break;
+
+  
+  }
+  
+  
+} 

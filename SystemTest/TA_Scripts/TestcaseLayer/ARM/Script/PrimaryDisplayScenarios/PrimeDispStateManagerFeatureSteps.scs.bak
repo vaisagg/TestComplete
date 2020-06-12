@@ -1,0 +1,2419 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra");
+var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+var DBDataFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls";
+var AppConfigFiles =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\Supplies_Testing_Sql\\";
+
+function GivenModuleIsInReadyState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Module is in 'Ready' State");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");    
+    //------------------------------------------------------------------------------------
+    
+    //---------------------------Check current Module state-------------------------------
+    
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+    
+    if(moduleState == false || moduleState != "Ready")
+    {
+      Log["Message"]("Current Module state is '"+moduleState+"'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      
+      Log["Message"]("Module State is changed to 'Ready'")
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("System Module is in Ready State");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInDiagnosticsState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the System Module is in 'Diagnostics' State");
+    
+    //----------------------------Fetching Testdata --------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //---------------------------Check current Module state-------------------------------
+    
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+    
+    if(moduleState==false || moduleState!="Diagnostics")
+    {
+      Log["Message"]("Current Module state is '"+moduleState+"'");
+      
+      //Perform the Enter Diagnostics action 
+      if(!StepPerformEnterDiagnosticsMode(moduleType))
+      {
+        Log["Error"]("Failed on performing the Enter Diagnostics action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Diagnostics"))
+      {
+        Log["Error"]("Failed on Verifying the State as 'Diagnostics'");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      Log["Message"]("Module State is changed to 'Diagnostics'")
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("Module is in 'Diagnostics' State");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInStoppedStateAfterRapidStopAction(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Stop the Given System Module by Rapid Stop");
+   
+    //-------------------------------Fetching Testdata -----------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //------------------Verify System Module State in Primary UI--------------------------
+    Log["AppendFolder"]("Step :: Check the '" + moduleType + "' is in 'Ready' State to perform the 'Stop' Action");
+    
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType); 
+    
+    //Check the system ready state
+    if(moduleState == false ||(moduleState != "Ready" && moduleState != "Standby"))
+    {
+      Log["Error"]("System Module '" + moduleType  + "' is not in expected state to proceed for the Stop action");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------  
+   
+    //---------------------Stop the system module by stop button--------------------------
+    Log["AppendFolder"]("Step :: Perform the Stop Operation in the System Module '" + moduleType + "' from System Health Check");
+      
+    //perfrom the stop action in system health check
+    if(!StepPerformStopActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the stop action for "+ moduleType +" module and verifying the state as stopped");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------  
+        
+    //------------------------Check the system module has been stopped--------------------
+    Log["AppendFolder"]("Step :: Check the system module '" + moduleType + "' comes to the stopped state");
+    
+    //Check the system modules is in stopped state
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as Stopped");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------  
+    
+    Log["PopLogFolder"](); 
+    return true;  
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInStoppedStateAfterPauseAction(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Stop the PrimeDisp by Pause action");
+   
+    //-----------------------------Fetching Testdata -------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //--------------------Verify System Module State in Primary UI------------------------
+    Log["AppendFolder"]("Step :: Check "+ moduleType +" Ready State in Primary UI");
+      
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType); 
+    
+    //Check the system ready state
+    if(moduleState == false || (moduleState != "Ready" && moduleState !="Standby"))
+    {
+      Log["Error"]("System Module '" + moduleType  + "' is not in expected state to proceed for the Pause action");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else if(moduleState == "Standby") {
+      //if the module is in stand by, then resume it to ready state
+      Log["Message"]("Current state for the  system module '" + moduleType + "' is '" + moduleState + "'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Message"]("System module '" + moduleType + "' is in ready state");
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------  
+   
+    //----------Perform Pause action to change the System Module state as Stopped---------
+    Log["AppendFolder"]("Step :: Stop the System module "+ moduleType +" by Pause action from Primary UI");
+      
+    //perform pause request from system health check
+    if(!StepPerformPauseActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the Pause action and verifying the state as stopped");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Check the module type is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as Stopped");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();   
+    //------------------------------------------------------------------------------------  
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInStoppedCheckHardwareState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Stop the PrimeDisp by Entering and Exiting from Diagnostics");
+   
+    //-----------------------------Fetching Testdata -------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForStoppedCheckHardware");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForStoppedCheckHardware");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All"; 
+    //------------------------------------------------------------------------------------
+    
+    //------------------------Check current Module state is Diagnostics-------------------------------
+    Log["AppendFolder"]("Step :: Make the Module state as 'Diagnostics'");
+    
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+    
+    if(moduleState==false || moduleState!="Diagnostics")
+    {
+      Log["Message"]("Current Module state is '"+moduleState+"'");
+      
+      //Perform the Enter Diagnostics action 
+      if(!StepPerformEnterDiagnosticsMode(moduleType))
+      {
+        Log["Error"]("Failed on performing the Enter Diagnostics action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Diagnostics"))
+      {
+        Log["Error"]("Failed on Verifying the State as 'Diagnostics'");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    }
+    Log["Message"]("Module State is 'Diagnostics'")
+    Log["PopLogFolder"]();
+    
+   //------------------------------------------------------------------------------------------------------
+    
+   //-----------------------------Perform Exit Diagnostics-------------------------------------------------
+    Log["AppendFolder"]("Step :: Perform Exit Diagnostics");
+    
+    //Perform the Exit Diagnostics action 
+    if(!StepPerformExitDiagnosticsMode(moduleType))
+    {
+      Log["Error"]("Failed on performing the Exit Diagnostics action on system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //------------------------------------------------------------------------------------------------------
+    
+    //-----------------------------Verify Module State as Stopped Check Hardware---------------------------
+    //check the system module becomes Stopped
+    Log["AppendFolder"]("Step :: Verify Module state as Stopped Check Hardware state");
+    
+    //Verify the module state as Stopped
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Diagnostics'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Check the log entry is created for Stopped:Check Hardware state in operator event log    
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Failed to verify the module state as 'Stopped:Check hardware'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("Successfully verified the Module state as 'Stopped:Check hardware'");
+    Log["PopLogFolder"]();
+    
+    //------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;     
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInProcessingState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Process samples and Verify System Module State as 'Processing' ");
+    
+    //-----------------------------Fetching Testdata ------------------------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["item"]("SampleId")["split"](";");
+    //-----------------------------------------------------------------------------------------------------
+    
+    //--------------------Verify System Module State in Primary UI------------------------------------------
+    Log["AppendFolder"]("Step :: Check " + moduleType + " Ready State in Primary UI");
+      
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType); 
+    
+    //Check the system ready state
+    if(moduleState == false || (moduleState != "Ready" && moduleState !="Standby"))
+    {
+      Log["Error"]("System Module '" + moduleType  + "' is not in expected state to create patient orders");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else if(moduleState == "Standby") {
+      //if the module is in stand by, then resume it to ready state
+      Log["Message"]("Current state for the  system module '" + moduleType + "' is '" + moduleState + "'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Message"]("System module '" + moduleType + "' is in ready state");
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------------------------ 
+    
+    //-----------------------------------------Move to Historical------------------------------------------------
+    Log["AppendFolder"]("Step :: Move Old Samples to Historical");
+   
+    //Removeing old samples
+    if(!StepMoveAllSamplesToHistorical())
+    {
+      Log["Error"]("Move to Historical Verification Failed")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------------Create Patient Order Samples-----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+       
+    //-------------------------------------Load samples---------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Samples from the sample list");
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+    
+    //----------------------check the system module becomes in expected status------------------------------
+    Log["AppendFolder"]("Step :: Check the Module is in 'Processing' state");
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Processing"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Processing'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInProcessingStateWithTransientStatusOfPausing(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Process samples and Verify System Module State as 'Processing' ");
+   
+    //-----------------------------Fetching Testdata ------------------------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);       
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+   
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["item"]("SampleId")["split"](";");
+    var expectedTransientState = "Pausing";
+    //-----------------------------------------------------------------------------------------------------
+   
+    //--------------------Verify System Module State in Primary UI------------------------------------------
+    Log["AppendFolder"]("Step :: Check "+ moduleType +" Ready State in Primary UI");
+     
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+   
+    //Check the system ready state
+    if(moduleState == false || (moduleState != "Ready" && moduleState !="Standby"))
+    {
+      Log["Error"]("System Module '" + moduleType  + "' is not in expected state to create patient orders");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else if(moduleState == "Standby") {
+      //if the module is in stand by, then resume it to ready state
+      Log["Message"]("Current state for the  system module '" + moduleType + "' is '" + moduleState + "'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Message"]("System module '" + moduleType + "' is in ready state");
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------------------------
+   
+    //-----------------------------------------Move to Historical------------------------------------------------
+    Log["AppendFolder"]("Step :: Move Old Samples to Historical");
+   
+    //Removeing old samples
+    if(!StepMoveAllSamplesToHistorical())
+    {
+      Log["Error"]("Move to Historical Verification Failed")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+   
+    //-------------------------------------Create Patient Order Samples-----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+   
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+   
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+      
+    //-------------------------------------Load samples-----------------------------------
+    Log["AppendFolder"]("Step :: Load Samples from the sample list");
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+   
+    //---------------------check the system module becomes in expected status-------------
+    Log["AppendFolder"]("Step :: Check the Module is in 'Processing' state");
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Processing"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Processing'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    
+    //---------------------Pause and verify the pausing transient state-------------------
+    
+    Log["AppendFolder"]("Step :: Pause the system module and verify the transient status displayed as pausing")
+    
+    if(!StepVerifyTheTrasientStateOfSystemModuleByControlAction(moduleType, "Pause", expectedTransientState))
+    {
+      Log["Error"]("Failed to pause and verify the transient state");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+       
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInReadyStateWithTransientStatusOfPausing(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify System Module State is 'Ready' with Transient status of 'Pausing' ");
+   
+    //-----------------------------Fetching Testdata ------------------------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);       
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+   
+    var expectedTransientState = "Pausing";
+    //-----------------------------------------------------------------------------------------------------
+   
+    //--------------------Verify System Module State in Primary UI------------------------------------------
+    Log["AppendFolder"]("Step :: Check "+ moduleType +" Ready State in Primary UI");
+     
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+   
+    //Check the system ready state
+    if(moduleState == false || (moduleState != "Ready" && moduleState !="Standby"))
+    {
+      Log["Error"]("System Module '" + moduleType  + "' is not in expected state to proceed for 'Pause' action");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else if(moduleState == "Standby") {
+      //if the module is in stand by, then resume it to ready state
+      Log["Message"]("Current state for the  system module '" + moduleType + "' is '" + moduleState + "'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Message"]("System module '" + moduleType + "' is in ready state");
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------------------------
+    
+    //---------------------Pause and verify the pausing transient state-------------------
+    
+    Log["AppendFolder"]("Step :: Pause the system module and verify the transient status displayed as pausing")
+    
+    if(!StepVerifyTheTrasientStateOfSystemModuleByControlAction(moduleType, "Pause", expectedTransientState))
+    {
+      Log["Error"]("Failed to pause and verify the transient state");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+   
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function GivenModuleIsInMaintenanceState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Perform a Maintenance Activity for the module to make it in Maintenance State");
+   
+    //-----------------------------Fetching Testdata ------------------------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"Maintenance",testName);       
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    var activityName = systemHealthCheckTestData[0]["Item"]("ActivityName");
+    //-----------------------------------------------------------------------------------------------------
+   
+    //--------------------Verify System Module State in Primary UI------------------------------------------
+    Log["AppendFolder"]("Step :: Check "+ moduleType +" Ready State in Primary UI");
+     
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+   
+    //Check the system ready state
+    if(moduleState == false || (moduleState != "Ready" && moduleState !="Standby"))
+    {
+      Log["Error"]("System Module '" + moduleType  + "' is not in expected state to proceed for 'Pause' action");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else if(moduleState == "Standby") {
+      //if the module is in stand by, then resume it to ready state
+      Log["Message"]("Current state for the  system module '" + moduleType + "' is '" + moduleState + "'");
+      
+      //Perform the resume action by module name
+      if(!StepPerformResumeActionOnSystemModule(moduleType))
+      {
+        Log["Error"]("Failed on performing the resume action on system module '" + moduleType + "'");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the system module becomes expected status
+      if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+      {
+        Log["Error"]("Failed on Verifying the State as Ready");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Message"]("System module '" + moduleType + "' is in ready state");
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------------------------
+   
+   
+    //-------------------------------------Perform Maintenance activity-----------------------------------------
+     //Perfrom maintenance activity in view all maintenance popup
+     Log["AppendFolder"]("Step :: Perform Maintenance activity");
+    
+    if(!StepPerformMaintenanceActivityInAllActivities(moduleType,activityName))
+    {
+      Log["Error"]("Failed to perform Maintenance activity");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+   
+    //----------------------check the system module becomes in expected status------------------------------
+    Log["AppendFolder"]("Step :: Check the Module is in 'Maintenance' state");
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Maintenance"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Maintenance'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+   
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GivenModuleIsInStoppedCheckSuppliesState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Deplete few supplies using sql query to make system module in stopped check supplies state");
+   
+    //-----------------------------Fetching Testdata -------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    var sqlQuery = GetTestItemsByTestName(DBDataFile,"Supplies","Stopped_CheckSupplies");
+    var supplyDepleteQuery = sqlQuery[0]["Item"]("Query1");
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    //------------------------------------------------------------------------------------
+        
+    //---------------------Shutdown Hydra Before Running SQL Query------------------------
+    Log["AppendFolder"]("Step :: Shutdown hydra to execute the SQL query");
+    
+    //Shut Down Legacy Consoles
+    if(!StepShutdownHydraApplication())
+    {
+      Log["Error"]("Failed to shudown hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+        
+    //----------------------Execute SQL Query for Deplete few supplies--------------------
+        
+    Log["AppendFolder"]("Setup :: Deplete the supplies");
+            
+    //Execute the sql query 
+    if(!StepExecSQLQueryFromString(supplyDepleteQuery,strConString))
+    {
+      Log["Error"]("Failed to execute the sql query for depleting supplies");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {        
+      Log["PopLogFolder"]();
+    }      
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------------------Re-initialize Hydra and all applications-----------------------------            
+      
+    Log["AppendFolder"]("Setup :: Launch Hydra, Backend & Primary Display App");
+    
+    //launch Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+    if(!StepLaunchHydraApplication())
+    {
+      Log["Error"]("Failed to re-initialize the hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------
+        
+        
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Setup :: Login to Primary UI as 'LoginG0' user");
+
+    //Initailize variables
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");
+      
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify the Stopped state-------------------------------------
+     
+    Log["AppendFolder"]("Setup :: Verify the module is in Stopped State");
+    
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Stopped' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function WhenUserRaiseResumeRequest(testName)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Step :: Play / Resume the system module from system health check");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");  
+    //------------------------------------------------------------------------------------
+    
+    //--------------------------Play /Resume System Module -------------------------------
+    
+    //perform resume request for the given system module
+    if(!StepPerformResumeActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the resume action on "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+    //------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserRaisePauseRequest(testName)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Step :: Pause the system module from system health check");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");  
+    //------------------------------------------------------------------------------------
+    
+    //--------------------------Pause System Module -------------------------------
+    
+    //perform Pause request for the given system module
+    if(!StepPerformPauseActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the Pause action on "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+    //------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserRaisePowerDownRequest(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Shutdown the system module from system health check");
+    
+    //-------------------------------Fetching Testdata -----------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //--------------------------Shut Down System Module ----------------------------------
+      
+    //Perfrom shutdown request on system module
+    if(!StepPerformShutdownActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the Shut Down for "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserRaiseDiagnosticsRequest(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enter diagnostcs mode for the system module from operator diagnostics");
+    
+    //----------------------------------Fetching Testdata --------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------Perform Diagnostics for System Module ---------------------
+    
+    //Perform action to enter into diagostics mode  
+    if(!StepPerformEnterDiagnosticsMode(moduleType))
+    {
+      Log["Error"]("Failed on performing the Shut Down for "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserRaiseDiagnosticsRequestFromSystemHealthCheck(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enter diagnostcs mode for the system module from System Health Check");
+    
+    //----------------------------------Fetching Testdata --------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------Perform Diagnostics for System Module ---------------------
+    
+    //Perform action to enter into diagostics mode 
+    if(!StepPerformEnterDiagnosticsOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the Shut Down for "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+function WhenUserRaiseMaintenanceRequest(testName)
+{
+  try
+  {    
+    Log["AppendFolder"]("Step :: Perform a Maintenance activity from the all activities screen");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var maintenanceTestData = GetTestItemsByTestName(TestDataFile,"Maintenance",testName);
+    var moduleType = maintenanceTestData[0]["Item"]("ModuleType");
+    var activityName = maintenanceTestData[0]["Item"]("ActivityName");
+    //------------------------------------------------------------------------------------
+    
+    //---------------------------Perform Maintenance Activity-----------------------------
+      
+    //Perfrom maintenance activity in view all maintenance popup
+    if(!StepPerformMaintenanceActivityInAllActivities(moduleType,activityName))
+    {
+      Log["Error"]("Failed to perform Maintenance activity");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserRaiseExitDiagnosticsRequest(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Exit diagnostcs mode for the system module from operator diagnostics");
+    
+    //--------------------------------Fetching Testdata ----------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //---------------------Perform Exit Diagnostics for System Module --------------------
+
+    //exit from diagnostics mode using operator diagnostics      
+    if(!StepPerformExitDiagnosticsMode(moduleType))
+    {
+      Log["Error"]("Failed on performing the exit diagnostics "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenUserRaiseLeaveMaintenanceRequest(testName)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Step :: Stop the Maintenance acticity");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var maintenanceTestData = GetTestItemsByTestName(TestDataFile,"Maintenance",testName);        
+    var activityName = maintenanceTestData[0]["Item"]("ModuleType");  
+    //------------------------------------------------------------------------------------
+    
+    //--------------------------Stop Miantenance activty -------------------------------
+    if(!StepStopActivityInMaintenanceScreen(activityName))
+    {
+      Log["Error"]("Failed to stop maintenance activity");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+    //------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenSuppliesAreReplaceFromSupplyNeedsScreen(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Replace required supplies from supply alert screen");
+    
+    var lotNumberArr = new Array();
+    var seqNumberArr = new Array();
+    var expiryDateArr = new Array();
+    var expiryMonthArr = new Array();
+    var expiryYearArr = new Array();
+    var months = ['January', 'February', 'March', 'April', 'May','June', 'July', 'August', 'September','October', 'November', 'December'];
+    
+    //--------------------------------Fetching Testdata ----------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var suppliesToReplace = suppliesTestData[0]["Item"]("SuppliesToReplace")["split"](";");
+    
+    var suppliesDefaultTestData = GetTestItemsByTestName(TestDataFile,"Supplies","Default");
+    
+    for(var i=0; i<suppliesToReplace.length; i++)
+    {
+      var dynacmiseqNumber = aqConvert["TimeIntervalToStr"](aqDateTime["Time"]()).replace(/:/g,"").slice(0,5);
+      var date = aqDateTime["GetDay"](aqDateTime["Now"]());
+      var monthNumber = aqDateTime["GetMonth"](aqDateTime["AddMonths"](aqDateTime["Now"](),3));
+      var year = aqDateTime["GetYear"](aqDateTime["Now"]()) + 1;
+          
+      lotNumberArr["push"](suppliesDefaultTestData[0]["Item"]("DefaultLotNumber"));
+      seqNumberArr["push"](dynacmiseqNumber);      
+      expiryDateArr["push"](date);
+      expiryMonthArr["push"](months[monthNumber]);
+      expiryYearArr["push"](year);
+    }
+        
+    //------------------------------------------------------------------------------------
+    
+    //Refiil supplies 
+    if(StepRefillSuppliesFromSupplyNeeds(suppliesToReplace,lotNumberArr,seqNumberArr,expiryDateArr,expiryMonthArr,expiryYearArr))
+    {
+      Log["Message"]("All the supplies are successfully refilled");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Refilling supply action failed due to some error");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleStateChangedtoReady(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify The System Module State as 'Ready'");
+    
+    //----------------------------Fetching Testdata --------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //------------------------------Check the module ready state--------------------------
+    
+    //Check the system module ready state
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+    {
+      Log["Error"]("Failed on Verifying the State as Ready");
+      Log["PopLogFolder"]()
+      return false;
+    }    
+    //------------------------------------------------------------------------------------
+      
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleStateChangedtoMaintenance(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the System Module State as 'Maintenance'");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //Check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Maintenance"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Maintenance' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleStateChangedtoPowerDown(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the System Module State as 'Off'");
+    
+    //--------------------------------Fetching Testdata ----------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //---------------------Check the system module is shutdown and stopped----------------
+    
+    //Check the module is in power down status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Off"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Off' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleStateChangedtoDiagnostics(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the System Module State as 'Diagnostics'");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //---------------------------Check the system module is in diagnostics mode-----------
+    
+    //check the system module in diagnsotics status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Diagnostics"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Disgnostics' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleStateChangedToStopped(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the System Module State as 'Stopped'");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify the Stopped state-------------------------------------
+      
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Stopped' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function ThenVerifyModuleStateChangedToReadyAfterResumeRequest(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify System Module State as 'Ready' by Click on Play / Resume");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //--------------Play /Resume Syatem Module and verify the Ready State-----------------
+         
+    Log["AppendFolder"]("Step :: Play / Resume System Module '" + moduleType + "'");
+    
+    //Perfrom resume request for the system module
+    if(!StepPerformResumeActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the resume "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    
+    //--------------------Verify the system module comes to ready state-------------------
+    Log["AppendFolder"]("Step :: Verify System Module '" + moduleType + "' State as 'Ready'");
+    
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+    {
+      Log["Error"]("Failed on Verifying the State as Ready");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function ThenVerifyModuleStateChangedToStoppedAfterSampleProcessingCompleted(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify System Module State Changed to 'Stopped' After Samples Processing");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["item"]("SampleId")["split"](";");
+    //------------------------------------------------------------------------------------
+    
+    //----------------------check the system module state remains as 'Processing'--------------------------
+    Log["AppendFolder"]("Step :: Check the Module is in 'Processing' state");
+    
+    //Get the current state of the system module name
+    var moduleState = StepGetCurrentStateOfSystemModule(moduleType);
+    
+    if(moduleState==false || moduleState!="Processing")
+    {
+      Log["Error"]("Module state changed to"+moduleState+" ")
+    }
+    else
+    {
+      Log["Message"]("Module state remains in 'Processing' after Pause request");
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------Check the samples aspirated-------------------------------------
+    Log["AppendFolder"]("Step :: Check the Samples are getting Processed");
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the samples are in aspirated status in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample aspiration verification passed");
+        sampleAspiratedCount = sampleAspiratedCount + 1;
+        Log["PopLogFolder"]();        
+      } else {
+        Log["Error"]("Sample aspiration verification  for sample'" + sampleList[i] + "' failed");
+        Log["PopLogFolder"]();  
+      }
+    }
+    
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+    
+    //----------------------check the system module state as 'Stopped'-------------------------------------
+    Log["AppendFolder"]("Step :: Verify the System Module State changed to 'Stopped'");
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Stopped'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    //-----------------------------------------------------------------------------------------------------
+      
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleStateChangedToProcessing(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the System Module State as 'Processing'");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //-----------------------Verify the Stopped state-------------------------------------
+      
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Processing"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Processing' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+//----------------------------Event log code verification methods-------------------------
+
+function ThenVerifyEventLogGeneratedForStateChangeToDiagnostics()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for State Change to Diagnostics");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForStateChangeToDiagnostics");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForStateChangeToDiagnostics");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log    
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter, moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForWarminupToReady()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for Warming up to Ready");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForModuleStateReady");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForModuleStateReady");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";   
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter, moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForShuttingDownToOffState()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for Shutting down to Off State");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForShuttingDownToOffState");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForShuttingDownToOffState");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForStoppedCheckHardwareState()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for Stopped Check Hardware State");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForStoppedCheckHardware");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForStoppedCheckHardware");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForStoppedPausedToResuming()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for Stopped Paused to Resuming");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForStoppedPausedToResuming");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForStoppedPausedToResuming");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function ThenVerifyEventLogGeneratedForResumingToStartupHoming()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for Resuming to Startup Homing");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForResumingToStarupHoming");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForResumingToStarupHoming");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function ThenVerifyEventLogGeneratedForProcessingToStopped()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for Processing to Stopped");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForProcessingToStopped");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForProcessingToStopped");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForStateChangedToMaintenance()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for State change to Maintenance");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForStateChangeToMaintenance");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForStateChangeToMaintenance");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function ThenVerifyEventLogGeneratedForStateChangedToStoppedPaused()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log for State change to Stopped Paused");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForStoppedPausedState");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForStoppedPausedState");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForStateChangeFromPausedToProcessing()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verifying log entry in Operator Event Log");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForPausedToProcessing");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForPausedToProcessing");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //--------------------Verify Event Log for Module State Change------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+
+}
+
+function ThenVerifyEventLogGeneratedForStateChangeFromProcessingToReady()
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verifying log entry in Operator Event Log");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs","Default");
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForProcessingToReady");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForProcessingToReady");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //--------------------Verify Event Log for Module State Change------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForSystemModuleStateChange(testName)
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verify log entry in Operator Event Log");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+    var eventCode = eventLogTestData[0]["Item"]("EventCode");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessage");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //-------------------Verify Event Log for Module State Change-------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedForStateChangeToProcessing(testName)
+{
+  try
+  {   
+    Log["AppendFolder"]("Step :: Verifying log entry in Operator Event Log");
+    
+    //---------------------------------Fetching Testdata ---------------------------------
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+    var eventCode = eventLogTestData[0]["Item"]("EventCodeForModuleStateProcessing");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessageForModuleStateProcessing");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //------------------------------------------------------------------------------------
+        
+    //--------------------Verify Event Log for Module State Change------------------------
+        
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyModuleIsInStartupResuming(testName)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Verify module is in startup resuming");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    var expectedTransientState = "Resuming"
+    
+    //------------------------------------------------------------------------------------
+    
+    //---------------------------Verify the StartUp state-------------------------------------
+      
+    Log["AppendFolder"]("Step :: Verify the Module State as 'StartUp'");
+    
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"StartUp"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'StartUp' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    //----------------------------------------------------------------------------------------
+    
+    //--------------------------Verify Transition State--------------------------------------
+    
+    Log["AppendFolder"]("Step :: Verify the Module State is in Transition");
+    
+    if(!StepVerifyTheTransientStateOfSystemModule(moduleType,expectedTransientState))
+    {
+      Log["Error"]("Verification of transient state '" + expectedTransientState + "'  for the module '" + moduleType + "' is Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Transient state '" + expectedTransientState + "' is displayed for the module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return true;    
+    }
+    Log["PopLogFolder"]();
+    
+    //-----------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function ThenVerifyPausingTransientstate(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verifying the 'Pausing' Transient state is displayed for the module");
+    
+    //---------------------------------Fetching Testdata --------------------------------------------------
+    
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    var expectedTransientState = "Pausing";
+ 
+    //-----------------------------------------------------------------------------------------------------
+        
+    //---------------------------------------Verify Pausing Transient state-----------------------------------------
+        
+    if(!StepVerifyTheTransientStateOfSystemModule(moduleType,expectedTransientState))
+    {
+      Log["Error"]("Verification of transient state '" + expectedTransientState + "'  for the module '" + moduleType + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Transient state '" + expectedTransientState + "' is displayed for the module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //-----------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTransientstateForResuming(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verifying the 'Resuming' Transient state is displayed as expected");
+    
+    //---------------------------------Fetching Testdata --------------------------------------------------
+    
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    var expectedTransientState = "Resuming";
+ 
+    //-----------------------------------------------------------------------------------------------------
+        
+    //---------------------------------------Verify Resuming Transient state-----------------------------------------
+        
+    //Comparing the Actual and expected transient state
+    if(!StepVerifyTheTransientStateOfSystemModule(moduleType,expectedTransientState))
+    {
+      Log["Error"]("Verification of transient state '" + expectedTransientState + "'  for the module '" + moduleType + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Transient state '" + expectedTransientState + "' is displayed for the module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //-----------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//-----------------------------------Post Run Methods-------------------------------------
+
+function ExitDiagnosticsAndMakeItReadyState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Exit diagnostcs state and make the system module in ready state");
+    
+    //--------------------------------Fetching Testdata ----------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+    
+    //---------------------Perform Exit Diagnostics for System Module --------------------
+    Log["AppendFolder"]("Step :: Exit diagnostcs mode for the system module from operator diagnostics");
+    
+    //exit from diagnostics mode using operator diagnostics      
+    if(!StepPerformExitDiagnosticsMode(moduleType))
+    {
+      Log["Error"]("Failed on performing the exit diagnostics "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]()
+      return false;
+    }
+    Log["PopLogFolder"]()
+    //------------------------------------------------------------------------------------
+        
+    //-----------------------Verify the Stopped state-------------------------------------
+    Log["AppendFolder"]("Step :: Verify the system module is in stopped state");
+    
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Stopped"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Stopped' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]()
+      return false;
+    } 
+    Log["PopLogFolder"]()
+    //------------------------------------------------------------------------------------
+    
+    //--------------------------Play /Resume System Module -------------------------------
+    Log["AppendFolder"]("Step :: Perform resume request for the system module");
+    
+    //perform resume request for the given system module
+    if(!StepPerformResumeActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the resume action on "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    //------------------------------Check the module ready state--------------------------
+    Log["AppendFolder"]("Step :: Verify the system module is in ready state");
+    
+    //Check the system module ready state
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+    {
+      Log["Error"]("Failed on Verifying the State as Ready");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+        
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ResumeAndMakeItReadyState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Exit diagnostcs state and make the system module in ready state");
+    
+    //--------------------------------Fetching Testdata ----------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    //------------------------------------------------------------------------------------
+           
+    //--------------------------Play /Resume System Module -------------------------------
+    Log["AppendFolder"]("Step :: Perform resume request for the system module");
+    
+    //perform resume request for the given system module
+    if(!StepPerformResumeActionOnSystemModule(moduleType))
+    {
+      Log["Error"]("Failed on performing the resume action on "+ moduleType +" module");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    //------------------------------Check the module ready state--------------------------
+    Log["AppendFolder"]("Step :: Verify the system module is in ready state");
+    
+    //Check the system module ready state
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+    {
+      Log["Error"]("Failed on Verifying the State as Ready");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+        
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function RefillDepletedSuppliesAndMakeSystemModuleReadyState(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Refill the Depletes supplies using sql query to make system module ready state");
+   
+    //-----------------------------Fetching Testdata -------------------------------------
+    var systemHealthCheckTestData = GetTestItemsByTestName(TestDataFile,"SystemHealthCheck",testName);        
+    var moduleType = systemHealthCheckTestData[0]["Item"]("ModuleType");
+    var sqlQuery = GetTestItemsByTestName(DBDataFile,"Supplies","Stopped_CheckSupplies");
+    var supplyDepleteQuery = sqlQuery[0]["Item"]("Query2");
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    //------------------------------------------------------------------------------------
+        
+    //---------------------Shutdown Hydra Before Running SQL Query------------------------
+    Log["AppendFolder"]("Step :: Shutdown hydra to execute the SQL query");
+    
+    //Shut Down Legacy Consoles
+    if(!StepShutdownHydraApplication())
+    {
+      Log["Error"]("Failed to shudown hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+        
+    //----------------------Execute SQL Query for Deplete few supplies--------------------
+        
+//    Log["AppendFolder"]("Step :: Refill the depleted supplies");
+//            
+//    //Execute the sql query 
+//    if(!StepExecSQLQueryFromString(supplyDepleteQuery,strConString))
+//    {
+//      Log["Error"]("Failed to execute the sql query for the Left Tray Tip");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    } else {        
+//      Log["PopLogFolder"]();
+//    } 
+
+      Log["AppendFolder"]("Fill Supplies by running sql query");
+      var obj=Sys["OleObject"]("Shell.Application");
+      obj.ShellExecute("Refill_Supplies_SQL_Query.bat","", AppConfigFiles,"runas",1);  
+      Log["PopLogFolder"]();
+      
+    //------------------------------------------------------------------------------------
+    
+    //-------------------Re-initialize Hydra and all applications-------------------------
+      
+    Log["AppendFolder"]("Step :: Launch Hydra, Backend & Primary Display App");
+    
+    //launch Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+    if(!StepLaunchHydraApplication())
+    {
+      Log["Error"]("Failed to re-initialize the hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+                
+    //----------------------Login to the Primary UI---------------------------------------
+    Log["AppendFolder"]("Step :: Login to Primary UI as 'LoginG0' user");
+
+    //Initailize variables
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");
+      
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------Verify the Ready state-------------------------------------
+     
+    Log["AppendFolder"]("Step :: Verify the system module is in 'Ready' state");
+    
+    //check the system is in expected status
+    if(!StepVerifySystemToBeInExpectedStatus(moduleType,"Ready"))
+    {
+      Log["Error"]("Failed on Verifying the State as 'Ready' for the system module '" + moduleType + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //------------------------------------------------------------------------------------
+
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

@@ -1,0 +1,6177 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT LocalizationUtilities
+//USEUNIT System
+//USEUNIT Authentication
+//USEUNIT TCCSConfigLibrary
+var BlobPath = Project["Path"]+"TestData\\\IABlobs\\";
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+// ***********************************************************************************************
+// Function Name : ImportTestDefinition()
+// Function Description: This function imports Test Difintion from the Testdata Excel file
+// Inputs :.
+// ***********************************************************************************************
+function ImportTestDefinition(SheetName)
+{
+  var TdefList=GetTDefInfo(TestDataFile,SheetName);
+  Log["AppendFolder"]("Importing IM Test Definition");
+
+  TdefList.MoveFirst;
+  for(i=0;!TdefList.Eof;i++)
+  {
+    Log["AppendFolder"]("Loading "+TdefList("AssayName").Value);
+   BlobFilePath=BlobPath + TdefList("FileName").Value
+  if(aqFile["Exists"](BlobFilePath))
+  {
+     ImportBLOB(BlobFilePath);
+      VerifyAssayInTdefList(TdefList("AssayName").Value);
+  } 
+  else
+  {
+    Log["Warning"](TdefList("FileName").Value + " is not available in "+BlobPath);
+  } 
+   Log["PopLogFolder"]();
+   TdefList.MoveNext;
+  } 
+  Log["PopLogFolder"]();
+ return true;
+}
+//// ***********************************************************************************************
+//// Function Name : ImportBLOB(Path)
+//// Function Description: This function performs the Import operation of the input Tdef Blog file
+//// Inputs : Path -> Full Path of the Tdef file to be imported
+////        :Testfile -> Excel sheet that contains the list of Tests to be imported
+//// ***********************************************************************************************
+function ImportBLOB(Path)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup : Import Tdef using Blob")
+    InvokeWorkflow("Setup_Testdefinition_IMTestdefinition_ImportBlob");
+    var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportBlob","browseButton");
+    ClickControl(objctrl);
+    var objctrl = Sys["Process"]("Shell")["Window"]("#32770", "Open")["Window"]("ComboBoxEx32");//  GetControl("Setup_Testdefinition_IMTestdefinition_ImportBlob","BlobFilePath");
+    //objctrl.wText="asdf";
+    SetText(objctrl,Path);
+    var objctrl =Sys["Process"]("Shell")["Window"]("#32770", "Open")["Window"]("Button", "&Open");// GetControl("Setup_Testdefinition_IMTestdefinition_ImportBlob","btnOpenTdefFile");
+    Clickbutton(objctrl)
+    Delay(2000);
+
+    var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportBlob","btnImport");
+    ClickControl(objctrl);
+    Delay(3000);
+    Log["PopLogFolder"]();
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;    
+  }
+  Log["PopLogFolder"](); 
+
+}
+
+//// ***********************************************************************************************
+//// Function Name : Importfile(Path,Testfile)
+//// Function Description: This function performs the Import operation of the input Tdef file
+//// Inputs : Path -> Full Path of the Tdef file to be imported
+////        :Testfile -> Excel sheet that contains the list of Tests to be imported
+//// ***********************************************************************************************
+//function Importfile(Path,Testfile)
+//{
+//  Log["AppendFolder"]("Importing the Test Defintion file");
+//  //Browse and select the Tdef file
+//  Log["AppendFolder"]("Browse and Select the Tdef File using Import Tdef option");
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","btnBrowse");
+//  ClickControl(objctrl);
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","edtSelectTdefFile");
+//  SetText(objctrl,Path);
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","btnOpenTdefFile");
+//  ClickControl(objctrl);
+//  Delay(2000);
+//
+//
+//  //*******************Fetch the tests from Excel file********************
+//  //Get the list of Tests from the Excel file.
+//  var query = "SELECT DISTINCT Tdef FROM [Sheet1$]";
+//  Testlist = GetTestitems(Testfile,query);
+//  var Testarr = new Array();
+//  Testlist.MoveFirst();
+//  var test=0;
+//  while(!Testlist.Eof)
+//  {
+//    Testarr[test]=Testlist["Fields"]("Tdef")["Value"];
+//    Testlist.MoveNext();
+//    test++;
+//  }
+//  Log["Message"]("Select the TestNames on the UI before starting the Import");
+//  //Get the Grid Control containing the TestNames from Tdef file.
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","wgdSelectTest");  
+//  //Unselect all the Tests in the Grid
+//  var Column=0;
+//  UnselectAll(objctrl,Column);   
+//  //Select the Required tests
+//
+//  for(test=0;test<Testarr["length"];test++)
+//  {
+//    TestName=Testarr[test];
+//    Selectitem(objctrl,TestName);
+//  }
+//  Log["PopLogFolder"](); 
+//   
+//  //Click Import Button
+//  Log["AppendFolder"]("Start the Import Operation");  
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","btnStartImport");
+//  ClickControl(objctrl);
+//
+//  //Wait for Import to complete
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","winWaitforComplete");
+//  Waitforwindow(objctrl);
+//  var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","btnOK");
+//  ClickControl(objctrl);
+//  Log["PopLogFolder"]();
+//  Delay(2000); 
+//  //Verify whether the import is successfull or not
+//  VerifyImport();
+//  
+//  Log["PopLogFolder"](); 
+//
+//}
+
+
+
+// ***********************************************************************************************
+// Function Name : VerifyImport()
+// Function Description: This function verifies whether the importing Tdef file is completed Successfully
+// Inputs : NA
+// ***********************************************************************************************
+
+function VerifyAssayInTdefList(TestName)
+{
+//InitializeMetaData();
+//TestName="ELF1";
+  try
+  {
+    Log["AppendFolder"]("Verifying whether " + TestName + " is imported Successfully.");
+    //Check whether the Import Tdef window exists and visible on screen
+    var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportBlob","gridViewTDefList");
+    for(i=0;i<objctrl["RowCount"];i++)
+    {
+        if(!aqString["Compare"](objctrl["Item"](0, i)["Value"]["OleValue"],TestName,false))
+        {
+            Log["Message"](TestName + "is available in Tdef List");
+         //   Log["PopLogFolder"]();
+            return true;
+            }
+    } 
+   // Log["PopLogFolder"]();
+    return false; 
+   // Delay(2000);
+//    if(Verifytext(objctrl,"Imported successfully"))
+//    {
+//      Log["Message"]("TDEF Import Completed Successfully");
+//      Log["PopLogFolder"](); 
+//      return true;
+//    }
+//    else
+//    {
+//      Log["Message"]("TDEF Import Failed");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;    
+  }
+  Log["PopLogFolder"](); 
+  
+}
+
+//// ***********************************************************************************************
+//// Function Name : VerifyImport()
+//// Function Description: This function verifies whether the importing Tdef file is completed Successfully
+//// Inputs : NA
+//// ***********************************************************************************************
+//
+//function VerifyImport()
+//{
+//  try
+//  {
+//    Log["AppendFolder"]("Verifying whether the TdefFile is imported Successfully.");
+//    //Check whether the Import Tdef window exists and visible on screen
+//    var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","lblImportedSuccessfully");
+//    Log["Message"]("Check the Import Status Message in the Tdef Window");
+//    Delay(2000);
+//    if(Verifytext(objctrl,"Imported successfully"))
+//    {
+//      Log["Message"]("TDEF Import Completed Successfully");
+//      Log["PopLogFolder"](); 
+//      return true;
+//    }
+//    else
+//    {
+//      Log["Message"]("TDEF Import Failed");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception",exp["description"]);
+//    Log["PopLogFolder"]();
+//    return false;    
+//  }
+//  Log["PopLogFolder"](); 
+//  
+//}
+
+
+// ***********************************************************************************************
+// Function Name : CloseTdefWindow(WorkflowCode)
+// Function Description: This function close the workflow based on the given Workflow code
+// Inputs : WorkflowCode -> Workflow code for the respective workflow provided in Workflows.xml
+// ***********************************************************************************************
+
+function CloseTdefWindow(WorkflowCode)
+{
+  try 
+  {
+    Log["AppendFolder"]("Closing the Tdef window after importing the Tdef file");
+    //var Closepath = GetClosePath(WorkflowCode);
+    Log["Message"]("Closing the Import status Message Box");
+    if( (ExitWorkflow(WorkflowCode) == false) )
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return true;    
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+// ***********************************************************************************************
+// Function Name : VerifyTestOnUI(Testfile)
+// Function Description: This function verifies that the Test Names are displayed on the UI after Importing Tdef file
+// Inputs : Testfile -> Path of the Excel file that has the list of tests to be imported.
+// ***********************************************************************************************
+
+function VerifyTestOnUI(Testfile)
+{
+  try
+  {
+    var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","gdTestGrid");
+    
+    //Open the Excelfile to get the list of tests to be verified on the UI
+    var query = "SELECT DISTINCT Tdef FROM [Sheet1$]";
+    Testlist = GetTestitems(Testfile,query);
+    var Testarr = new Array();
+    Testlist.MoveFirst();
+    var test=0;
+    while(!Testlist.Eof)
+    {
+      Testarr[test]=Testlist["Fields"]("Tdef")["Value"];
+      Testlist.MoveNext();
+      test++;
+    }
+  
+    //Verify whether the Testnames are displayed on the UI Grid
+    Log["AppendFolder"]("Checking the TestNames on the TdefGrid window");
+    for(test=0;test<Testarr["length"];test++)
+    {
+      TestName=Testarr[test];
+      var Column=0;//Column number in which the testnames are available on the Grid
+      if(CheckTextonUI(objctrl,TestName,Column))
+      {
+        Log["Message"]("The Test "+TestName+" is displayed on the UI" )
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("The Test "+TestName+" is not displayed on the UI" )
+        Log["PopLogFolder"]();
+        return false;
+      }
+   }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+}
+
+// ***********************************************************************************************
+// Function Name : ImportTestDefinition(TdefFilepath,Testfile)
+// Function Description: This function imports Test Difintion from the Tdef input file
+// Inputs : TdefFilepath -> Full path of the TDef file
+//        : Testfile -> Excel sheet that contains the tests to be selected duriong import.
+// ***********************************************************************************************
+//function ImportTestDefinition(TdefFilepath,Testfile)
+//{
+//  NavigateToImportTdef("Setup_Testdefinition_IMTestdefinition_ImportTdef");
+//  Importfile(TdefFilepath,Testfile);
+//  CloseTdefWindow("Setup_Testdefinition_IMTestdefinition_ImportTdef");
+//}
+
+function SelectTrayType(DrawerControl, DrawerNumber, TrayType)
+{
+  try
+  {
+    var proparr=["ClrClassName", "WPFControlName"];
+    var vararr=["ComboBox", "ZoneUsageComboBox"];
+    var cmbBoxTrayType = Getchild(DrawerControl,proparr,vararr)
+    var transTrayType =  GetTranslatedString(TrayType, "")
+    SetComboText(cmbBoxTrayType, transTrayType)
+    Log["Message"]("Selected " + TrayType + " for Drawer : " + DrawerNumber );
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;
+  }
+}
+
+function SelectRackType(RackType)
+{
+  try
+  {
+    if(!(RackType == "" || RackType == null))
+    {
+      if(RackType=="15-position Racks")
+        var RackControl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtn15Rack");
+      else if(RackType=="55-position Racks")
+        var RackControl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtn55Rack");
+      
+      if(RackControl["Enabled"])
+      {
+        aqUtils["Delay"](1000, "Selecting Rack")
+        ClickControl(RackControl);
+        RackControl["ForceCursor"] = "True"
+        SelectRadioBtn(RackControl);
+        //RackControl["wChecked"]="True"
+        Log["Message"](RackType + " was selected")
+      }
+      else
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), RackType + " is not enabled")
+          return false;
+        }
+    }
+    else
+    {
+      Log["Message"]("Rack type not specified for this drawer. Check TestData file");
+      return false; 
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;
+  }
+}
+
+function SetDrawerRowConfig(RowConfig)
+{
+  try
+  {
+    /*
+    Split RowConfig string based on ";" to get individual row config
+    e.g. RowConfig = "1:SortgroupForBadbarco;3:Partially Processed"
+    */
+    if(!(RowConfig == "" || RowConfig == null))
+    {
+      arrRowConfig = RowConfig["split"](";");
+      for(intIndex=0; intIndex<arrRowConfig["length"]; intIndex++)
+      {
+        //Splitting arrRowConfig[intIndex] based on ":" to get row number and corresponding row configuration
+        var RowNumber     = arrRowConfig[intIndex]["split"](":")[0];
+        var RowSortConfig = arrRowConfig[intIndex]["split"](":")[1];
+        grdRowConfig = GetControl("Setup_Settings_SHConfiguration_SampleProcessing", "grdRowConfig");
+        //grdRowConfig["Items"]["Item"](RowNumber)["AssociatedSortingGroup"]["set_Name"](RowSortConfig);
+      
+        //Finding the container(ContentPresenter) based on row number that holds each row elements and then finding the underlying combo-box/TextBlock for setting the sort group 
+        var proparr=["ClrClassName", "WPFControlOrdinalNo"];
+        var vararr=["ContentPresenter", RowNumber];
+        var ContentPresenter = Getchild(grdRowConfig,proparr,vararr)
+        if(ContentPresenter!=null)
+        {
+          var proparr=["ClrClassName", "Visible"];
+          var vararr=["ComboBox", "True"];
+//          var vararr=["TextBlock", "True"];
+          var cmbBoxSortGroup = Getchild(ContentPresenter,proparr,vararr)
+          if(cmbBoxSortGroup["Enabled"] == true)
+          {
+//            SetComboText(txtBlockSortGroup, RowSortConfig);
+//            txtBlockSortGroup["SelectedValue"]["Name"] = RowSortConfig
+            for(intComboIndex=0; intComboIndex < cmbBoxSortGroup["wItemCount"]; intComboIndex++)
+            {
+              if(cmbBoxSortGroup["Items"]["SourceCollection"]["Item"](intComboIndex)["Name"]["OleValue"] == RowSortConfig)
+              {
+                cmbBoxSortGroup["ClickItem"](intComboIndex);
+                Log["Message"]("Row number " + RowNumber + " was assigned " + RowSortConfig)
+                break;
+              }
+            }
+          }
+          else
+          {
+            Log["Message"]("Sort group combo box is not enabled for Row number " +RowNumber);
+            return false;
+          }
+        }
+        Delay(1000)
+      }
+    }
+    else
+      Log["Message"]("Row configuration not specified. Check TestData file")
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;
+  }
+}
+
+function SaveDrawerConfig()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SaveDrawerConfig");
+    var tabSampleProcessing = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","tabSampleProcessingConfigurationView");
+    //var btnSaveDrawerConfig = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","btnSaveDrawerConfig");
+    var Proparray = ["ClrClassName","WPFControlOrdinalNo"];
+    var Propvalues = ["Button", "1"];
+    var btnSaveDrawerConfig = Getchild(tabSampleProcessing, Proparray, Propvalues);
+    
+    if(btnSaveDrawerConfig["Enabled"] == true)
+    {
+//      ClickControl(btnSaveDrawerConfig);
+      //Clickbutton(btnSaveDrawerConfig);
+      SendKeys(btnSaveDrawerConfig, "[Enter]")
+      aqUtils["Delay"](2000, "Waiting for Save popup box")
+      var msgBoxSave = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","msgBoxSave");
+      
+      var transConfirmSave=GetTranslatedString("Confirm Save?","")
+      if(msgBoxSave["Text"] == transConfirmSave)
+      {
+        var btnYes = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","btnYes");
+        ClickControl(btnYes);
+        Log["Message"]("Drawer configuration saved");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Unable to save drawer configuration");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      //Log["Message"]("Save button not enabled")
+	  Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Save button not enabled. The drawer configuration was not modified.");
+      Log["PopLogFolder"]();
+      return true;
+    }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SaveAlertsettings()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SaveAlertsettings");
+    var tabAlertSettings = GetControl("Setup_Settings_SystemConfiguration_AlertSettings","tabAlertSettingsConfigurationView");
+    //var btnSaveDrawerConfig = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","btnSaveDrawerConfig");
+    var Proparray = ["ClrClassName","WPFControlOrdinalNo"];
+    var Propvalues = ["Button", "1"];
+    var btnSaveAlertSettings = Getchild(tabAlertSettings, Proparray, Propvalues);
+    
+    if(btnSaveAlertSettings["Enabled"] == true)
+    {
+      ClickControl(btnSaveAlertSettings);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      return true;
+    }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+function SetDrawerConfig(DrawerNumber, DrawerControl, TrayType, RackType, RowConfig)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetDrawerConfig");
+    if(!(TrayType == "" || TrayType == null))
+    {
+      SelectTrayType(DrawerControl, DrawerNumber, TrayType);
+      if(TrayType == "Output Sort") //Rack and row config is applicable only for Output Sort Tray types
+      {
+        SelectRackType(RackType);
+        SetDrawerRowConfig(RowConfig);
+      }
+    }
+    else
+      Log["Message"]("Tray type not specified for " + DrawerNumber +". Check TestData file")
+
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyIsPanelPresent(strPanelName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyIsPanelPresent");
+    var boolFlag = false;
+    var objcmbBoxPanel = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","cmbBoxPanel");
+    var intItemCount = GetPropertyValue(objcmbBoxPanel, "wItemCount")
+    for( var intCount = 0; intCount < intItemCount; intCount++ )
+    {
+      strValue = GetComboxItemValue(objcmbBoxPanel, intCount);
+      if(strValue == strPanelName)
+      {
+        boolFlag = true;
+        break;
+      }
+    }
+    
+    if(boolFlag)
+      Log["Message"]("Panel:" +strPanelName+  " is present");
+    else
+      Log["Message"]("Panel:" +strPanelName+  " is not present");
+    
+    Log["PopLogFolder"]();  
+    return boolFlag;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//This method creates a panel for SH configuration
+function CreatePanel(strPanelName)
+//function CreatePanel()
+{
+//  var strPanelName = "PanelTest";
+//  var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+//  var strControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+//  InitializeWorkflowXML(strWorkflowXMLPath);
+//  InitializeControlXML(strControlXMLPath);
+//  AddNameMappingObjects();
+  
+  try
+  {
+    Log["AppendFolder"]("Setup::CreatePanel");
+    
+    if(!VerifyIsPanelPresent(strPanelName))
+    {
+      Log["Message"]("Creating a new panel: "+strPanelName);
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","btnAddPanel");
+      ClickControl(objctrl);
+      aqUtils["Delay"](1000, "Waiting for create new panel dialog box");
+      objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","txtBoxNewProfileName");
+      SetText(objctrl, strPanelName);
+      objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","btnCreateProfileOK");
+      ClickControl(objctrl);
+      if(VerifyIsPanelPresent(strPanelName))
+      {
+        Log["Message"]("Successfully created panel: " +strPanelName);
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Unable to create panel: " +strPanelName);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+    Log["PopLogFolder"]();
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function IsSortPanelActive(PanelName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::IsSortPanelActive");
+    if(!VerifyIsPanelPresent(PanelName))
+    {
+      Log["Message"]("Panel: " + PanelName + " is not present. Hence not active");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","cmbBoxPanel");
+    if(!(PanelName == "" || PanelName == null))
+    {
+      //SetComboText(objctrl, PanelName);
+	  SelectListBoxItem(objctrl, PanelName);
+      objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtnActive");
+      if(CheckboxStatus(objctrl))
+      {
+        Log["Message"]("Panel: " + PanelName + " is active");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Panel: " + PanelName + " is not active");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      Log["Message"]("Panel name is blank");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ActivateSortPanel(PanelName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::ActivateSortPanel");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","cmbBoxPanel");
+    if(!(PanelName == "" || PanelName == null))
+    {
+      SetComboText(objctrl, PanelName);
+      objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtnActive");
+      SelectRadioBtn(objctrl);
+      Log["Message"]("Panel: " +PanelName + " was activated");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Panel name is blank");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SetQueueType(strQueueType)
+{
+//if strQueueType is blank, then this method selects Separate queue
+  try
+  {
+    if(strQueueType == "Combined")
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtnCombinedQueue");
+      SelectRadioBtn(objctrl);
+      Log["Message"]("Queue entry type is set to Combined Entry/Exit");
+    }
+    else
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtnSeparateQueue");
+      SelectRadioBtn(objctrl);
+      Log["Message"]("Queue entry type is set to Separate Entry/Exit");
+    }
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function ConfigureSuspendSorting(strSuspendSortingState)
+{
+// if strSuspendSortingState is blank, then this method unchecks Suspend sorting checkbox
+  try
+  {
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","chkBoxSuspendSorting");
+    if( strSuspendSortingState == "Yes" )
+    {
+      SetWPFCheckBox(objctrl, 1);
+      Log["Message"]("Suspend sorting checkbox is checked");
+    }
+    else
+    {
+      SetWPFCheckBox(objctrl, 0);
+      Log["Message"]("Suspend sorting checkbox is un-checked");
+    }
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function PerformSortConfiguration(TestDataFile, SheetName, Feature)
+{
+  try
+  {    
+    Log["AppendFolder"]("Setup::PerformSortConfiguration");
+   
+    arrDrawers = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+    
+    var strSHName = arrDrawers[0]["Item"]("SH");
+    var strQueueType = arrDrawers[0]["Item"]("QueueType");
+    var strSuspendSortingState = arrDrawers[0]["Item"]("SuspendSorting");
+    // Selects the concerned SH in a multi-SH setup
+    if(!(strSHName == "" || strSHName==null))
+    {
+      if(!SelectSHForDrawerConfig(strSHName))
+        return false;
+    }
+    var PanelName = arrDrawers[0]["Item"]("Panel");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","cmbBoxPanel");
+    
+    if(!(PanelName == "" || PanelName == null))
+      SetComboText(objctrl, PanelName)
+    else
+      SetComboText(objctrl, "Default")
+
+    objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","radioBtnActive");
+    SelectRadioBtn(objctrl);
+    
+    if(!ConfigureSuspendSorting(strSuspendSortingState))
+    {
+      Log["Error"]("Unable to set value for Suspend Sorting checkbox")
+      return false;
+    }
+    
+    if(!SetQueueType(strQueueType))
+    {
+      Log["Error"]("Unable to select Entry/Exit queue type")
+      return false;
+    }
+
+    //for(Count=0; Count<=arrDrawers["length"]; Count++)
+    for(var Count=0; Count<arrDrawers["length"]; Count++)
+    {
+      dictDrawerConfig = arrDrawers[Count];
+
+      Drawer        = dictDrawerConfig["Item"]("Drawer");
+      DrawerNumber = aqString["SubString"](Drawer, 6, 1)
+      DrawerZone   = aqString["SubString"](Drawer, 7, 1)
+      TrayType     = dictDrawerConfig["Item"]("Config")
+      RackType     = dictDrawerConfig["Item"]("RackType")
+      RowConfig    = dictDrawerConfig["Item"]("RowConfig")
+      
+      //CreateErrorSortGroup(GropuName, ErrorType)
+      var DrawerControl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","btn"+Drawer);
+      ClickControl(DrawerControl);
+      Log["Message"]("Selected Drawer " +DrawerNumber+ ", Zone " + DrawerZone);
+      if(SetDrawerConfig(Drawer, DrawerControl,  TrayType, RackType, RowConfig) == false)
+      {
+        Log["PopLogFolder"]();
+        Log["Message"]("Unable to set the drawer config for Drawer " +DrawerNumber+ ", Zone " + DrawerZone)
+        return false;
+      }
+    }
+    
+    //Save the config once all the drawers are set up with their respective configuration
+    if(SaveDrawerConfig() == true)
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function IsDecapperConfigured()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::IsDecapperConfigured");
+    var arrDecapperState = new Array();
+    arrDecapperState = GetModuleState("DECAPPER");
+    
+    for(var i=0; i<arrDecapperState["length"];i++)
+    {
+      if(arrDecapperState[i] == "True")
+      {
+        Log["Message"]("Decapper is enabled.")
+        Log["PopLogFolder"]();
+        return true;
+      } 
+    }
+    
+    Log["Message"]("Decapper is not configured")
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception" +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AddAnErrorSortGroup(sErrorStatus,sErrorGroupName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::AddAnErrorSortGroup");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","btnAddGroup");//Setup_Settings_SHConfiguration_ErrorSortGroup
+    ClickControl(objctrl);
+    
+    aqUtils["Delay"](1000,"Synchronization for New sort group dialog");
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","dlgNewSortGroup");//Setup_Settings_SHConfiguration_ErrorSortGroup
+//    if (objctrl["Exists"])
+//    {
+//      Log["Message"]("Navigate to Add New sort group is successfull")
+//    } 
+//    else
+//    {
+//      Log["Error"]("Unable to find New Sort Group dialog");
+//    }   
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","txtBoxSortGroupName");//Setup_Settings_SHConfiguration_ErrorSortGroup
+    SetText(objctrl,sErrorGroupName)
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","btnOk");//Setup_Settings_SHConfiguration_ErrorSortGroup
+    ClickControl(objctrl);
+    
+//    if(!VerifyErrorSortGroup(sErrorGroupName))
+//      return SelectAnErrorStatus(sErrorStatus)
+    if(VerifyErrorSortGroup(sErrorGroupName) != true)
+    {
+      Log["Message"]("Unable to add the error sort group")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(SelectAnErrorStatus(sErrorStatus) != true)
+    {
+      Log["Message"]("Unable to add the error status to errror sort group")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","btnSave");//Setup_Settings_SHConfiguration_ErrorSortGroup
+    var tabErrorSortGroup = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","tabErrorSortGroupsConfigurationView");
+    var transSave=GetTranslatedString("Save","")
+    var Proparray = ["ClrClassName","WPFControlText"];
+    var Propvalues = ["Button", transSave];
+    var objctrl = Getchild(tabErrorSortGroup, Proparray, Propvalues);    
+    ClickControl(objctrl);
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyErrorSortGroup(sErrorGroupName)
+{
+//  try
+//  {
+//    Log["AppendFolder"]("Setup::VerifyErrorSortGroup");
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","lstErrorSortGroups");
+//    var iCount=objctrl["wItemCount"];
+//    for(i=0;i<iCount;i++)
+//    {
+//      if(objctrl["Items"]["Item"](i)["Name"]["OleValue"]==sErrorGroupName)
+//      {
+////        ClickControl(objctrl["Items"]["Item"](i));
+//        ClickItem(objctrl,i)
+//        Log["Message"]("The specified error group "+sErrorGroupName+" is available in the sort groups");
+//        Log["PopLogFolder"]();
+//        return true;
+//      }
+//      if(i==iCount-1)
+//      {
+//        Log["Message"]("The specified error group "+sErrorGroupName+" is not available in the sort groups");
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//    }
+//  }
+  
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyErrorSortGroup");
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","lstTestSortGroups");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","lstErrorSortGroups");
+    if (VerifyListViewItem(objctrl,"Name",sErrorGroupName)==true)
+    {
+      Log["Message"]("The specified error sort group "+sErrorGroupName+" is available in the sort groups");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("The specified error sort group "+sErrorGroupName+" is not available in the sort groups");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+/*
+Description: This method checks/unchecks the "Decap Tubes" checkbox under a Test Sort group
+===========
+Parameters:
+==========
+  sTestSortGroupName --> Test sort group name in which cehck/uncheck action needs to be performed on Decap Tubes checkbox
+  sDecapTubes --> What to do on the checkbox
+            (Yes == check)
+            (No == Un-check)
+  boolSave --> Whether Save is needed after the required action is performed
+            (true == Save)
+            (false == Do not save)
+Usage:
+=====
+  e.g. TestSortDecapTubes("TestSort", "No", true)
+  sTestSortGroupName = "TestSort"
+  sDecapTubes = "No"
+  boolSave = true;
+*/
+/*
+function TestSortDecapTubes(sTestSortGroupName, sDecapTubes, boolSave)
+{
+  var intAction = 0;
+  try
+  {
+    Log["AppendFolder"]("Setup::TestSortDecapTubes");
+    if(VerifyTestSortGroup(sTestSortGroupName))
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","chkBoxDecapTubes");
+      var sChkBoxStatus = CheckboxStatus(objctrl);
+      if( sChkBoxStatus == false && sDecapTubes == "Yes" )
+      {
+        //Check the CheckBox
+        SelectCheckbox(objctrl);
+        Log["Message"]("Decap Tubes is checked now")
+        intAction = 1;
+      }
+      else if( sChkBoxStatus == true && sDecapTubes == "No" )
+      {
+        //uncheck the Checkbox
+        SelectCheckbox(objctrl);
+        Log["Message"]("Decap Tubes is un-checked now")
+        intAction = 1;
+      } 
+      else
+      {
+        //No action needed
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Decap tubes checkbox is already in desired state. No action performed");
+        Log["PopLogFolder"]();
+        return true;
+      } 
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(intAction == 1 && boolSave == true)
+    {
+      //Click on Save button
+      var tabTestSortGroup = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","tabTestSortGroupsConfigurationView");    
+      var transSave=GetTranslatedString("Save","")
+      var Proparray = ["ClrClassName","WPFControlText"];
+      var Propvalues = ["Button", transSave];
+      var objctrl = Getchild(tabTestSortGroup, Proparray, Propvalues);    
+      Log["Message"]("Saving the Test Sort group configuration");
+      Clickbutton(objctrl);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else if(intAction == 1 && boolSave == false)
+    {
+      Log["Message"]("Save parameter is False.");
+      Log["PopLogFolder"]();
+      return true;   
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+*/
+
+function TestSortDecapTubes(sTestSortGroupName, sDecapTubes, boolSave)
+{
+  var intAction = 0;
+  try
+  {
+    Log["AppendFolder"]("Setup::TestSortDecapTubes");
+    if(VerifyTestSortGroup(sTestSortGroupName))
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","cmbBoxDecapTubes");
+      //var sChkBoxStatus = CheckboxStatus(objctrl);
+      var sCurrentValue = ToLowerCase(GetComboxBoxValue(objctrl));
+      if( sCurrentValue == ToLowerCase(sDecapTubes))
+      {
+        //No action needed
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Decap tubes combo is already in desired state. No action performed");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        //Select the item in the combo
+        SetComboValue(objctrl, sDecapTubes);
+        intAction = 1;
+      }
+    }
+    else
+    {
+      Log["Message"]("Test Sort Group: " + sTestSortGroupName + " not present.");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(intAction == 1 && boolSave == true)
+    {
+      //Click on Save button
+      var tabTestSortGroup = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","tabTestSortGroupsConfigurationView");    
+      var transSave=GetTranslatedString("Save","")
+      var Proparray = ["ClrClassName","WPFControlText"];
+      var Propvalues = ["Button", transSave];
+      var objctrl = Getchild(tabTestSortGroup, Proparray, Propvalues);    
+      Log["Message"]("Saving the Test Sort group configuration");
+      Clickbutton(objctrl);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else if(intAction == 1 && boolSave == false)
+    {
+      Log["Message"]("Save parameter is False.");
+      Log["PopLogFolder"]();
+      return true;   
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AddTestSortGroup(sTestType,sTest,sTestSortGroupName, sDecapAllTubes)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::AddTestSortGroup");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","btnAddGroup");
+    ClickControl(objctrl);
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","dlgNewTestSortGroup");
+    if (objctrl["Exists"])
+    {
+      Log["Message"]("Navigate to add new test sort group is successful")
+    } 
+    else
+    {
+      Log["Error"]("Unable to find New Sort Group dialog");
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","txtBoxSortGroupName");
+    SetText(objctrl,sTestSortGroupName)
+    
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","btnOk");//Setup_Settings_SHConfiguration_TestSortGroup
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","btnOk");
+    ClickControl(objctrl);
+    
+    if(VerifyTestSortGroup(sTestSortGroupName))
+    {
+      if(SelectTestType(sTestType) != true)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(SelectTest(sTest) != true)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(VerifySelectedTest(sTest) != true)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+	  if(TestSortDecapTubes(sTestSortGroupName, sDecapAllTubes, false) != true)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+	  
+      var tabTestSortGroup = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","tabTestSortGroupsConfigurationView");
+      var transSave=GetTranslatedString("Save","")
+      var Proparray = ["ClrClassName","WPFControlText"];
+      var Propvalues = ["Button", transSave];
+	
+      var objctrl = Getchild(tabTestSortGroup, Proparray, Propvalues);    
+      Clickbutton(objctrl);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;    
+    }
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function VerifyTestSortGroup(sTestSortGroupName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyTestSortGroup");
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","lstTestSortGroups");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","lstTestSortGroups");
+    if (VerifyListViewItem(objctrl,"Name",sTestSortGroupName)==true)
+    {
+      Log["Message"]("The specified test group "+sTestSortGroupName+" is available in the sort groups");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("The specified test group "+sTestSortGroupName+" is not available in the sort groups");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function SelectAnErrorStatus(sErrorStatus)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SelectAnErrorStatus");
+    var Obj=Sys["Process"]("Shell");
+    var Proparray=["ClrClassName","WPFControlText"]
+    arrStatus = sErrorStatus["split"](";");
+    var iFlag=0;
+    for(intIndex=0; intIndex<arrStatus["length"]; intIndex++)
+    {
+    
+      var ErrorStatus=arrStatus[intIndex]
+      var transErrorStatus=GetTranslatedString(ErrorStatus,"")
+      var Propvalues=["ToggleButton",transErrorStatus]
+      var objErrorstatus=Obj["Find"](Proparray,Propvalues,35)
+      if (objErrorstatus["Exists"])
+      {
+         ClickControl(objErrorstatus);
+         Log["Message"]("Error status: "+ sErrorStatus+" is selected");
+         iFlag=iFlag+1;
+//         Log["PopLogFolder"]();
+//         return true;
+      }
+      else
+      {
+        Log["Error"]("Unable to find specified error status : " + arrStatus[intIndex])
+        Log["PopLogFolder"]();
+        return false;
+      }
+      if(iFlag==arrStatus["length"])
+      {
+      Log["PopLogFolder"]();
+      return true;
+      }
+    }
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+}
+
+
+function SelectTestType(sTestType)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SelectTestType");
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","cmbTestType");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","cmbTestType");
+    if (objctrl["Exists"])
+    {
+      SetComboValue(objctrl,sTestType);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Unable to find specified test type : " + sTestType)
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+}
+
+function SelectTest(sTest)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SelectTest");
+//    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","cmbSelectTest");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","cmbSelectTest");
+    if (objctrl["Exists"])
+    {  
+           
+      SetFocusComboBox(objctrl)
+      for (var i=0;i<sTest["length"];i++)
+      {
+        var testcharacters = aqString.GetChar(sTest, i)
+        SendKeys(objctrl, testcharacters)
+      }
+       var Obj=GetControl("Setup_Settings_SHConfiguration_TestSortGroup","pPopupRoot")
+      var Proparray=["ClrClassName","Content.OleValue"]
+      var Propvalues=["ToggleButton",sTest]
+      var objTest = Getchild(Obj,Proparray,Propvalues)
+      if (objTest["Exists"])
+      {
+        Log["Message"](objTest["Exists"])
+        objTest.Click();
+        //objTest["ClickButton"]();
+        //ClickControl(objTest);
+        Log["Message"]("Selected test : " + sTest)
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Unable to select test : " + sTest)
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      Log["Error"]("Unable to find specified test : " + sTest)
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception"+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function VerifySelectedTest(sTest)
+{
+  try
+    {
+      Log["AppendFolder"]("Setup::VerifySelectedTest");
+//      var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","lstTestsInGroup");
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_TestSortGroup","lstTestsInGroup");
+      if (VerifyListViewItem(objctrl,"SortCodeValue",sTest)==true)
+      {
+        Log["Message"]("Selected test " +sTest + " is present in tests list")
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Unable to find specified test : " + sTest)
+        Log["PopLogFolder"]();
+        return false;
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function ChangeLanguage(LanguageID)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::ChangeLanguage")
+    var Language=GetLanguage(LanguageID)
+    var cmbDisplayLang = GetControl("Setup_Settings_GeneralSetup_Regional", "cmbDisplayLanguage")
+    if (cmbDisplayLang["SelectedIndex"]!=Language)
+    {
+      ClickItem(cmbDisplayLang, Language);
+      aqUtils["Delay"](500);
+      var btnSave = GetControl("Setup_Settings_GeneralSetup_Regional", "btnUserSetupSave");
+      ClickControl(btnSave);
+      aqUtils["Delay"](1000, "Waiting for confirmation popup");
+
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Regional", "wndLanguageSaved"); 
+      var prop=["WinFormsControlName","VisibleOnScreen"];
+      var val=["OK","True"];
+      var firstOkBtn = Getchild(objctrl, prop, val);
+
+      if(firstOkBtn["Exists"])
+      {
+        ClickControl(firstOkBtn);
+        aqUtils["Delay"](1000, "Waiting for confirmation message");
+      }
+
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Regional", "wndOperatorSetupSaved");
+      var prop1=["WinFormsControlName","VisibleOnScreen"];
+      var val1=["OK","True"];
+      var secondOkBtn = Getchild(objctrl, prop, val);
+      
+      var objctrl = Sys["Process"]("Shell")
+      
+      if(secondOkBtn["Exists"])
+      {
+        ClickControl(secondOkBtn);
+        
+        var secondOkBtn = Getchild(objctrl, prop, val);
+        
+        if(secondOkBtn["Exists"])
+        {
+          ClickControl(secondOkBtn);
+          Log["Message"]("Language is changed to " + LanguageID);
+          Log["PopLogFolder"]();
+          return 1;
+        }
+        
+        Log["Message"]("Language is changed to " + LanguageID);
+        Log["PopLogFolder"]();
+        return 1;
+      }
+      else
+      {
+        Log["Message"]("Unable to switch language to " + LanguageID);
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      Log["Message"](LanguageID + " is already selected")
+      Log["PopLogFolder"]();
+      return 0;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+
+function GetLanguage(LanguageID)
+{
+  try
+  {
+    switch(LanguageID)
+      {
+      case "EN":
+        var strLanguage=6;
+        break;
+      case "DE":
+        var strLanguage=4;
+        break;
+      case "FR":
+        var strLanguage=8;
+        break;
+      case "IT":
+        var strLanguage=10;
+        break;
+      case "ES":
+        var strLanguage=33;
+        break;
+      case "PT":
+        var strLanguage=32;
+        break;
+      case "SV":
+        var strLanguage=19;//Swedish
+        break;
+      case "NO":
+        var strLanguage=24;
+        break;
+      case "TR":
+        var strLanguage=17;
+        break;
+      case "PL":
+        var strLanguage=12;
+        break;
+      case "JA":
+        var strLanguage=11;
+        break;
+      case "ZHS":
+        var strLanguage=30//Simplified chinese
+        break;
+      case "ZHT":
+        var strLanguage=1//Traditional chinese
+        break;
+      case "KO":
+        var strLanguage=12;
+        break;
+      case "FI":
+        var strLanguage=7;
+        break;
+      case "EL":
+        var strLanguage=4;
+        break;
+      case "RU":
+        var strLanguage=13
+        break;
+      case "DA":
+        var strLanguage=2
+        break;
+      default:
+        break;
+      }
+      return strLanguage;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+function GetRegionalDecimalSeparator()
+{ 
+  try
+  {
+    Log["AppendFolder"]("Setup::GetRegionalDecimalSeparator")
+    //var cmbDisplayLang = GetControl("Setup_Settings_GeneralSetup_Regional", "cmbDisplayLanguage")
+    var cmbNumberFormat = GetControl("Setup_Settings_GeneralSetup_Regional", "cmdDecimalSeparator")
+    var numberformat = GetComboxBoxValue(cmbNumberFormat)
+    Log["Message"]("Current language number format is " + numberformat);
+    Log["PopLogFolder"]();
+    return numberformat;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SetCCModuleConfiguration()
+{
+  
+  try
+  {
+    Log["AppendFolder"]("Setup::SetCCModuleConfiguration");
+   
+    ////Select CC section in Module configuration 
+    var objctrl = GetControl("Inventory_ReagentOverview","winModuleConfigurationLayout");
+    var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+    var vararr=["Image","ModuleImage","CC"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objModule))//["Exist"])
+    {
+      ClickControl(objModule)//["Click"]();
+      Log["Message"]("Selected analyzer CH section")
+    }
+    else
+    {
+      Log["Message"]("Unable to select analyzer CH section");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    ////set Data inject mode as Playback the Raw Data
+    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","cmbBoxDataInjectMode");
+    SetComboValue(objctrl,2);
+  
+    ////Uncheck Calibration required checkbox
+    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","chkCalibrationRequired");
+    if (CheckboxStatus(objctrl))
+    {
+      ClickControl(objctrl);
+    }
+    
+     ////Uncheck QC required checkbox
+    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","chkQCRequired");
+    if(objctrl["Exists"]==true)
+    {
+       if (CheckboxStatus(objctrl))
+        {
+          ClickControl(objctrl);
+        }
+    }
+   
+    
+    ////Check Simulate Pack Barcode Reader checkbox
+    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","chkSimulatePackBarcodeReader");
+    if (!(CheckboxStatus(objctrl)))
+    {
+      ClickControl(objctrl);
+    }
+    
+    ////Save the configuration
+//    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","btnModuleConfigSave");
+//    ClickControl(objctrl);
+        
+    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","winModuleConfigurationLayout");
+    var proparr=["ClrClassName","WPFControlText"];
+    var transSave=GetTranslatedString("Save","")
+    var vararr=["Button",transSave];
+      
+    var objbtnSave = Getchild(objctrl, proparr, vararr);
+    if((GetPropertyValue(objbtnSave,"Enabled"))==true)
+    {
+      ClickControl(objbtnSave);
+      var objctrl = GetControl("Setup_Settings_ModuleConfiguration","btnModuleConfigOk");
+      
+      if(objctrl["Exists"]==true)
+      {
+        ClickControl(objctrl);
+      }
+    }
+    else
+    {
+      Log["Message"]("No changes done in Module configuration for CH")
+    } 
+    Log["PopLogFolder"]();
+    return true;
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+
+function SetCalibrationRequiredForCCAssays()
+{
+  try
+  {  
+    Log["AppendFolder"]("Setup::SetCalibrationRequiredForCCAssays");
+   
+    ////Select CC section in Module configuration 
+    var objctrl = GetControl("Inventory_ReagentOverview","winModuleConfigurationLayout");
+    var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+    var vararr=["Image","ModuleImage","CC"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objModule))//["Exist"])
+    {
+      ClickControl(objModule)//["Click"]();
+      Log["Message"]("Selected analyzer CH section")
+    }
+    else
+    {
+      Log["Message"]("Unable to select analyzer CH section");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Check Calibration required checkbox
+  
+    var objctrl = GetControl("Setup_Settings_ModuleConfiguration","chkCalibrationRequired");
+    if (!CheckboxStatus(objctrl))
+    {
+      ClickControl(objctrl);
+      
+      ////Save the configuration
+      //var objctrl = GetControl("Setup_Settings_ModuleConfiguration","btnModuleConfigSave");
+      var objctrl = GetControl("Setup_Settings_ModuleConfiguration","winModuleConfigurationLayout");
+      var proparr=["ClrClassName","WPFControlText"];
+      var transSave=GetTranslatedString("Save","")
+      var vararr=["Button",transSave];
+      
+      var objbtnSave = Getchild(objctrl, proparr, vararr);
+      ClickControl(objbtnSave);
+    
+      var objctrl = GetControl("Setup_Settings_ModuleConfiguration","btnModuleConfigOk");
+      ClickControl(objctrl);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Calibration required checkbox is already checked")
+      Log["PopLogFolder"]();
+      return true;
+    }
+
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function UncheckCalibrationRequiredForCCAssays()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::UncheckCalibrationRequiredForCCAssays");
+   
+      ////Select CC section in Module configuration 
+      var objctrl = GetControl("Inventory_ReagentOverview","winModuleConfigurationLayout");
+      var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+      var vararr=["Image","ModuleImage","CC"];
+      var objModule = Getchild(objctrl, proparr, vararr);
+      if (VerifyObjectExistance(objModule))//["Exist"])
+      {
+        ClickControl(objModule)//["Click"]();
+        Log["Message"]("Selected analyzer CH section")
+      }
+      else
+      {
+        Log["Message"]("Unable to select analyzer CH section");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    
+      ////Check Calibration required checkbox
+      var objctrl = GetControl("Setup_Settings_ModuleConfiguration","chkCalibrationRequired");
+      if (CheckboxStatus(objctrl))
+      {
+        ClickControl(objctrl);
+      
+        ////Save the configuration
+        var objctrl = GetControl("Setup_Settings_ModuleConfiguration","winModuleConfigurationLayout");
+        var proparr=["ClrClassName","WPFControlText"];
+        var transSave=GetTranslatedString("Save","")
+        var vararr=["Button",transSave];
+      
+        var objbtnSave = Getchild(objctrl, proparr, vararr);
+        ClickControl(objbtnSave);
+    
+        var objctrl = GetControl("Setup_Settings_ModuleConfiguration","btnModuleConfigOk");
+        ClickControl(objctrl);
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Calibration required checkbox is already un-checked")
+        Log["PopLogFolder"]();
+        return true;
+      }
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SetWaitForResultsWorkflowSettings(TestDataFile, SheetName, Feature)
+{
+ 
+//  InitializeMetaData();
+//  var Feature="DefaultConfig";
+//  var SheetName="SHConfig"
+//  var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+  Log["AppendFolder"]("Setup::SetWaitForResultsWorkflowSettings");
+  try
+  {
+     arrDrawers = GetTestItemsByTestName(TestDataFile, SheetName, Feature);
+    
+    var TimeOut = arrDrawers[0]["Item"]("ArchivalTimeout");
+    var sWaitForResultsNonarchivingSamples = arrDrawers[0]["Item"]("WaitForResultsNonArchivingSamples");
+    var sWaitForResultsArchivingSamples = arrDrawers[0]["Item"]("WaitForResultsArchivingSamples");
+    var sAssays=arrDrawers[0]["Item"]("WaitingForAssayResults");
+    
+    var transWaitForResultsNonarchivingSamples=GetTranslatedString(sWaitForResultsNonarchivingSamples,"")
+    var transWaitForResultsArchivingSamples=GetTranslatedString(sWaitForResultsArchivingSamples,"")
+    
+    var transTimeout=GetTranslatedString(TimeOut,"");
+    
+    if((sWaitForResultsNonarchivingSamples!="")&(sWaitForResultsNonarchivingSamples!=null))
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","cmbBoxNonArchiveSetting");
+      if (!GetPropertyValue(objctrl,"Enabled"))
+      {
+        Log["Warning"]("Unable to set wait for results before OK to remove for non archival samples as it is disabled");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      SetComboText(objctrl,transWaitForResultsNonarchivingSamples);
+      Log["Message"]("Wait for results ok to remove non archiving samples is set to "+transWaitForResultsNonarchivingSamples)
+    }
+    else
+    {
+      Log["Message"]("Value not supplied for Wait for results before removing non archiving samples");
+    }
+    
+    if((TimeOut!="")&(TimeOut!=null))
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","cmbBoxTimeout");
+      if (!GetPropertyValue(objctrl,"Enabled"))
+      {
+        Log["Warning"]("Unable to set sample timeout as it is disabled");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      SetComboText(objctrl,transTimeout)
+      Log["Message"]("Time after results before moving sample (timeout) is set to "+transTimeout)
+    }
+    else
+    {
+      Log["Message"]("Value not supplied for timeout");
+    }
+    
+    
+    if((sWaitForResultsArchivingSamples!="")&(sWaitForResultsArchivingSamples!=null))
+    {    
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","cmbBoxArchiveSetting");
+      if (!GetPropertyValue(objctrl,"Enabled"))
+      {
+        Log["Warning"]("Unable to set wait for results before OK to remove for archival samples as it is disabled");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      SetComboText(objctrl,transWaitForResultsArchivingSamples)
+      Log["Message"]("Wait for results ok to remove archiving samples is set to "+transWaitForResultsArchivingSamples)
+    }
+    else
+    {
+      Log["Message"]("Value not supplied for Wait for results before removing non archiving samples");
+    }
+    
+    if(sAssays!=null)
+    {
+      if(!SelectAssayForResults(sAssays))
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    
+    //var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","tabSampleWorkflow");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","tabSampleWorkflowConfigurationView");
+    var proparr=["ClrClassName","WPFControlText"];
+    var transSave=GetTranslatedString("Save","")
+    var vararr=["Button",transSave];
+      
+    var objbtnSave = Getchild(objctrl, proparr, vararr);
+    
+    if(objbtnSave["Enabled"] == true)
+    {
+      ClickControl(objbtnSave);
+    }
+    else
+    {
+     Log["Warning"]("Save button not enabled")
+	   Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Save button not enabled. The wait for results for workflow configuration were not modified.");
+     Log["PopLogFolder"]();    
+    }
+     
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function SelectAssayForResults(sAssays)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SelectAssayForResults");
+    var aAssays=sAssays["split"](";");
+    var iFlag=0;
+    for(var i=0;i<aAssays["length"];i++)
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","lstBoxNotWaitingForResults");
+      SelectListBoxItemByMnemonicValue(objctrl, aAssays[i]);      
+    }
+     var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","btnMoveOneAssay");
+     Clickbutton(objctrl);
+     
+     for(var i=0;i<aAssays["length"];i++)
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","lstBoxWaitingForResults");
+      if(VerifyItemsInListBox(objctrl,aAssays[i]))
+      {
+        Log["Message"]("Assay "+aAssays[i]+" is available in selected assy list for waiting for results");
+        iFlag=iFlag+1;
+      }
+     
+    }
+     
+    if(iFlag!=aAssays["length"])
+    {
+      Log["Error"]("selected assays are not  available in selected assay list for waiting for results");
+       Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+       Log["PopLogFolder"]();
+      return true;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function SetArchivalTimeout(sTimeOut)
+{
+  Log["AppendFolder"]("Setup::ConfigureArchivalTimeout");
+  try
+  {
+    var transTimeout=GetTranslatedString(sTimeOut,"")
+    sAvailableTimeout=GetSampleArchivalTimeout()   
+    if(sAvailableTimeout==transTimeout)
+    {
+      Log["Message"]("Archival timeout is already set to "+sTimeOut);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    
+    var objctrl = GetControl("Setup_Settings_SystemConfiguration_SampleWorkflow","cmbBoxSampleReadyForArchive");
+    if (!GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Warning"]("Unable to set Archival timeout as it is disabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    SetComboText(objctrl,sTimeOut)
+   
+    var objctrl = GetControl("Setup_Settings_SystemConfiguration_SampleWorkflow","tabSampleWorkflow");
+    var proparr=["ClrClassName","WPFControlText"];
+    var transSave=GetTranslatedString("Save","")
+    var vararr=["Button",transSave];
+      
+    var objbtnSave = Getchild(objctrl, proparr, vararr);
+    ClickControl(objbtnSave);
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+   
+}
+
+function GetSampleArchivalTimeout()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::GetSampleArchivalTimeout"); 
+    var objctrl = GetControl("Setup_Settings_SystemConfiguration_SampleWorkflow","cmbBoxSampleReadyForArchive");
+    var objTimeout=GetPropertyValue(objctrl,"Text")
+    //aTimeOut=sTimeout["split"]("minutes")
+    //return aTimeOut[0];
+    sTimeout = objTimeout["OleValue"];
+    Log["Message"]("Archival timeout is " + sTimeout);
+    Log["PopLogFolder"]();
+    return sTimeout;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function IsHoldingConfigured()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::IsHoldingConfigured");
+    var dictDrawers = new ActiveXObject("Scripting.Dictionary");
+    dictDrawers["RemoveAll"]();
+    var arrDrawers = new Array("btnDrawer1B", "btnDrawer1F", "btnDrawer2B", "btnDrawer2F", "btnDrawer3B", "btnDrawer3F", "btnDrawer4B", "btnDrawer4F");
+    boolFlag = false;
+	  var transHoldingArea = GetTranslatedString("Holding Area", "");
+    for(var intCount=0; intCount<arrDrawers["length"]; intCount++)
+    {
+      strZoneConfiguration = GetZoneConfiguration(arrDrawers[intCount]);
+      if(aqString["ToLower"](strZoneConfiguration) == aqString["ToLower"](transHoldingArea))
+      {
+        boolFlag = true;
+        break;
+      }
+    }
+
+    if(boolFlag == true)
+    {
+      Log["Message"]("Holding area is configured");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Holding area is not configured");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetZoneConfiguration(strDrawer)
+{
+  try
+  {
+    var objBtnDrawer = GetControl("Setup_Settings_SHConfiguration_SampleProcessing", strDrawer)
+    var proparr=["ClrClassName", "WPFControlName"];
+    var vararr=["ComboBox", "ZoneUsageComboBox"];
+    var objZoneUsageComboBox = Getchild(objBtnDrawer, proparr, vararr);
+
+    if (VerifyObjectExistance(objZoneUsageComboBox))//["Exist"])
+    {
+      strZoneValue = GetComboxBoxValue(objZoneUsageComboBox)
+      return aqString["Trim"](strZoneValue);
+    }
+    else
+    {
+      Log["Message"]("Unable to find the drawer control");
+      return false;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;
+  }
+}
+
+
+function IsArchivingConfigured()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::IsArchivingConfigured");
+    var dictDrawers = new ActiveXObject("Scripting.Dictionary");
+    dictDrawers["RemoveAll"]();
+    var arrDrawers = new Array("btnDrawer1B", "btnDrawer1F", "btnDrawer2B", "btnDrawer2F", "btnDrawer3B", "btnDrawer3F", "btnDrawer4B", "btnDrawer4F");
+    boolFlag = false;
+	  var transArchive = GetTranslatedString("Archive", "");
+
+    for(var intCount=0; intCount<arrDrawers["length"]; intCount++)
+    {
+      strZoneConfiguration = GetZoneConfiguration(arrDrawers[intCount]);
+      if(aqString["ToLower"](strZoneConfiguration) == aqString["ToLower"](transArchive))
+      {
+        boolFlag = true;
+        break;
+      }
+    }
+
+    if(boolFlag == true)
+    {
+      Log["Message"]("Archive area is configured");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Archive area is not configured");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function IsSTATsArchived(value)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::STATNotArchive");
+    var operation = 0;
+    var objchbxSTAT = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxArchiveSTATSamples");  
+
+    if (value == "No")
+    {
+      if (CheckboxStatus(objchbxSTAT) ==  false)
+      {
+        Log["Message"]("Archive STAT samples checkbox is already not checked");
+      }
+      else
+      {
+        SelectCheckbox(objchbxSTAT);
+        Log["Message"]("Archive STAT samples checkbox is unchecked");
+        operation = 1;
+      }
+    }
+    else if (value == "Yes")
+    {
+      if (CheckboxStatus(objchbxSTAT) ==  false)
+      {
+        SelectCheckbox(objchbxSTAT);
+        Log["Message"]("Archive STAT samples checkbox is checked");
+        operation = 1;
+      }
+      else
+      {
+        Log["Message"]("Archive STAT samples checkbox is already checked");
+      }
+    }
+    
+    if (operation == 1)
+    {
+      //var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","tabSampleWorkflow");
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","tabSampleWorkflowConfigurationView");
+      var proparr=["ClrClassName","WPFControlText"];
+      var transSave=GetTranslatedString("Save","")
+      var vararr=["Button",transSave];
+      
+      var objbtnSave = Getchild(objctrl, proparr, vararr);
+    
+      if(objbtnSave["Enabled"] == true)
+      {
+        ClickControl(objbtnSave);
+      }
+      else
+      {
+       Log["Warning"]("Save button not enabled")
+  	   Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Save button not enabled. The archive STAT configuration was not modified.");  
+      }
+    }
+        
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Verify STAT samples archive checkbox");
+      var sCheckstatus=CheckboxStatus(objchbxSTAT)
+      if ((value == "No")&&(sCheckstatus==false))
+      {
+         Log["PopLogFolder"]();
+         return true;
+      }
+      else if ((value == "Yes")&&(sCheckstatus==true))
+      {
+         Log["PopLogFolder"]();
+         return true;
+      }
+      else
+      {
+       Log["PopLogFolder"]();
+       return false;
+      }
+    }
+    
+  catch(exp)
+	{
+		Log["Error"]("Exception",exp["description"]);
+		Log["PopLogFolder"]();
+		return false;
+	}
+}
+
+function ConfigureDecapAllTubes(value)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::ConfigureDecapAllTubes");
+    var operation = 0;
+    var objchbxDecapAllTubes = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxDecapAllTubes");
+//    var transDecapAllTubes = GetTranslatedString("Decap tubes with no work","")
+//    var proparr=["ClrClassName","WPFControlText"]
+//    var propvalue=["CheckBox",transDecapAllTubes]
+//    var objchbxDecapAllTubes = Getchild(objctrl,proparr,propvalue)
+  
+    if (value == "No")
+    {
+      if (CheckboxStatus(objchbxDecapAllTubes) ==  false)
+      {
+        Log["Message"]("Decap all tubes checkbox is already unchecked");
+      }
+      else
+      {
+        //Stop SH
+        if(!StopAnalyzer("SH"))
+        {
+          Log["PopLogFolder"]();
+          return false;
+        }
+        //Navigation
+        var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+        if (!Navigation)
+        {
+          Log["PopLogFolder"]();
+          return false;
+        }
+        
+        SelectCheckbox(objchbxDecapAllTubes);
+        Log["Message"]("Decap all tubes checkbox is unchecked");
+        operation = 1;
+      }
+    }
+
+    else if (value == "Yes")
+    {
+      if (CheckboxStatus(objchbxDecapAllTubes) ==  false)
+      {
+        //Stop SH
+        if(!StopAnalyzer("SH"))
+        {
+          Log["PopLogFolder"]();
+          return false;
+        }
+        //Navigation
+        var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+        if (!Navigation)
+        {
+          Log["PopLogFolder"]();
+          return false;
+        }
+        SelectCheckbox(objchbxDecapAllTubes);
+        Log["Message"]("Decap all tubes checkbox is checked");
+        operation = 1;
+      }
+      else
+      {
+        Log["Message"]("Decap all tubes checkbox is already checked");
+      }
+    }
+    
+    if (operation == 1)
+    {
+//      var proparr=["ClrClassName","WPFControlText"];
+//      var transSave=GetTranslatedString("Save","")
+//      var vararr=["Button",transSave];
+      var objbtnSave = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","btnSaveDrawerConfig");
+      ClickControl(objbtnSave);
+      
+      StartAnalyzer("SH");
+      
+//      RestartSHnPCC();
+      
+//      //Start SH. This will be replaced once SH start issue is resolved 
+//      if(!ShutdownSHSim())
+//      {
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//        
+//      if(!PCCShutdown())
+//      {
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//      
+//      if(!LaunchSHSim())
+//      {
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//
+//      ProjPath = ProjectSuite["Path"];
+//      arrPath  = ProjPath["split"]("Atellica")
+//      var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+//      var DeploymentType = GetDeploymentType(sConfigPath)
+//
+//      var Query = "SELECT Nodes FROM [Initialization$]";
+//      var arrNodes = new Array();
+//      arrNodes = GetTestItems(TestDataFile, Query, "Nodes");
+//      var PCCUsername = arrNodes[0]
+//      var Password = arrNodes[1]
+//  
+//      if(!LaunchAndLoginToTrinidad(PCCUsername,Password))
+//      {
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+
+var DeploymentType = GetDeploymentTypeFromFederationConfig();
+
+      if(!CheckSystemStatus(DeploymentType))
+      {
+        RestartSHnPCC();
+        if(!CheckSystemStatus(DeploymentType))
+          {
+            Log["PopLogFolder"]();
+            return false;
+            }
+         }
+    }
+    
+    var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+    if (!Navigation)
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+//    var objctrl = GetControl("Setup_Settings_SystemConfiguration_SampleWorkflow","grdFrameSystemConfiguration");
+//    var transDecapAllTubes = GetTranslatedString("Decap tubes with no work","")
+//    var proparr=["ClrClassName","WPFControlText"]
+//    var propvalue=["CheckBox",transDecapAllTubes]
+//    var objchbxDecapAllTubes = Getchild(objctrl,proparr,propvalue)
+    var objchbxDecapAllTubes = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxDecapAllTubes");
+       
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Verify Decap all tubes checkbox");
+    var sCheckstatus=CheckboxStatus(objchbxDecapAllTubes)
+    if ((value == "No")&&(sCheckstatus==false))
+    {
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else if ((value == "Yes")&&(sCheckstatus==true))
+    {
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else
+    {
+     Log["PopLogFolder"]();
+     return false;
+    }
+  }    
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function SetWasteBinThresholdLevel(strValue)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetWasteBinThresholdLevel");
+    var objctrl = GetControl("Setup_Settings_SystemConfiguration_AlertSettings","grpBoxWasteBinThreshold");
+    var proparr=["ClrClassName","DisplayMemberPath"]
+    var propvalue=["ComboBox","Description"]
+    var objCmbBoxThresholdValue = Getchild(objctrl,proparr,propvalue)
+    SetComboText(objCmbBoxThresholdValue, strValue);
+    Log["PopLogFolder"]();
+    return true;
+   
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+} 
+
+function SetWasteBinAlmostFullThresholdLevel(strValue)
+{
+  try
+  {
+    if(!SetWasteBinThresholdLevel(strValue))
+      return false;
+  
+    //Save the application
+    if(!SaveAlertsettings())
+      return false;
+  
+      var objctrl = GetControl("Setup_Settings_SystemConfiguration_AlertSettings","grpBoxWasteBinThreshold");
+      var proparr=["ClrClassName","DisplayMemberPath"]
+      var propvalue=["ComboBox","Description"]
+      var objCmbBoxThresholdValue = Getchild(objctrl,proparr,propvalue)
+      var sValue=GetPropertyValue(objCmbBoxThresholdValue,"wText")
+    
+      if (strValue==sValue)
+      {
+        Log["Message"](strValue+" selected successfully")
+        return true;
+      }
+     else
+     {
+      Log["Error"]("Unable to select "+strValue)
+      return false;
+     }
+   }
+    catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+  
+}
+
+function VerifyWasteBinThresholdLevel(strPropertyName, strExpectedPropertyValue)
+
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyWasteBinThresholdLevel");
+    switch(strPropertyName)
+    {
+      case "Enabled":
+
+              var objctrl = GetControl("Setup_Settings_SystemConfiguration_AlertSettings","grpBoxWasteBinThreshold");
+              var proparr=["ClrClassName","DisplayMemberPath"]
+              var propvalue=["ComboBox","Description"]
+              var objCmbBoxThresholdValue = Getchild(objctrl,proparr,propvalue)
+              var strActualPropertyValue = GetPropertyValue(objCmbBoxThresholdValue, "Enabled");
+              
+              if(aqString["ToLower"](strExpectedPropertyValue) == aqString["ToLower"](strActualPropertyValue))
+              {
+                Log["Message"]("Expected property value: "+ strExpectedPropertyValue +" matches with the actual property value: " + strActualPropertyValue);
+                Log["PopLogFolder"]();
+                return true;
+              }
+              else
+              {
+                Log["Message"]("Expected property value: "+ strExpectedPropertyValue +" does not match with the actual property value: " + strActualPropertyValue);
+                Log["PopLogFolder"]();
+                return false;
+              }
+              break;
+      
+      case "Value":
+        break;
+        
+      default:
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function AddOperatordefinedSortTestCode(sSortCode)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Setup::AddOperatordefinedSortTestCode");
+          
+    var objctrl = GetControl("Setup_Testdefinition_SortTestDefinition_AddCode","txtbxAddCode");
+    SetText(objctrl,sSortCode);
+  
+    var objctrl = GetControl("Setup_Testdefinition_SortTestDefinition_AddCode","btnSaveSortCodeOK");
+    ClickControl(objctrl);
+    
+    var objctrl = GetControl("Setup_Testdefinition_SortTestDefinition_AddCode","scrViewerSortCodes");
+    var proparr=["ClrClassName","WPFControlText"];
+    var propvalue=["ToggleButton",sSortCode];
+    
+    var objSortCodeTogglebutton = Getchild(objctrl,proparr,propvalue)
+    
+    if (objSortCodeTogglebutton["Exists"])
+    {
+      Log["Message"]("Operator defined sort test code '"+sSortCode+"' is added successfully")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Unable to add sort test code "+sSortCode)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function VerifySortTestCodeAvailable(sSortCode)
+{
+    Log["AppendFolder"]("Setup::VerifySortTestCodeAvailable");
+    var objctrl = GetControl("Setup_Testdefinition_SortTestDefinition_AddCode","scrViewerSortCodes");
+    var proparr=["ClrClassName","WPFControlText"];
+    var propvalue=["ToggleButton",sSortCode];
+    
+    var objSortCodeTogglebutton = Getchild(objctrl,proparr,propvalue)
+    
+    if (objSortCodeTogglebutton["Exists"])
+    {
+      Log["Message"]("Operator defined sort test code '"+sSortCode+"' is already available")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Unable to find sort test code "+sSortCode)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+
+}
+
+function VerifyDecapTubesComboBox()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyDecapTubesComboBox");
+    var objctrl = eval(GetControl("Setup_Settings_SHConfiguration_TestSortGroup","cmbBoxDecapTubes"))
+    if(objctrl["Exists"]== true)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Decap Tubes comobobox object present on screen")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Decap Tubes comobobox object not present on screen")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+} 
+
+function DisableVirtualKeyboard()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::DisableVirtualKeyboard");        
+    var objctrl = GetControl("Setup_Settings_GeneralSetup_Connectivity","chkBoxShowOnScreenKeyboard");
+    if(WinFormCheckboxStatus(objctrl) == false)
+    {
+      Log["Message"]("On screen keyboard is already disabled");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      SelectCheckbox(objctrl);
+      var btnSave = GetControl("Setup_Settings_GeneralSetup_Regional", "btnUserSetupSave");
+      ClickControl(btnSave);
+      aqUtils["Delay"](1000, "Waiting for confirmation popup");
+
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Regional", "wndOperatorSetupSaved"); 
+      var prop=["WinFormsControlName","VisibleOnScreen"];
+      var val=["OK","True"];
+      var firstOkBtn = Getchild(objctrl, prop, val);
+      if(firstOkBtn["Exists"])
+      {
+        ClickControl(firstOkBtn);
+        Log["Message"]("On screen keyboard is disabled now");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Unable to save user steup settings");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function VerifyArchiveSettingsDisabled()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyArchiveSettingsDisabled");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxArchiveSTATSamples");
+
+    var boolValue = GetPropertyValue(objctrl, "Enabled");
+    if(boolValue==false)
+    {
+
+      Log["Message"]("Archive settings are disabled");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+
+      Log["Message"]("Archive settings are enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+} 
+
+function ConfigureHILSettings(strHILAnalysis, strCHHILOrdering, strDefiniteHIL, strQuestionableHIL)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::ConfigureHILSettings");
+    
+    if(strHILAnalysis == "CH-Based HIL")
+    {
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","radioBtnCHBasedHIL");
+      Log["Message"]("Selecting CH-Based HIL Analysis");
+      SelectRadioBtn(objctrl);
+      
+      switch(ToLowerCase(strCHHILOrdering))
+      {
+        case "manual hil":
+                          var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnManualHIL");
+                          break;
+                          
+        case "always order":
+                          var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnAlwaysOrder");
+                          break;
+                          
+        case "according to tdef":
+                          var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnTDef");
+                          break;
+      }
+      
+      Log["Message"]("Setting CH-HIL Ordering value");
+      SelectRadioBtn(objctrl);
+    }
+    else if(strHILAnalysis == "TCS-Based HIL")
+    {
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","radioBtnTCSBasedHIL");
+      Log["Message"]("Selecting TCS-Based HIL Analysis");
+      SelectRadioBtn(objctrl);
+
+
+      var transDefiniteHIL = GetTranslatedString(strDefiniteHIL, "");
+      var transQuestionableHIL = GetTranslatedString(strQuestionableHIL, "");
+      
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","cmbDefiniteHIL");
+      SetComboText(objctrl, transDefiniteHIL);
+      Log["Message"]("Selected Definite HIL Value as : " + strDefiniteHIL);
+     
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","cmbQuestionableHIL");
+      SetComboText(objctrl, transQuestionableHIL);
+      Log["Message"]("Selected Questionable HIL Value as : " + strQuestionableHIL);
+    }
+    
+    var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","btnPatientSetupSave");
+    
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      ClickControl(objctrl);
+      aqUtils["Delay"](500, "Waiting for confirmation popup");
+
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Regional", "wndOperatorSetupSaved"); 
+      var prop=["WinFormsControlName","VisibleOnScreen"];
+      var val=["OK","True"];
+      var OkBtn = Getchild(objctrl, prop, val);
+      if(OkBtn["Exists"])
+      {
+        ClickControl(OkBtn);
+        
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "HIL configuration saved");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to save HIL configuration");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "No changes were made in the existing HIL settings");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+} 
+
+function IsCHBasedHILSettingsAvailable()
+{
+InitializeMetaData();
+  try
+  {
+    Log["AppendFolder"]("Setup::IsCHBasedHILSettingsAvailable");
+    
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","radioBtnCHBasedHIL");
+      Log["Message"]("Selecting CH-Based HIL Analysis");
+      SelectRadioBtn(objctrl);
+      
+//      var rdBtnManualHIL = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnManualHIL");
+//      flgManual=rdBtnManualHIL ["Visible"];
+//      var rdBtnAlwaysOrder = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnAlwaysOrder");
+//      flgAlways=rdBtnAlwaysOrder ["Visible"];
+//      var rdBtnTdef = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnTDef");
+//      flgTdef=rdBtnTdef ["Visible"];
+      
+    var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","btnPatientSetupSave");
+    
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      ClickControl(objctrl);
+      aqUtils["Delay"](500, "Waiting for confirmation popup");
+
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Regional", "wndOperatorSetupSaved"); 
+      var prop=["WinFormsControlName","VisibleOnScreen"];
+      var val=["OK","True"];
+      var OkBtn = Getchild(objctrl, prop, val);
+      if(OkBtn["Exists"])
+      {
+        ClickControl(OkBtn);
+        
+      }
+      }
+      var rdBtnManualHIL = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnManualHIL");
+      flgManual=rdBtnManualHIL ["VisibleOnScreen"];
+      var rdBtnAlwaysOrder = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnAlwaysOrder");
+      flgAlways=rdBtnAlwaysOrder ["VisibleOnScreen"];
+      var rdBtnTdef = GetControl("Setup_Settings_GeneralSetup_Patient", "radioBtnTDef");
+      flgTdef=rdBtnTdef ["VisibleOnScreen"];
+      
+      if(flgManual&&flgAlways&&rdBtnTdef)
+       {
+           Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "CH Based HIL Settings are available");
+           Log["PopLogFolder"]();
+           return true;
+       }
+      else
+       {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "There is some issue in CH Based HIL Settings");
+        Log["PopLogFolder"]();
+        return false;
+        } 
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+} 
+
+
+function SelectAnAssayInTdefScreen(sAssay)
+{
+  
+//  InitializeMetaData()
+//  sAssay="Mg"
+  try
+  {
+    Log["AppendFolder"]("Setup::SelectAnAssayInTdefScreen");
+
+
+     var objctrl = GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","gdTestGrid");
+     iRows=objctrl["Rows"]["Count"]
+     for(var i=0;i<iRows;i++)
+     {
+        if(aqString["StrMatches"](sAssay,objctrl["Item"](0,i)["FormattedValue"]["OleValue"]))
+        {
+          var iSelectRow=i;
+          break;
+        }
+     } 
+   
+     if(iSelectRow>=0)
+     {
+       objctrl["set_SelectedIndex"](iSelectRow)
+       Log["Message"]("Selected assay "+sAssay)
+       Log["PopLogFolder"]();
+       return true;
+     } 
+     else
+     {
+       Log["Error"]("Unable to select an assay "+sAssay)
+       Log["PopLogFolder"]();
+       return false;
+     } 
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+   
+ } 
+ 
+
+function fun()
+{
+  
+Sys["Process"]("TCS2Emulator.PresentationLayer.Implement")["Terminate"]()
+} 
+
+function SetHILIndices(iHvalue,iIvalue,iLvalue)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetHILIndices");
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxHemolysis");
+    if(!WinFormCheckboxStatus(objctrl))
+    {
+       SelectCheckbox(objctrl)
+    } 
+   
+  
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","cmbHemolysisThreshold");
+    SetComboValue(objctrl,iHvalue)
+
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxIcterus");
+    if(!WinFormCheckboxStatus(objctrl))
+    {
+       SelectCheckbox(objctrl)
+    } 
+  
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","cmbIcterusThreshold");
+    SetComboValue(objctrl,iIvalue)
+  
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxLipemia");
+    if(!WinFormCheckboxStatus(objctrl))
+    {
+
+       SelectCheckbox(objctrl)
+    } 
+  
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","cmbLipemiaThreshold");
+    SetComboValue(objctrl,iLvalue)
+  
+    var btnSaveHILIndices = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","btnSaveHILIndices");
+
+    Clickbutton(btnSaveHILIndices);
+    var transSavedSuccessfully = GetTranslatedString("Saved successfully.","");
+    var objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+    if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+    {
+      Log["Message"]("HIL indices saved successfully.");
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+      ClickControl(objctrl);
+      Log["PopLogFolder"]();
+      return true;
+    }    
+    else
+    {
+
+      Log["Warning"]("HIL indices are not saved successfully");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function SetIAHILIndices(iHvalue,iIvalue,iLvalue)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetIAHILIndices");
+    
+    var objCtrl=GetControl("Setup_Testdefinition_IMTestdefinition","tDefTabCtrl");
+    if (!SelectTdefTabs(objCtrl,"Calculation"))
+        return false;
+    
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","chkHemolysis");
+    SetCheckboxChecked(objctrl)
+  
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","comboBoxHemolysis");
+    SetComboValue(objctrl,iHvalue)
+
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","chkIcteric");
+    SetCheckboxChecked(objctrl)
+  
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","comboBoxIcteric");
+    SetComboValue(objctrl,iIvalue)
+  
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","chkLipemic");
+
+    SetCheckboxChecked(objctrl)
+  
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","comboBoxLipemic");
+    SetComboValue(objctrl,iLvalue)
+  
+    var btnSaveIAHILIndices = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","TDefSaveButton");
+
+    Clickbutton(btnSaveIAHILIndices);
+
+  for(i=0;i<=25;i++)
+  {
+  var btnSaveIAHILIndices = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","TDefSaveButton");
+  if(btnSaveIAHILIndices["VisibleOnScreen"])
+  { 
+    Log["Message"]("HIL Indices are saved successfully");
+    break;
+    }
+  else
+  {
+    aqUtils["Delay"](1000,"Waiting to Save the Tdef");
+  } 
+} 
+
+Log["PopLogFolder"]();
+return true;
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function UnCheckIAHILIndices()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetIAHILIndices");
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","chkHemolysis");
+    SetCheckboxUnChecked(objctrl)
+  
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","chkIcteric");
+    SetCheckboxUnChecked(objctrl)
+  
+    var objctrl = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","chkLipemic");
+
+    SetCheckboxUnChecked(objctrl);
+  
+    var btnSaveIAHILIndices = GetControl("Setup_Testdefinition_IATestDefinition_Calculation","TDefSaveButton");
+    if(btnSaveIAHILIndices["Enabled"])
+      {
+        Clickbutton(btnSaveIAHILIndices);
+        }
+    
+aqUtils["Delay"](10000,"Waiting to save the Tdef data")     // Should be replaced when time permits
+Log["PopLogFolder"]();
+return true;
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function VerifyHILDisabledForAnAssay(sAssay)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyHILDisabledForAnAssay");
+    
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxHemolysis");
+    bHstatus=CheckboxStatus(objctrl)
+    
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxIcterus");
+    bIsatatus=CheckboxStatus(objctrl)
+    
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxLipemia");
+    bLStatus=CheckboxStatus(objctrl)
+    
+    if(bHstatus && bIsatatus && bLStatus)
+    {
+      Log["Error"]("HIL is enabled for assay "+sAssay)
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    else
+    {
+      Log["Message"]("HIL is disabled for assay "+sAssay)
+      Log["PopLogFolder"]();
+      return true;
+    }    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function SetHILDisabledForAnAssay(sAssay)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetHILDisabledForAnAssay");
+    var intAction = 0;
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxHemolysis");
+    if(WinFormCheckboxStatus(objctrl))
+    {
+       SelectCheckbox(objctrl)
+       intAction = 1;
+    } 
+    
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxIcterus");
+    if(WinFormCheckboxStatus(objctrl))
+    {
+       SelectCheckbox(objctrl)
+       intAction = 1;
+    } 
+    
+    var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","chkBoxLipemia");
+    if(WinFormCheckboxStatus(objctrl))
+    {
+       SelectCheckbox(objctrl)
+       intAction = 1;
+    } 
+    
+    if(intAction == 1)
+    {
+      var objctrl = GetControl("Setup_Testdefinition_CHTestDefinition_Calculation","btnSaveHILIndices");
+      Clickbutton(objctrl);
+      var transSavedSuccessfully = GetTranslatedString("Saved successfully.","");
+      var objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+      if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+      {
+        objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+        ClickControl(objctrl);
+        Log["Message"]("HIL indices are disabled and saved successfully for assay "+sAssay);
+        Log["PopLogFolder"]();
+        return true;
+      }   
+      else
+      {
+        Log["Error"]("HIL indices are disabled but not saved successfully for assay "+sAssay);
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    }
+    else
+    {
+      Log["Message"]("No change performed - HIL is already disabled for assay "+sAssay)
+      Log["PopLogFolder"]();
+      return true;
+    } 
+       
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+
+function SelectSHForDrawerConfig(strSHName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SelectSHForDrawerConfig");
+    
+    if(strSHName == "" || strSHName==null)
+      strSHName = "SH";
+    
+    Log["Message"]("Selecting Sample Handler: " +strSHName+ " to perform Drawer configuration");
+    
+    var tabSampleProcessing = GetControl("Setup_Settings_SHConfiguration_SampleProcessing","tabSampleProcessing");
+
+    var Proparray = ["ClrClassName","WPFControlOrdinalNo"];
+    var Propvalues = ["ListView", "1"];
+
+//    var Proparray = ["ClrClassName"];
+//    var Propvalues = ["SampleHandlerSelectorView"];
+
+    var listViewControl = Getchild(tabSampleProcessing, Proparray, Propvalues);
+    
+    if(GetPropertyValue(listViewControl, "Visible") == true)
+    {
+      Proparray = ["ClrClassName","WPFControlText"];
+      Propvalues = ["TextBlock", strSHName];
+
+      objSHTextBlock = Getchild(listViewControl, Proparray, Propvalues);
+      if(GetPropertyValue(objSHTextBlock, "Enabled") == true)
+      {
+        ClickControl(objSHTextBlock);
+        var objListViewItem = GetParent(GetParent(objSHTextBlock))
+        if(GetPropertyValue(objListViewItem, "IsFocused") == true)
+        {
+          Log["Message"]("Selected " + strSHName);
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else
+        {
+          Log["Message"]("Unable to select " + strSHName);
+          Log["PopLogFolder"]();
+          return false;
+        } 
+      }
+      else
+      {
+        Log["Message"]("Unable to select " + strSHName);
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    }
+    else
+    {
+      Log["Message"]("Unable to select " + strSHName);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function VerifyTCSSettingsForSampleLowVolume(sValue)
+{  
+  try 
+    {
+    Log["AppendFolder"]("Setup::VerifyTCSSettingsForSampleLowVolume");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxLowVolume");
+    
+    var sChkBoxStatus = CheckboxStatus(objctrl);
+    if ((sValue == "No")&&(sChkBoxStatus==false))
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with low volume checkbox is in expected state");
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else if ((sValue == "Yes")&&(sChkBoxStatus==true))
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with low volume checkbox is in expected state");
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with low volume checkbox is not in expected state");
+       Log["PopLogFolder"]();
+       return false;
+    }
+
+    }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+} 
+
+function SetTCSSettingsForSampleLowVolume(sValue)
+{ 
+    try 
+    {
+    Log["AppendFolder"]("Setup::SetTCSSettingsForSampleLowVolume");
+    var operation = 0;
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxLowVolume");
+    
+    var sChkBoxStatus = CheckboxStatus(objctrl);
+    if( sChkBoxStatus == false && sValue == "Yes" )
+    {
+      //Check the CheckBox
+      SelectCheckbox(objctrl);
+      Log["Message"]("Process samples with low volume is checked now")
+      operation = 1;
+    }
+    else if( sChkBoxStatus == true && sValue == "No" )
+    {
+      //uncheck the Checkbox
+      SelectCheckbox(objctrl);
+      Log["Message"]("Process samples with low volume is un-checked now")
+      operation = 1;
+    } 
+    else
+    {
+      //No action needed
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Process samples with low volume checkbox is already in desired state. No action performed");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+
+    if (operation == 1)
+    {
+      //var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","grdFrameSystemConfiguration");
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","tabSampleWorkflowConfigurationView");
+      
+      var proparr=["ClrClassName","WPFControlText"];
+      var transSave=GetTranslatedString("Save","")
+      var vararr=["Button",transSave];
+      
+      var objbtnSave = Getchild(objctrl, proparr, vararr);
+      ClickControl(objbtnSave);
+    }
+
+    //Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with low volume checkbox screenshot"); // this screenshot is redundant since next called method does the same     
+    if(VerifyTCSSettingsForSampleLowVolume(sValue) == true)
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;      
+    } 
+  }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }   
+}
+
+function SetTCSSettingsForVisionSpinError(sValue)
+{ 
+    try 
+    {
+    Log["AppendFolder"]("Setup::SetTCSSettingsForVisionSpinError");
+    var operation = 0;
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxSpinError");
+    
+    var sChkBoxStatus = CheckboxStatus(objctrl);
+    if( sChkBoxStatus == false && sValue == "Yes" ) 
+    {
+      //Check the CheckBox
+      SelectCheckbox(objctrl);
+      Log["Message"]("Process samples with vision spin error is checked now")
+      operation = 1;
+    }
+    else if( sChkBoxStatus == true && sValue == "No" )
+    {
+      //uncheck the Checkbox
+      SelectCheckbox(objctrl);
+      Log["Message"]("Process samples with vision spin error is un-checked now")
+      operation = 1;
+    } 
+    else
+    {
+      //No action needed
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Process samples with vision spin error checkbox is already in desired state. No action performed");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+
+    
+    if (operation == 1)
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","tabSampleWorkflowConfigurationView");
+      
+      var proparr=["ClrClassName","WPFControlText"];
+      var transSave=GetTranslatedString("Save","")
+      var vararr=["Button",transSave];
+      
+      var objbtnSave = Getchild(objctrl, proparr, vararr);
+      ClickControl(objbtnSave);
+    }
+
+    if(VerifyTCSSettingsForVisionSpinError(sValue) == true)
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;      
+    } 
+  }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }   
+}
+function tmp()
+{
+  InitializeMetaData();
+  SetTCSSettingsForVisionSpinError("No");
+} 
+
+
+function VerifyTCSSettingsForVisionSpinError(sValue)
+{  
+  try 
+    {
+    Log["AppendFolder"]("Setup::VerifyTCSSettingsForVisionSpinError");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxSpinError");
+    
+    var sChkBoxStatus = CheckboxStatus(objctrl);
+    if ((sValue == "No")&&(sChkBoxStatus==false))
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with vision spin error checkbox is in expected state");
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else if ((sValue == "Yes")&&(sChkBoxStatus==true))
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with vision spin error checkbox is in expected state");
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with vision spin error checkbox is not in expected state");
+       Log["PopLogFolder"]();
+       return false;
+    }
+
+    }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+} 
+
+
+function VerifyHILConfigAvailable()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyHILConfigAvailable");
+    
+    var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","radioBtnTCSBasedHIL");
+//    var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","radioBtnCHBasedHIL");
+    if(VerifyObjectExistance(objctrl))
+    {
+      Log["Message"]("HIL Settings are available");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("HIL Settings are not available");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySampleVolConfigAvailable()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifySampleVolConfigAvailable");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxLowVolume");
+    if(VerifyObjectExistance(objctrl))
+    {
+      Log["Message"]("Sample Volume settings are available");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Sample Volume settings are not available");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySpinConfigAvailable()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifySpinConfigAvailable");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxSpinError");
+    if(VerifyObjectExistance(objctrl))
+    {
+      Log["Message"]("Spin error settings are available");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Spin error settings are not available");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyErrorConfigNotAvailable(sErrorStatus)
+{
+//Error sort screen should not have TCS Vision Error Sort Groups
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyErrorConfigNotAvailable");
+    var Obj=Sys["Process"]("Shell");
+    var Proparray=["ClrClassName","WPFControlText"]
+    arrStatus = sErrorStatus["split"](";");
+    var iFlag=0;
+    for(intIndex=0; intIndex<arrStatus["length"]; intIndex++)
+    {
+      var ErrorStatus=arrStatus[intIndex]
+      var transErrorStatus=GetTranslatedString(ErrorStatus,"")
+      var Propvalues=["ToggleButton", transErrorStatus]
+      var objErrorstatus=Obj["Find"](Proparray,Propvalues,35)
+      if(objErrorstatus["Exists"] == false)
+      {
+        Log["Message"]("Error status: "+ sErrorStatus+" is not present on UI");
+        iFlag=iFlag+1;
+      }
+      else
+      {
+        Log["Message"]("Error status: "+ sErrorStatus+" is present on UI");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    if(iFlag==arrStatus["length"])
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function SetAttributeInSampleProcessingSetting(AttributeName,ExpectedAttributeValue)
+{
+try
+  {
+    Log["AppendFolder"]("Setup::SetAttributeInSampleProcessingSetting");
+    sFilePath="F:\\InstrumentOutput\\SampleProcessingSetting.xml";
+    var objXML  = ReadXML(sFilePath);
+    var sNode = "//SampleProcessingConfiguration//ProcessingSetting"
+    var objXMLNodeInfo=objXML["SelectNodes"](sNode)
+
+    var objNode = objXMLNodeInfo["item"](0);
+    var actualvalue = objNode["getAttribute"](AttributeName);
+    if(actualvalue== ExpectedAttributeValue)
+    {
+      var updation =0;
+      Log["Message"]("Attribute :" +AttributeName +" value is already set as "+actualvalue)
+      Log["PopLogFolder"]();
+	  return true;
+    }
+    else
+    {
+      objNode["setattribute"](AttributeName,ExpectedAttributeValue)
+      Log["Message"]("Attribute :" +AttributeName +" value is now set as "+ExpectedAttributeValue)
+      var updation = 1;   
+    }
+  
+    if (updation ==1)
+    {
+      objXML["save"](sFilePath); 
+      Log["PopLogFolder"]();
+	  return true;
+    }
+    else
+	{
+	  Log["PopLogFolder"]();
+      return false;
+	}
+           
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SetTCSSettingsForSpecimenMismatch(sValue)
+{
+  try 
+    {
+    Log["AppendFolder"]("Setup::SetTCSSettingsForSpecimenMismatch");
+    var operation = 0;
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxSpecimenMismatch");
+    
+    var sChkBoxStatus = CheckboxStatus(objctrl);
+    if( sChkBoxStatus == false && sValue == "Yes" )
+    {
+      //Check the CheckBox
+      SelectCheckbox(objctrl);
+      Log["Message"]("Process samples with specimen mismatch checkbox is checked now")
+      operation = 1;
+    }
+    else if( sChkBoxStatus == true && sValue == "No" )
+    {
+      //uncheck the Checkbox
+      SelectCheckbox(objctrl);
+      Log["Message"]("Process samples with specimen mismatch checkbox is un-checked now")
+      operation = 1;
+    } 
+    else
+    {
+      //No action needed
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Process samples with specimen mismatch checkbox is already in desired state. No action performed");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+
+    
+    if (operation == 1)
+    {
+      var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","tabSampleWorkflowConfigurationView");
+      
+      var proparr=["ClrClassName","WPFControlText"];
+      var transSave=GetTranslatedString("Save","")
+      var vararr=["Button",transSave];
+      
+      var objbtnSave = Getchild(objctrl, proparr, vararr);
+      ClickControl(objbtnSave);
+    }
+
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Verify Process samples with specimen mismatch checkbox");    
+//    return VerifyTCSSettingsForSpecimenMismatch(sValue)
+    if(VerifyTCSSettingsForSpecimenMismatch(sValue))
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function VerifyTCSSettingsForSpecimenMismatch(sValue)
+{  
+  try 
+    {
+    Log["AppendFolder"]("Setup::VerifyTCSSettingsForSpecimenMismatch");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","chkBoxSpecimenMismatch");
+    
+    var sChkBoxStatus = CheckboxStatus(objctrl);
+    if ((sValue == "No")&&(sChkBoxStatus==false))
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with specimen mismatch checkbox is in expected state");
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else if ((sValue == "Yes")&&(sChkBoxStatus==true))
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with specimen mismatch checkbox is in expected state");
+       Log["PopLogFolder"]();
+       return true;
+    }
+    else
+    {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Process samples with specimen mismatch checkbox is not in expected state");
+       Log["PopLogFolder"]();
+       return false;
+    }
+
+    }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+} 
+
+function GetAttributeInSampleProcessingSetting(AttributeName)
+{
+try
+  {
+    Log["AppendFolder"]("Setup::GetAttributeInSampleProcessingSetting");
+    AttributeName="VisionVolumeThreshold";
+    sFilePath="F:\\InstrumentOutput\\SampleProcessingSetting.xml";
+    var objXML  = ReadXML(sFilePath);
+    var sNode = "//SampleProcessingConfiguration//ProcessingSetting"
+    var objXMLNodeInfo=objXML["SelectNodes"](sNode)
+
+    var objNode = objXMLNodeInfo["item"](0);
+    var actualvalue = objNode["getAttribute"](AttributeName);
+    Log["Message"](AttributeName+" in SampleProcessingSetting XML is "+actualvalue)
+    Log["PopLogFolder"]();
+    return actualvalue;
+           
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+function AddMultipleErrorSortGroups(sErrorStatuses,sErrorGroupNames)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::AddMultipleErrorSortGroups");
+   
+    var aErrorGroupNames = sErrorGroupNames["split"](";");
+    var aErrorStatuses=sErrorStatuses["split"](";");
+    var iGroup=0;
+    for(var i=0;i<aErrorGroupNames["length"];i++)
+    {
+      var sErrorGroupName=aErrorGroupNames[i];
+      var sErrorStatus=aErrorStatuses[i];
+      
+      if(!VerifyErrorSortGroup(sErrorGroupName))
+      {
+        var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","btnAddGroup");//Setup_Settings_SHConfiguration_ErrorSortGroup
+        ClickControl(objctrl);
+    
+        aqUtils["Delay"](1000,"Synchronization for New sort group dialog");
+
+      
+        var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","txtBoxSortGroupName");//Setup_Settings_SHConfiguration_ErrorSortGroup
+        SetText(objctrl,sErrorGroupName)
+    
+        var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","btnOk");//Setup_Settings_SHConfiguration_ErrorSortGroup
+        ClickControl(objctrl);
+      
+        if(VerifyErrorSortGroup(sErrorGroupName) != true)
+        {
+          Log["Message"]("Unable to add the error sort group")
+          Log["PopLogFolder"]();
+          return false;
+        }
+      
+        if(SelectAnErrorStatus(sErrorStatus) != true)
+        {
+          Log["Message"]("Unable to add the error status to errror sort group")
+          Log["PopLogFolder"]();
+          return false;
+        }
+    
+        //var objctrl = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","btnSave");//Setup_Settings_SHConfiguration_ErrorSortGroup
+        var tabErrorSortGroup = GetControl("Setup_Settings_SHConfiguration_ErrorSortGroup","tabErrorSortGroupsConfigurationView");
+        var transSave=GetTranslatedString("Save","")
+        var Proparray = ["ClrClassName","WPFControlText"];
+        var Propvalues = ["Button", transSave];
+        var objctrl = Getchild(tabErrorSortGroup, Proparray, Propvalues);    
+        ClickControl(objctrl);
+        
+        iGroup=iGroup+1;
+      }
+      else
+      {
+        Log["Message"]("Error sort group "+sErrorGroupName+"is already available")
+        iGroup=iGroup+1;
+      } 
+    }
+    if(iGroup==aErrorGroupNames["length"])
+    {
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyVisionBasedInterferenceOptions()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyVisionBasedInterferenceOptions");
+    
+    var transRunAll = GetTranslatedString("Run all tests", "");
+    var transRunUnaffected = GetTranslatedString("Run unaffected tests", "");
+    var transDoNotRun = GetTranslatedString("Do not run any tests", "");
+    
+    var intFailCount = 0;
+    //Verification for Definite HIL
+    var objCmbDef = GetControl("Setup_Settings_GeneralSetup_Patient","cmbDefiniteHIL");
+    var strDefItems = GetComboItemsList(objCmbDef);
+    
+    if(aqString["Find"](strDefItems, transRunAll) == -1)
+    {
+      intFailCount++;
+      Log["Message"]("Run all tests option not available for Definite HIL");
+    }
+    else
+      Log["Message"]("Run all tests option is available for Definite HIL");
+      
+    if(aqString["Find"](strDefItems, transRunUnaffected) == -1)
+    {
+      intFailCount++;
+      Log["Message"]("Run unaffected tests option not available for Definite HIL");
+    }
+    else
+      Log["Message"]("Run unaffected tests option is available for Definite HIL");
+    
+    if(aqString["Find"](strDefItems, transDoNotRun) == -1)
+    {
+      intFailCount++;
+      Log["Message"]("Do not run any tests option not available for Definite HIL");
+    }
+    else
+      Log["Message"]("Do not run any tests option is available for Definite HIL");
+    
+    //Verification for Questionable HIL
+    var objCmbQues = GetControl("Setup_Settings_GeneralSetup_Patient","cmbQuestionableHIL");
+    var strQuesItems = GetComboItemsList(objCmbDef);
+    
+    if(aqString["Find"](strQuesItems, transRunAll) == -1)
+    {
+      intFailCount++;
+      Log["Message"]("Run all tests option not available for Questionable HIL");
+    }
+    else
+      Log["Message"]("Run all tests option is available for Questionable HIL");
+    
+    if(aqString["Find"](strQuesItems, transRunUnaffected) == -1)
+    {
+      intFailCount++;
+      Log["Message"]("Run unaffected tests option not available for Questionable HIL");
+    }
+    else
+      Log["Message"]("Run unaffected tests option is available for Questionable HIL");
+    
+    if(aqString["Find"](strQuesItems, transDoNotRun) == -1)
+    {
+      intFailCount++;
+      Log["Message"]("Do not run any tests option not available for Questionable HIL");
+    }
+    else
+      Log["Message"]("Do not run any tests option is available for Questionable HIL");
+    
+    if(intFailCount > 0)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "All the options are not available for Definite HIL");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "All the options are available for Definite HIL");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyVisionHILInterferenceSettingsAreUnavailable()
+{ 
+    try
+    {
+      Log["AppendFolder"]("Setup::VerifyVisionHILInterferenceSettingsAreUnavailable");
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","cmbDefiniteHIL");
+      if(objctrl==false)
+      {
+        Log["Message"]("Definite HIL combobox is not available");
+      }
+      else
+      {
+        Log["Error"]("Definite HIL combobox is available");
+        return false;
+      } 
+        
+      var objctrl = GetControl("Setup_Settings_GeneralSetup_Patient","cmbQuestionableHIL");
+      if(objctrl==false)
+      {
+        Log["Message"]("Questionable HIL combobox is not available");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Error"]("Questionable HIL combobox is available");
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    }
+    catch(exp)
+    {
+      Log["Error"]("Exception",exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+} 
+
+function VerifyCapSortGroup(strCapSortGroupName)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyCapSortGroup");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups","grdCapSortGroups");
+    if (VerifyListViewItem(objctrl, "Name", strCapSortGroupName)==true)
+    {
+      Log["Message"]("The specified cap sort group "+strCapSortGroupName+" is available in the cap sort groups list");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Message"]("The specified cap sort group "+strCapSortGroupName+" is not available in the cap sort groups list");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+function VerifyTrainedCapcolorGroupAvailable(strTrainedCapColorGroup)
+{
+    try
+    {
+      //InitializeMetaData();
+      //strTrainedCapColorGroup="WhiteSerum"
+      Log["AppendFolder"]("Setup::VerifyTrainedCapcolorGroupAvailable");
+      var objctrl     = GetControl("Setup_Settings_SHConfiguration_CapSortGroups","tabCapSortGroupsConfigurationView");
+      var Proparray   = ["ClrClassName", "CommandParameter"];
+      var Propvalues  = ["CapColorToggleButton", strTrainedCapColorGroup];
+      var objTrainedCapColorGroup = Getchild(objctrl, Proparray, Propvalues);
+    
+      if(objTrainedCapColorGroup["Exists"])
+      {
+        Log["Message"]("Trained color group: "+ strTrainedCapColorGroup +" is already available")
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Trained color group: "+ strTrainedCapColorGroup +" is already available");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Trained color group: "+ strTrainedCapColorGroup +" is not available")
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Trained color group: "+ strTrainedCapColorGroup +" is not available");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    catch(exp)
+    {
+      Log["Error"]("Exception: " +exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+}
+
+
+function AssignCapColorToGroup(strCapSortGroupName, strTrainedCapColorGroup)
+{
+/*
+Example for arguments :-
+  strCapSortGroupName = "TestCapColor";
+  strTrainedCapColorGroup = "PinkSerum;Test Cap Color";
+*/
+  try
+  {
+    Log["AppendFolder"]("Setup::AssignCapColorToGroup");
+    
+    var arrTrainedCapColorGroup = strTrainedCapColorGroup["split"](";");
+    var iFlag=0;
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups", "grdCapSortGroups");
+    if(SelectListViewItem(objctrl, "Name", strCapSortGroupName))
+    {
+      for(var intIndex=0; intIndex < arrTrainedCapColorGroup["length"]; intIndex++)
+      {
+        var objctrl     = GetControl("Setup_Settings_SHConfiguration_CapSortGroups","tabCapSortGroupsConfigurationView");
+        var Proparray   = ["ClrClassName", "CommandParameter"];
+        var Propvalues  = ["CapColorToggleButton", arrTrainedCapColorGroup[intIndex]];
+        var objTrainedCapColorGroup = Getchild(objctrl, Proparray, Propvalues);
+      
+        if(objTrainedCapColorGroup["Exists"])
+        {
+          if(!CheckboxStatus(objTrainedCapColorGroup))
+          {
+            ClickControl(objTrainedCapColorGroup);
+            Log["Message"]("Trained color group: "+ arrTrainedCapColorGroup[intIndex] +" is selected");
+          }
+          else
+          {
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Trained color group: "+ arrTrainedCapColorGroup[intIndex] +" is already selected");
+          }
+          iFlag=iFlag+1;
+        }
+        else
+        {
+          Log["Error"]("Unable to select trained color group: "+ arrTrainedCapColorGroup[intIndex]);
+          Log["PopLogFolder"]();
+          return false;
+        }
+      
+        if(iFlag==arrTrainedCapColorGroup["length"])
+        {
+          Log["PopLogFolder"]();
+          return true;
+        }
+      }
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to select color group: "+ strCapSortGroupName +"  ");
+      return false;
+    } 
+  }
+
+  catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function AddCapSortGroup(strCapSortGroupName, strCapColor, strDecapTubes)
+{
+//  strCapColor = "PinkSerum";
+//  strCapSortGroupName = "TestCapColor"
+//  strDecapTubes = "Always"
+//  InitializeMetaData();
+  try
+  {
+    Log["AppendFolder"]("Setup::AddCapSortGroup");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups","btnCapSortAddGroup");
+    ClickControl(objctrl);
+    
+    aqUtils["Delay"](1000,"Synchronization for New Cap sort group dialog");  
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups", "txtBoxCapSortGroupName");
+    SetText(objctrl,strCapSortGroupName)
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups", "btnCapSortOK");
+    ClickControl(objctrl);
+    
+    //set combo value for decap tubes combo box
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups", "cmbCapSortDecapTubes");
+    SetComboValue(objctrl, strDecapTubes);
+    
+    if(VerifyCapSortGroup(strCapSortGroupName) != true)
+    {
+      Log["Message"]("Unable to add Cap sort group")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(AssignCapColorToGroup(strCapSortGroupName, strCapColor) != true)
+    {
+      Log["Message"]("Unable to add the error status to errror sort group")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups", "btnCapSortSave");
+    ClickControl(objctrl);
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function EnableDisableSealArchivingSamples(intValue)
+{
+  try
+  {
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow", "chkSealArchivingSamples");
+    SetWPFCheckBox(objctrl, intValue);
+    
+	var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow","tabSampleWorkflowConfigurationView");
+    var proparr=["ClrClassName","WPFControlText"];
+    var transSave=GetTranslatedString("Save","")
+    var vararr=["Button",transSave];
+      
+    var objbtnSave = Getchild(objctrl, proparr, vararr);
+    
+    if(objbtnSave["Enabled"] == true)
+    {
+      ClickControl(objbtnSave);
+    }
+    else
+    {
+     Log["Warning"]("Save button not enabled")
+	   Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Save button not enabled. The wait for results for workflow configuration were not modified.");
+     }
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_SampleWorkflow", "chkSealArchivingSamples");
+    if(GetPropertyValue(objctrl,"wState")==intValue)
+      return true;
+    else
+      return false; 
+    
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception: " +exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+// Scripts related to TDef for HYDRA
+//*************************************************************************
+//*  FunctionName : fnNavigateToTDef
+//*  Description: Navigates to Tdef
+//*  Input: Assay
+//*  Output: Boolean
+//*************************************************************************
+
+function fnNavigateToTDef()
+{
+  try
+    {
+      InitializeMetaDataHYDRA();
+    
+         //Open Log
+        Log["AppendFolder"]("Navigate to Test Definition")
+        
+        InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+        Log["Message"]("Naviagated to CI Tdef");     
+                   
+    }catch(e){  
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+      Log["PopLogFolder"]();
+      return true;
+
+}
+
+function fnSelectTestinTdef(TestName)
+{
+  try
+      {  
+       //InitializeMetaDataHYDRA();
+      
+        //Verify Tdef is Available 
+        aqUtils["Delay"](500,"Wait for Tdef to load");
+        var bnFlag =false;
+        var objctrl = GetControl("","grdTDefGrid");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Tdefs are available in Tdef Grid")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").DisplayName.OleValue");
+            if(aqString["ToLower"](strCellValue) == aqString["ToLower"](TestName))
+            {
+              Log["Message"](TestName+" is available in Tdef Grid");
+              bnFlag =true;
+              objctrl["ClickCell"](i, "Test");
+              break;
+            }        
+        }         
+       //Tdef not available? Fail
+        if(!bnFlag){
+          Log["Error"](TestName+" is not available in Tdef Grid");
+          Log["PopLogFolder"]();
+          return false;
+          }  
+          
+        //Click on Common Tab for CI                        
+//        var tbCommon = GetControl("","tbbtnTabCommon");   // commented by Shrutika since it gives exception and can be seen in logs but it doesnt fail 
+//        ClickControl(tbCommon);                           // if really needed this then check for exception or use another step definition to go to common tab
+//        Log["Message"]("Common tab is clicked");
+//        aqUtils["Delay"](1000);
+        
+        
+  }catch(exp){
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();  
+    return false;
+  }
+      return true;
+
+} 
+
+function fnEditTestIDentification(TestName,TestType,TestVersion,DisplayName,PrintName,LISName,LOINC,Status)
+{
+    try
+       { 
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Edit Test Identification fields and Save")
+           // Below fields are commented as TestName, TestType, DisplayName are readonly fields now
+//          //Enter TestName
+//          Log["AppendFolder"]("Enter TestName as "+TestName)
+//          var objctrl1 = GetControl("","txtTestName");
+//          objctrl1["Clear"];
+//          SetText(objctrl1, TestName)
+//          aqUtils["Delay"](2000);
+//          //SendKeys(objctrl, "[Tab]")
+//          Log["PopLogFolder"]()
+//                       
+//          //TestType
+//          Log["AppendFolder"]("Choose TestType as "+TestType)
+//          var objctrl2 = GetControl("","cmbTestVersionComboBox");
+//          SetComboValue(objctrl2, TestType)
+//          //aqUtils["Delay"](2000);
+//          Log["PopLogFolder"]()
+//          
+//          //TestType
+//          Log["AppendFolder"]("Enter TestVersion as "+TestVersion)
+//          var objctrl3 = GetControl("","txtTestVersionTextBox");
+//          objctrl3["Clear"];
+//          //SetFocus(objctrl3);
+//          SetText(objctrl3, TestVersion)
+//          //SendKeys(objctrl3, "[Tab]")
+//          Log["PopLogFolder"]()
+//          
+          //DisplayName
+          Log["AppendFolder"]("Enter DisplayName as "+DisplayName)
+          var objctrl4 = GetControl("","txtDisplayNameTextBox");
+           //objctrl4["Clear"];
+          //SetFocus(objctrl4);
+          SetText(objctrl4, DisplayName)
+          //SendKeys(objctrl4, "[Tab]")
+          aqUtils["Delay"](1000);
+          Log["PopLogFolder"]()
+          
+          //PrintName
+          Log["AppendFolder"]("Enter PrintName as "+PrintName)
+          var objctrl5 = GetControl("","txtPrintNameTextBox");
+          //objctrl5["Clear"];
+          SetText(objctrl5, PrintName)
+          //SendKeys(objctrl5, "[Tab]")
+          Log["PopLogFolder"]() 
+                    
+          //LISName
+          Log["AppendFolder"]("Enter LISName as "+LISName)
+          var objctrl6 = GetControl("","txtLISNameTextBox");
+          //objctrl6["Clear"];
+          SetText(objctrl6, LISName)
+          //SendKeys(objctrl6, "[Tab]")
+          Log["PopLogFolder"]() 
+          
+            // Below fields are commented as LOINC and Status are readonly fields now
+//          //LOINC
+//          Log["AppendFolder"]("Enter LOINC as "+LOINC)
+//          var objctrl7 = GetControl(" ","txtLoincTextBox");
+//           objctrl7["Clear"];
+//          SetText(objctrl7, LOINC)
+//          //SendKeys(objctrl7, "[Tab]")
+//          Log["PopLogFolder"]() 
+//          
+//         
+//          //Status
+//          Log["AppendFolder"]("Choose Status as "+Status)
+//          var objctrl8 = GetControl(" ","cmbStatusComboBox");
+//          aqUtils["Delay"](1000);
+//          SetComboValue(objctrl8, Status)
+//          Log["PopLogFolder"]()
+           
+          //Save
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl9 = GetControl("","btnSaveTdef");
+          ClickControl(objctrl9);
+          Log["PopLogFolder"]()
+          
+         // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+} 
+          
+function fnEditGeneralSection(ResultReviewMode,ResultTimeLimit,AnalyteStability){
+  {
+    try
+       { 
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Edit General section fields and Save")
+                                           
+          // Select value for ResultReviewMode
+          Log["AppendFolder"]("Choose ResultReviewMode as "+ResultReviewMode)
+          var objctrl1 = GetControl("","cmbResultReviewMode");
+          SetComboValue(objctrl1, ResultReviewMode)
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+          
+          //CheckBoxReuseResultForRatio
+          //Log["AppendFolder"]("Select the checkbox for Reuse result for Ratio")
+          //var objctrl2 = GetControl("","CheckBoxReuseResultForRatio");
+          //SelectCheckbox(objctrl2);
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+          
+          //Select value for ResultTimeLimit
+          Log["AppendFolder"]("Enter ResultTimeLimit as "+ResultTimeLimit)
+          var objctrl3 = GetControl("","txtResultTimeLimitTextBox");
+          objctrl3["Clear"];
+          SetText(objctrl3, ResultTimeLimit)          
+          Log["PopLogFolder"]()
+          
+          //Select value for AnalyteStability
+          Log["AppendFolder"]("Enter AnalyteStability as "+AnalyteStability)
+          var objctrl4 = GetControl("","txtAnalyteStabilityTextBox");
+          objctrl4["Clear"];
+          SetText(objctrl4, AnalyteStability)
+          //SendKeys(objctrl4, "[Tab]")
+          Log["PopLogFolder"]()
+                      
+          //Save TDef
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl = GetControl("","btnSaveTdef");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]();
+   
+          // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+  
+          //Click on Ok button
+          objctrl = GetControl("","btnOK");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]()
+                    
+    }catch(exp)
+        {
+          Log["Error"]("Exception",exp["description"]);
+          Log["PopLogFolder"]();
+          return false;
+        }
+          Log["PopLogFolder"]();
+          return true;
+
+  } 
+}
+
+function fnEditMeasuringIntervalvalues(LowMeasuringPlasma,HighMeasuringPlasma,LowMeasuringSerum,HighMeasuringSerum)
+{
+    try
+       { 
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Edit Measuring Interval fields ")
+                   
+          //CheckBoxAssayRangeRerun
+          Log["AppendFolder"]("Select the checkbox for Repeat when outside measuring interval")
+          var objctrl1 = GetControl("","CheckBoxAssayRangeRerun");
+          SelectCheckbox(objctrl1);
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+          
+          //Click on Serum Tab
+          Log["AppendFolder"]("Click on Serum Tab " );
+          objctrl5 = GetControl("","tabMeasuringIntervals");
+          objctrl5["ClickTab"](1);
+          //ClickControl(objctrl5);
+          Log["PopLogFolder"]()
+                    
+          //Enter LowMeasuringInterval for Serum
+          Log["AppendFolder"]("Enter LowMeasuringInterval as "+LowMeasuringSerum)
+          var objctrl6 = GetControl("","txtLowLimitTextBox");
+          //objctrl1["Clear"];
+          SetText(objctrl6, LowMeasuringSerum)
+          aqUtils["Delay"](1000);
+          //SendKeys(objctrl, "[Tab]")
+          Log["PopLogFolder"]()
+          
+        //Enter HighMeasuringInterval for Serum
+          Log["AppendFolder"]("Enter LowMeasuringInterval as "+HighMeasuringSerum)
+          var objctrl7 = GetControl("","txtHighLimitTextBox");
+         // objctrl1["Clear"];
+          SetText(objctrl7, HighMeasuringSerum)
+          aqUtils["Delay"](1000);
+          //SendKeys(objctrl, "[Tab]")
+          Log["PopLogFolder"]() 
+          
+
+          //Click on Plasma Tab
+          Log["AppendFolder"]("Click on Plasma Tab " );
+          objctrl5 = GetControl("","tabMeasuringIntervals");
+          objctrl5["ClickTab"](0);
+          //ClickControl(objctrl5);
+          Log["PopLogFolder"]()
+          
+           //Enter LowMeasuringInterval for Plasma
+          Log["AppendFolder"]("Enter LowMeasuringInterval as "+LowMeasuringPlasma)
+          var objctrl3 = GetControl("","txtLowLimitTextBox");
+          //objctrl1["Clear"];
+          SetText(objctrl3, LowMeasuringPlasma)
+          aqUtils["Delay"](1000);
+          //SendKeys(objctrl, "[Tab]")
+          Log["PopLogFolder"]()
+          
+          //Enter HighMeasuringInterval for Plasma
+          Log["AppendFolder"]("Enter LowMeasuringInterval as "+HighMeasuringPlasma)
+          var objctrl4 = GetControl("","txtHighLimitTextBox");
+          //objctrl1["Clear"];
+          SetText(objctrl4, HighMeasuringPlasma)
+          aqUtils["Delay"](1000);
+          //SendKeys(objctrl, "[Tab]")
+          Log["PopLogFolder"]()
+                   
+           
+          //Save
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl8 = GetControl("","btnSaveTdef");
+          ClickControl(objctrl8);
+          Log["PopLogFolder"]()
+          
+         // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()         
+          
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+} 
+
+function VerifyTDefSaved()
+{
+        InitializeMetaDataHYDRA();
+        
+        //Save Tdef 
+          Log["AppendFolder"]("Verify TDef is saved or not" );
+          objctrlmm = GetControl("","wndTDefsaved");
+                  
+       try{         
+            if((objctrlmm)["Exists"]){
+                var Msg1 = objctrlmm["get_Text"]();
+                 Log["Enabled"] =true;
+                 if(aqString["ToLower"](Msg1) == aqString["ToLower"]("TDef Save Complete"))
+                      Log["Message"]("Tdef Saved sucessfully");                  
+                 else
+				 {
+                      Log["Message"]("Tdef is not Saved sucessfully");
+                     // Runner["Stop"]();
+                 Log["PopLogFolder"]();
+                     return false;
+				}
+                 }
+            
+        }catch(e){
+                  Log["Error"]("Exception",exp["description"]);
+                  Log["PopLogFolder"]();
+                  return false;
+                  }
+         Log["PopLogFolder"]();
+         return true;
+
+}
+
+function fnSelectFilterBox(FilterComboBox)
+{
+  try
+      {  
+       InitializeMetaDataHYDRA();
+      
+        //Verify Tdef is Available 
+        aqUtils["Delay"](500,"Wait for Tdef to load");
+        
+         	Log["AppendFolder"]("Choose TestType as "+FilterComboBox)
+          var objctrl1 = GetControl("","cmbFilterComboBox");
+          SetComboValue(objctrl1, FilterComboBox)
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]();
+        
+  }catch(exp){
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();  
+    return false; 
+  }
+  
+      Log["PopLogFolder"]();
+      return true;
+
+} 
+
+function fnEditAdvacedIASection(){
+  {
+    try
+       { 
+          InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Edit Advanced section fields for IA and Save")
+                                           
+          //CheckBoxAnonymousCheckBox
+          Log["AppendFolder"]("Select the checkbox for AnonymousCheckBox")
+          var objctrl1 = GetControl("","CheckBoxAnonymousCheckBox");
+          SelectCheckbox(objctrl1);
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+          
+          //CheckBoxAnonymousCheckBox
+          Log["AppendFolder"]("Select the checkbox for CentrifugeForRepeatCheckBox")
+          var objctrl2 = GetControl("","CheckBoxCentrifugeForRepeatCheckBox");
+          SelectCheckbox(objctrl2);
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+                                          
+          //Save TDef
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl = GetControl("","btnSaveTdef");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]();
+   
+         // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+  
+          //Click on Ok button
+          objctrl = GetControl("","btnOK");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]()
+                    
+    }catch(exp)
+        {
+          Log["Error"]("Exception",exp["description"]);
+          Log["PopLogFolder"]();
+          return false;
+        }
+          Log["PopLogFolder"]();
+          return true;
+
+  } 
+}
+
+function fnEditAdvacedCCSection(){
+  {
+    try
+       { 
+          InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Edit Advanced section fields for CC and Save")
+                                           
+          //CheckBoxAnonymousCheckBox
+          Log["AppendFolder"]("Select the checkbox for OrderReplicates")
+          var objctrl1 = GetControl("","CheckBoxOrderReplicates");
+          SelectCheckbox(objctrl1);
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+          
+          //CheckBoxAnonymousCheckBox
+          Log["AppendFolder"]("Select the checkbox for KineticModeCheckBox")
+          var objctrl2 = GetControl("","CheckBoxKineticModeCheckBox");
+          SelectCheckbox(objctrl2);
+          //aqUtils["Delay"](2000);
+          Log["PopLogFolder"]()
+                                          
+          //Save TDef
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl = GetControl("","btnSaveTdef");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]();
+   
+         // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+  
+          //Click on Ok button
+          objctrl = GetControl("","btnOK");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]()
+                    
+    }catch(exp)
+        {
+          Log["Error"]("Exception",exp["description"]);
+          Log["PopLogFolder"]();
+          return false;
+        }
+          Log["PopLogFolder"]();
+          return true;
+
+  } 
+}
+
+
+//sSpecimenType can be passed as multiple specimen types separted with semicolon
+function SelectSpecimenTypeInConfigureCapColorGroups(sSpecimenType)
+{
+//  InitializeMetaData()
+//  var sSpecimenType="SERUM;SERVICE"
+  try
+  {
+  Log["AppendFolder"]("Setup::SelectSpecimenTypeInConfigureCapColorGroups");
+
+  var aSpecimenTypes=sSpecimenType["split"](";");
+  var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups_ConfigureCapColorGroup","digVCapColorConfiguration");
+
+  var iFlag=0;
+  for (i=0;i<aSpecimenTypes["length"];i++)
+  {
+    var Proparray = ["ClrClassName","WPFControlText"];
+    var Propvalues = ["CheckBox", aSpecimenTypes[i]];
+  
+    var objSpecimenTypeCheckBox=objctrl["Find"](Proparray,Propvalues,35)
+    if(objSpecimenTypeCheckBox["Exists"] == true)
+    {
+     SetWPFCheckBox(objSpecimenTypeCheckBox, 1 );
+     Log["Message"]("Specimen type "+aSpecimenTypes[i]+" is selected")
+     iFlag=iFlag+1
+    }
+
+  }
+  
+  if(iFlag==aSpecimenTypes["length"]) 
+      return true;
+  else
+      return false;
+
+      
+  }
+
+  
+  catch(exp)
+  {
+
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+
+  } 
+ 
+} 
+
+
+
+function ConfigureCapColorGroups(sCapColorGroupName,SpecimenType)
+{
+
+  try
+  {
+//    var sCapColorGroupName""
+//    var SpecimenType="SERUM;PLASMA"
+    Log["AppendFolder"]("Setup::ConfigureCapColorGroups");
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups_ConfigureCapColorGroup","lstVCapColorGroups");
+
+    if(!SelectListViewItem(objctrl, "Description", sCapColorGroupName))
+    {
+      Log["Error"]("Unable to select capcolor group "+sCapColorGroupName)
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+
+    else
+    {
+
+      Log["Message"]("Selected capcolor group is "+sCapColorGroupName)
+    }
+     
+    if(!SelectSpecimenTypeInConfigureCapColorGroups(sSpecimenType))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var objctrl = GetControl("Setup_Settings_SHConfiguration_CapSortGroups_ConfigureCapColorGroup","btnConfigCapColorSave");
+    ClickControl(objctrl);
+    
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+} 
+
+//********************************************************************************
+//*  FunctionName : CreateUserAccount(Member,OperatorID,Password,Fullname)
+//*  Description: Go to setup->Accounts->Accounts and create user account
+//*  Input: Member,OperatorID,Password,Fullname
+//*  Output: boolean
+//*  Example: CreateUserAccount(Member,OperatorID,Password,Fullname)
+//*  Date of Creating: Jan 14 2019
+//*  Created By: Shrutika
+//********************************************************************************
+
+function CreateUserAccount(Member,OperatorID,Password,Fullname)
+{
+  try
+  {      
+    Log["AppendFolder"]("Setup::CreateUserAccount");
+    Log["Message"]("Creating new user account");
+    
+    //click on create account button
+    var objctrl = GetControl("Setup_Accounts_Accounts","btnCreateAccount");
+    ClickControl(objctrl);
+    
+    // select member group from combo box like G4: Day Time Operators
+    if((Member!="")&&(Member!=null))
+    {
+      Log["Message"]("Setting the member of group as : " + Member );
+      objctrl = GetControl("Setup_Accounts_Accounts","cmbMember");
+      SetComboValue(objctrl, Member)
+    }
+    
+    // set user id
+    var objctrl = GetControl("Setup_Accounts_Accounts","txtUserID");
+    SetText(objctrl, OperatorID)
+    
+    // set password 
+    var objctrl = GetControl("Setup_Accounts_Accounts","txtPassword");
+    SetText(objctrl, Password)
+
+    // set confirm password
+    var objctrl = GetControl("Setup_Accounts_Accounts","txtConfirmPassword");
+    SetText(objctrl, Password)
+    
+    // set full name
+    var objctrl = GetControl("Setup_Accounts_Accounts","txtFullName");
+    SetText(objctrl, Fullname)
+    
+    // uncheck operator must change password at next sign in checkbox
+    var objctrl = GetControl("Setup_Accounts_Accounts","chkbxChangePassword");
+    if(objctrl["Exists"]==true)
+    {
+       if(WinFormCheckboxStatus(objctrl))
+        {
+          SetCheckboxUnChecked(objctrl);
+        }
+    }
+    
+    // uncheck disable account checkbox
+    var objctrl = GetControl("Setup_Accounts_Accounts","chkbxDisabledAccount");
+    if(objctrl["Exists"]==true)
+    {
+       if(WinFormCheckboxStatus(objctrl))
+        {
+          SetCheckboxUnChecked(objctrl);
+        }
+    }
+    
+    // click on save button
+    var objctrl = GetControl("Setup_Accounts_Accounts","btnSaveUserAccount");
+    ClickControl(objctrl);
+
+// commented below lines due to error pop label msg not displayed when app is launched via test complete
+//    // verify various error message pop up in case it comes after clicking on save    
+//    objctrl = GetControl("Setup_Accounts_Accounts","msgboxlblAccountSaveError");
+//    objctrlpwderror = GetControl("Setup_Accounts_Accounts","richtxtbxAccountSaveError");
+//    
+//    //var transOperatorIDInvalid = GetTranslatedString("The specified Operator ID is not valid. Create a different name using 4 to 20 characters that contains any combination of upper and lower-case alphanumeric letters.","");
+//    var transOperatorIDInvalid = "The specified Operator ID is not valid. Create a different name using 4 to 20 characters that contains any combination of upper and lower-case alphanumeric letters.";
+//    var transOperatorIDExists = "Operator ID already exists. Select a different Operator ID."
+//    if(objctrl["Exists"]==true)
+//    {
+//      if(VerifyControlText(objctrl,transOperatorIDInvalid) == true )
+//      {
+//    
+//        Log["Error"]("User account for Operator ID " +OperatorID  + " is not created succesfully due to Invalid OperatorID" )
+//        objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountErrorOK");
+//        ClickControl(objctrl);
+//        objctrl = GetControl("Setup_Accounts_Accounts","btnCancelUserAccount");
+//        ClickControl(objctrl);
+//        objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountWarningNo");
+//        ClickControl(objctrl);
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//      else if(VerifyControlText(objctrl,transOperatorIDExists) == true )
+//      //else if(aqString["Compare"](ExpectedPropertyValue, PropertyValue, true) == 0)
+//      {
+//    
+//        Log["Error"]("OperatorID " +OperatorID  + " already exists" )
+//        objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountErrorOK");
+//        ClickControl(objctrl);
+//        Log["PopLogFolder"]();
+//        return false;
+//      }
+//    }    
+//    else if (objctrlpwderror["Exists"]==true)
+//    {
+//      Log["Message"]("Password is not in valid format to create user account for Operator ID " +OperatorID );
+//      objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountErrorOK");
+//      ClickControl(objctrl);
+//      objctrl = GetControl("Setup_Accounts_Accounts","btnCancelUserAccount");
+//      ClickControl(objctrl);
+//      objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountWarningNo");
+//      ClickControl(objctrl);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    else
+//    {
+//      Log["Message"]("User account is created successfully");
+//      Log["PopLogFolder"]();
+//      return true;
+//    }
+    
+     // verify various error message pop up in case it comes after clicking on save    
+    objctrl = GetControl("Setup_Accounts_Accounts","wndUserAccountSaveError");
+    if(objctrl["Exists"]==true)
+    { 
+      objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountErrorOK");
+      ClickControl(objctrl);
+      objctrl = GetControl("Setup_Accounts_Accounts","btnCancelUserAccount");
+      if(objctrl["Exists"]==true)
+      {
+        Log["Error"]("User account for Operator ID " +OperatorID  + " is not created succesfully due to Invalid OperatorID or Password is not in valid format" )
+        ClickControl(objctrl);
+        objctrl = GetControl("Setup_Accounts_Accounts","btnUserAccountWarningNo");
+        ClickControl(objctrl);
+      }
+      else
+      {
+        Log["Error"]("  Unable to create user account due to OperatorID " +OperatorID  + " already exists" );
+      }
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"User account is created successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*  FunctionName : VerifyUserAccount(OperatorID)
+//*  Description: Go to setup->Accounts->Accounts and verify whether a this operator id already has account or not
+//*  Input: OperatorID
+//*  Output: boolean
+//*  Example: VerifyUserAccount(Labmanager)
+//*  Date of Creating: Jan 14 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyUserAccount(OperatorID)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyUserAccount");
+    Log["Message"]("Verify user account is already available");
+    objctrl = GetControl("Setup_Accounts_Accounts","grdUserAccounts");
+    if(CheckTextonGrid(objctrl, "Operator ID", OperatorID))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"User account " +OperatorID  + " already exists" )
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"User account " +OperatorID  + " does not exist" )
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*  FunctionName : VerifyCalibrationTriggersIsChecked()
+//*  Description: Verify whether auto calibration triggers checkbox is checked or not in SetUp->TestDefinition->CI TestDefinition ->Test->Calibration tab
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyCalibrationTriggersIsChecked()
+//*  Date of Creating: Jan 14 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyCalibrationTriggersIsChecked()
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyCalibrationTriggersIsChecked");
+    
+    //check automatic order calibration checkbox
+    var objctrl = GetControl("Setup_TestDefinition_CITestDefinition_IMCalibration","chkbxAutoCalibrationTrigger");
+    if(objctrl["Exists"]==true)
+    {
+       if(!CheckboxStatus(objctrl))
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Automatic Order calibration Triggers checkbox is unchecked");
+          Log["PopLogFolder"]();
+          return false;
+        }
+        else
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Automatic Order calibration Triggers checkbox is checked");
+          Log["PopLogFolder"]();
+          return true;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+//*  FunctionName : SetCalibrationTriggersIsChecked(boolValue)
+//*  Description: Verify whether auto calibration triggers checkbox is checked or not in SetUp->TestDefinition->CI TestDefinition ->Test->Calibration tab
+//*  Input: boolean i.e. 0 or 1
+//*  Output: boolean
+//*  Example: SetCalibrationTriggersIsChecked(boolValue)
+//*  Date of Creating: Jan 14 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function SetCalibrationTriggersIsChecked(boolValue)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetCalibrationTriggersIsChecked");
+    
+    //check automatic order calibration checkbox
+    var objctrl = GetControl("Setup_TestDefinition_CITestDefinition_IMCalibration","chkbxAutoCalibrationTrigger");
+    if(objctrl["Exists"]==true)
+    {
+       if(!CheckboxStatus(objctrl))
+        {
+          SetWPFCheckBox(objctrl,boolValue);
+		  Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Automatic Order calibration Triggers checkbox is checked");
+          Log["PopLogFolder"]();
+          return true;
+        }
+	}
+    else
+    {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Automatic Order calibration Triggers checkbox is not found");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+//********************************************************************************
+//*  FunctionName : EditAutoCalibrationTriggerFields()
+//*  Description: Verifies Control Level combo box is enabled or disabled in CI Test Definition-> IA test -> Common tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyControlLevelFieldDisabledEnabled()
+//*  Date of Creating: Jan 29 2019
+//*  Created By: Shrutika
+//********************************************************************************
+
+function EditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::EditAutoCalibrationTriggerFields");
+
+     // case 1: when lot expiration and pcak expiration are checked and operator wants to modify respective combo values
+    //CheckBox Lot calibration expiration days
+    var objctrlchkbx = GetControl("","chkbxLotCalibrationExpirationDays");
+    var objctrlcmb = GetControl("","cmbBoxLotCalibrationExpiration");
+    if(!CheckboxStatus(objctrlchkbx))
+    {
+      Log["Message"]("Lot calibration expiration days checkbox is currently unchecked - so check it and change combo value");
+      SetWPFCheckBox(objctrlchkbx,1);
+      if((LotExpirationDays!="")&&(LotExpirationDays!=null))
+      {     
+        Log["Message"]("Modify Lot calibration expiration days combobox value as : " + LotExpirationDays );
+        SetComboText(objctrlcmb,LotExpirationDays)
+      } 
+    }
+    else
+    {
+      Log["Message"]("Lot calibration expiration days checkbox is currenlty checked - modify only respective combo value");
+      Log["Message"]("Modify Lot calibration expiration days combobox value as : " + LotExpirationDays );
+      SetComboText(objctrlcmb,LotExpirationDays)
+    } 
+    
+    //CheckBox Pack Expiration (hours)
+    var objctrlchkbx = GetControl("","chkbxPackExpirationHours");
+    var objctrlcmb = GetControl("","cmbBoxPackExpiration");
+    if(!CheckboxStatus(objctrlchkbx))
+    {
+      Log["Message"]("Pack expiration hours checkbox is currently unchecked - so check it and change combo value");
+      SetWPFCheckBox(objctrlchkbx,1);
+      if((PackExpirationHours!="")&&(PackExpirationHours!=null))
+      {
+        Log["Message"]("Modify Pack expiration hours combobox value as : " + PackExpirationHours);
+        SetComboText(objctrlcmb,PackExpirationHours)
+      } 
+    }
+    else
+    {
+      Log["Message"]("Pack expiration hours checkbox is currently checked - modify only respective combo value");
+      Log["Message"]("Modify Pack expiration hours combobox value as  : " + PackExpirationHours );
+      SetComboText(objctrlcmb,PackExpirationHours)
+    } 
+    
+    //CheckBox New Lot
+    var objctrl = GetControl("","chkbxNewLot");
+    if(!CheckboxStatus(objctrlchkbx))
+    {
+      Log["Message"]("New Lot checkbox is currently unchecked - so check it");
+      SetWPFCheckBox(objctrl,1);
+    }
+    else
+    {
+      Log["Message"]("New Lot checkbox is currently checked - so uncheck it");
+      SetWPFCheckBox(objctrl,0); 
+    } 
+    
+    //CheckBox IFU change
+    var objctrl = GetControl("","chkbxIFUChange");
+    if(!CheckboxStatus(objctrlchkbx))
+    {
+      Log["Message"]("New IFU checkbox is currently unchecked - so check it");
+      SetWPFCheckBox(objctrl,1);
+    }
+    else
+    {
+      Log["Message"]("New IFU checkbox is currently checked - so uncheck it");
+      SetWPFCheckBox(objctrl,0); 
+    } 
+                                           
+    //Save TDef
+    Log["Message"]("Save Test Defintion" );
+    objctrl = GetControl("","btnSaveTdef");
+    ClickControl(objctrl);
+   
+    //Verify TDef is saved successfully
+    VerifyTDefSaved();
+    //Click on Ok button
+    objctrlok = GetControl("","btnOK");
+    ClickControl(objctrlok);
+  
+       
+    // case 2: when lot expiration and pcak expiration are checked and operator wants to uncheck these aznd also varify combo box disabled
+    var objctrl = GetControl("","chkbxLotCalibrationExpirationDays"); 
+    if(CheckboxStatus(objctrl))
+    {
+      Log["Message"]("Lot calibration expiration days checkbox is currently checked - so uncheck it");
+      SetWPFCheckBox(objctrl,0);
+      Log["Message"]("Verify Lot calibration expiration days combo box is disabled");
+      var objctrl = GetControl("","cmbBoxLotCalibrationExpiration");
+      if(GetPropertyValue(objctrl,"Enabled"))
+      {
+        Log["Message"]("Lot calibration expiration days combo box is enabled");
+        return false
+      }
+	  else
+        Log["Message"]("Lot calibration expiration days combo box is disabled as expected");
+    }
+    
+    //CheckBox Pack Expiration (hours)
+    var objctrl = GetControl("","chkbxPackExpirationHours");
+    if(CheckboxStatus(objctrl))
+    {
+      Log["Message"]("Pack expiration hours checkbox is currently checked - so uncheck it");
+      SetWPFCheckBox(objctrl,0);
+      Log["Message"]("Verify Pack expiration hours combo box is disabled");
+      var objctrl = GetControl("","cmbBoxPackExpiration");
+      if(GetPropertyValue(objctrl,"Enabled"))
+      {
+        Log["Message"]("Pack expiration hours combo box is enabled");
+        return false
+      }
+      else
+        Log["Message"]("Pack expiration hours combo box is disabled as expected");
+    }
+    
+    //CheckBox New Lot
+    var objctrl = GetControl("","chkbxNewLot");
+    if(!CheckboxStatus(objctrl))
+    {
+      Log["Message"]("New Lot checkbox is currently unchecked - so check it");
+      SetWPFCheckBox(objctrl,1);
+    }
+    else
+    {
+      Log["Message"]("New Lot checkbox is currently checked - so uncheck it");
+      SetWPFCheckBox(objctrl,0); 
+    } 
+    
+    //CheckBox IFU change
+    var objctrl = GetControl("","chkbxIFUChange");
+    if(!CheckboxStatus(objctrl))
+    {
+      Log["Message"]("IFU change checkbox is currently unchecked - so check it");
+      SetWPFCheckBox(objctrl,1);
+    }
+    else
+    {
+      Log["Message"]("IFU change checkbox is currently checked - so uncheck it");
+      SetWPFCheckBox(objctrl,0); 
+    } 
+                                           
+    //Save TDef
+    Log["Message"]("Save Test Defintion" );
+    objctrl = GetControl("","btnSaveTdef");
+    ClickControl(objctrl);
+   
+    //Verify TDef is saved successfully
+    VerifyTDefSaved();  
+     //Click on Ok button
+    objctrlok = GetControl("","btnOK");
+    if(objctrlok["Exists"]==true)
+    {
+      ClickControl(objctrlok);
+      Log["PopLogFolder"]()  
+      return true;  
+    }
+    else
+    {
+      Log["PopLogFolder"]()  
+      return false;
+    }
+    
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+
+}
+
+//********************************************************************************
+//*  FunctionName : SetMinimumReplicates(MinReplicates)
+//*  Description: Sets and saves minimum replicate value in CI Test Definition tab.
+//*  Input: MinReplicates
+//*  Output: boolean
+//*  Example: SetMinimumReplicates(MinReplicates);
+//*  Date of Creating: Jan 17 2019
+//*  Created By: Shahana
+//********************************************************************************
+function SetMinimumReplicates(MinReplicates)
+{
+  try
+  {
+    Log["Message"]("Setting the Minimum replicates in CI Tdef.." );
+  
+    var objMin = GetControl("","txtBoxMinimumReplicates");
+    SetText(objMin,MinReplicates);
+    
+    //Verify text
+    if(!VerifyControlText(objMin,MinReplicates))
+    {
+      return false;
+    }
+    
+    //Save the changes
+    Log["Message"]("Saving the changes in CI Tdef screen" );
+    objSave = GetControl("","btnSaveTdef");
+    ClickControl(objSave);
+    
+    //Verify TDef is saved successfully
+    if(!VerifyTDefSaved())
+    {
+      return false;
+    }
+    aqUtils["Delay"](1000);
+     
+    //Click on Ok button
+    objctrlok = GetControl("","btnOK");
+    ClickControl(objctrlok);
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  return true;
+}
+
+//********************************************************************************
+//*  FunctionName : SetNewLotReplicate(NewLotReplicate)
+//*  Description: Sets and saves new lot replicate value in CI Test Definition tab.
+//*  Input: NewLotReplicate
+//*  Output: boolean
+//*  Example: SetNewLotReplicate(NewLotReplicate)
+//*  Date of Creating: Jan 17 2019
+//*  Created By: Shahana
+//********************************************************************************
+function SetNewLotReplicate(NewLotReplicate)
+{
+  try
+  {
+    Log["Message"]("Setting the New Lot Replicates in CI Tdef.." );
+  
+    var objNewLot = GetControl("","txtBoxNewLotReplicates");
+    SetText(objNewLot,NewLotReplicate);
+    
+    //Verify text
+    Log["Message"]("Verifying the updated value on UI" );
+    if(!VerifyControlText(objNewLot,NewLotReplicate))
+    { 
+      Log["Message"]("New Lot replicate value not updated" );
+      return false;
+    }
+    
+    //Save the changes
+    Log["Message"]("Saving the changes in CI Tdef screen" );
+    objSave = GetControl("","btnSaveTdef");
+    ClickControl(objSave);
+    
+    //Verify TDef is saved successfully
+    if(!VerifyTDefSaved())
+    {
+      return false;
+    }
+    aqUtils["Delay"](1000);
+     
+    //Click on Ok button
+    objctrlok = GetControl("","btnOK");
+    ClickControl(objctrlok);
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  return true;
+}
+
+//********************************************************************************
+//*  FunctionName : SelectCentrifugeFoRepeat()
+//*  Description: Selects Centrifuge for Repeat in CI Test Definition->Common tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: SelectCentrifugeFoRepeat()
+//*  Date of Creating: Jan 18 2019
+//*  Created By: Shahana
+//********************************************************************************
+function SelectCentrifugeFoRepeat()
+{
+  try
+  {InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Selecting Centrifuge For Repeat Checkbox" );
+    var objCtrl = GetControl("","CheckBoxCentrifugeForRepeatCheckBox");    
+    
+    //Selecting Centrifuge For Repeat Checkbox
+    if((!objCtrl["IsChecked"])&&(objCtrl["Enabled"]))
+    {
+      SelectCheckbox(objCtrl);
+      Log["Message"]("Selected Centrifuge For Repeat Checkbox" );
+    }
+    if((objCtrl["IsChecked"])&&(objCtrl["Enabled"]))
+    {
+      SelectCheckbox(objCtrl);
+      Log["Message"]("Centrifuge For Repeat Checkbox is already checked" );
+    }
+    else
+    {
+      Log["Error"]("Failed to select Centrifuge for Repeat checkbox");
+      return false;
+    }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  return true;
+}
+
+//********************************************************************************
+//*  FunctionName : VerifyCentrifugeFoRepeatChecked()
+//*  Description: Verifies if Centrifuge for Repeat is checked in CI Test Definition->Common tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyCentrifugeFoRepeatChecked()
+//*  Date of Creating: Jan 18 2019
+//*  Created By: Shahana
+//********************************************************************************
+function VerifyCentrifugeFoRepeatChecked()
+{
+  try
+  {
+    Log["AppendFolder"]("Verifying if Centrifuge For Repeat Checkbox is checked" );
+    var objCtrl = GetControl("","CheckBoxCentrifugeForRepeatCheckBox");
+    
+    //Verifying if Chechbox is checked
+    if(!objCtrl["IsChecked"])
+    { 
+      Log["Error"]("Failed to select Centrifuge for Repeat checkbox");
+      return false;
+    }
+    Log["Checkpoint"]("Verified that checkbox Centrifuge For Repeat is checked" );
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  return true;
+}
+
+//********************************************************************************
+//*  FunctionName : fnModifyRegionstatusversionvaluesIA(Region,Status,MinSWTestVersion)
+//*  Description: Verifies user is able to modify the content in CI Test Definition->Common tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyCentrifugeFoRepeatChecked()
+//*  Date of Creating: Jan 18 2019
+//*  Created By: Amar
+//********************************************************************************
+
+function fnModifyRegionstatusversionvaluesIA(Region,Status,MinSWTestVersion)
+{
+    try
+       { 
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Modify Region, status, Minimum sw version values for IA and Save")     
+                             
+          //MinswVersionTestType
+          Log["AppendFolder"]("Enter TestVersion as "+MinSWTestVersion)
+          var objctrl3 = GetControl("Setup_TestDefinition_CITestDefinition","txtMinimumSWVersionTextBox");
+          objctrl3["Clear"];
+          SetText(objctrl3, MinSWTestVersion)
+          Log["PopLogFolder"]()
+                   
+          //Status
+          Log["AppendFolder"]("Choose Status as "+Status)
+          var objctrl2 = GetControl("Setup_TestDefinition_CITestDefinition","cmbStatusComboBox");
+          aqUtils["Delay"](1000);
+          SetComboValue(objctrl2, Status)
+          Log["PopLogFolder"]()
+          
+          //Region
+          Log["AppendFolder"]("Select the region as " +Region)       
+          var objctrl1 = GetControl("Setup_TestDefinition_CITestDefinition","cmbRegionMultiSelectComboBox");
+          aqUtils["Delay"](1000);
+          objctrl1["set_SelectedIndex"](Region);
+          //objctrl1["SelectedItems"]["Clear"]()
+          Log["PopLogFolder"]()       
+                   
+          //Save
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl9 = GetControl("Setup_TestDefinition_CITestDefinition","btnSaveTdef");
+          ClickControl(objctrl9);
+          Log["PopLogFolder"]()
+          
+          // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+}
+//********************************************************************************
+//*  FunctionName : fnModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue(DisplayName,PrintName,LISName,Calcode)
+//*  Description: Verifies user is able to modify the content in CI Test Definition->Common and Reagtent tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: fnModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue()
+//*  Date of Creating: Jan 18 2019
+//*  Created By: Amar
+//********************************************************************************
+function fnModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue(DisplayName,PrintName,LISName,Calcode)
+{
+    try
+       { 
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Modify DisplayName,PrintName,LISName,Calcode with nounique values and save Tdef")
+                    
+          //DisplayName
+          Log["AppendFolder"]("Enter DisplayName as "+DisplayName)
+          var objctrl1 = GetControl("","txtDisplayNameTextBox");
+          SetText(objctrl1, DisplayName)
+          aqUtils["Delay"](1000);
+          Log["PopLogFolder"]()
+          
+          //PrintName
+          Log["AppendFolder"]("Enter PrintName as "+PrintName)
+          var objctrl2 = GetControl("","txtPrintNameTextBox");
+          SetText(objctrl2, PrintName)
+          Log["PopLogFolder"]() 
+                    
+          //LISName
+          Log["AppendFolder"]("Enter LISName as "+LISName)
+          var objctrl3 = GetControl("","txtLISNameTextBox");
+          SetText(objctrl3, LISName)
+          Log["PopLogFolder"]()      
+          
+          //Navigate to Reagents tab
+          InvokeWorkflow("Setup_TestDefinition_CITestDefinition_Reagents");
+                  
+          Log["AppendFolder"]("Enter cal code as  " +Calcode);
+          var objctrl4 = GetControl("","txtCalCodeTextBox");
+          SetText(objctrl4,Calcode);
+          Log["PopLogFolder"]()
+          
+          //Save
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl9 = GetControl("","btnSaveTdef");
+          ClickControl(objctrl9);
+          Log["PopLogFolder"]()
+          
+          // Verify TDef is saved successfully
+          if(VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+                    
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+} 
+
+//********************************************************************************
+//*  FunctionName : fnModifyPrintDisplayLISCalfieldsforIAwithuniquevalue(DisplayName,PrintName,LISName,Calcode)
+//*  Description: Verifies user is able to modify the content in CI Test Definition->Common and Reagtent tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: fnModifyPrintDisplayLISCalfieldsforIAwithuniquevalue()
+//*  Date of Creating: Jan 18 2019
+//*  Created By: Amar
+//********************************************************************************
+    
+function fnModifyPrintDisplayLISCalfieldsforIAwithuniquevalue(DisplayName,PrintName,LISName,Calcode)
+{
+    try
+       { 
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Modify DisplayName,PrintName,LISName,Calcode with unique values and save Tdef")
+                                      
+          //DisplayName
+          Log["AppendFolder"]("Enter DisplayName as "+DisplayName)
+          var objctrl1 = GetControl("","txtDisplayNameTextBox");
+          SetText(objctrl1, DisplayName)
+          aqUtils["Delay"](1000);
+          Log["PopLogFolder"]()
+          
+          //PrintName
+          Log["AppendFolder"]("Enter PrintName as "+PrintName)
+          var objctrl2 = GetControl("","txtPrintNameTextBox");
+          SetText(objctrl2, PrintName)
+          Log["PopLogFolder"]() 
+                    
+          //LISName
+          Log["AppendFolder"]("Enter LISName as "+LISName)
+          var objctrl3 = GetControl("","txtLISNameTextBox");
+          SetText(objctrl3, LISName)
+          Log["PopLogFolder"]()      
+          
+          //Navigate to Reagents tab
+          InvokeWorkflow("Setup_TestDefinition_CITestDefinition_Reagents");
+                  
+          Log["AppendFolder"]("Enter cal code as  " +Calcode);
+          var objctrl4 = GetControl("","txtCalCodeTextBox");
+          SetText(objctrl4,Calcode);
+          Log["PopLogFolder"]()
+          
+          //Save
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl9 = GetControl("","btnSaveTdef");
+          ClickControl(objctrl9);
+          Log["PopLogFolder"]()
+          
+         // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+              
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+} 
+   
+//********************************************************************************
+//*  FunctionName : VerifyAutoCalibrationTriggerFieldsDisabled()
+//*  Description: Verifies Auto Calibration Trigger section is completely disabled in CI Test Definition-> IA test -> Calibration tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyAutoCalibrationTriggerFieldsDisabled()
+//*  Date of Creating: Jan 25 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyAutoCalibrationTriggerFieldsDisabled()
+{  
+  try
+  {
+    Log["AppendFolder"]("Setup::VerifyAutoCalibrationTriggerFieldsDisabled");
+    
+    //CheckBox Auto calibration Triggers
+
+    var objctrl = GetControl("","chkbxAutoCalibrationTrigger");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Auto Calibration Triggers check box is enabled");
+      //Log["Message"]("Auto Calibration Triggers check box is enabled");
+      return false;
+    }
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Auto Calibration Triggers check box is disabled");
+    
+    //CheckBox Pack Expiration (hours)
+    var objctrl = GetControl("","chkbxLotCalibrationExpirationDays");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Message"]("Lot calibration expiration days check box is enabled");
+      return false;
+    }
+    Log["Message"]("Lot calibration expiration days check box is disabled");
+    
+    var objctrl = GetControl("","cmbBoxLotCalibrationExpiration");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Message"]("Lot calibration expiration days combobox is enabled");
+      return false;
+    }
+    Log["Message"]("Lot calibration expiration days combobox is disabled");
+    
+    //CheckBox Pack Expiration (hours)
+    var objctrl = GetControl("","chkbxPackExpirationHours");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Message"]("Pack expiration (hours) checkbox is enabled");
+      return false;
+    }
+    Log["Message"]("Pack expiration (hours) check box is disabled");
+    
+    var objctrl = GetControl("","cmbBoxPackExpiration");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Message"]("Pack expiration (hours) combobox is enabled");
+      return false;
+    }
+    Log["Message"]("Pack expiration (hours) combobox is disabled");
+  
+    //CheckBox New Lot
+    var objctrl = GetControl("","chkbxNewLot");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Message"]("New Lot checkbox is enabled");
+      return false;
+    }
+    Log["Message"]("New Lot checkbox is disabled");
+    
+    //CheckBox IFU change
+    var objctrl = GetControl("","chkbxIFUChange");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Message"]("IFU change checkbox is enabled");
+      return false;
+    }
+    Log["Message"]("IFU change checkbox is disabled");
+    
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }      
+}
+
+//********************************************************************************
+//*  FunctionName : VerifyControlBracketedTestDisabledEnabled()
+//*  Description: Verifies Control Bracketed Test checkbox is enabled or disabled in CI Test Definition-> IA test -> Common tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyControlBracketedTestDisabledEnabled()
+//*  Date of Creating: Jan 29 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyControlBracketedTestDisabledEnabled()
+{
+ try
+  {
+    Log["AppendFolder"]("Setup::VerifyControlBracketedTestDisabledEnabled"); 
+    //CheckBox Control Bracketed Test
+    var objctrl = GetControl("","chkbxControlBracketedTest");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Control Bracketed Test checkbox is enabled");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Control Bracketed Test checkbox is disabled");
+      Log["PopLogFolder"]();
+      return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+//********************************************************************************
+//*  FunctionName : VerifyControlLevelFieldDisabledEnabled()
+//*  Description: Verifies Control Level combo box is disabled or enabled in CI Test Definition-> IA test -> Common tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyControlLevelFieldDisabledEnabled()
+//*  Date of Creating: Jan 29 2019
+//*  Created By: Shrutika
+//********************************************************************************
+
+function VerifyControlLevelFieldDisabledEnabled()
+{
+ try
+  {
+    Log["AppendFolder"]("Setup::VerifyControlBracketedTestDisabledEnabled"); 
+    //combox box Control Level 
+    var objctrl = GetControl("","cmbBoxControlLevel");
+    if(GetPropertyValue(objctrl,"Enabled"))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Control Level combox box is enabled");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Control Level combox box is disabled");
+      Log["PopLogFolder"]();
+      return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//********************************************************************************
+//*  FunctionName : SetcalibrationLotinterval()
+//*  Description: Sets Lot calibration INterval in CI Test Definition-> IA test -> Calibration tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: SetcalibrationLotinterval()
+//*  Date of Creating: Jan 31 2019
+//*  Created By: Amar
+//********************************************************************************
+
+function SetcalibrationLotinterval(LotCalibrationIntervalDays)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup::SetcalibrationLotinterval");
+    
+    //
+     var objctrl = GetControl("Setup_TestDefinition_CITestDefinition_IMCalibration","txtBoxLotCalibrationIntervalDays");
+     var lockbtn = GetControl("Setup_TestDefinition_CITestDefinition_IMCalibration","btnCalinternvaLockBox");
+     if(objctrl["Exists"]==true)
+    {
+          SetText(objctrl, LotCalibrationIntervalDays)
+       	  Log["Message"]("LotCalibration is set to "+LotCalibrationIntervalDays);
+          
+          //Click on lock button
+           ClickControl(lockbtn);          
+         
+	  }  
+    
+    //Save TDef
+    Log["Message"]("Save Test Defintion" );
+    objctrl = GetControl("","btnSaveTdef");
+    ClickControl(objctrl);
+   
+    //Verify TDef is saved successfully
+    VerifyTDefSaved();  
+    
+    //Click on Ok button
+    objctrlok = GetControl("","btnOK");
+    if(objctrlok["Exists"]==true)
+    {
+      ClickControl(objctrlok);
+      Log["PopLogFolder"]()  
+      return true;  
+    }
+    else
+    {
+      Log["PopLogFolder"]()  
+      return false;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+//********************************************************************************
+//*  FunctionName : IncreasecalibrationLotinterval()
+//*  Description: Increases Lot calibration Interval in CI Test Definition-> IA test -> Calibration tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: IncreasecalibrationLotinterval()
+//*  Date of Creating: Jan 31 2019
+//*  Created By: Amar
+//********************************************************************************
+
+function IncreasecalibrationLotinterval(IncreaseLotCalibrationIntervalDays)
+{
+  try
+  {
+
+    Log["AppendFolder"]("Setup::IncreasecalibrationLotinterval");
+         
+     var objctrl = GetControl("Setup_TestDefinition_CITestDefinition_IMCalibration","txtBoxLotCalibrationIntervalDays");
+     if(objctrl["Exists"]==true)
+    {
+          SetText(objctrl, IncreaseLotCalibrationIntervalDays)
+       	  Log["Message"]("LotCalibration is increased to "+IncreaseLotCalibrationIntervalDays);     
+	  }  
+    
+    //Save TDef
+    Log["Message"]("Save Test Defintion" );
+    objctrl = GetControl("","btnSaveTdef");
+    ClickControl(objctrl);
+   
+    //Verify TDef is saved successfully
+    VerifyTDefSaved();  
+    
+    //Click on Ok button
+    objctrlok = GetControl("","btnOK");
+    if(objctrlok["Exists"]==true)
+    {
+      ClickControl(objctrlok);
+      Log["PopLogFolder"]()  
+      return true;  
+    }
+    else
+    {
+      Log["PopLogFolder"]()  
+      return false;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+//********************************************************************************
+//*  FunctionName : ModifyPrintDisplayNewLotReplicateCurrentLotReplicate()
+//*  Description: Modifies Print, Display, LIS, NewLotReplicate, CurrentLotReplicateCI Test Definition-> IA test -> Calibration tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: ModifyPrintDisplayLISReuseLotcalPackcal()
+//*  Date of Creating: Jan 31 2019
+//*  Created By: Amar
+//********************************************************************************
+function ModifyPrintDisplayNewLotReplicateCurrentLotReplicate(DisplayName,PrintName,NewLotReplicate,CurrentLotReplicate)
+{
+  try
+  {
+          //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Modify DisplayName,PrintName,NewLotReplicate and CurrentLotReplicate values and save Tdef")
+                                       
+          //DisplayName
+          Log["AppendFolder"]("Enter DisplayName as "+DisplayName)
+          var objctrl1 = GetControl("","txtDisplayNameTextBox");
+          SetText(objctrl1, DisplayName)
+          aqUtils["Delay"](1000);
+          Log["PopLogFolder"]()
+          
+          //PrintName
+          Log["AppendFolder"]("Enter PrintName as "+PrintName)
+          var objctrl2 = GetControl("","txtPrintNameTextBox");
+          SetText(objctrl2, PrintName)
+          Log["PopLogFolder"]() 
+          
+          //Navigate to CAlibration tab
+          InvokeWorkflow("Setup_TestDefinition_CITestDefinition_IMCalibration");
+                            
+          //NewLotReplicate
+          Log["AppendFolder"]("Enter NewLotReplicate as "+NewLotReplicate)
+          var objNewLot = GetControl("","txtBoxNewLotReplicates");
+          SetText(objNewLot, NewLotReplicate);
+          Log["PopLogFolder"]()      
+          
+          //CurrentLotReplicate                          
+          Log["AppendFolder"]("Enter CurrentLotReplicate as  " +CurrentLotReplicate);
+          var objctrltextbox = GetControl("","txtBoxCurrentLotReplicates");
+          SetText(objctrltextbox, CurrentLotReplicate);
+          Log["PopLogFolder"]()  
+          
+          //Save
+          Log["AppendFolder"]("Save Test Identification " );
+          objctrl9 = GetControl("","btnSaveTdef");
+          ClickControl(objctrl9);
+          Log["PopLogFolder"]()
+          
+          // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+}
+
+//********************************************************************************
+//*  FunctionName : ModifyPrintDisplayLISReuse()
+//*  Description: Modifies Print, Display, LISin CI Test Definition-> IA test -> Calibration tab.
+//*  Input: NA
+//*  Output: boolean
+//*  Example: ModifyPrintDisplayLISReuse()
+//*  Date of Creating: Jan 31 2019
+//*  Created By: Amar
+//********************************************************************************
+
+function ModifyPrintDisplayLISReuse(DisplayName,PrintName,LISName,ResultTimeLimit)
+{
+  try
+  {
+    //InitializeMetaDataHYDRA();
+          Log["AppendFolder"]("Modify DisplayName,PrintName,LISName,Reuseresult")
+                    
+          //DisplayName
+          Log["AppendFolder"]("Enter DisplayName as "+DisplayName)
+          var objctrl1 = GetControl("","txtDisplayNameTextBox");
+          SetText(objctrl1, DisplayName)
+          aqUtils["Delay"](1000);
+          Log["PopLogFolder"]()
+          
+          //PrintName
+          Log["AppendFolder"]("Enter PrintName as "+PrintName)
+          var objctrl2 = GetControl("","txtPrintNameTextBox");
+          SetText(objctrl2, PrintName)
+          Log["PopLogFolder"]() 
+                    
+          //LISName
+          Log["AppendFolder"]("Enter LISName as "+LISName)
+          var objctrl3 = GetControl("","txtLISNameTextBox");
+          SetText(objctrl3, LISName)
+          Log["PopLogFolder"]()      
+                                      
+          Log["AppendFolder"]("Enter ResultTimeLimit as  " +ResultTimeLimit);
+          var objctrltextbox = GetControl("","txtResultTimeLimitTextBox");
+          SetText(objctrltextbox, ResultTimeLimit);
+          Log["PopLogFolder"]()     
+          
+          // Verify TDef is saved successfully
+          if(!VerifyTDefSaved())
+          { 
+          aqUtils["Delay"](1000);
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          return false;
+          };
+         aqUtils["Delay"](1000);
+     
+          //Click on Ok button
+          objctrlok = GetControl("","btnOK");
+          ClickControl(objctrlok);
+          Log["PopLogFolder"]()
+          
+          
+    }catch(exp)
+        {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+        Log["PopLogFolder"]();
+        return true;
+}  
+
+function RestartSHnPCC()
+{
+       //Start SH. This will be replaced once SH start issue is resolved 
+      if(!ShutdownSHSim())
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+        
+      if(!PCCShutdown())
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      if(!LaunchSHSim())
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+
+      ProjPath = ProjectSuite["Path"];
+      arrPath  = ProjPath["split"]("Atellica")
+      var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+      var DeploymentType = GetDeploymentType(sConfigPath)
+
+      var Query = "SELECT Nodes FROM [Initialization$]";
+      var arrNodes = new Array();
+      arrNodes = GetTestItems(TestDataFile, Query, "Nodes");
+      var PCCUsername = arrNodes[0]
+      var Password = arrNodes[1]
+  
+      if(!LaunchAndLoginToTrinidad(PCCUsername,Password))
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+} 
+
+//AMAR
+
+var BlobPathHydra ="C:\\Siemens\\ARM\\TestDefinition\\Hydra\\"
+var TestDataFileHydra = Project["Path"]+"TestData\\TestData.xls";
+
+// ***********************************************************************************************
+// Function Name : function ImportTestDefinitionHydra(SheetName)
+// Function Description: This function imports Test Difintion from the Testdata Excel file for Hydra
+//Input: NA
+//*  Output: boolean
+//*  Example: VerifyCentrifugeFoRepeatChecked()
+//*  Date of Creating: Feb 25 2019
+//*  Created By: Amar
+// ***********************************************************************************************
+function ImportTestDefinitionHydra(SheetName)
+{
+  var TdefList=GetTDefInfoHydra(TestDataFileHydra,SheetName);
+  Log["AppendFolder"]("Importing IM Test Definition");
+
+  TdefList.MoveFirst;
+  for(i=0;!TdefList.Eof;i++)
+  {
+    Log["AppendFolder"]("Loading "+TdefList("AssayName").Value);
+     BlobFilePath =BlobPathHydra + TdefList("FileName").Value
+  if(aqFile["Exists"](BlobFilePath))
+  {
+     ImportBLOBHydra(BlobFilePath);
+     //VerifyAssayInTdefList(TdefList("AssayName").Value);
+  } 
+  else
+  {
+    Log["Warning"](TdefList("FileName").Value + " is not available in "+BlobPathHydra);
+  } 
+   Log["PopLogFolder"]();
+   TdefList.MoveNext;
+  } 
+  Log["PopLogFolder"]();
+ 
+}
+
+// ***********************************************************************************************
+// Function Name : function function ImportBLOBHydra(Path)
+// Function Description: This function imports Test blobs from the Testdata Excel file for Hydra
+// Input: NA
+//*  Output: boolean
+//*  Example: VerifyCentrifugeFoRepeatChecked()
+//*  Date of Creating: Feb 25 2019
+//*  Created By: Amar
+// ***********************************************************************************************
+
+function ImportBLOBHydra(Path)
+{
+  try
+  {
+    Log["AppendFolder"]("Setup : Import Tdef")
+    InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+            
+    var objctrl2 = GetControl("","btnImportTdefHydra");
+    ClickControl(objctrl2);
+        
+    var objctrl3= Sys["Process"]("Shell")["Window"]("#32770", "Open", 1)["Window"]("ComboBoxEx32", "", 1)["Window"]("ComboBox", "", 1)["Window"]("Edit", "", 1)
+    SetText(objctrl3,Path);
+    
+    var objctrl4 =Sys["Process"]("Shell")["Window"]("#32770", "Open")["Window"]("Button", "&Open");// GetControl("Setup_Testdefinition_IMTestdefinition_ImportBlob","btnOpenTdefFile");
+    Clickbutton(objctrl4)
+    Delay(500);
+    
+    var objctrl5 = GetControl("","btnSaveTdef");
+    ClickControl(objctrl5);
+    
+    var objctrl6 = GetControl("","btnOK");
+    ClickControl(objctrl6);
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;    
+  }
+  Log["PopLogFolder"](); 
+
+}

@@ -1,0 +1,483 @@
+<SyncFusionDatagrids>
+	<Category Name="Worklist">
+		<Datagrid Code ="Worklist">
+			<Column Name="OrderTime">
+				<ColumnIndex></ColumnIndex>
+				<ColumnIndexFullView>3</ColumnIndexFullView>
+				<Type></Type>
+			</Column>
+			<Column Name="SampleId">
+				<ColumnIndex>3</ColumnIndex>
+				<ColumnIndexFullView>4</ColumnIndexFullView>
+				<Type></Type>
+			</Column>
+			<Column Name="Name">
+				<ColumnIndex>4</ColumnIndex>
+				<ColumnIndexFullView>5</ColumnIndexFullView>
+			</Column>
+			<Column Name="Test">
+				<ColumnIndex>6</ColumnIndex>
+				<ColumnIndexFullView>7</ColumnIndexFullView>
+			</Column>
+			<Column Name="ResultStatus">
+				<ColumnIndex>7</ColumnIndex>	
+				<ColumnIndexFullView>8</ColumnIndexFullView>
+			</Column>
+			<Column Name="Result">
+				<ColumnIndex>8</ColumnIndex>	
+				<ColumnIndexFullView>9</ColumnIndexFullView>
+			</Column>
+			<Column Name="Flags">
+				<ColumnIndex>12</ColumnIndex>				
+				<ColumnIndexFullView>13</ColumnIndexFullView>
+			</Column>
+			<Column Name="Analyzer">
+				<ColumnIndex></ColumnIndex>				
+				<ColumnIndexFullView>14</ColumnIndexFullView>
+			</Column>
+		</Datagrid>		
+		<Datagrid Code ="Worklist_ImportWorklist">
+			<Column Name="SampleId">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="RackNumber">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="TubePosition">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="Test">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="Replicates">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="ReagentLot">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="Dilution">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="Specimen">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="ModuleSerialNumber">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+			<Column Name="RunId">
+				<ColumnIndex></ColumnIndex>				
+			</Column>
+		</Datagrid>
+	</Category>	
+	<Category Name="Orders">
+		<Datagrid Code ="Orders_PatientOrders">
+			<Column Name = "Test">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name = "Dilution">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name = "Replicates">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name = "SystemTestOptions">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code ="Orders_BatchOrders">
+			<Column Name = "Test">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name = "Dilution">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name = "Replicates">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name = "SystemTestOptions">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code ="Orders_BatchOrders_ViewBatchOrders">
+			<Column Name="BatchName">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Specimen">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="ManualDilution">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="Status">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="OrderDate">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+			<Column Name="RackId">
+				<ColumnIndex>6</ColumnIndex>
+			</Column>
+		</Datagrid>
+	</Category>
+	<Category Name="SampleList">
+		<Datagrid Code="SampleList">
+			<Column Name="SampleId">
+				<ColumnIndex>0</ColumnIndex>
+			</Column>
+			<Column Name="Name">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Status">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="Location">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="ScannedTime">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code="SampleList_StatSamplesNeedingIntervention">
+			<Column Name="TimeOfError">
+				<ColumnIndex>0</ColumnIndex>
+			</Column>
+			<Column Name="SampleId">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Description">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="ImpactedTests">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="TimeOnSystem">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="Location">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code="SampleList_StatSamplesInprocess">			
+			<Column Name="SampleId">
+				<ColumnIndex>0</ColumnIndex>
+			</Column>
+			<Column Name="Tests">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="TimeToCompletion">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="TimeOnSystem">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="Location">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code="SampleList_RoutinePatientSamplesNeedingIntervention">
+			<Column Name="TimeOfError">
+				<ColumnIndex>0</ColumnIndex>
+			</Column>
+			<Column Name="SampleId">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Description">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="ImpactedTests">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="TimeOnSystem">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="Location">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+		</Datagrid>
+	</Category>
+	<Category Name="Reagents">
+		<Datagrid Code="Reagents_ReagentOverview">
+			<Column Name="Type">
+				<ColumnIndex>1</ColumnIndex>
+				<ColumnIndexFullView>1</ColumnIndexFullView>				
+			</Column>
+			<Column Name="Reagent">
+				<ColumnIndex>2</ColumnIndex>
+				<ColumnIndexFullView>2</ColumnIndexFullView>				
+			</Column>
+			<Column Name="Inventory">
+				<ColumnIndex>3</ColumnIndex>
+				<ColumnIndexFullView>3</ColumnIndexFullView>				
+			</Column>
+			<Column Name="OnBoardStability">
+				<ColumnIndex>4</ColumnIndex>
+				<ColumnIndexFullView>4</ColumnIndexFullView>				
+			</Column>
+			<Column Name="Sequence">
+				<ColumnIndex>5</ColumnIndex>
+				<ColumnIndexFullView>5</ColumnIndexFullView>				
+			</Column>
+			<Column Name="CalStatus">
+				<ColumnIndex>6</ColumnIndex>
+				<ColumnIndexFullView>6</ColumnIndexFullView>				
+			</Column>
+			<Column Name="CalInterval">
+				<ColumnIndex></ColumnIndex>
+				<ColumnIndexFullView>7</ColumnIndexFullView>				
+			</Column>
+			<Column Name="CalTypeInUse">
+				<ColumnIndex></ColumnIndex>
+				<ColumnIndexFullView>8</ColumnIndexFullView>				
+			</Column>
+			<Column Name="QCStatus">
+				<ColumnIndex>7</ColumnIndex>
+				<ColumnIndexFullView>9</ColumnIndexFullView>				
+			</Column>
+			<Column Name="Lot">
+				<ColumnIndex>8</ColumnIndex>
+				<ColumnIndexFullView>10</ColumnIndexFullView>				
+			</Column>
+		</Datagrid>
+		<Datagrid Code="Reagents_ReagentLoading_ManualEnteredPacks">
+			<Column Name="CheckBox">
+				<ColumnIndex>0</ColumnIndex>			
+			</Column>
+			<Column Name="Position">
+				<ColumnIndex>1</ColumnIndex>			
+			</Column>
+			<Column Name="Assay">
+				<ColumnIndex>2</ColumnIndex>			
+			</Column>
+			<Column Name="PackType">
+				<ColumnIndex>3</ColumnIndex>			
+			</Column>
+			<Column Name="Lot">
+				<ColumnIndex>4</ColumnIndex>			
+			</Column>
+			<Column Name="ExpiryDate">
+				<ColumnIndex>5</ColumnIndex>			
+			</Column>
+		</Datagrid>
+	</Category>
+	<Category Name="SystemSettings">
+		<Datagrid Code="SystemSettings_AccountsAndSecurity_Accounts">
+			<Column Name="OperatorId">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="FullName">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="Group">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="Status">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>			
+		</Datagrid>
+	</Category>
+	<Category Name="CalibrationOverview">
+		<Datagrid Code="CalibrationOverview">
+			<Column Name="Assay">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Analyzer">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="OrderStatus">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="CalType">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="CalibrationInterval">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+			<Column Name="ReagentLot">
+				<ColumnIndex>6</ColumnIndex>
+			</Column>
+			<Column Name="PackBarcode">
+				<ColumnIndex>7</ColumnIndex>
+			</Column>
+			<Column Name="CalibratorLot">
+				<ColumnIndex>8</ColumnIndex>
+			</Column>
+			<Column Name="QCMaterial">
+				<ColumnIndex>9</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code="CalibrationOverview_CalibrationDefinitions">
+			<Column Name="MaterialName">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="LotId">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="MaterialId">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="ExpirationDate">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="Assays">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>			
+		</Datagrid>
+		<Datagrid Code="CalibrationOverview_CalibratorMaterial">
+			<Column Name="AddCalibratorMaterialButton">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="MaterialName">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="MaterialId">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="LotId">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="ExpirationDate">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+			<Column Name="Assays">
+				<ColumnIndex>6</ColumnIndex>
+			</Column>			
+		</Datagrid>
+		<Datagrid Code="CalibrationOverview_CalibrationOrders">
+			<Column Name="MaterialName">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="ReagentLot">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="TestsRemaining">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="AnalyzerID">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+			<Column Name="Assays">
+				<ColumnIndex>6</ColumnIndex>
+			</Column>			
+			<Column Name="CalLot">
+				<ColumnIndex>7</ColumnIndex>
+			</Column>	
+			<Column Name="PackID">
+				<ColumnIndex>8</ColumnIndex>
+			</Column>	
+			<Column Name="EditOrder">
+				<ColumnIndex>9</ColumnIndex>
+			</Column>	
+		</Datagrid>
+		<Datagrid Code="CalibrationOverview_CalibrationResults">
+			<Column Name="Assay">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Analyzer">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="CalLot">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="ResultDate">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="CalStatus">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>			
+			<Column Name="CalExp">
+				<ColumnIndex>6</ColumnIndex>
+			</Column>	
+			<Column Name="CalType">
+				<ColumnIndex>7</ColumnIndex>
+			</Column>	
+			<Column Name="ReagentLot">
+				<ColumnIndex>8</ColumnIndex>
+			</Column>	
+			<Column Name="Pack">
+				<ColumnIndex>9</ColumnIndex>
+			</Column>	
+			<Column Name="Flags">
+				<ColumnIndex>10</ColumnIndex>
+			</Column>
+		</Datagrid>
+	</Category>
+	<Category Name="Troubleshooting">
+		<Datagrid Code="Troubleshooting_OperatorEventLog">
+			<Column Name="Severity">
+				<ColumnIndex>0</ColumnIndex>
+				<ColumnIndexFullView>0</ColumnIndexFullView>
+			</Column>
+			<Column Name="Module">
+				<ColumnIndex>1</ColumnIndex>
+				<ColumnIndexFullView>1</ColumnIndexFullView>
+			</Column>
+			<Column Name="Code">
+				<ColumnIndex>2</ColumnIndex>
+				<ColumnIndexFullView>2</ColumnIndexFullView>
+			</Column>
+			<Column Name="Event">
+				<ColumnIndex>3</ColumnIndex>
+				<ColumnIndexFullView>3</ColumnIndexFullView>
+			</Column>
+			<Column Name="Date">
+				<ColumnIndex>4</ColumnIndex>
+				<ColumnIndexFullView>4</ColumnIndexFullView>
+			</Column>
+			<Column Name="Cycle">
+				<ColumnIndex>-1</ColumnIndex>
+				<ColumnIndexFullView>5</ColumnIndexFullView>
+			</Column>
+			<Column Name="Subsystem">
+				<ColumnIndex>-1</ColumnIndex>
+				<ColumnIndexFullView>6</ColumnIndexFullView>
+			</Column>
+			<Column Name="OperatingMode">
+				<ColumnIndex>-1</ColumnIndex>
+				<ColumnIndexFullView>7</ColumnIndexFullView>
+			</Column>
+		</Datagrid>
+	</Category>
+	<Category Name="HowDoI">
+		<Datagrid Code="HowDoI_WorkflowWizard">
+			<Column Name="Workflow">
+				<ColumnIndex>0</ColumnIndex>				
+			</Column>
+			<Column Name="Description">
+				<ColumnIndex>1</ColumnIndex>				
+			</Column>			
+		</Datagrid>
+	</Category>
+	<Category Name="Supplies">
+		<Datagrid Code="Supplies_SupplyNeeds">
+			<Column Name="AlertTime">
+				<ColumnIndex>0</ColumnIndex>
+			</Column>
+			<Column Name="Supply">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="Position">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+			<Column Name="Status">
+				<ColumnIndex>3</ColumnIndex>
+			</Column>
+			<Column Name="ManualEntry">
+				<ColumnIndex>4</ColumnIndex>
+			</Column>
+			<Column Name="AddToCart">
+				<ColumnIndex>5</ColumnIndex>
+			</Column>
+		</Datagrid>
+		<Datagrid Code="Supplies_ViewAllSupplies_OtherSupplies">
+			<Column Name="SupplyName">
+				<ColumnIndex>0</ColumnIndex>
+			</Column>
+			<Column Name="LeftTray">
+				<ColumnIndex>1</ColumnIndex>
+			</Column>
+			<Column Name="RightTray">
+				<ColumnIndex>2</ColumnIndex>
+			</Column>
+		</Datagrid>
+	</Category>
+</SyncFusionDatagrids>

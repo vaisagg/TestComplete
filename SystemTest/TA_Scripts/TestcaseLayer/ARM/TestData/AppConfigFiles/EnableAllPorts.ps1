@@ -1,0 +1,1 @@
+netsh advfirewall firewall add rule name="TestPorts" description="Open ports 50056, 50058, 50060" dir=in action=allow protocol=TCP localport="50056,50058,50060"

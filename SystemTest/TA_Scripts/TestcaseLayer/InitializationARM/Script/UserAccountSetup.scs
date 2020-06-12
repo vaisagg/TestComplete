@@ -1,0 +1,106 @@
+﻿//USEUNIT Authentication
+//USEUNIT Setup
+//USEUNIT StepDefinitionHydra
+
+
+function UserSetupForG0G2G3G4G5()
+{
+  //Create G3,G4,G5
+  AccountCreationForG3G4G5()
+  
+  //Set password for CSE(G2) since on first login it will say opeartor id or password is incorrect
+  SetCSEPassword()
+    
+  //Insert security questions for G0,G3,G4,G5 //for G2 it doesn't ask for security questions
+  InsertSecurityQuestionsInDBForG0G2G3G4G5();
+    
+  //Set Passpwrd to never Expire for users G2,G3.G4,G5
+  SetPasswordDonotExpireForG2G3G4G5()
+  
+}
+
+function AccountCreationForG3G4G5()
+{     
+    var arrUsers = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG3");
+  	dictColumn=arrUsers[0];
+    
+    var Member = dictColumn["Item"]("Member")
+    var OperatorID = dictColumn["Item"]("User")
+    var Password = dictColumn["Item"]("Password")
+    var Fullname = dictColumn["Item"]("Fullname")
+  
+    StepNavigateToUserAccountCreation()
+    if(!StepVerifyUserAccount(OperatorID))
+    CreateUserAccount(Member,OperatorID,Password,Fullname)
+    
+    var arrUsers = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG4");
+  	dictColumn=arrUsers[0];
+    
+    var Member = dictColumn["Item"]("Member")
+    var OperatorID = dictColumn["Item"]("User")
+    var Password = dictColumn["Item"]("Password")
+    var Fullname = dictColumn["Item"]("Fullname")
+    
+    if(!StepVerifyUserAccount(OperatorID))
+    CreateUserAccount(Member,OperatorID,Password,Fullname)
+    
+    var arrUsers = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG5");
+  	dictColumn=arrUsers[0];
+    
+    var Member = dictColumn["Item"]("Member")
+    var OperatorID = dictColumn["Item"]("User")
+    var Password = dictColumn["Item"]("Password")
+    var Fullname = dictColumn["Item"]("Fullname")
+  
+    if(!StepVerifyUserAccount(OperatorID))
+    CreateUserAccount(Member,OperatorID,Password,Fullname)
+
+}
+
+function SetCSEPassword()
+{
+    //Run  batch files
+    var obj=Sys["OleObject"]("Shell.Application");
+    obj.ShellExecute("UpdateCSEPWD.bat","",AppConfigFilesPath,"runas",1);  
+    aqUtils["Delay"](3000,"Wait for batch files to close")
+}
+
+function SetPasswordDonotExpireForG2G3G4G5()
+{
+    //Set Passpwrd to never Expire -CSE -G2  
+    obj = new ActiveXObject("WScript.shell")
+    aqUtils["Delay"](2000,"Run CSEPswdDoNotExpire.cmd")
+    Log["AppendFolder"]("Set CSE Password to Never Expire")
+    var oShell=Sys["OleObject"]("Shell.Application"); 
+    oShell.ShellExecute("CSEPswdDoNotExpire.cmd","",AppConfigFilesPath,"runas",1); 
+    aqUtils["Delay"](3000,"Wait")
+    Log["PopLogFolder"]();
+        
+    //Set Passpwrd to never Expire -Chief Technician
+    obj = new ActiveXObject("WScript.shell")
+    aqUtils["Delay"](2000,"Run ChiefTechnicianPswdDoNotExpire.cmd")
+    Log["AppendFolder"]("Set Chief Technician Password to Never Expire")
+    var oShell=Sys["OleObject"]("Shell.Application"); 
+    oShell.ShellExecute("ChiefTechnicianPswdDoNotExpire.cmd","",AppConfigFilesPath,"runas",1); 
+    aqUtils["Delay"](3000,"Wait")
+    Log["PopLogFolder"]();
+
+    //Set Passpwrd to never Expire -DayTimeOperator
+    obj = new ActiveXObject("WScript.shell")
+    aqUtils["Delay"](2000,"Run DayTimeOperatorPswdDoNotExpire.cmd")
+    Log["AppendFolder"]("Set DayTimeOperator Password to Never Expire")
+    var oShell=Sys["OleObject"]("Shell.Application"); 
+    oShell.ShellExecute("DayTimeOperatorPswdDoNotExpire.cmd","",AppConfigFilesPath,"runas",1); 
+    aqUtils["Delay"](3000,"Wait")
+    Log["PopLogFolder"]();
+        
+    //Set Passpwrd to never Expire -NightTimeOperator
+    obj = new ActiveXObject("WScript.shell")
+    aqUtils["Delay"](2000,"Run NightTimeOperatorPswdDoNotExpire.cmd")
+    Log["AppendFolder"]("Set NightTimeOperator Password to Never Expire")
+    var oShell=Sys["OleObject"]("Shell.Application"); 
+    oShell.ShellExecute("NightTimeOperatorPswdDoNotExpire.cmd","",AppConfigFilesPath,"runas",1); 
+    aqUtils["Delay"](3000,"Wait")
+    Log["PopLogFolder"]();
+
+}

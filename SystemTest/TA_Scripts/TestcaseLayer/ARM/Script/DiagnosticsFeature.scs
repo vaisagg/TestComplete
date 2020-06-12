@@ -1,0 +1,292 @@
+﻿//USEUNIT Authentication
+//USEUNIT Inventory
+//USEUNIT DiagnosticsFeatureSteps
+//USEUNIT TCNativeLibraries
+//USEUNIT DiagnosticsLibrary
+
+ 
+//******************************************************************
+//         [1] FEATURE : 224694 - Sequences
+//******************************************************************
+function FT224694_Sequences(){
+ 
+ //start service
+    StartServiceAndInitializeDiagnostics();
+
+    //Launch and Login to ARM
+    if(!InitializeDiagnostics())
+      Runner["Stop"]();
+    
+    //US225787_GWT_01
+    US225787_GWT_01_ExecutePredefinedSequence(); 
+    
+}
+
+
+function StartServiceAndInitializeDiagnostics()
+{
+  Log["AppendFolder"]("Starting service and initialize Diagnostics")
+
+    serviceName="DiagnosticsWindowsService"
+
+    var servicestatus=StartService(".",serviceName)
+    if(servicestatus==true)
+    {
+      Log["CheckPoint"]("DiagnosticsWindowsService started successfully")
+      aqUtils["Delay"](60000,"Waiting after starting the DiagnosticsWindowsService")
+    }
+    else
+      Log["Error"]("DiagnosticsWindowsService is not started") 
+}
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//         GWT's [FEATURE -224694 - Sequences]         
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+/*------ US225787 ------*/
+function US225787_GWT_01_ExecutePredefinedSequence(){
+
+    //USER STORY
+    Log.Message("FEATURE: 225700 - Sequences")
+    Log.Message("US225787 : Execute pre defined sequences in Diagnostics")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Diagnostics_Sequences", "US225787_GWT_01_ExecutePredefinedSequence", "I");
+
+    //GIVEN
+    LogHighlight("GIVEN : Mechanism is in Diagnostics State");
+    if(!GIVENSystemIsInDiagnosticsState()){
+        ReportTestStatusToResultXML("Diagnostics_Sequences", "US225787_GWT_01_ExecutePredefinedSequence", "F");
+        Runner["Stop"]()}
+    Log["PopLogFolder"]()
+
+//    //WHEN & THEN
+//    LogHighlight("WHEN : CSE/Siemens Internal user executes a pre defined Diagnostic sequence, THEN : Diagnostic Manager should initiate the execution of the sequence");
+    
+    //WHEN
+    LogHighlight("WHEN : CSE/Siemens Internal user executes a pre defined Diagnostic sequence");
+    Log.Message("Executing predefined sequence");
+    Log["PopLogFolder"]()
+    //THEN
+    LogHighlight("THEN : Diagnostic Manager should initiate the execution of the sequence"); 
+
+    if(!WHENUserExecutesPredefinedSequenceTHENVerifySequence()){
+        ReportTestStatusToResultXML("Diagnostics_Sequences", "US225787_GWT_01_ExecutePredefinedSequence", "F");
+        Runner["Stop"]()}
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Diagnostics_Sequences", "US225787_GWT_01_ExecutePredefinedSequence", "P");
+
+}
+
+
+//shrutika 
+function GWT338950_01_CHReagentCompartmentThermalControlLoop()
+{
+    InitializeMetaDataHYDRA();
+    //USER STORY
+    Log.Message("Thermal Mechanism CH Reagent Compartment Thermal Turn on Control Loop and verify values");
+
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_01_CHReagentCompartmentThermalControlLoop", "I");
+
+    LogHighlight("GIVEN : System is in Diagnostics State");
+    if(!GIVENSystemIsInDiagnosticsState())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_01_CHReagentCompartmentThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    LogHighlight("WHEN : Go to CH Reagent Compartment Thermals -Turn On Control Loop -Turn Off TED -Turn On TED and Repeat last two steps for each thermal component");
+    if(!WhenCHReagentCompartmentThermalsControlLoopRun())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_01_CHReagentCompartmentThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    LogHighlight("THEN : Control State, Duty Cycle, Current, Controlled Temp, Total Power, Total Current show approriate values in Sub System tab for each mechanism");
+    if(!ThenVerifyCHReagentCompartmentThermalsControlLoopTEDValues())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_01_CHReagentCompartmentThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_01_CHReagentCompartmentThermalControlLoop", "P");
+}
+
+//---shrutika
+function GWT338950_02_IMIncuabtionRingThermalControlLoop()
+{
+    InitializeMetaDataHYDRA();
+    //USER STORY
+    Log.Message("IM Incuabtion Ring Thermal Turn on Control Loop and verify values");
+
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_02_IMIncuabtionRingThermalControlLoop", "I");
+
+    LogHighlight("GIVEN : System is in Diagnostics State");
+    if(!GIVENSystemIsInDiagnosticsState())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_02_IMIncuabtionRingThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    LogHighlight("WHEN : Go to IM Incuabtion Ring Thermal -Turn On Control Loop -Turn Off TED -Turn On TED and Repeat last two steps for each thermal component");
+    if(!WhenIMIncuabtionRingThermalControlLoopRun())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_02_IMIncuabtionRingThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    LogHighlight("THEN : Control State, Duty Cycle, Current, Controlled Temp, Total Power, Total Current show approriate values in Sub System tab for each mechanism");
+    if(!ThenVerifyIMIncuabtionRingThermalControlLoopTEDValues())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_02_IMIncuabtionRingThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_02_IMIncuabtionRingThermalControlLoop", "P");
+}
+
+//---shrutika
+function GWT338950_03_IMLuminometerPMTThermalControlLoop()
+{
+    InitializeMetaDataHYDRA();
+    //USER STORY
+    Log.Message("Thermal Mechanism CH Reagent Compartment Thermal Turn on Control Loop and verify values");
+
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_03_IMLuminometerPMTThermalControlLoop", "I");
+
+    LogHighlight("GIVEN : System is in Diagnostics State");
+    if(!GIVENSystemIsInDiagnosticsState())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_03_IMLuminometerPMTThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    LogHighlight("WHEN : Go to CH Reagent Compartment Thermals -Turn On Control Loop -Turn Off TED -Turn On TED and Repeat last two steps for each thermal component");
+    if(!WhenIMLuminometerPMTThermalControlLoopRun())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_03_IMLuminometerPMTThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    LogHighlight("THEN : Control State, Duty Cycle, Current, Controlled Temp, Total Power, Total Current show approriate values in Sub System tab for each mechanism");
+    if(!ThenVerifyIMLuminometerPMTThermalControlLoopTEDValues())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_03_IMLuminometerPMTThermalControlLoop", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_03_IMLuminometerPMTThermalControlLoop", "P");
+}
+
+
+//---shrutika
+function GWT338950_04_ThermalIAPrimaryAncillaryInitializationAndPolling()
+{
+
+    InitializeMetaDataHYDRA();
+    
+    //USER STORY
+    Log.Message("Thermal Mechanism Initialization And Polling Sequences and verify values in SubSystem Tab");
+
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_04_ThermalIAPrimaryAncillaryInitializationAndPolling", "I");
+
+    
+    //GIVEN
+    //LogHighlight("GIVEN : Instrument must have reached Ready state before entering Diagnostics to ensure required mechanisms are online.");
+
+    LogHighlight("GIVEN : System is in Diagnostics State");
+    if(!GIVENSystemIsInDiagnosticsState())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_04_ThermalIAPrimaryAncillaryInitializationAndPolling", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    LogHighlight("WHEN : Thermal IA Primary And Ancillary Iniatialzation And Polling Sequences are run");
+    if(!WhenRunThermalIniatialzationAndPollingSequences())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_04_ThermalIAPrimaryAncillaryInitializationAndPolling", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    LogHighlight("THEN : Control State, Duty Cycle, Current, Controlled Temp, Total Power, Total Current show approriate values in Sub System tab for each mechanism");
+    if(!ThenVerifyIAPrimaryAndAncillaryReagentCompartmentThermalMechanismTEDValues())
+    {
+        ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_04_ThermalIAPrimaryAncillaryInitializationAndPolling", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Diagnostics Thermal", "GWT338950_04_ThermalIAPrimaryAncillaryInitializationAndPolling", "P");
+
+}
+
+
+function GWT338994_01_PhotometricRunCuvetteMapping()
+{
+
+    InitializeMetaDataHYDRA();
+    
+    //USER STORy
+    Log.Message("Photometric Run Cuvette Mapping")
+
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("Diagnostics Cuvette Mapping", "GWT338994_01_PhotometricRunCuvetteMapping", "I");
+
+    //GIVEN
+    //LogHighlight("GIVEN : Instrument must have reached Ready state before entering Diagnostics to ensure required mechanisms are online.");
+    
+    LogHighlight("GIVEN : System is in Diagnostics State");
+    if(!GIVENSystemIsInDiagnosticsState())
+    {
+        ReportTestStatusToResultXML("Diagnostics Cuvette Mapping", "GWT338994_01_PhotometricRunCuvetteMapping", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    LogHighlight("WHEN : Navigate to Diagnostics > Auto Alignment > Photometric Run Cuvette Mapping");
+    if(!WhenCHPhotometricRunCuvetteMapping())
+    {
+        ReportTestStatusToResultXML("Diagnostics Cuvette Mapping", "GWT338994_01_PhotometricRunCuvetteMapping", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+
+    //THEN
+    LogHighlight("THEN : Cuvette Mapping Completes, a new Offset value is generated, and a graph is displayed");
+    if(!ThenVerifyAutoAlignmentPhotmetricRunCompletedAndOffsetGraph())
+    {
+        ReportTestStatusToResultXML("Diagnostics Cuvette Mapping", "GWT338994_01_PhotometricRunCuvetteMapping", "F");
+        Runner["Stop"]()
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("Diagnostics Cuvette Mapping", "GWT338994_01_PhotometricRunCuvetteMapping", "P");
+
+}

@@ -1,0 +1,186 @@
+﻿//USEUNIT SQLUtilities
+//USEUNIT CommonUtilities
+
+
+var sDBName;
+
+function GetCurrentLanguageSettings()
+{  
+    try
+    {
+      var LangID="";
+      var ADORS = Sys["OleObject"]("ADODB.Recordset");
+      ADORS = ReturnQueryRecordSetFromString(Project["Variables"]["LangIDQuery"], Project["Variables"]["Connectionstring"]);
+      
+      while(!ADORS["EOF"])
+      {
+       var rowVAlue=null;
+       LangID=ADORS["Fields"]("Language_ID")["Value"];
+       ADORS["MoveNext"]();
+      }
+       return LangID;
+    }
+    catch(exp)
+    {
+      Log["Error"]("Exception",exp["description"]);
+    }
+}
+
+
+function GetMessageCode(Messagestring)
+{
+  try
+  {
+    ProjPath = ProjectSuite["Path"];
+    arrPath  = ProjPath["split"]("Atellica")
+    var sTestdataPath =  arrPath[0] + "TestcaseLayer\\P2\\TestData\\TestData.xls";
+    
+   // var sTestdataPath=Project["Path"]+"TestData\\TestData.xls"
+    var arrTestData = GetTestItemsByTestName( sTestdataPath,"LocalizationStrings","MessageCode")
+    var dictColumn=arrTestData[0];
+  
+    MessageCode=dictColumn["Item"](Messagestring)
+
+    
+    var arrTestData = GetTestItemsByTestName( sTestdataPath,"LocalizationStrings","Database")
+    var dictColumn=arrTestData[0];
+    sDBName=dictColumn["Item"](Messagestring);
+    if (MessageCode=="")
+    {
+      Log["Error"]("Unable to find the message code for the string "+Messagestring)
+      return MessageCode;
+    }
+    else
+    {
+      return MessageCode;
+    }
+  }
+  catch(exp)
+  {
+  Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetTranslatedString
+//*
+//*  Description: Get language translation string
+//*  
+//*  Input: MsgCode,LangID
+//*
+//*  Output: MessageString
+//*  
+//*  Example:GetTranslatedString(Messagestring,LangID)
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+// Query        :select * from UIW_TAB_LOC_Message_Translation  where message_id in (select message_id from UIW_TAB_LOC_Messages where message_code= 'UI_CreateBracketBttn') and language_id=1036
+//getlanguageId :select Language_ID from dbo.UIW_TAB_LOC_CurrentSettings
+
+//***********************************************************************************************************************************************************************************
+function GetTranslatedString(Messagestring,LangID)
+//function GetTranslatedString()
+{
+     try
+    {
+//      LangID=1031
+//      Messagestring="Failed Barcode Read"
+      if (LangID=="")
+      {
+        var LangID=GetCurrentLanguageSettings();
+        if (LangID=="")
+        {
+          LangID=1033;
+        }
+      }
+      
+//      if (LangID==1033)
+//        return Messagestring;
+        
+      // Specify the connection string  
+      //var Connectionstring = Project["Variables"]["Connectionstring"] ;
+     
+      var MessageCode=GetMessageCode(Messagestring);
+      var transString = GetTranslatedStringFromMessageCode(MessageCode, LangID)
+      
+	  if(transString == "")
+      {
+        transString = MessageCode;
+      }
+      return transString;
+    }
+    catch(exp)
+    {
+      Log["Error"]("Exception",exp["description"]);
+    }
+}
+
+function GetTranslatedStringFromMessageCode(MessageCode,LangID)
+//function GetTranslatedStringFromMessageCode()
+{
+  try
+  {
+//    MessageCode="MSG_Save"
+//    LangID=""
+    if (LangID=="")
+    {
+      var LangID=GetCurrentLanguageSettings();
+      if (LangID=="")
+      {
+        LangID=1033;
+      }
+    } 
+
+    
+      switch(sDBName)
+      {
+        case "Bus_DM":
+                      var strSP=Project["Variables"]["Bus_DM_SP"]+" '"+MessageCode+"',"+LangID;
+                      break;
+        case "Event_Log":
+                      var strSP=Project["Variables"]["Event_Log_SP"]+" '"+MessageCode+"',"+LangID;
+                      break;
+        default:
+                      var strSP=Project["Variables"]["Bus_DM_SP"]+" '"+MessageCode+"',"+LangID;
+                      sDBName="Bus_DM"
+                      break;
+      }
+                      
+      var Connectionstring = "Provider=SQLOLEDB;Data Source=.;Initial Catalog="+sDBName+";Integrated Security = SSPI;nDataType=True;" ;
+    
+    
+   // var strSP2=Project["Variables"]["SP"]+" '"+MessageCode+"',"+LangID;
+    var ADORS = Sys["OleObject"]("ADODB.Recordset");
+    ADORS = ReturnQueryRecordSetFromString(strSP, Connectionstring);
+    var MessageString = null;
+    if ((ADORS==undefined)||(ADORS==null)||(ADORS.RecordCount==0))
+    {
+      return "";
+    }
+    while(!ADORS["EOF"])
+    {
+     var rowVAlue=null;
+     MessageString=ADORS["Fields"]("Message_Text")["Value"];
+     ADORS["MoveNext"]();
+    }
+    return MessageString;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+//Go
+//IF OBJECT_ID ('dbo.TA_PRC_LOC_GetMessageString') IS NOT NULL
+//	DROP PROCEDURE dbo.TA_PRC_LOC_GetMessageString
+//Go
+//Create PROCEDURE dbo.TA_PRC_LOC_GetMessageString @MessageCode varchar(150), @LanguageID varchar(50)
+//As
+//Begin
+//	select t2.message_text, t1.Message_Code , t3.Language_ID from UIW_TAB_LOC_Message_Translation t2 left join 
+//	dbo.UIW_TAB_LOC_Messages t1 on t1.Message_ID = t2.Message_ID
+//	left join UIW_TAB_LOC_Languages t3 on t2.Language_ID = t3.Language_ID
+//	where t1.Message_Code = @MessageCode and  t3.Language_ID= @LanguageID
+//END

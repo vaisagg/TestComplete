@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Workflows>
+		<Category name="System">
+			<Workflow code = "System_Logs_OperatorEventLog">
+				<NavigationPath target="spcOperatorEventLog">
+					<Control name="btnSystem" seqNo="1"/>
+					<Control name="tbbtnLogs" seqNo="2"/>
+					<Control name="tbbtnOperatorEventLog" seqNo="3"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "System_Logs_OperatorEventLog_Export">
+				<NavigationPath target="winOperatorEventLogExportWindow">
+					<Control name="btnSystem" seqNo="1"/>
+					<Control name="tbbtnLogs" seqNo="2"/>
+					<Control name="tbbtnOperatorEventLog" seqNo="3"/>
+					<Control name="btnExport" seqNo="4"/>
+				</NavigationPath>
+				<ExitPath>
+					<Control name="btnOK" seqNo="1"/>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "System_Logs_SystemMessageLog">
+				<NavigationPath target="grdSystemMessageLog">
+					<Control name="btnSystem" seqNo="1"/>
+					<Control name="tbbtnLogs" seqNo="2"/>
+					<Control name="tbbtnSystemMessageLog" seqNo="3"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "System_Status_System">
+				<NavigationPath target="cctrlModuleContent">
+					<Control name="btnSystem" seqNo="1"/>
+					<Control name="tbbtnStatus" seqNo="2"/>
+					<Control name="listBoxItemSystem" seqNo="3"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "System_OperatorDiagnostics">
+				<NavigationPath target="btnPerform">
+					<Control name="btnSystem" seqNo="1"/>
+					<Control name="btnOperatorDiagnostics" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+						<Workflow code = "CapColorTrainingConfiguration">
+				<NavigationPath target="CapColorConfigurationWindow">
+					<Control name="btnSystem" seqNo="1"/>
+					<Control name="CCOperatorDiagnosticsTab_TAB" seqNo="2"/>
+					<Control name="EnterDiagnosticsButton" seqNo="3"/>
+					<Control name="PerformButton" seqNo="4"/>
+					<Control name="Yes" seqNo="5"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			
+		</Category>
+		<Category name="Samples">
+			<Workflow code = "Samples_SampleHandler">
+				<NavigationPath target="lstTrayZone">
+					<Control name="btnSamples" seqNo="1"/>
+					<Control name="tbbtnSampleHandler" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "Samples_SampleList">
+				<NavigationPath target="grdSamples">
+					<Control name="btnSamples" seqNo="1"/>
+					<Control name="tbbtnSampleList" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "Samples_TrackOverview">
+				<NavigationPath target="">
+					<Control name="btnSamples" seqNo="1"/>
+					<Control name="tbbtnTrackOverview" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+		</Category>
+		<Category name="Inventory">
+			<Workflow code = "Inventory_CalQCStorageInventory">
+					<NavigationPath target="dataGridCalQCSampleDetails">
+						<Control name="btnInventory" seqNo="1"/>
+						<Control name="tbbtnCalQCStorageInventory" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "Inventory_ReagentCatridgeEntry">
+					<NavigationPath target="btnLoadDatabase">
+						<Control name="btnInventory" seqNo="1"/>
+						<Control name="tbbtnReagentCatridgeEntry" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>1</Level>			
+			</Workflow>
+			<Workflow code = "Inventory_ReagentOverview">
+					<NavigationPath target="grdReagents">
+						<Control name="btnInventory" seqNo="1"/>
+						<Control name="tbbtnReagentOverview" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>1</Level>			
+			</Workflow>
+			<!--Hydra Workflow-->
+			<Workflow code = "Inventory_ReagentLoader">
+					<NavigationPath target="grdReagentLoader">
+						<Control name="btnInventory" seqNo="1"/>
+						<Control name="tbbtnReagentLoader" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>1</Level>			
+			</Workflow>
+			<!--Hydra Workflow Ends here-->
+			<Workflow code = "Inventory_SuppliesOverview">
+					<NavigationPath target="winReagent">
+						<Control name="btnInventory" seqNo="1"/>
+						<Control name="tbbtnSuppliesOverview" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>1</Level>			
+			</Workflow>
+		</Category>
+		<Category name="Calibration">
+			<Workflow code = "Calibration_CalibrationOverview">
+					<NavigationPath target="winCalibrationOverview">
+						<Control name="btnCalibration" seqNo="1"/>
+						<Control name="btnCalOverview" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "Calibration_CreateCalibrationOrder">
+					<NavigationPath target="grdOrders">
+						<Control name="btnCalibration" seqNo="1"/>
+						<Control name="btnCreateCalOrders" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>
+			</Workflow>
+			<Workflow code = "Calibration_CalibrationResults">
+					<NavigationPath target="grdResults">
+						<Control name="btnCalibration" seqNo="1"/>
+						<Control name="btnCalResults" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+			</Workflow>
+			<Workflow code = "Calibration_CalibratorDefinitions">
+					<NavigationPath target="grdCalibratorView">
+						<Control name="btnCalibration" seqNo="1"/>
+						<Control name="btnCalDefinitions" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+			</Workflow>
+				<Workflow code = "Calibration_CalibratorDefinitions_AddNewCalibratorDefinition">
+					<NavigationPath target="wndAddCalibratorDefinition">
+						<Control name="btnCalibration" seqNo="1"/>
+						<Control name="btnCalDefinitions" seqNo="2"/>
+						<Control name="btnAddNewCalDef" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+			</Workflow>
+			
+		</Category>
+		<Category name="QC">
+			<Workflow code = "QC_QCstatistics_QCreview">
+				<NavigationPath target="tbpgGroupBased">
+					<Control name="btnQC" seqNo="1"/>
+					<Control name="tbbtnQCStatistics" seqNo="2"/>
+					<Control name="tbpgQCReview" seqNo="3"/>
+					<Control name="tbpgSetup" seqNo="4"/>
+					<Control name="tbpgQCRules" seqNo="5"/>
+					<Control name="tbpgGroupBased" seqNo="6"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+			</Workflow>
+		</Category>
+		
+			<Category name="QC_Definition">
+			<Workflow code = "QC_AddQCDefintion">
+				<NavigationPath target="QCDetailsAddWindow">
+					<Control name="btnQC" seqNo="1"/>
+					<Control name="QCDefinitionTab_TAB" seqNo="2"/>
+					<Control name="AddControlButton" seqNo="3"/>
+					
+				</NavigationPath>
+				<ExitPath>
+					<Control name="CancelButton" seqNo="1"/>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+			</Workflow>
+			
+			<Workflow code = "QC_VerifyQCDefintion">
+				<NavigationPath target="QCDefinitionsOverviewCtrl">
+					<Control name="btnQC" seqNo="1"/>
+					<Control name="QCDefinitionTab_TAB" seqNo="2"/>
+					
+				</NavigationPath>
+				<ExitPath>
+					<Control name="CancelButton" seqNo="1"/>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+			</Workflow>
+		</Category>
+
+	<Category name="QC_Order">
+			<Workflow code = "QC_AddQCOrder">
+				<NavigationPath target="ControlOrderDetailsCtrl">
+					<Control name="btnQC" seqNo="1"/>
+					<Control name="CreateControlOrders_TAB" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+			</Workflow>
+		</Category>
+		
+		
+		<Category name="PatientOrders">
+			<Workflow code = "PatientOrders_CreatePatientOrders">
+				<NavigationPath target="grdPatientOrders">
+					<Control name="btnPatientOrders" seqNo="1"/>
+					<Control name="tbbtnCreatePatientOrder" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+			</Workflow>
+		<Workflow code = "PatientOrders_CreateBatchOrdersBySID">
+				<NavigationPath target="grdPatientOrders">
+					<Control name="btnPatientOrders" seqNo="1"/>
+					<Control name="tbbtnCreateBatchOrdersBySID" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+			</Workflow>
+		</Category>
+		<Category name="Setup">
+			<Workflow code = "Setup_Testdefinition_IATestdefinition">
+					<NavigationPath target="IMTDefNewCtrl">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnIMTestDefinition" seqNo="3"/>
+					</NavigationPath>
+					<ExitPath/>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+
+			<Workflow code = "Setup_Testdefinition_IATestDefinition_Calculation">
+					<NavigationPath target="tabCalculation">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnIMTestDefinition" seqNo="3"/>
+						<Control name="tabCalculation" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+						<Control name="btnClose" seqNo="1"/>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Testdefinition_IMTestdefinition_ImportBlob">
+					<NavigationPath target="OpenFileBrowserWindow">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnIMTestDefinition" seqNo="3"/>
+						<Control name="ImportBarcodeButton" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+						<Control name="btnClose" seqNo="1"/>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Testdefinition_IMTestdefinition_ImportTdef">
+					<NavigationPath target="winImportTdef">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnIMTestDefinition" seqNo="3"/>
+						<Control name="btnImportTdef" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+						<Control name="btnClose" seqNo="1"/>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_Testdefinition_CHTestDefinition">
+					<NavigationPath target="gdTestGrid">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnCHTestDefinition" seqNo="3"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+      <Workflow code = "Setup_Testdefinition_CHTestDefinition_Calculation">
+        <NavigationPath target="lblAssayComparisionCorrealationFactors">
+          <Control name="btnSetup" seqNo="1"/>
+          <Control name="tbbtnTestDefinition" seqNo="2"/>
+          <Control name="tbbtnCHTestDefinition" seqNo="3"/>
+          <Control name="tabCalculation" seqNo="4"/>
+        </NavigationPath>
+        <ExitPath>
+        </ExitPath>
+        <Description>NA</Description>
+        <Level>0</Level>
+        <WorkflowID>1</WorkflowID>
+      </Workflow>
+      <Workflow code = "Setup_Testdefinition_IMTestDefinition_Calibration">
+        <NavigationPath target="chkBoxNoCalRequired">
+          <Control name="btnSetup" seqNo="1"/>
+          <Control name="tbbtnTestDefinition" seqNo="2"/>
+          <Control name="tbbtnIMTestDefinition" seqNo="3"/>
+          <Control name="tabCalibration" seqNo="4"/>
+        </NavigationPath>
+        <ExitPath>
+        </ExitPath>
+        <Description>NA</Description>
+        <Level>0</Level>
+        <WorkflowID>1</WorkflowID>
+      </Workflow>
+      <Workflow code = "Setup_Testdefinition_IMTestDefinition">
+        <NavigationPath target="btnAddTest">
+          <Control name="btnSetup" seqNo="1"/>
+          <Control name="tbbtnTestDefinition" seqNo="2"/>
+          <Control name="tbbtnIMTestDefinition" seqNo="3"/>
+        </NavigationPath>
+        <ExitPath>
+        </ExitPath>
+        <Description>NA</Description>
+        <Level>0</Level>
+        <WorkflowID>1</WorkflowID>
+      </Workflow>
+			<Workflow code="Setup_Testdefinition_SortTestDefinition">
+					<NavigationPath target="btnAddCode">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnSortTestDefinition" seqNo="3"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_Testdefinition_SortTestDefinition_AddCode">
+					<NavigationPath target="dlgNewSortCode">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTestDefinition" seqNo="2"/>
+						<Control name="tbbtnSortTestDefinition" seqNo="3"/>
+						<Control name="btnAddCode" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_GeneralSetup_Regional">
+					<NavigationPath target="tabRegional">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnGeneralSetup" seqNo="3"/>
+						<Control name="tabRegional" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>2</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_GeneralSetup_Connectivity">
+					<NavigationPath target="tabConnectivity">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnGeneralSetup" seqNo="3"/>
+						<Control name="tabConnectivity" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>2</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_GeneralSetup_Patient">
+				<NavigationPath target="tabConnectivity">
+					<Control name="btnSetup" seqNo="1"/>
+					<Control name="tbbtnSettings" seqNo="2"/>
+					<Control name="tbbtnGeneralSetup" seqNo="3"/>
+					<Control name="tabPatient" seqNo="4"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>2</Level>			
+				<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_SystemConfiguration_AlertSettings">
+					<NavigationPath target="grpBoxWasteBinThreshold">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSystemConfiguration" seqNo="3"/>
+						<Control name="tabAlertSettings" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_SHConfiguration_SampleProcessing">
+					<NavigationPath target="tabSampleProcessing">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSHConfiguration" seqNo="3"/>
+						<Control name="tabSampleProcessing" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_SHConfiguration_ErrorSortGroup">
+					<NavigationPath target="btnAddGroup">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSHConfiguration" seqNo="3"/>
+						<Control name="tabErrorSortGroups" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_SHConfiguration_TestSortGroup">
+					<NavigationPath target="btnAddGroup">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSHConfiguration" seqNo="3"/>
+						<Control name="tabTestSortGroups" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_SHConfiguration_SampleWorkflow">
+					<NavigationPath target="cmbBoxTimeout">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSHConfiguration" seqNo="3"/>
+						<Control name="tabSampleWorkflow" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_Settings_SHConfiguration_CapSortGroups">
+					<NavigationPath target="btnAddGroup">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSHConfiguration" seqNo="3"/>
+						<Control name="tabCapSortGroups" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_Settings_ModuleConfiguration">
+					<NavigationPath target="winModuleConfigurationLayout">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnModuleConfiguration" seqNo="3"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<!--Hydra Workflow-->
+			<Workflow code="Setup_TestDefinition_CITestDefinition">
+					<NavigationPath target="cmbFilterComboBox">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTDef" seqNo="2"/>
+						<Control name="tbbtnCITestDefinition" seqNo="3"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_TestDefinition_CITestDefinition_IACommon">
+					<NavigationPath target="tabIMCalibration">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTDef" seqNo="2"/>
+						<Control name="tbbtnCITestDefinition" seqNo="3"/>
+						<Control name="tbbtnTabIACommon" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_TestDefinition_CITestDefinition_CCCommon">
+					<NavigationPath target="txtTestName">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTDef" seqNo="2"/>
+						<Control name="tbbtnCITestDefinition" seqNo="3"/>
+						<Control name="tbbtnTabCommon" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_TestDefinition_CITestDefinition_Reagents">
+					<NavigationPath target="txtCalCodeTextBox">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTDef" seqNo="2"/>
+						<Control name="tbbtnCITestDefinition" seqNo="3"/>
+						<Control name="tbbtnIATabReagents" seqNo="4"/>						
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "Setup_TestDefinition_CITestDefinition_IMCalibration">
+				<NavigationPath target="chkbxAutoCalibrationTrigger">
+					  <Control name="btnSetup" seqNo="1"/>
+					  <Control name="tbbtnTDef" seqNo="2"/>
+					  <Control name="tbbtnCITestDefinition" seqNo="3"/>
+					  <Control name="tabIMCalibration" seqNo="4"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>
+				<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code="Setup_TestDefinition_CITestDefinition_CCCalibration_General">
+					<NavigationPath target="tabCCGeneral">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnTDef" seqNo="2"/>
+						<Control name="tbbtnCITestDefinition" seqNo="3"/>
+						<Control name="tabCCCalibration" seqNo="4"/>
+						<Control name="tabCCGeneral" seqNo="4"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<!--Hydra Workflow Ends here-->
+			<Workflow code = "Setup_Settings_SHConfiguration_CapSortGroups_ConfigureCapcolorSortGroups">
+					<NavigationPath target="digVCapColorConfiguration">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnSettings" seqNo="2"/>
+						<Control name="tbbtnSHConfiguration" seqNo="3"/>
+						<Control name="tabCapSortGroups" seqNo="4"/>
+						<Control name="btnConfigureCapColorGrp" seqNo="5"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<!--Hydra Workflow-->
+			<Workflow code="Setup_Accounts_Accounts">
+					<NavigationPath target="btnCreateAccount">
+						<Control name="btnSetup" seqNo="1"/>
+						<Control name="tbbtnAccounts" seqNo="2"/>
+						<Control name="tbbtnUserAccounts" seqNo="3"/>
+					</NavigationPath>
+					<ExitPath>
+					</ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<!--Hydra Workflow Ends here-->
+		</Category>
+		<Category name="Worklist">
+			<Workflow code = "Worklist_WorklistOverview">
+					<NavigationPath target="grdWorklistSamples">
+						<Control name="btnWorklist" seqNo="1"/>
+						<Control name="tbbtnWorklistOverview" seqNo="2"/>
+					</NavigationPath>
+					<ExitPath></ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+		</Category>
+		<Category name="Maintenance">
+			<Workflow code = "Maintenance_Schedule">
+				<NavigationPath target="grdMonitoring">
+					<Control name="btnMaintenance" seqNo="1"/>
+					<Control name="tbbtnSchedule" seqNo="2"/>
+				</NavigationPath>
+				<ExitPath>
+				</ExitPath>
+				<Description>NA</Description>
+				<Level>0</Level>			
+			</Workflow>
+		</Category>
+</Workflows>

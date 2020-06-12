@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="data">
+			<Node name="{f1ac9130-2c51-430b-985a-6550da60caf0}">
+				<Node name="variables">
+					<Node name="datav3">
+						<Node name="var0">
+							<Node name="value">
+								<Prp name="boolvalue" type="B" value="0"/>
+							</Node>
+							<Prp name="name" type="S" value="StartCCStatus"/>
+						</Node>
+						<Node name="var1">
+							<Node name="value">
+								<Prp name="boolvalue" type="B" value="0"/>
+							</Node>
+							<Prp name="name" type="S" value="ShutdownCCStatus"/>
+						</Node>
+						<Node name="var2">
+							<Node name="value">
+								<Prp name="strvalue" type="H" value="460061006C0073006500"/>
+							</Node>
+							<Prp name="name" type="S" value="TaskStatus"/>
+						</Node>
+						<Node name="var3">
+							<Node name="value">
+								<Prp name="strvalue" type="H" value=" "/>
+							</Node>
+							<Prp name="name" type="S" value="SystemTime"/>
+						</Node>
+					</Node>
+					<Prp name="version" type="I" value="3"/>
+				</Node>
+			</Node>
+			<Node name="logs">
+				<Prp name="key" type="S" value="{A3708A03-05CC-4AFE-82AD-CA1FE9D463B4}"/>
+				<Prp name="relpath" type="S" value="\LogFiles\InvokeSimApps"/>
+			</Node>
+			<Node name="variables">
+				<Node name="datav3">
+					<Node name="var0">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="5300690065006D0065006E00730053006500720076006900630065005500730065007200"/>
+						</Node>
+						<Prp name="name" type="S" value="UserName"/>
+					</Node>
+					<Node name="var1">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="5300690065006D0065006E00730031003200330034003500360037002100"/>
+						</Node>
+						<Prp name="name" type="S" value="Password"/>
+					</Node>
+					<Node name="var2">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="43003A005C005C005300690065006D0065006E0073005C005C00420069006E005C005C005300740061007200740045004E0047002E00620061007400"/>
+						</Node>
+						<Prp name="name" type="S" value="SH_BatchFile"/>
+					</Node>
+					<Node name="var3">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="43003A005C005C005300690065006D0065006E0073005C005C00420069006E005C005C005300740061007200740045004E0047002E00620061007400"/>
+						</Node>
+						<Prp name="name" type="S" value="IA_BatchFile"/>
+					</Node>
+					<Node name="var4">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="43003A005C005C005300690065006D0065006E0073005C005C00420069006E005C005C0041004D00530069006D0075006C00610074006F0072002E00650078006500"/>
+						</Node>
+						<Prp name="name" type="S" value="AM_Simulator"/>
+					</Node>
+					<Node name="var5">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="43003A005C005C005300690065006D0065006E0073005C005C00420069006E00"/>
+						</Node>
+						<Prp name="name" type="S" value="DriverPath"/>
+					</Node>
+					<Node name="var6">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="490043004D00650073007300610067006500560069006500770065007200"/>
+						</Node>
+						<Prp name="name" type="S" value="IA_ProcessName"/>
+					</Node>
+					<Node name="var7">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="41004D00530069006D0075006C00610074006F007200"/>
+						</Node>
+						<Prp name="name" type="S" value="SIM_ProcessName"/>
+					</Node>
+					<Node name="var8">
+						<Node name="value">
+							<Prp name="strvalue" type="H" value="43003A005C005C005300690065006D0065006E0073005C005C00420069006E005C005C005300740061007200740045004E0047002E00620061007400"/>
+						</Node>
+						<Prp name="name" type="S" value="CC_BatchFile"/>
+					</Node>
+				</Node>
+				<Prp name="version" type="I" value="3"/>
+			</Node>
+		</Node>
+		<Prp name="signature" type="S" value="{49FC0C30-9EF7-4DBD-97A8-B7A00E79A2AF}"/>
+	</Node>
+</Nodes>

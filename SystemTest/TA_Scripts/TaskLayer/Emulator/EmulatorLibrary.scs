@@ -1,0 +1,833 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT CommonUtilities
+
+//Project file Paths
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra")
+var IoTPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\IoT";
+var SimulationPath = "C:\\Data\\Deploy\\simulation\\";
+  
+function CopyBarcodesAndLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodes,barcodePositions)//ReagentType : IMPrimary, IMAncillary, CH
+{
+ try
+  {
+    Log["AppendFolder"]("Inventory :: Copy barcodes to IoT path and load reagents without running diagnostics requences");
+    
+    var isReagentLoaded = false;
+    
+    //Copy Barcode at specified position in barcode text file at testdata folder      
+    if(!CopyBarcodeAtSpecifiedPosition(reagentType,barcodes,barcodePositions))
+    {
+      Log["Error"]("Failed on copying barcode to the file");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Copy barcode to simulation folder and send to IoT (open & close reagent door based on reagent type)
+    switch (reagentType)
+    {
+      case "IMPrimary":
+          if(LoadReagentForIMPrimary())
+            isReagentLoaded = true;
+                      
+        break;
+      case "IMAncillary":
+          if(LoadReagentsForIMAncillary())
+            isReagentLoaded = true;
+            
+        break;
+      case "CH":
+	  case "CHPaired":
+        if(LoadReagentsForCH())
+          isReagentLoaded = true;
+          
+        break;
+    }
+    
+    //Check the reagent load is completed
+    if(isReagentLoaded)
+    {
+      Log["CheckPoint"]("Reagents barcode files are successfully copied to IoT");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to copy the barcode files to IoT to load the reagent");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************************************
+//*  FunctionName : CopyBarcodeAtSpecifiedPosition(ReagentType,Barcode,Position)
+//*  Description: Copy's single or array of barcode along with position to desired file based on ReagentType
+//*  Input: ReagentType,Barcode,Position
+//*  Output: Boolean
+//*  Date of Creating: 15 Mar 2019
+//*  Created By: Shahana
+//***************************************************************************************************************
+function CopyBarcodeAtSpecifiedPosition(ReagentType,Barcode,Position)
+{
+  try
+  {
+           Log["AppendFolder"]("Copy Barcodes To Desired text file");
+           
+           //Initialize variables
+           var arrBarcode = new Array();
+           var arrPosition = 0;
+          
+          //define file name and number of reagents it can hold at a time
+          if(ReagentType=="IMPrimary")
+          {
+            var sPath=IoTPath+"\\PrimaryBarcodes.txt";
+            var NoOfReagentsItCanHold = 20;  
+            Log["Message"]("Barcodes will be copied to PrimaryBarcodes.txt"); 
+          }
+          else if(ReagentType=="IMAncillary")
+          {
+            var sPath=IoTPath+"\\AncillaryBarcodes.txt";
+            var NoOfReagentsItCanHold = 20;
+            Log["Message"]("Barcodes will be copied to AncillaryBarcodes.txt");
+          }
+          else
+          {
+            var sPath=IoTPath+"\\CHInputBarcodes.txt";
+            var NoOfReagentsItCanHold = 4;
+            Log["Message"]("Barcodes will be copied to CHInputBarcodes.txt");
+          }
+  
+          //barcode details in new array with its position 
+          if(Position["length"] >= 1) 
+          {
+              for(count=0;count<Position["length"];count++)
+              {
+                arrPosition = Position[count];     
+                arrBarcode[arrPosition-1]=Barcode[count];     
+              }         
+          }
+          else
+          { 
+              //for only one barcode
+              arrBarcode[Position-1]=Barcode;             
+          }
+  
+          //delete file
+          if(aqFileSystem["DeleteFile"](sPath) == true)
+          {   
+              //create file
+              if(aqFile.Create(sPath)==0)
+              {
+                  // Opens the created file for writing 
+                  var myFile = aqFile["OpenTextFile"](sPath, aqFile.faWrite, aqFile.ctANSI);
+      
+                  for (var i = 0; i < NoOfReagentsItCanHold; i++)
+                  {
+                    //set position
+                    myFile["SetPosition"](i, 1);
+    
+                    //copy barcode at the specific line
+                    if(arrBarcode[i]==null)
+                    {
+                        myFile["WriteLine"]("");
+                        //Log["Message"]("No barcode added at position : "+(i+1));
+                    }
+                    else
+                    {    
+                        myFile["WriteLine"](arrBarcode[i]);
+                        Log["Message"](arrBarcode[i]+" added at position : "+(i+1));
+                    }
+                  } 
+                  // Closes the file 
+                  myFile["Close"]();
+              }
+              else
+              {
+                Log["Error"]("Failed to create file");
+                Log["PopLogFolder"]();
+                return false;
+              }
+          }
+          else
+          {
+                Log["Error"]("Failed to delete existing file");
+                Log["PopLogFolder"]();
+                return false;
+          }
+          
+          Log["Checkpoint"]("Successfully copied barcodes to desired location");
+          Log["PopLogFolder"]();
+          return true;
+  }
+  catch(exp)
+  {
+		Log["Error"](exp.description) ; 
+		Log["PopLogFolder"]();
+		return false;
+  }
+}
+
+
+
+//**************************************************************
+//Description:  This function is used to Open/Close Reagent Door.
+//Author - Muru
+//Parameters :1) Reagent Type 2) Action- Open/Close
+//****************************************************************
+function ReagentDoor(RgtType,Action)//Action : 1)Open 2)Close; RgtType: 1) IMPrimary 2)IMAncillary 3)CH 
+{
+  try
+  {
+    //Open Log
+    Log["AppendFolder"](Action+ " Reagent Loader Door for "+RgtType)   
+      
+    //Create Simulation Folder  
+    if(!aqFileSystem["Exists"](SimulationPath))
+    {
+      if(aqFileSystem["CreateFolder"](SimulationPath) !=0)
+      {
+        Log["Error"]("Unable to create folder "+SimulationPath)
+        ReportTestStatusToResultXML("RoundTripWorkflow", "Open_RGTDoor", "F");
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        Log["Message"]("Created Simulation folder")  
+      }          
+    } 
+  
+    //commented by shrutika since AnalyticalDoorStatus.txt is not needed in reagent loading- 12-Nov-2019
+    // added below switch case since AnalyticalDoorStatus.txt is not needed in reagent loading -by shrutika -12-Nov-2019
+    switch(RgtType)
+    {
+      case "Left Tray":
+      case "Right Tray":
+        //Create a new AnalyticalDoorStatus.txt in simulation folder
+        Log["Message"]("Creating a new Analytical Door status File ");
+        if (aqFile["Exists"](SimulationPath+"\\AnalyticalDoorStatus.txt")) 
+         { aqFile["Delete"](SimulationPath+"\\AnalyticalDoorStatus.txt");}
+        aqFile["Create"](SimulationPath+"\\AnalyticalDoorStatus.txt");  
+        
+      break;
+    }    
+    
+                 
+    //Create a new SensorStateChange.txt in simulation folder
+    Log["Message"]("Creating a new Sensor status File ");
+    if (aqFile["Exists"](SimulationPath+"\\SensorStateChange.txt")) 
+     { aqFile["Delete"](SimulationPath+"\\SensorStateChange.txt");}
+    aqFile["Create"](SimulationPath+"\\SensorStateChange.txt");       
+      
+
+    switch(RgtType)
+    {
+      case "IMPrimary":
+       
+        if (Action == "Open")
+        { // Replace the text for IM to 1 to open the door   [For command IMPrimaryReagentDoorOpen: 1 ->Open; 0-> close]
+          //aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 IMPrimaryReagentDoorOpen", aqFile["ctANSI"], true); //commented by shrutika
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 IMPrimaryReagentDoorOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML                
+          break;
+        }
+          
+        else if(Action == "Close")
+        { // Replace the text for IM to 0 to close the door   [For command IMPrimaryReagentDoorOpen: 1 ->Open; 0-> close]
+          //aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 IMPrimaryReagentDoorOpen", aqFile["ctANSI"], true); //commented by shrutika
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 IMPrimaryReagentDoorOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML                
+          break;
+        }
+          
+         
+      case "IMAncillary":   
+        
+        if (Action == "Open")    
+        { // Replace the text for IM to 1 to open the door   [For command IAAncillaryReagentDoor: 1 ->Open; 0-> close]
+          //aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 IMAncillaryReagentDoorOpen", aqFile["ctANSI"], true); //commented by shrutika
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 IMAncillaryReagentDoorOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }
+
+        else if (Action == "Close")    
+        { // Replace the text for IM to 0 to close the door   [For command IAAncillaryReagentDoor: 1 ->Open; 0-> close]
+          //aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 IMAncillaryReagentDoorOpen", aqFile["ctANSI"], true); //commented by shrutika
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 IMAncillaryReagentDoorOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }
+       
+      case "CH":
+     
+        if (Action == "Open") 
+        { // Replace the text for CH to 1 to open the door   [For command CHReagentLoaderDoorOpen: 1 ->Open; 0-> close]
+          //aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 CHReagentLoaderDoorOpen", aqFile["ctANSI"], true); //commented by shrutika
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 CHReagentLoaderDoorOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }  
+          
+        else if (Action == "Close") 
+        { // Replace the text for CC to 0 to close the door   [For command CHReagentLoaderDoorOpen: 1 ->Open; 0-> close]
+          //aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 CHReagentLoaderDoorOpen", aqFile["ctANSI"], true); //commented by shrutika
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 CHReagentLoaderDoorOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }
+    
+      case "Left Tray"://Added by Prabu
+     
+        if (Action == "Open")
+        {
+          aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 TipTrayLeftDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 TipTrayLeftDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        } 
+          
+        else if (Action == "Close") 
+        {
+          aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 TipTrayLeftDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 TipTrayLeftDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }
+       
+      case "Right Tray": //Added by Prabu
+     
+        if (Action == "Open")
+        {
+          aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 TipTrayRightDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 TipTrayRightDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }
+          
+        else if (Action == "Close")
+        {
+          aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 TipTrayRightDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 TipTrayRightDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break;
+        }          
+    } 
+    
+    // added below switch case since AnalyticalDoorStatus.txt is not needed in reagent loading -by shrutika -12-Nov-2019
+    switch(RgtType)
+    {
+      case "Left Tray":
+      case "Right Tray":
+        // Send Analytical door file to IOT
+        SendAnalyticalDoorTxt();
+        //aqUtils["Delay"](15000);
+        break;
+    }
+    
+    // Send Sensor state file to IOT
+    SendSensorStateTxt();
+    //aqUtils["Delay"](15000);
+           
+    Log["Checkpoint"]("Success- "+Action+ " Reagent Loader Door for "+RgtType);
+    Log["PopLogFolder"]();
+    return true;      
+  }
+  catch (exp)
+  {   
+    Log["Error"]("Exception :"+exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function SendAnalyticalDoorTxt()
+{
+  var Doorbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\Copyfilesin_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](Doorbat);
+}
+
+function SendPrimaryReagentTxt()
+{  
+  var Primaryreagentbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\CopyIAPR_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](Primaryreagentbat);
+}
+
+function SendCHReagentTxt()
+{
+  var CHreagentbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\CopyCHR_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](CHreagentbat);
+}
+
+function SendAncillaryReagentTxt()
+{  
+  var Ancillaryreagentbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\CopyIAA_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](Ancillaryreagentbat);
+}
+
+function SendSensorStateTxt() //Muru
+{
+  var Doorbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\CopySensorFile_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](Doorbat,1,true);
+}
+
+function LoadReagentForIMPrimary()
+{
+ try 
+ {
+    Log["AppendFolder"]("Load Reagents for IM Primary");
+   
+    //Copy IA primary barcode text file to simulation folder
+    aqFile["Copy"](IoTPath+"\\PrimaryBarcodes.txt",SimulationPath,false) 
+    Log["Checkpoint"]("Placing IM Primary Barcodes From TestData To Simulation");
+      
+    //Open Analytical door status and  Sensor State Change
+    ReagentDoor("IMPrimary","Open");
+    Log["Checkpoint"]("Placing Door Open Status From Simulation To IoT");
+    aqUtils["Delay"](10000,"Wait for the IM Primary door to open");
+  
+    // Send IM Primary reagent file to IOT
+    SendPrimaryReagentTxt();
+    Log["Checkpoint"]("Placing IM Primary Barcodes From Simulation To IoT");
+    aqUtils["Delay"](10000, "Wait for the primary barcodes file copied to IoT");
+
+    //Close Analytical door status and  Sensor State Change
+    ReagentDoor("IMPrimary","Close");
+    Log["Checkpoint"]("Placing Door Close Status From Simulation To IoT");
+    aqUtils["Delay"](10000,"Wait for the IM Primary door to close");
+    
+    Log["PopLogFolder"]();
+	  return true;
+  }
+  catch(exp) 
+  {
+    Log["Error"](exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function LoadReagentsForIMAncillary()
+{
+  try 
+  {
+    Log["AppendFolder"]("Load Reagents for IM Ancillary");
+   
+    //Copy IM ancillary barcode text file to simulation folder
+    aqFile["Copy"](IoTPath+"\\AncillaryBarcodes.txt",SimulationPath,false) 
+    Log["Checkpoint"]("Placing IM Ancillary Barcodes From TestData To Simulation");
+      
+    //Open Analytical door status and  Sensor State Change
+    ReagentDoor("IMAncillary","Open");
+    Log["Checkpoint"]("Placing Door Open Status From Simulation To IoT");
+    aqUtils["Delay"](10000,"Wait for the IM Ancillary door to open");
+  
+    // Send IM Ancillary reagent file to IOT
+    SendAncillaryReagentTxt();
+    Log["Checkpoint"]("Placing IM Ancillary Barcodes From Simulation To IoT");
+    aqUtils["Delay"](10000, "Wait for the ancillary barcodes file copied to IoT");
+
+    //Close Analytical door status and  Sensor State Change
+    ReagentDoor("IMAncillary","Close");
+    Log["Checkpoint"]("Placing Door Close Status From Simulation To IoT");
+    aqUtils["Delay"](10000,"Wait for the IM Ancillary door to close");
+    
+    Log["PopLogFolder"]();
+	  return true;
+  }
+  catch(exp) 
+  {
+    Log["Error"](exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function LoadReagentsForCH()
+{
+  try 
+  {
+    Log["AppendFolder"]("Load Reagents for CH");
+   
+    //Copy CC barcode text file to simulation folder
+    aqFile["Copy"](IoTPath+"\\CHInputBarcodes.txt",SimulationPath,false)
+    Log["Checkpoint"]("Placing CH Barcodes From TestData To Simulation");
+      
+    //Open Analytical door status and  Sensor State Change
+    ReagentDoor("CH","Open");
+    Log["Checkpoint"]("Placing Door Open Status From Simulation To IoT");
+    aqUtils["Delay"](10000,"Wait for the CH door to open");
+  
+    //Send CH reagent file to IOT
+    SendCHReagentTxt();
+    Log["Checkpoint"]("Placing CH Barcodes From Simulation To IoT");
+    aqUtils["Delay"](10000, "Wait for the CH barcodes file copied to IoT");
+
+    //Close Analytical door status and  Sensor State Change
+    ReagentDoor("CH","Close");
+    Log["Checkpoint"]("Placing Door Close Status From Simulation To IoT");
+    aqUtils["Delay"](10000,"Wait for the CH door to close");
+    
+    Log["PopLogFolder"]();
+	  return true;
+  }
+  catch(exp) 
+  {
+    Log["Error"](exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function OpenTipTray(trayName)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Inventory :: Performing Tray Open action for the Tray : '" + trayName + "'");
+    var actualTrayNme = "";
+    switch (trayName)
+    {
+      case "Tray1":
+      case "Left Tray":
+      case "Left Tip Tray":
+        actualTrayNme = "Left Tray";
+        break;
+      case "Tray2":
+      case "Right Tray":
+      case "Right Tip Tray":
+        actualTrayNme = "Right Tray";
+        break;
+    }
+
+    if(!ReagentDoor(actualTrayNme, "Open"))
+    {
+      Log["Error"]("Failed on open the '" + actualTrayNme + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CloseTipTray(trayName)
+{
+  try
+  {    
+    Log["AppendFolder"]("Inventory :: Performing Tray Close action for the Tray : '" + trayName + "'");
+    var actualTrayNme = "";
+    switch (trayName)
+    {
+      case "Tray1":
+      case "Left Tray":
+      case "Left Tip Tray":
+        actualTrayNme = "Left Tray";
+        break;
+      case "Tray2":
+      case "Right Tray":
+      case "Right Tip Tray":
+        actualTrayNme = "Right Tray";
+        break;
+    }
+
+    if(!ReagentDoor(actualTrayNme, "Close"))
+    {
+      Log["Error"]("Failed on close the '" + actualTrayNme + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//**************************************************************
+//Description:  This function is used to load empty barcodes to clear the position.
+//Author - Suresh
+//Parameters :1) Reagent Type 2) barcode postions to empty (List)
+//****************************************************************
+function ClearReagentPositions(ReagentType,barcodePostionsToEmpty)
+{
+  try
+  {
+    //var ReagentType = "IMPrimary";
+    
+    //var barcodePostionsToEmpty = [3];
+     
+    Log["AppendFolder"]("Clear reagent positons fo reagent: "+ReagentType)
+    
+    //Get existing barcodes for the reagent
+    var existingBarcodes = ReadExistingBarcodesFromLocalIOT(ReagentType)
+    
+    if(existingBarcodes === false)
+    {
+     Log["Error"]("Failed to read existing barcodes for reagent: "+ReagentType); 
+     Log["PopLogFolder"]();
+     return false;
+    }
+    
+    //Replace empty value on desired positions
+    for(i=0; i< barcodePostionsToEmpty.length; i++)
+    {
+      var indexToChange = barcodePostionsToEmpty[i];
+      existingBarcodes[indexToChange-1] = "";
+    }
+    
+    //Assign barcode positons based on reagent type
+    var barcodePositions = new Array();
+    var NoOfReagentsItCanHold = null;
+    
+    switch(ReagentType)
+    {
+      case "IMPrimary":
+        NoOfReagentsItCanHold = 20;
+        break;
+      case "IMAncillary":
+        NoOfReagentsItCanHold = 20;
+        break;
+      case "CH":
+        NoOfReagentsItCanHold = 4;
+        break;
+    }
+    
+    for(i=1;i<=NoOfReagentsItCanHold;i++)
+    {
+      barcodePositions.push(i);
+    }
+    
+    //Copy the re-assigned barcodes    
+    if(!CopyBarcodesAndLoadReagentsWithoutDiagnosticsSequences(ReagentType,existingBarcodes,barcodePositions))
+    {
+      Log["Error"]("Failed to copy replaced barcodes to IOT");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Message"]("Cleared barcode positions for the reagent: "+ReagentType);
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {    
+    Log["Error"](exp.description) ; 
+		Log["PopLogFolder"]();
+		return false;
+  }
+}
+
+function ReadExistingBarcodesFromLocalIOT(ReagentType)
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Read existing barcodes for"+ReagentType);
+    
+    //define file name and number of reagents it can hold at a time
+    if(ReagentType=="IMPrimary")
+    {
+      var sPath=IoTPath+"\\PrimaryBarcodes.txt";
+      var NoOfReagentsItCanHold = 20;  
+      Log["Message"]("Barcodes will be copied to PrimaryBarcodes.txt"); 
+    }
+    else if(ReagentType=="IMAncillary")
+    {
+      var sPath=IoTPath+"\\AncillaryBarcodes.txt";
+      var NoOfReagentsItCanHold = 20;
+      Log["Message"]("Barcodes will be copied to AncillaryBarcodes.txt");
+    }
+    else
+    {
+      var sPath=IoTPath+"\\CHInputBarcodes.txt";
+      var NoOfReagentsItCanHold = 4;
+      Log["Message"]("Barcodes will be copied to CHInputBarcodes.txt");
+    }
+    
+     if(aqFile["Exists"](sPath))
+     {
+       var myFile = aqFile["OpenTextFile"](sPath, aqFile["faReadWrite"], aqFile.ctANSI);
+       
+       var existingBarcodes = new Array();
+
+       for(var i=0;i<NoOfReagentsItCanHold;i++)
+       {
+         myFile["SetPosition"](i, 0);
+         existingBarcodes.push(myFile["ReadLine"]());
+       }
+       
+       myFile["Close"]();
+       Log["Message"]("Read all existing barcodes");
+       
+     }
+     else
+     {
+       Log["Error"]("File doesn't exist in path: "+sPath);
+       Log["PopLogFolder"]();
+       return false;
+     }
+    
+    Log["PopLogFolder"]();
+    return existingBarcodes;  
+  }
+  catch(exp)
+  {
+    Log["Error"](exp.description) ; 
+		Log["PopLogFolder"]();
+		return false;
+  }
+}
+
+function CopyBarcodesAndLoadCHReagentsDirectlyToCHCompartment(barcodes,barcodePositions)//ReagentType : CH
+{
+ try
+  {
+    Log["AppendFolder"]("Inventory :: Copy barcodes to IoT path and load CH reagents directly to CH Compartment");
+    
+    var isReagentLoaded = false;
+    
+    //Copy Barcode at specified position in barcode text file at testdata folder      
+    if(!CopyCHBarcodesDirectlyToCHCompartmentAtSpecifiedPosition(barcodes,barcodePositions))
+    {
+      Log["Error"]("Failed on copying barcode to the file");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //if(LoadReagentsForCH())
+    //Copy CC barcode text file to simulation folder
+    aqFile["Copy"](IoTPath+"\\CHRingbarcodes.txt",SimulationPath,false)
+    Log["Checkpoint"]("Placing CH Barcodes From TestData To Simulation");
+  
+    //Send CH reagent file to IOT
+    SendCHReagentsDirectlyToCHCompartment();
+    Log["Checkpoint"]("Placing CH Barcodes From Simulation To IoT");
+    aqUtils["Delay"](10000, "Wait for the CH barcodes file copied to IoT");
+    
+    isReagentLoaded = true;
+    
+    //Check the reagent load is completed
+    if(isReagentLoaded)
+    {
+      Log["CheckPoint"]("Reagents barcode files are successfully copied to IoT");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to copy the barcode files to IoT to load the reagent");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CopyCHBarcodesDirectlyToCHCompartmentAtSpecifiedPosition(Barcode,Position)
+{
+  try
+  {
+       Log["AppendFolder"]("Copy CH Reagent Barcodes To CHRingbarcodes text file");
+           
+       //Initialize variables
+       var arrBarcode = new Array();
+       var arrPosition = 0;
+          
+  
+        var sPath=IoTPath+"\\CHRingbarcodes.txt";
+        var NoOfReagentsItCanHold = 70;
+        Log["Message"]("Barcodes will be copied to CHRingbarcodes.txt");
+  
+          //barcode details in new array with its position 
+          if(Position["length"] >= 1) 
+          {
+              for(count=0;count<Position["length"];count++)
+              {
+                arrPosition = Position[count];     
+                arrBarcode[arrPosition-1]=Barcode[count];     
+              }         
+          }
+          else
+          { 
+              //for only one barcode
+              arrBarcode[Position-1]=Barcode;             
+          }
+  
+          //delete file
+          if(aqFileSystem["DeleteFile"](sPath) == true)
+          {   
+              //create file
+              if(aqFile.Create(sPath)==0)
+              {
+                  // Opens the created file for writing 
+                  var myFile = aqFile["OpenTextFile"](sPath, aqFile.faWrite, aqFile.ctANSI);
+      
+                  for (var i = 0; i < NoOfReagentsItCanHold; i++)
+                  {
+                    //set position
+                    myFile["SetPosition"](i, 1);
+    
+                    //copy barcode at the specific line
+                    if(arrBarcode[i]==null)
+                    {
+                        myFile["WriteLine"]("");
+                        //Log["Message"]("No barcode added at position : "+(i+1));
+                    }
+                    else
+                    {    
+                        myFile["WriteLine"](arrBarcode[i]);
+                        Log["Message"](arrBarcode[i]+" added at position : "+(i+1));
+                    }
+                  } 
+                  // Closes the file 
+                  myFile["Close"]();
+              }
+              else
+              {
+                Log["Error"]("Failed to create file");
+                Log["PopLogFolder"]();
+                return false;
+              }
+          }
+          else
+          {
+                Log["Error"]("Failed to delete existing file");
+                Log["PopLogFolder"]();
+                return false;
+          }
+          
+          Log["Checkpoint"]("Successfully copied barcodes to desired location");
+          Log["PopLogFolder"]();
+          return true;
+  }
+  catch(exp)
+  {
+		Log["Error"](exp.description) ; 
+		Log["PopLogFolder"]();
+		return false;
+  }
+}
+
+function SendCHReagentsDirectlyToCHCompartment()
+{
+  var CHreagentbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\CopyCHR_Compartment_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](CHreagentbat);
+}

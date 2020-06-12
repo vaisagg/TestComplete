@@ -1,0 +1,1121 @@
+﻿//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispRegressionFeatureSteps
+
+//******************************************************************************
+//                              CI Pipeline
+//******************************************************************************
+function RegressionScenarios()
+{
+  try
+  {
+    //Initialize Metadata
+    Log["AppendFolder"]("Initialize datafile and XML's")
+    InitializeMetaDataHYDRA();
+    Log["PopLogFolder"]();
+    
+    //Batch Orders
+    Regression_BatchOrders();
+	
+    //Calibration
+    Regression_Calibration();
+    
+    //Dashboard Tiles Update
+    Regression_DashboardTilesUpdate();
+	
+    //Event Log
+    Regression_EventLog();
+	
+    //Maintenance
+    Regression_Maintenance();
+	
+    //Operator Diagnostics
+    Regression_OperatorDiagnostics();
+    
+    //Patient Orders
+    Regression_PatientOrders();
+	
+    //Run ID Settings
+    Regression_RunIDSettings();
+	
+    //Sample List
+    Regression_SampleList();
+	
+    //Supply Needs
+    Regression_SupplyNeeds();
+	
+    //System Health Check
+    Regression_SystemHealthCheck();
+	
+    //Worklist
+    Regression_Worklist();
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;  
+  }
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                            Regression Scenario
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/  
+
+function Regression_BatchOrders()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Batch Orders");
+      
+      
+      //-------------------Batch Order by Sample ID-----------------------------
+      Log["AppendFolder"]("Batch Orders :: Batch Order by Sample ID");
+      
+      ReportTestStatusToResultXML("Regression", "BatchOrders_BySampleID", "I");
+      
+      if(!BatchOrderBySID())
+      {
+        Log["Error"]("Batch Order by Sample ID :: Failed");
+        ReportTestStatusToResultXML("Regression", "BatchOrders_BySampleID", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Batch Order by Sample ID :: Pass");
+		    ReportTestStatusToResultXML("Regression", "BatchOrders_BySampleID", "P");
+        Log["PopLogFolder"]();  
+      }
+      
+      
+      //-------------------Batch Order by Rack ID--------------------------------
+      Log["AppendFolder"]("Batch Orders :: Batch Order by Rack ID");
+      
+      ReportTestStatusToResultXML("Regression", "BatchOrders_ByRackID", "I");
+      
+      if(!BatchOrderByRackID())
+      {
+        Log["Error"]("Batch Order by Rack ID :: Failed");
+        ReportTestStatusToResultXML("Regression", "BatchOrders_ByRackID", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Batch Order by Rack ID :: Pass");
+		    ReportTestStatusToResultXML("Regression", "BatchOrders_ByRackID", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_Calibration()
+{
+  try
+  {       
+      Log["AppendFolder"]("Regression :: Calibration");
+      
+      
+      //----------------------Add IM Calibration Definition------------------------
+      Log["AppendFolder"]("Calibration :: Add IM Calibration Definition");
+      
+      ReportTestStatusToResultXML("Regression", "Calibration_AddIMCalibrationDefinition", "I");
+      
+      if(!Calibration_AddIMCalibrationDefinition())
+      {
+        Log["Error"]("Add calibration definition :: Failed");
+        ReportTestStatusToResultXML("Regression", "Calibration_AddIMCalibrationDefinition", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Add calibration definition :: Pass");
+        ReportTestStatusToResultXML("Regression", "Calibration_AddIMCalibrationDefinition", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //----------------------Delete IM Calibration Definition------------------
+      Log["AppendFolder"]("Calibration :: Delete IM Calibration Definition");
+      
+      ReportTestStatusToResultXML("Regression", "Calibration_DeleteIMCalibrationDefinition", "I");
+      
+      if(!Calibration_DeleteIMCalibrationDefinition())
+      {
+        Log["Error"]("Delete IM calibration definition :: Failed");
+        ReportTestStatusToResultXML("Regression", "Calibration_DeleteIMCalibrationDefinition", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Delete IM calibration definition :: Pass");
+        ReportTestStatusToResultXML("Regression", "Calibration_DeleteIMCalibrationDefinition", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //----------------------View IM Calibration Definition--------------------
+      Log["AppendFolder"]("Calibration :: View IM Calibration Definition");
+      
+      ReportTestStatusToResultXML("Regression", "Calibration_ViewIMCalibrationDefinition", "I");
+      
+      if(!Calibration_ViewIMCalibrationDefinition())
+      {
+        Log["Error"]("View IM calibration definition :: Failed");
+        ReportTestStatusToResultXML("Regression", "Calibration_ViewIMCalibrationDefinition", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("View IM calibration definition :: Pass");
+        ReportTestStatusToResultXML("Regression", "Calibration_ViewIMCalibrationDefinition", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //----------------------Update IM Calibration Definition------------------
+      Log["AppendFolder"]("Calibration :: Update IM Calibration Definition");
+      
+      ReportTestStatusToResultXML("Regression", "Calibration_UpdateIMCalibrationDefinition", "I");
+      
+      if(!Calibration_UpdateIMCalibrationDefinition())
+      {
+        Log["Error"]("Update IM calibration definition :: Failed");
+        ReportTestStatusToResultXML("Regression", "Calibration_UpdateIMCalibrationDefinition", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Update IM calibration definition :: Pass");
+        ReportTestStatusToResultXML("Regression", "Calibration_UpdateIMCalibrationDefinition", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function Regression_DashboardTilesUpdate()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Dashboard Tiles Updates");
+      
+	  
+      //---------------STAT batch order by sample id with reagents--------------
+      Log["AppendFolder"]("Dashboard Tile Update :: STAT batch order by sample id with reagents");
+	  
+      ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySampleIdWithReagents", "I");
+	  
+      if(!Dashboard_STATBatchOrderBySampleIdWithReagents())
+      {
+        Log["Error"]("STAT batch order by sample id with reagents :: Failed");
+        ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySampleIdWithReagents", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("STAT batch order by sample id with reagents :: Pass");
+        ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySampleIdWithReagents", "P");
+        Log["PopLogFolder"]();  
+      }
+      
+	  
+      //------------STAT batch order by sample id with no reagents--------------
+      Log["AppendFolder"]("Dashboard Tile Update :: STAT batch order by sample id with no reagent onboarded");
+	  
+      ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySampleIdWithNoReagent", "I");
+	  
+      if(!Dashboard_STATBatchOrderBySampleIdWithNoReagent())
+      {
+        Log["Error"]("STAT batch order by sample id with no reagents :: Failed");
+        ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySampleIdWithNoReagent", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("STAT batch order by sample id with no reagents :: Pass");
+        ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySampleIdWithNoReagent", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+       //--------STAT Batch Order By SampleId With No Reagent Tile Count-----------
+      Log["AppendFolder"]("Dashboard Tile Update :: STAT Batch Order By SampleId With No Reagent Tile Count");
+	  
+      ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySIDWithNoReagentTileCount", "I");
+	  
+      if(!Dashboard_STATBatchOrderBySIDWithNoReagentTileCount())
+      {
+        Log["Error"]("STAT Batch Order By SampleId With No Reagent Tile Count :: Failed");
+        ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySIDWithNoReagentTileCount", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("STAT Batch Order By SampleId With No Reagent Tile Count :: Pass");
+        ReportTestStatusToResultXML("Regression", "Dashboard_STATBatchOrderBySIDWithNoReagentTileCount", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //-----------Routine Batch Order By Sample Id with No Reagents Onboarded----------
+      Log["AppendFolder"]("Dashboard Tile Update :: Routine Batch Order By Sample Id with No Reagents Onboarded");
+	  
+      ReportTestStatusToResultXML("Regression", "Dashboard_RoutineBatchOrderBySIDWithNoReagentsOnboarded", "I");
+	  
+      if(!Dashboard_RoutineBatchOrderBySIDWithNoReagentsOnboarded())
+      {
+        Log["Error"]("Routine Batch Order By Sample Id with No Reagents Onboarded :: Failed");
+        ReportTestStatusToResultXML("Regression", "Dashboard_RoutineBatchOrderBySIDWithNoReagentsOnboarded", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Routine Batch Order By Sample Id with No Reagents Onboarded :: Pass");
+        ReportTestStatusToResultXML("Regression", "Dashboard_RoutineBatchOrderBySIDWithNoReagentsOnboarded", "P");
+        Log["PopLogFolder"]();
+      }	  
+      
+      
+      //------------Routine Batch Order By SampleId With No Reagent Tile Count--------
+      Log["AppendFolder"]("Dashboard Tile Update :: Routine Batch Order By SampleId With No Reagent Tile Count");
+	  
+      ReportTestStatusToResultXML("Regression", "Dashboard_RoutineBatchOrderBySIDWithNoReagentTileCount", "I");
+	  
+      if(!Dashboard_RoutineBatchOrderBySIDWithNoReagentTileCount())
+      {
+        Log["Error"]("Routine Batch Order By SampleId With No Reagent Tile Count :: Failed");
+        ReportTestStatusToResultXML("Regression", "Dashboard_RoutineBatchOrderBySIDWithNoReagentTileCount", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Routine Batch Order By SampleId With No Reagent Tile Count :: Pass");
+        ReportTestStatusToResultXML("Regression", "Dashboard_RoutineBatchOrderBySIDWithNoReagentTileCount", "P");
+        Log["PopLogFolder"]();
+      }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function Regression_EventLog()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Event Log");
+      
+      
+      //---------------------------Login Message--------------------------------
+      Log["AppendFolder"]("Event Log :: Login Message");
+      
+      ReportTestStatusToResultXML("Regression", "EventLog_LoginMessage", "I");
+      
+      if(!EventLog_LoginMessage())
+      {
+        Log["Error"]("Event Log - Login Message :: Failed");
+        ReportTestStatusToResultXML("Regression", "EventLog_LoginMessage", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Event Log - Login Message :: Pass");
+        ReportTestStatusToResultXML("Regression", "EventLog_LoginMessage", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------------Maintenance Message----------------------------
+      Log["AppendFolder"]("Event Log :: Maintenance Message");
+      
+      ReportTestStatusToResultXML("Regression", "EventLog_MaintenanceMessage", "I");
+      
+      if(!EventLog_MaintenanceMessage())
+      {
+        Log["Error"]("Event Log - Maintenance Message :: Failed");
+        ReportTestStatusToResultXML("Regression", "EventLog_MaintenanceMessage", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Event Log - Maintenance Message :: Pass");
+        ReportTestStatusToResultXML("Regression", "EventLog_MaintenanceMessage", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------------Stop & Resume Hydra----------------------------
+      Log["AppendFolder"]("Event Log :: Stop & Resume Hydra");
+      
+      ReportTestStatusToResultXML("Regression", "EventLog_StopAndResumeHydra", "I");
+      
+      if(!EventLog_StopAndResumeHydra())
+      {
+        Log["Error"]("Event Log - Stop and Resume Hydra :: Failed");
+        ReportTestStatusToResultXML("Regression", "EventLog_StopAndResumeHydra", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Event Log - Stop and Resume Hydra :: Pass");
+        ReportTestStatusToResultXML("Regression", "EventLog_StopAndResumeHydra", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------------Pause & Resume Hydra----------------------------
+      Log["AppendFolder"]("Event Log :: Pause & Resume Hydra");
+      
+      ReportTestStatusToResultXML("Regression", "EventLog_PauseAndResumeHydra", "I");
+      
+      if(!EventLog_PauseAndResumeHydra())
+      {
+        Log["Error"]("Event Log - Pause and Resume Hydra :: Failed");
+        ReportTestStatusToResultXML("Regression", "EventLog_PauseAndResumeHydra", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Event Log - Pause and Resume Hydra :: Pass");
+        ReportTestStatusToResultXML("Regression", "EventLog_PauseAndResumeHydra", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------------Stop & Resume DL-------------------------------
+      Log["AppendFolder"]("Event Log :: Stop & Resume DL");
+      
+      ReportTestStatusToResultXML("Regression", "EventLog_StopAndResumeDL", "I");
+      
+      if(!EventLog_StopAndResumeDL())
+      {
+        Log["Error"]("Event Log - Stop and Resume DL :: Failed");
+        ReportTestStatusToResultXML("Regression", "EventLog_StopAndResumeDL", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Event Log - Stop and Resume DL :: Pass");
+        ReportTestStatusToResultXML("Regression", "EventLog_StopAndResumeDL", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------------Pause & Resume DL------------------------------
+      Log["AppendFolder"]("Event Log :: Pause & Resume DL");
+      
+      ReportTestStatusToResultXML("Regression", "EventLog_PauseAndResumeDL", "I");
+      
+      if(!EventLog_PauseAndResumeDL())
+      {
+        Log["Error"]("Operator Event Log - Pause and Resume DL :: Failed");
+        ReportTestStatusToResultXML("Regression", "EventLog_PauseAndResumeDL", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Event Log - Pause and Resume DL :: Pass");
+        ReportTestStatusToResultXML("Regression", "EventLog_PauseAndResumeDL", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_Maintenance()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Maintenance");
+      
+      
+      //--------------------Verify Current Date and Activities------------------
+      Log["AppendFolder"]("Maintenance :: Verify Current Date and Activities");
+      
+      ReportTestStatusToResultXML("Regression", "Maintenance_VerifyCurrentDateAndActivities", "I");
+      
+      if(!Maintenance_VerifyCurrentDateAndActivities())
+      {
+        Log["Error"]("Verify Current Date and Activities :: Failed");
+        ReportTestStatusToResultXML("Regression", "Maintenance_VerifyCurrentDateAndActivities", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Verify Current Date and Activities :: Pass");
+        ReportTestStatusToResultXML("Regression", "Maintenance_VerifyCurrentDateAndActivities", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //--------------------Maintenance Activity Details------------------------
+      Log["AppendFolder"]("Maintenance :: Activity Details");
+      
+      ReportTestStatusToResultXML("Regression", "Maintenance_ActivityDetails", "I");
+      
+      if(!Maintenance_ActivityDetails())
+      {
+        Log["Error"]("Maintenance Activity Details :: Failed");
+        ReportTestStatusToResultXML("Regression", "Maintenance_ActivityDetails", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Maintenance Activity Details :: Pass");
+        ReportTestStatusToResultXML("Regression", "Maintenance_ActivityDetails", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //------------------------Perform Action----------------------------------
+      Log["AppendFolder"]("Maintenance :: Perform Action");
+      
+      ReportTestStatusToResultXML("Regression", "Maintenance_PerformAction", "I");
+      
+      if(!Maintenance_PerformAction())
+      {
+        Log["Error"]("Maintenance Perform Action :: Failed");
+        ReportTestStatusToResultXML("Regression", "Maintenance_PerformAction", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Maintenance Perform Action :: Pass");
+        ReportTestStatusToResultXML("Regression", "Maintenance_PerformAction", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------Not Perform Action Without Comments------------------
+      Log["AppendFolder"]("Maintenance :: Not Perform Action Without Comments");
+      
+      ReportTestStatusToResultXML("Regression", "Maintenance_NotPerformActionWithoutComments", "I");
+      
+      if(!Maintenance_NotPerformActionWithoutComments())
+      {
+        Log["Error"]("Not Perform Action Without Comments :: Failed");
+        ReportTestStatusToResultXML("Regression", "Maintenance_NotPerformActionWithoutComments", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Not Perform Action Without Comments :: Pass");
+        ReportTestStatusToResultXML("Regression", "Maintenance_NotPerformActionWithoutComments", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //-------------------Not Perform Action With Comments---------------------
+      Log["AppendFolder"]("Maintenance :: Not Perform Action With Comments");
+      
+      ReportTestStatusToResultXML("Regression", "Maintenance_NotPerformActionWithComments", "I");
+      
+      if(!Maintenance_NotPerformActionWithComments())
+      {
+        Log["Error"]("Not Perform Action With Comments :: Failed");
+        ReportTestStatusToResultXML("Regression", "Maintenance_NotPerformActionWithComments", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Not Perform Action With Comments :: Pass");
+        ReportTestStatusToResultXML("Regression", "Maintenance_NotPerformActionWithComments", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      Log["PopLogFolder"](); 
+  }
+
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_OperatorDiagnostics()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Operator Diagnostics");
+      
+      
+      //--------------------Perform Diagnostic Activity for IM------------------
+      Log["AppendFolder"]("Operator Diagnostics :: Perform Diagnostic Activity for IM");
+      
+      ReportTestStatusToResultXML("Regression", "OperatorDiagnostics_PerformDiagnosticActivityForIM", "I");
+      
+      if(!OperatorDiagnostics_PerformDiagnosticActivityForIM())
+      {
+        Log["Error"]("Perform Diagnostic Activity for IM :: Failed");
+        ReportTestStatusToResultXML("Regression", "OperatorDiagnostics_PerformDiagnosticActivityForIM", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Perform Diagnostic Activity for IM :: Pass");
+        ReportTestStatusToResultXML("Regression", "OperatorDiagnostics_PerformDiagnosticActivityForIM", "P");
+        Log["PopLogFolder"](); 
+      }
+   
+   
+      Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_PatientOrders()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Patient Orders");
+      
+      //-------------------Patient Orders for IM--------------------------------
+      Log["AppendFolder"]("Patient Orders :: Patient Orders for IM");
+      
+      ReportTestStatusToResultXML("Regression", "PatientOrders_IM", "I");
+      
+      if(!PatientOrderForIM())
+      {
+        Log["Error"]("Create patient order for IM :: Failed");
+        ReportTestStatusToResultXML("Regression", "PatientOrders_IM", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Create patient order for IM :: Pass");
+		    ReportTestStatusToResultXML("Regression", "PatientOrders_IM", "P");
+        Log["PopLogFolder"]();  
+      }
+      
+      
+      //-------------------Patient Orders for CH--------------------------------
+      Log["AppendFolder"]("Patient Orders :: Patient Orders for CH");
+      
+      ReportTestStatusToResultXML("Regression", "PatientOrders_CH", "I");
+      
+      if(!PatientOrderForCH())
+      {
+        Log["Error"]("Create patient order for CH :: Failed");
+        ReportTestStatusToResultXML("Regression", "PatientOrders_CH", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Create patient order for CH :: Pass");
+		    ReportTestStatusToResultXML("Regression", "PatientOrders_CH", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function Regression_RunIDSettings()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Run ID Settings");
+      
+      
+      //------------------------Batch Order By Sample ID------------------------
+      Log["AppendFolder"]("Run ID Settings :: Batch Order By Sample ID with Run ID");
+      
+      ReportTestStatusToResultXML("Regression", "RunIDSettings_BatchOrderBySampleIDWithRunID", "I");
+      
+      if(!RunIDSettings_BatchOrderBySampleIDWithRunID())
+      {
+        Log["Error"]("Batch Order By Sample ID with Run ID :: Failed");
+        ReportTestStatusToResultXML("Regression", "RunIDSettings_BatchOrderBySampleIDWithRunID", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Batch Order By Sample ID with Run ID :: Pass");
+        ReportTestStatusToResultXML("Regression", "RunIDSettings_BatchOrderBySampleIDWithRunID", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //------------------------Batch Order By Rack ID------------------------
+      Log["AppendFolder"]("Run ID Settings :: Batch Order By Rack ID with Run ID");
+      
+      ReportTestStatusToResultXML("Regression", "RunIDSettings_BatchOrderByRackIDWithRunID", "I");
+      
+      if(!RunIDSettings_BatchOrderByRackIDWithRunID())
+      {
+        Log["Error"]("Batch Order By Rack ID with Run ID :: Failed");
+        ReportTestStatusToResultXML("Regression", "RunIDSettings_BatchOrderByRackIDWithRunID", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Batch Order By Rack ID with Run ID :: Pass");
+        ReportTestStatusToResultXML("Regression", "RunIDSettings_BatchOrderByRackIDWithRunID", "P");
+        Log["PopLogFolder"](); 
+      }
+   
+   
+      Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_SampleList()
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Regression :: Sample List");
+    
+    
+    //-------------------Sample List Verification-------------------------------
+    Log["AppendFolder"]("Sample List :: Sample List Verification");
+    
+    ReportTestStatusToResultXML("Regression", "SampleList_Verification", "I");
+    
+    if(!SampleListDetailsVerification())
+    {
+      Log["Error"]("Sample List Verification :: Failed");
+      ReportTestStatusToResultXML("Regression", "SampleList_Verification", "F");
+      Log["PopLogFolder"]();
+    }
+    else
+    {
+      Log["Checkpoint"]("Sample List Verification :: Pass");
+	    ReportTestStatusToResultXML("Regression", "SampleList_Verification", "P");
+      Log["PopLogFolder"](); 
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_SupplyNeeds()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Supply Needs");
+	  
+	  
+	  //------------------------Replace IM Supplies------------------------
+      Log["AppendFolder"]("Supply Needs :: Replace IM Supplies");
+      
+      ReportTestStatusToResultXML("Regression", "SupplyNeeds_ReplaceIMSupplies", "I");
+      
+      if(!SupplyNeeds_ReplaceIMSupplies())
+      {
+        Log["Error"]("Replace IM Supplies :: Failed");
+        ReportTestStatusToResultXML("Regression", "SupplyNeeds_ReplaceIMSupplies", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Replace IM Supplies :: Pass");
+        ReportTestStatusToResultXML("Regression", "SupplyNeeds_ReplaceIMSupplies", "P");
+        Log["PopLogFolder"](); 
+      }
+      
+      
+      //------------------------Replace CH Supplies------------------------
+      Log["AppendFolder"]("Supply Needs :: Replace CH Supplies");
+      
+      ReportTestStatusToResultXML("Regression", "SupplyNeeds_ReplaceCHSupplies", "I");
+      
+      if(!SupplyNeeds_ReplaceCHSupplies())
+      {
+        Log["Error"]("Replace CH Supplies :: Failed");
+        ReportTestStatusToResultXML("Regression", "SupplyNeeds_ReplaceCHSupplies", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Replace CH Supplies :: Pass");
+        ReportTestStatusToResultXML("Regression", "SupplyNeeds_ReplaceCHSupplies", "P");
+        Log["PopLogFolder"](); 
+      }
+	  
+	  
+	  //------------------------Tip Supply Verification------------------------
+      Log["AppendFolder"]("Supply Needs :: Tip Supply Verification");
+      
+      ReportTestStatusToResultXML("Regression", "SupplyNeeds_TipSupplyVerification", "I");
+      
+      if(!SupplyNeeds_TipSupplyVerification())
+      {
+        Log["Error"]("Tip Supply Verification :: Failed");
+        ReportTestStatusToResultXML("Regression", "SupplyNeeds_TipSupplyVerification", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Tip Supply Verification :: Pass");
+        ReportTestStatusToResultXML("Regression", "SupplyNeeds_TipSupplyVerification", "P");
+        Log["PopLogFolder"](); 
+      }
+	  
+	  
+	  Log["PopLogFolder"](); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+function Regression_SystemHealthCheck()
+{
+  try
+  {       
+      Log["AppendFolder"]("Regression :: System Health Check");
+      
+      
+      //------------------------Stop & Resume DL--------------------------------
+      Log["AppendFolder"]("System Health Check :: Stop & Resume DL");
+      
+      ReportTestStatusToResultXML("Regression", "SystemHealthCheck_StopResumeDL", "I");
+      
+      if(!SystemHealthCheck_StopAndResume_DL())
+      {
+        Log["Error"]("Stop & Resume DL :: Failed");
+        ReportTestStatusToResultXML("Regression", "SystemHealthCheck_StopResumeDL", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Stop & Resume DL :: Pass");
+		    ReportTestStatusToResultXML("Regression", "SystemHealthCheck_StopResumeDL", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //------------------------Pause & Resume DL-------------------------------
+      Log["AppendFolder"]("System Health Check :: Pause & Resume DL");
+      
+      ReportTestStatusToResultXML("Regression", "SystemHealthCheck_PauseResumeDL", "I");
+      
+      if(!SystemHealthCheck_PauseAndResume_DL())
+      {
+        Log["Error"]("Pause & Resume DL :: Failed");
+        ReportTestStatusToResultXML("Regression", "SystemHealthCheck_PauseResumeDL", "F");
+        Log["PopLogFolder"](); 
+      }
+      else
+      {
+        Log["Checkpoint"]("Pause & Resume DL :: Pass");
+		    ReportTestStatusToResultXML("Regression", "SystemHealthCheck_PauseResumeDL", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //------------------------Stop & Resume Hydra-----------------------------
+      Log["AppendFolder"]("System Health Check :: Stop & Resume HYDRA");
+      
+      ReportTestStatusToResultXML("Regression", "SystemHealthCheck_StopResumeHydra", "I");
+      
+      if(!SystemHealthCheck_StopAndResume_HYDRA())
+      {
+        Log["Error"]("Stop & Resume Hydra :: Failed");
+        ReportTestStatusToResultXML("Regression", "SystemHealthCheck_StopResumeHydra", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Stop & Resume Hydra :: Pass");
+		    ReportTestStatusToResultXML("Regression", "SystemHealthCheck_StopResumeHydra", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //------------------------Pause & Resume Hydra----------------------------
+      Log["AppendFolder"]("System Health Check :: Pause & Resume HYDRA");
+      
+      ReportTestStatusToResultXML("Regression", "SystemHealthCheck_PauseResumeHydra", "I");
+      
+      if(!SystemHealthCheck_PauseAndResume_HYDRA())
+       {
+        Log["Error"]("Pause & Resume Hydra :: Failed");
+        ReportTestStatusToResultXML("Regression", "SystemHealthCheck_PauseResumeHydra", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Pause & Resume Hydra :: Pass");
+		    ReportTestStatusToResultXML("Regression", "SystemHealthCheck_PauseResumeHydra", "P");
+        Log["PopLogFolder"]();  
+      }
+      
+      
+      //------------------------Load Sample Processing--------------------------
+      Log["AppendFolder"]("System Health Check :: Load Sample Processing");
+      
+      ReportTestStatusToResultXML("Regression", "SystemHealthCheck_LoadSampleProcessing", "I");
+      
+      if(!SystemHealthCheck_LoadSampleProcessing())
+       {
+        Log["Error"]("Load Sample Processing :: Failed");
+        ReportTestStatusToResultXML("Regression", "SystemHealthCheck_LoadSampleProcessing", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Load Sample Processing :: Pass");
+		    ReportTestStatusToResultXML("Regression", "SystemHealthCheck_LoadSampleProcessing", "P");
+        Log["PopLogFolder"]();  
+      }
+      
+      
+      //------------------------Deplete and Refill Supplies---------------------
+      Log["AppendFolder"]("System Health Check :: Deplete and Refill Supplies");
+      
+      ReportTestStatusToResultXML("Regression", "SystemHealthCheck_DepleteAndRefillSupplies", "I");
+      
+      if(!SystemHealthCheck_DepleteAndRefillSupplies())
+       {
+        Log["Error"]("Deplete and refill supplies :: Failed");
+        ReportTestStatusToResultXML("Regression", "SystemHealthCheck_DepleteAndRefillSupplies", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Deplete and refill supplies :: Pass");
+		    ReportTestStatusToResultXML("Regression", "SystemHealthCheck_DepleteAndRefillSupplies", "P");
+        Log["PopLogFolder"]();  
+      }
+      
+      Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function Regression_Worklist()
+{
+  try
+  {
+      Log["AppendFolder"]("Regression :: Worklist");
+    
+      
+      //-------------------Move To Historical by SID------------------------------
+      Log["AppendFolder"]("Worklist :: Move To Historical by SID");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_MoveToHistoricalBySID", "I");
+    
+      if(!Worklist_MoveToHistoricalBySID())
+      {
+        Log["Error"]("Move to Historical by SID :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_MoveToHistoricalBySID", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Move to Historical by SID :: Pass");
+		ReportTestStatusToResultXML("Regression", "Worklist_MoveToHistoricalBySID", "P");
+        Log["PopLogFolder"](); 
+      }
+    
+      
+      //-----------------------Delete Order by SID--------------------------------
+      Log["AppendFolder"]("Worklist :: Delete Order by SID");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_DeleteOrderBySID", "I");
+    
+      if(!Worklist_DeleteOrderBySID())
+      {
+        Log["Error"]("Delete Order by SID :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_DeleteOrderBySID", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Delete order by SID :: Pass");
+		ReportTestStatusToResultXML("Regression", "Worklist_DeleteOrderBySID", "P");
+        Log["PopLogFolder"]();
+      }
+    
+    
+      //-------------------Verify Patient Sample Details--------------------------
+      Log["AppendFolder"]("Worklist :: Verify Patient Sample Details");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_PatientSampleDetails", "I");
+    
+      if(!Worklist_PatientSampleDetails())
+      {
+        Log["Error"]("Verify Patient Sample Details :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_PatientSampleDetails", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Verify Patient Sample Details :: Pass");
+        ReportTestStatusToResultXML("Regression", "Worklist_PatientSampleDetails", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //-------------------Add Test to Existing Order---------------------------
+      Log["AppendFolder"]("Worklist :: Add Test to Existing Order");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_AddTestToExistingOrder", "I");
+    
+      if(!Worklist_AddTestToExistingOrder())
+      {
+        Log["Error"]("Add Test to Existing Order :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_AddTestToExistingOrder", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Add Test to Existing Order :: Pass");
+        ReportTestStatusToResultXML("Regression", "Worklist_AddTestToExistingOrder", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //-------------------Add Comments to processed order----------------------
+      Log["AppendFolder"]("Worklist :: Add Comments to processed order");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_AddCommentsToProcessedOrder", "I");
+    
+      if(!Worklist_AddCommentsToProcessedOrder())
+      {
+        Log["Error"]("Add Comments to processed order :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_AddCommentsToProcessedOrder", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Add Comments to processed order :: Pass");
+        ReportTestStatusToResultXML("Regression", "Worklist_AddCommentsToProcessedOrder", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //--------------------------Import Worklist-------------------------------
+      Log["AppendFolder"]("Worklist :: Import worklist");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklist", "I");
+    
+      if(!Worklist_ImportWorklist())
+      {
+        Log["Error"]("Import worklist :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklist", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Import worklist :: Pass");
+        ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklist", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //--------------------------Import Worklist Duplicate---------------------
+      Log["AppendFolder"]("Worklist :: Import worklist Duplicate");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklistDuplicate", "I");
+    
+      if(!Worklist_ImportWorklistDuplicate())
+      {
+        Log["Error"]("Import worklist Duplicate :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklistDuplicate", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Import worklist Duplicate :: Pass");
+        ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklistDuplicate", "P");
+        Log["PopLogFolder"]();
+      }
+      
+      
+      //------------------------Import Worklist With Run ID---------------------
+      Log["AppendFolder"]("Worklist :: Import worklist With Run ID");
+    
+      ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklistWithRunID", "I");
+    
+      if(!Worklist_ImportWorklistWithRunID())
+      {
+        Log["Error"]("Import worklist With Run ID :: Failed");
+        ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklistWithRunID", "F");
+        Log["PopLogFolder"]();
+      }
+      else
+      {
+        Log["Checkpoint"]("Import worklist With Run ID :: Pass");
+        ReportTestStatusToResultXML("Regression", "Worklist_ImportWorklistWithRunID", "P");
+        Log["PopLogFolder"]();
+      }    
+
+      
+      Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+
+
+
+
+
+

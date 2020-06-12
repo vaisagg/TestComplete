@@ -1,0 +1,651 @@
+﻿//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT TCNativeLibraries
+//USEUNIT NetworkSuiteLibrary
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function InvokeDecapper(strAppName,strpath)
+{
+   Log["AppendFolder"]("DecapperLibrary::InvokeDecapper");
+  try
+  {
+  
+    //Closing the already launched instances of IE
+    var ieShell = Sys["OleObject"]("wscript.shell");  
+    ieShell["Run"]("taskkill /F /IM iexplore.exe");
+    Delay (5000); 
+    
+    var objWS = Sys["OleObject"]("WScript.Shell")    
+    var oShell=Sys["OleObject"]("Shell.Application");
+    
+    var strModuleManagerapp="C:\\Siemens\\Prepost\\DecapperMM\\Bin\\Decapper.ModuleManagerApplication.exe"
+    oShell.ShellExecute(strModuleManagerapp,strAppName,"C:\\Siemens\\Prepost\\DecapperMM\\Bin","runas",5)
+    aqUtils.Delay(6000)
+    //oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5);
+    oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5)
+    //Waits for the Shell Process to initialize. Max waiting time : 30 seconds
+    aqUtils.Delay(5000)
+  
+ //   var objBtnLoadConfig = Aliases.NodeNetworkSimulator.HwndSource_MainWindow.MainWindow.ConfigButton
+  proc=Sys["WaitProcess"]("NodeNetworkSimulator");
+    var i=0
+ //   while(!((proc["Exists"]) && (i>60)))
+    while(!((proc["Exists"])||i>60))
+    {
+      proc=Sys["WaitProcess"]("NodeNetworkSimulator");
+      aqUtils["Delay"](2000,"Waiting for Node network simulator to appear");
+      i=i+1;
+    }
+  
+    if(proc["Exists"])
+    {
+      Log.Message("Decapper launched successfully")
+      //return true;
+    }
+    else
+    {
+      Log.Warning("Unable to launch Decapper")
+      //return false; 
+    }
+    
+   
+    
+   LoadDecapper();
+   Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+  
+  
+}
+
+//function DecapperShutdown()
+//{
+//  Log["AppendFolder"]("DecapperLibrary::DecapperShutdown");
+//  try
+//  {
+//    var oShell=Sys["OleObject"]("Shell.Application");
+//    var strshutdownPath = "C:\\Users\\SiemensServiceUser\\Desktop\\Decapper_Shutdown.bat" 
+//    oShell.ShellExecute(strshutdownPath,"","C:\\Users\\SiemensServiceUser\\Desktop","runas",5);
+//        
+//    var proparr=["WndClass", "wndCaption","wText"];
+//    var vararr=["ConsoleWindowClass", "Administrator: Windows PowerShell","*Kill PCM processes to end test of TCCS integration*"];
+//    var cmdObj =Sys["Find"](proparr,vararr,35)
+//    
+//    var i=0
+//    while((cmdObj["Exists"])&& (i<60))
+//    {
+//      aqUtils["Delay"](10000,"Waiting for cmd window to close");
+//       i=i+1;
+//    }
+//        
+//    if(!Aliases.NodeNetworkSimulator["Exists"])
+//    {
+//      Log.Message("Decapper shutdown successfully")
+//      Log["PopLogFolder"]();
+//      return true;
+//    }
+//    else
+//    {
+//      Log.Warning("Unable to shutdown Decapper")
+//      Log["PopLogFolder"]();
+//      return false; 
+//    }
+//    
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception",exp["description"]);
+//    Log["PopLogFolder"]();
+//    return false; 
+//  }
+//}
+
+function LoadDecapper()
+{
+  Log["AppendFolder"]("DecapperLibrary::LoadDecapper");
+  try
+  {
+    var ProjSuitePath = Project["Path"];
+//    var objBtnLoadConfig = Aliases.NodeNetworkSimulator.HwndSource_MainWindow.MainWindow.ConfigButton
+    var sim =Sys.Process("NodeNetworkSimulator").WPFObject("HwndSource: MainWindow", "Simulator")
+    var objBtnLoadConfig=sim.FindChild(Array("ClrClassName","WPFControlName"),Array("Button","ConfigButton"),10);
+  //var objBtnLoadConfig =Sys.Process("NodeNetworkSimulator").WPFObject("HwndSource: MainWindow", "Simulator").WPFObject("MainWindow", "Simulator", 1).WPFObject("DockPanel", "", 1).WPFObject("DockPanel", "", 1).WPFObject("Border", "", 1).WPFObject("ToolBar").WPFObject("ConfigButton");
+    sSimulator=GetPropertyValue(objBtnLoadConfig,"WPFControlText")
+
+    var arrPath  = ProjSuitePath["split"]("TestcaseLayer");
+   // var sConfigPath =  arrPath[0] + "TestcaseLayer\\Decapper\\TestData\\Decapper.xml";
+	var sConfigPath ="C:\\Siemens\\Prepost\\Tools\\NodeNetworkSimulator\\Bin\\Decapper.xml";
+	 //var sConfigPath =  ProjPath + "TestData\\Decapper.xml"; 
+    
+    ClickControl(objBtnLoadConfig);
+  
+  //  var objEdit =Aliases.NodeNetworkSimulator.dlgOpen.cbxFileName.ComboBox.Edit  
+  var objEdit =Sys.Process("NodeNetworkSimulator").Window("#32770", "Open", 1).Window("ComboBoxEx32", "", 1);
+    //var objEdit =Sys.Process("NodeNetworkSimulator").Window("#32770", "Open", 1).Window("ComboBoxEx32", "", 1).Window("ComboBox", "", 1).Window("Edit", "", 1)
+    SendKeys(objEdit, sConfigPath)
+    
+    
+   //  var objOpenDialog=Aliases.NodeNetworkSimulator.dlgOpen;
+     var objOpenDialog=Sys.Process("NodeNetworkSimulator").Window("#32770", "Open", 1).Window("Button", "&Open", 1)
+   // SetFocus(objOpenDialog);
+    SendKeys(objOpenDialog,"[Enter]");
+    //ClickControl(objOpenDialog);
+    
+     sSimulator=GetPropertyValue(objBtnLoadConfig,"WPFControlText")
+    
+    if (sSimulator=="Decapper")
+    {
+      Log["Message"]("Successfully loaded configuration file for Decapper Simulator");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Unable to load configuration file for Decapper Simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+
+//Invoking networksuite tasks
+function LaunchAndLoadDecapper()
+{
+  var arrDCIP=GetInstrumentsIP("DECAPPER")
+  
+  //Run the configured DC task
+  if(arrDCIP[0]!=null)
+  {
+    blnRes = false;
+    blnRes = InvokeTaskFromNetworkSuite("StartDCap");
+    if(blnRes==true)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    Log["Warning"]("Decapper IP is not available in FederationConfig.xml")
+  } 
+   
+}
+
+function DecapperShutdown()
+{
+  Log["AppendFolder"]("DecapperLibrary::DecapperShutdown");
+  try
+  {
+    var oShell=Sys["OleObject"]("Shell.Application");
+   // var strshutdownPath = "C:\\Users\\SiemensServiceUser\\Desktop\\Decapper_Shutdown.bat" 
+   // oShell.ShellExecute(strshutdownPath,"","C:\\Users\\SiemensServiceUser\\Desktop","runas",5);
+    var strshutdownPath = "C:\\Siemens\\Installation\\Tools\\Killall.bat" 
+    oShell.ShellExecute(strshutdownPath,"/PCM_Shutdown","C:\\Siemens\\Installation\\Tools","runas",5);
+        
+    var proparr=["WndClass", "wndCaption","wText"];
+    //var vararr=["ConsoleWindowClass", "Administrator: Windows PowerShell","*Kill PCM processes to end test of TCCS integration*"];
+    var vararr=["ConsoleWindowClass", "Administrator: Windows PowerShell","*Press Enter to continue:*"];
+    var cmdObj =Sys["Find"](proparr,vararr,35);
+    
+//    var i=0
+//    while((cmdObj["Exists"])&& (i<60))
+//    {
+//      aqUtils["Delay"](10000,"Waiting for cmd window to close");
+//       i=i+1;
+//    }
+    if(cmdObj["Exists"])
+    {
+      cmdObj["Activate"]();
+      cmdObj["Close"]();
+      aqUtils["Delay"](5000,"Waiting for cmd window to close")
+    }
+    
+    aqUtils["Delay"](3000,"Wait to stop the Simulator Service");     
+    proc=Sys["WaitProcess"]("NodeNetworkSimulator");
+    if(!proc["Exists"])
+    {
+      Log.Message("Decapper shutdown successfully")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log.Warning("Unable to shutdown Decapper")
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+
+
+function ShutDownDecapperSim()
+{
+   var arrDCIP=GetInstrumentsIP("DECAPPER")
+
+  //Run the configured DC task
+  if(arrDCIP[0]!=null)
+  {
+    blnRes = false;
+    blnRes = InvokeTaskFromNetworkSuite("ShutdownDCap");
+    if(blnRes==true)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    Log["Warning"]("Decapper IP is not available in FederationConfig.xml")
+  } 
+}
+
+
+function GetCapCount()
+{
+  var FilePath = "C:\\TrinidadData\\InstrumentOutput\\DataFiles\\Decapper\\WasteBinCount.xml";
+  var objConfigXML = ReadXML(FilePath);
+  
+  var objNodesList = objConfigXML["selectnodes"]("//WasteBinCountConfiguration//CapCountSettings");
+     
+  // Get the node attribute 
+  var objNode = objNodesList["item"](0);
+  for(var countattribute =0;countattribute< objNode["attributes"]["length"];countattribute++)
+  {
+    var actualattributename = objNode["attributes"]["item"](countattribute)["name"]
+    if(actualattributename =="CapCount")
+    {
+      actualvalue = objNode["attributes"]["item"](countattribute)["value"]
+      Log["Message"](actualattributename + " value in file located at "+FilePath + " is " +actualvalue);
+      NetworkSuite["Variables"]["CapCount"] = actualvalue;
+      var sreading = 1;
+      break;
+    }
+  }
+  
+  if(sreading==1)
+    return true;
+  else
+    return false;
+           
+}
+
+//Invoking networksuite tasks
+function GetDecapperXMLWasteBinCapCount()
+{
+
+//   var arrDCIP=GetInstrumentsIP("DECAPPER")
+//
+//  //Run the configured DC task
+//  if(arrDCIP[0]!=null)
+//  {
+    blnRes = false;
+    //ReportTestStatusToResultXML("WasteBinCountXML", "GetCapCount", "I")
+    blnRes = InvokeTaskFromNetworkSuite("GetCapCount");
+    if(blnRes==true)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+//  }
+//  else
+//  {
+//    Log["Warning"]("Decapper IP is not available in FederationConfig.xml")
+//  } 
+}
+
+function SetWasteBinThresholdsInPCC(AttributeName,ExpectedAttributeValue)
+//function SetWasteBinThresholdsInPCC()
+{
+//  AttributeName = "ALMOSTFULL_THERSHOLD_PERCENT";
+//  ExpectedAttributeValue = "5";
+  var FilePath = "C:\\TrinidadData\\InstrumentOutput\\SystemConfig.xml";
+  var objConfigXML = ReadXML(FilePath);
+  var objNodesList = objConfigXML["selectnodes"]("//SYSTEMCONFIG//DECAPPER_WASTEBIN_THERSHOLDS");
+  //var objNodesList = objConfigXML["selectnodes"]("//"+Directnode);
+                
+  // Get the node attribute 
+  var objNode = objNodesList["item"](0);
+//  for(var countattribute =0;countattribute< objNode["attributes"]["length"];countattribute++)
+//  {
+//    
+//    actualattributename = objNode["attributes"]["item"](countattribute)["name"]
+//    if(actualattributename ==AttributeName)
+//    {
+//      actualvalue = objNode["attributes"]["item"](countattribute)["value"]
+//      if(actualvalue== ExpectedAttributeValue)
+//      {
+//        var updation =0;
+//        //return 
+//      }  
+//      
+//      //Log["Message"](actualvalue);
+//      objNode["setattribute"](AttributeName,ExpectedAttributeValue)
+//      var updation = 1;
+//      Log["Message"](actualattributename + " value in file located at "+FilePath + " is set as " +ExpectedAttributeValue);
+//      break;
+//    }
+//  }
+
+//***************************************************************************
+//Searching directly via Attribute -- [WORKING]
+
+  var actualvalue = objNode["getAttribute"](AttributeName);
+  if(actualvalue== ExpectedAttributeValue)
+  {
+    var updation =0;
+    return true;
+  }
+  else
+  {
+    objNode["setattribute"](AttributeName,ExpectedAttributeValue)
+    var updation = 1;   
+  }
+  
+  if (updation ==1)
+  {
+    objConfigXML["save"](FilePath); 
+    return true;
+  }
+  else
+    return false;
+           
+}
+function SetDecapperXMLWasteBinCount()
+{
+ 
+    blnRes = false;
+    blnRes = InvokeTaskFromNetworkSuite("UpdateDecapperXMLWasteBinCount");
+    if(blnRes==true)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  
+}
+function SetThresholdAndCapCountInDecapper()
+{
+  var scenarioname = NetworkSuite["Variables"]["DecapperScenario"]
+  //var scenarioname = "PersistWasteBinOnSystemResume"
+  var arrAttributes = new Array();
+  var arrAttributes = GetTestItemsByTestName(TestDataFile, "WasteBinCount", scenarioname)
+  
+  var CapCount  = arrAttributes[0]["Item"]("CapCount")
+  var AlmostFullThreshold  = arrAttributes[0]["Item"]("AlmostFullThreshold")
+  var FullThreshold  = arrAttributes[0]["Item"]("FullThreshold")
+      
+  var FilePath = "C:\\TrinidadData\\InstrumentOutput\\DataFiles\\Decapper\\WasteBinCount.xml";
+  
+  var objConfigXML = ReadXML(FilePath);
+  var objNodesList = objConfigXML["selectnodes"]("//WasteBinCountConfiguration//CapCountSettings");
+              
+  // Get the node attribute 
+  var objNode = objNodesList["item"](0);
+  for(var countattribute =0;countattribute< objNode["attributes"]["length"];countattribute++)
+  {
+    actualattributename = objNode["attributes"]["item"](countattribute)["name"]
+    if(actualattributename =="CapCount")
+    {
+      actualvalue = objNode["attributes"]["item"](countattribute)["value"]
+      //objNode["setattribute"](actualattributename,NetworkSuite["Variables"]["CapCount"])
+      objNode["setattribute"](actualattributename, CapCount);
+      var updation = 1;
+      Log["Message"](actualattributename + " value in file located at "+FilePath + " is set as " +CapCount);
+    }
+    else if(actualattributename =="AlmostFullThreshold")
+    {
+      actualvalue = objNode["attributes"]["item"](countattribute)["value"]
+      objNode["setattribute"](actualattributename, AlmostFullThreshold)
+      var updation = 2;
+      Log["Message"](actualattributename + " value in file located at "+FilePath + " is set as " +AlmostFullThreshold);
+    }
+    else if(actualattributename =="FullThreshold")
+    {
+      actualvalue = objNode["attributes"]["item"](countattribute)["value"]
+      objNode["setattribute"](actualattributename, FullThreshold)
+      var updation = 3;
+      Log["Message"](actualattributename + " value in file located at "+FilePath + " is set as " +FullThreshold);
+    }
+  }
+  
+  if (updation ==3)
+  {
+    objConfigXML["save"](FilePath);
+    return true;
+  }
+  else
+    return false;
+}
+
+function RemoveWasteBinWhenSampleAppearsInMM(SampleId)
+{
+  Log["AppendFolder"]("DecapperLibrary::RemoveWasteBinWhenSampleAppearsInMM");
+  NetworkSuite["Variables"]["DCapSampleID"] = SampleId;
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("RemoveWasteBinWhenSampleAppearsInMM").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("RemoveWasteBinWhenSampleAppearsInMM").State;
+  if(TaskStatus==1)
+  {
+    Log.Message("RemoveWasteBinWhenSampleAppearsInMM task completed successfully");
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("RemoveWasteBinWhenSampleAppearsInMM task was not completed");
+    Log.PopLogFolder();
+    return false;
+  }
+  
+  Log.PopLogFolder();
+}
+
+function TriggerOverflowSensor()
+{
+  try
+  {
+    Log["AppendFolder"]("DecapperLibrary::TriggerOverflowSensor");
+    var blnRes = InvokeTaskFromNetworkSuite("CheckWasteBinFull");
+    if(blnRes==1)
+    {
+      Log.Message("CheckWasteBinFull task completed successfully");
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Message("CheckWasteBinFull task was not completed");
+      Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function UncheckOverflowSensor()
+{
+  try
+  {
+    Log["AppendFolder"]("DecapperLibrary::UncheckOverflowSensor");
+    var blnRes = InvokeTaskFromNetworkSuite("UncheckWasteBinFull");
+    if(blnRes==1)
+    {
+      Log.Message("UnCheckWasteBinFull task completed successfully");
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Message("UnCheckWasteBinFull task was not completed");
+      Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+
+function VerifySampleLoadedInDecapper()
+{
+  Log["AppendFolder"]("DecapperLibrary :: Verifying whether No Samples are loaded to Decapper");
+  try
+  {
+    var blnRes = InvokeTaskFromNetworkSuite("VerifyNoSamplesInDecapper");
+    if(blnRes==1)
+    {
+      Log.Message("Verification Completed for Samples in Decapper");
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Message("Failed: Couldnot Verify the Operation");
+      Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function RemoveWasteBin()
+{
+  try
+  {
+    Log["AppendFolder"]("DecapperLibrary::RemoveWasteBin");
+    var blnRes = InvokeTaskFromNetworkSuite("UnCheckWasteBinPresent");
+    if(blnRes==1)
+    {
+      Log.Message("RemoveWasteBin task completed successfully");
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Message("RemoveWasteBin task was not completed");
+      Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+function ReplaceWasteBin()
+{
+  try
+  {
+    Log["AppendFolder"]("DecapperLibrary::ReplaceWasteBin");
+    var blnRes = InvokeTaskFromNetworkSuite("CheckWasteBinPresent");
+    if(blnRes==1)
+    {
+      Log.Message("ReplaceWasteBin task completed successfully");
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Message("ReplaceWasteBin task was not completed");
+      Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+function TriggerOverflowSensorWhenSampleAppearsInMM(SampleId)
+{
+  Log["AppendFolder"]("DecapperLibrary::TriggerOverflowSensorWhenSampleAppearsInMM");
+  NetworkSuite["Variables"]["DCapSampleID"] = SampleId;
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("TriggerOverflowSensorWhenSampleApperasInMM").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("TriggerOverflowSensorWhenSampleApperasInMM").State;
+  if(TaskStatus==1)
+  {
+    Log.Message("TriggerOverflowSensorWhenSampleApperasInMM task completed successfully");
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("TriggerOverflowSensorWhenSampleApperasInMM task was not completed");
+    Log.PopLogFolder();
+    return false;
+  }
+  
+  Log.PopLogFolder();
+}
+
+function VerifyOverflowSensor()
+{
+  Log["AppendFolder"]("DecapperLibrary::VerifyOverflowSensor");
+ // NetworkSuite["Variables"]["DCapSampleID"] = SampleId;
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("VerifyOverflowSensorIsNotHigh").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("VerifyOverflowSensorIsNotHigh").State;
+  if(TaskStatus==1)
+  {
+    Log.Message("VerifyOverflowSensorIsNotHigh task completed successfully");
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("VerifyOverflowSensorIsNotHigh task was not completed");
+    Log.PopLogFolder();
+    return false;
+  }
+  
+  Log.PopLogFolder();
+
+} 

@@ -1,0 +1,2179 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT DecapperFeatureSteps
+
+function CappedTubeHandling()
+{
+  InitializeMetaData();
+
+  Log["AppendFolder"]("Feature: Cap tube handling with Decapper"); 
+ 
+  GWT188758_01_DecappedSample();
+  
+  GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured();
+  
+  GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable();
+
+  GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable();
+  
+  GWT183545_01_DecapperStoppedWhenHoldAreaAvailable(); //functionality cannot be executed since it is yet to be implemented in the dev code
+  
+  GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable();
+  
+  GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked();
+
+  GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked();
+
+  GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked();
+
+  GWT183555_01_DecapperStoppedHoldingAvailable();
+
+  GWT183555_02_DecapperStoppedHoldingNotAvailable();
+
+  GWT183544_01_DecapperNotConfiguredCappedSample();
+  
+  GWT183544_02_DecapperNotConfiguredCappedSample();
+  
+  GWT183544_03_DecapperNotConfiguredCappedSample();
+  
+  GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable();
+
+  GWT187851_01_DecapTubesConfigurationNotAvailable();
+  
+  GWT187851_02_DecapTubesConfigurationNotAvailable();
+  
+  
+  
+  GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured();
+  
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("Teardown: Cap tube handling with Decapper"); 
+  DecapperTeardown();
+  Log["PopLogFolder"]();
+
+}
+function DecapNonExceptionTubes()
+{
+  InitializeMetaData();
+   
+  Log["AppendFolder"]("Feature: Cap tube handling with Decapper"); 
+  
+  GWT183550_01_CappedNonExceptionsampleWithSortWork();
+  GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork();
+  GWT183550_03_CappedNonExceptionsampleWithNoWork();
+    
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("Teardown: Cap tube handling with Decapper"); 
+  DecapperTeardown();
+  Log["PopLogFolder"]();
+}
+
+function DecapOffboardSamples()
+{
+  InitializeMetaData();
+   
+  Log["AppendFolder"]("Feature: Cap tube handling with Decapper"); 
+  
+  GWT185695_01_OffboardSortDestinationRequiresDecapping()
+  
+  GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured()
+  
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("Teardown: Cap tube handling with Decapper"); 
+  DecapperTeardown();
+  Log["PopLogFolder"]();
+  
+}
+
+function GWT183545_01_DecapperStoppedWhenHoldAreaAvailable()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT183545_01: Decap the tube with Atellica Test Order - Runnable Test and Decapper configured-Not Available");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedWithHoldingGWT183545";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And atleast one decapper is configured"); 
+  if(!GivenAtleastOneDecapperIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When decapper is in Stopped state"); 
+  if(!WhenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And a capped sample tube with runnable work order is loaded"); 
+  if(!WhenACappedSampleTubeWithRunnableWorkOrderIsLoaded())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is routed to an alternate decapper if available or parked in Sample Handler"); 
+  if(!ThenSampleIsRoutedToAnAlternateDecapperIfAvailableOrParkedInSampleHandler())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   
+  Log["PopLogFolder"]();
+}
+
+function GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable()
+{
+  
+   //InitializeMetaData();
+   
+  Log["AppendFolder"]("GWT183545_02: Decap the tube with Atellica Test Order - Runnable Test and Decapper configured-Not Available");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedWithHoldingUnavailableGWT183545";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And atleast one decapper is configured"); 
+  if(!GivenAtleastOneDecapperIsConfiguredWithHoldingAndArchiving())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When decapper is in Stopped state"); 
+  if(!WhenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And a capped sample tube with runnable work order is loaded"); 
+  if(!WhenACappedSampleTubeWithRunnableWorkOrderIsLoadedWithHoldingUnavailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is routed to an alternate decapper if available or parked in Sample Handler"); 
+  if(!ThenSampleIsRoutedToAnAlternateDecapperIfAvailableOrParkedInSampleHandlerWithHoldingUnavailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("TearDown - Restart SH and PCC");   //This teardown to handle drawer lock issue during CI execution
+   if(!TearDownSHReset())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured()
+{
+  
+  Log["AppendFolder"]("GWT179838_01: Sample is successfully decapped and has valid work orders when holding area is not configured ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapWithoutHolding";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And a capped sample has been identified as candidate for decapping"); 
+  if(!GivenACappedSampleHasBeenIdentifiedAsCandidateForDecapping())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("when the decapping is successfull"); 
+  if(!WhenTheDecappingIsSuccessfull())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("when sample has analytical work to process"); 
+  if(!WhenSampleHasAnalyticalWorkToProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample cap status is decapped"); 
+  if(!ThenSampleCapStatusIsDecapped())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample is routed for furthur processing"); 
+  if(!ThenTheSampleIsRoutedForFurthurProcessing())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+   
+}
+
+function GWT188758_01_DecappedSample()
+{
+    Log["AppendFolder"]("GWT188758_01:Cap tube handling with Decapper");
+    NetworkSuite["Variables"]["SHScenario"] = "DecappedSample";
+    
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And SH area is configured");
+    if(!IsSHConfigured())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And a capped sample tube with runnable work order is loaded into input tray of SH");
+    if(!IsCappedSampleLoaded())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When the decapper is configured and is in Ready/Processing state");
+    if(!DecapperConfiguredAndStatus())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+	
+    Log["AppendFolder"]("Then the sample should be sent to Decapper for decapping");
+    if(!IsSampleDecapped())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And then analyzers for processing");
+    if(!IsDecappedSampleOnAnalyzer())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT179838_02: Sample is successfully decapped and has valid work orders when holding area is configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapWithHoldingAvailable";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And a capped sample has been identified as candidate for decapping"); 
+  if(!GivenACappedSampleIsLoadedWithHoldingForDecapping())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the decapping is successful"); 
+  if(!WhenTheDecappingIsSuccessfullForHoldingAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("when sample has analytical work to process"); 
+  if(!WhenSampleHasAnalyticalWorkToProcessForHoldingAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample cap status is decapped"); 
+  if(!ThenSampleCapStatusIsDecappedForHoldingAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the sample is routed for furthur processing"); 
+  if(!ThenSampleIsMovedToHoldingAndThenInput0utput())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+   
+}
+
+function GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable()
+{
+  
+  Log["AppendFolder"]("GWT179838_03: Sample is successfully decapped and has valid work orders when holding area is configured and not available");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapWithHoldingUnavailable";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And a capped sample has been identified as candidate for decapping"); 
+  if(!GivenACappedSampleHasBeenIdentifiedAsCandidateForDecappingWithHoldingUnavailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("when the decapping is successfull"); 
+  if(!WhenTheDecappingIsSuccessfullWithHoldingUnavailable())
+  {
+    Log["Error"]("Test failed");
+    
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample has analytical work to process"); 
+  if(!WhenSampleHasAnalyticalWorkToProcessWithHoldingUnavailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample cap status is decapped"); 
+  if(!ThenSampleCapStatusIsDecappedWithHoldingUnavailable())
+
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the sample is routed for furthur processing"); 
+  if(!ThenTheSampleIsRoutedForFurthurProcessingWhenHoldingIsUnavailable())
+
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+   
+}
+
+function DecapperWasteBinConfigurability()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Feature: Decapper Wastebin"); 
+  
+  GWT190027_01_WastebinConfigurability();
+  
+  GWT190027_02_WastebinConfigurabilityWhenDecapperStopped();
+  
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("Teardown: Decapper Wastebin"); 
+  DecapperTeardown();
+  Log["PopLogFolder"]();
+}
+
+
+function GWT190027_01_WastebinConfigurability()
+{
+  //InitializeMetaData()
+  
+  Log["AppendFolder"]("GWT190027_01: Wastebin almost full threshold configurability")
+  
+  NetworkSuite["Variables"]["SHScenario"] = "WastebinAlmostFullThresholdConfigurability";
+    
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+
+  {
+    Log["Error"]("Test failed");
+     ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And atleast one decapper is configured"); 
+
+  if(!DecapperConfiguredAndStatus())
+  {
+    Log["Error"]("Test failed");
+     ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the operator navigates to the alert settings configuration page");
+  if(!WhenTheOperatorNavigatesToAlertSettingsCongigurationPage())
+  {
+    Log["Error"]("Test failed");
+     ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the system allows the operator to configure the decapper wastebin almost full threshold");
+
+  if(!ThenTheSystemAllowsTheOperatorToConfigureTheDecapperWastebinAlmostFullThreshold())
+  {
+    Log["Error"]("Test failed");
+     ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+
+
+
+
+function GWT190027_02_WastebinConfigurabilityWhenDecapperStopped()
+{
+  //InitializeMetaData();
+ 
+  Log["AppendFolder"]("GWT190027_02: Wastebin almost full threshold configurability with Decapper stopped")
+  
+  NetworkSuite["Variables"]["SHScenario"] = "WastebinAlmostFullThresholdConfigurabilityWithDecapperStopped";
+    
+  ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+     ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "F"); 
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And atleast one decapper is configured"); 
+  if(!GivenAtleastOneDecapperIsConfiguredAndStopped())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the operator navigates to the alert settings configuration page");
+  if(!WhenTheOperatorNavigatesToAlertSettingsCongigurationPage())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the system allows the operator to configure the decapper wastebin almost full threshold");
+  if(!ThenTheSystemAllowsTheOperatorToConfigureTheDecapperWastebinAlmostFullThresholdInWasteBinThresholdLevel())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+
+function GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork()
+{
+  Log["AppendFolder"]("GWT183550_02: Decap Non Exception Tubes-Decap all configured and Decapper Available");
+  NetworkSuite["Variables"]["SHScenario"] = "CappedSampleWithAnalyticalWork"; 
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())                                   //CheckForInitialization
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And decapper is configured and is in Ready/Processing state");
+  if(!DecapperConfiguredAndStatus())                                    //Verify Decapper is Configured
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["AppendFolder"]("And Decap all is configured"); 
+  if(!GivenDecapAllIsConfigured())                                          //Verify Decapper is in Ready/Standby/Processing              
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When a capped Non Exception sample with either Analytical work or Sorting work or no work in Atellical is placed in input tray of SH"); 
+  if(!WhenACappedNonExceptionsampleWithAnalyticalWorkInAtellicaIsPlacedInInputTrayOfSH())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the capped sample tube should be sent to Decapper for decapping"); 
+  if(!ThenTheCappedSampleTubeWithAnalyticalWorkShouldBeSentToDecapperForDecapping())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+
+//Scenario 2: 183550
+function GWT183550_01_CappedNonExceptionsampleWithSortWork()
+{
+  Log["AppendFolder"]("GWT183550_01: Decap Non Exception Tubes-Decap all configured and Decapper Available");
+  NetworkSuite["Variables"]["SHScenario"] = "CappedSampleWithSortingWork"; 
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");  
+  if(!GivenAtellicaInitialized())                                   //CheckForInitialization
+  {
+    Log["Error"]("Test failed");
+    
+     ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapper is configured and is in Ready/Processing state");
+  if(!DecapperConfiguredAndStatus())                                    //Verify Decapper is Configured
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And Decap all is configured"); 
+  if(!GivenDecapAllIsConfigured())                                          //Verify Decapper is in Ready/Standby/Processing              
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When a capped Non Exception sample with either Analytical work or Sorting work or no work in Atellical is placed in input tray of SH"); 
+  if(!WhenACappedNonExceptionsampleWithSortingWorkInAtellicaIsPlacedInInputTrayOfSH())
+
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the capped sample tube should be sent to Decapper for decapping"); 
+  if(!ThenTheCappedSampleTubeWithSortWorkShouldBeSentToDecapperForDecapping())
+
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"](); 
+}
+
+function GWT183550_03_CappedNonExceptionsampleWithNoWork()
+{
+   //InitializeMetaData();
+   
+  Log["AppendFolder"]("GWT183550_03: Decap Non Exception Tubes-Decap all configured and Decapper Available");
+  NetworkSuite["Variables"]["SHScenario"] = "CappedSampleWithNoWork"; 
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())                                   //CheckForInitialization
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapper is configured and is in Ready/Processing state");
+  if(!DecapperConfiguredAndStatus())                                    //Verify Decapper is Configured
+  {
+    Log["Error"]("Test failed");
+    
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Decap all is configured"); 
+  if(!GivenDecapAllIsConfigured())                                          //Verify Decapper is in Ready/Standby/Processing              
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When a capped Non Exception sample with no workorder in Atellica is placed in input tray of SH"); 
+  if(!WhenACappedNonExceptionsampleWithNoWorkorderInAtellicaIsPlacedInInputTrayOfSH())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the capped sample tube should be sent to Decapper for decapping"); 
+   if(!ThenTheCappedSampleTubeWithNoWorkShouldBeSentToDecapperForDecapping())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+
+function GWT185695_01_OffboardSortDestinationRequiresDecapping()
+{
+      
+  Log["AppendFolder"]("GWT185695_01: Sorting destination requires decapping and decapper module is configured and available for decapping with Decap all is checked ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapOffboardSample"; 
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+  if(!GivenAtellicaInitialized())                                   //CheckForInitialization
+  {
+    Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sorting area is configured");   
+  if(!GivenSortingareaIsConfigured())                                  
+  {
+    Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sorting destination requires decapping");   
+  if(!WhenSortingDestinationRequiresDecapping())                                  
+  {
+    Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And decapper module is configured and available for decapping");   
+  if(!WhenDecapperModuleIsConfiguredAndAvailableForDecapping())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decap all setting is configured");   
+  if(!WhenDecapAllSettingIsConfigured())                                  
+  {
+    Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  
+  Log["AppendFolder"]("Then capped sample is decapped");   
+  if(!ThenCappedSampleIsDecapped())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  
+  Log["AppendFolder"]("And the sample is unloaded in the configured sorting area ");   
+  if(!ThenThesampleIsUnloadedInTheConfiguredSortingArea())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  Log["PopLogFolder"]()
+  
+}
+
+function GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured()
+{
+ 
+  Log["AppendFolder"]("GWT185695_02: Sorting destination requires decapping and decapper module is configured and available for decapping with Decap all is unchecked ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapOffboardSample"; 
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "I");  
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");   
+
+
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sorting area is configured");   
+
+  if(!GivenSortingareaIsConfiguredWithDecapAllUnchecked())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sorting destination requires decapping");   
+
+
+  if(!WhenSortingDestinationRequiresDecapping())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And decapper module is configured and available for decapping");   
+  if(!WhenDecapperModuleIsConfiguredAndAvailableForDecapping())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decap all setting is not configured");   
+
+  if(!WhenDecapAllSettingIsNotConfigured())                                  
+  {
+    Log["Error"]("Test failed");
+    
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  
+  Log["AppendFolder"]("Then capped sample is decapped");   
+
+  if(!ThenCappedSampleIsDecappedWithDecapAllNotConfigured())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  
+  Log["AppendFolder"]("And the sample is unloaded in the configured sorting area ");   
+
+  if(!ThenThesampleIsUnloadedInTheConfiguredSortingAreaWithDecapAllNotConfigured())                                  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]()
+  Log["PopLogFolder"]()
+
+}
+
+//*******************************************************************************
+//This function verifies whether the sample is unloaded to Holding Area when Decapper is stopped
+//*******************************************************************************
+
+function GWT183555_01_DecapperStoppedHoldingAvailable()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT183555_01: Decapper Stopped - Holding Area Configured and Available,Sample with only Analytical Work ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedHoldingAvailable"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperStoppedHoldingAvailable";
+
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "I");    
+  
+  //Given Decapper Is Configured with Holding Area configured and Available
+  Log["AppendFolder"]("Given Decapper Is Configured and DecapALL not selected"); 
+  if(!GivenDecapperConfiguredWithHoldingAvailable())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper is not configured properly");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "F"); 
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  //And Decapper is in Stopped state
+  Log["AppendFolder"]("Decapper is in Stopped state"); 
+  if(!GivenDecapperIsInStoppedState())
+   {
+    Log["Error"]("Test failed : Precondition Failed- Decapper is not in Stopped State");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "F"); 
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Load Capped Sample with Analytical work
+   Log["AppendFolder"]("When Capped Sample with Analytical work is loaded "); 
+   if(!WhenCappedSampleWithAnalyticalWorkIsLoaded())
+   {
+    Log["Error"]("Test failed : Capped Sample tube is not loaded properly");
+    
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "F"); 
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   //Verify whether the capped sample is not loaded to Decapper
+   Log["AppendFolder"]("Then the capped sample is not loaded to Decapper"); 
+   if(!ThenCappedSampleIsNotLoadedToDecapper()) 
+   {
+    Log["Error"]("Test failed: Verification failed for Sample Loading in Decapper");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "F"); 
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Verify whether the capped sample is unloaded to Holding Area
+   Log["AppendFolder"]("Then CappedSample tube is unloaded to Holding Area"); 
+   if(!ThenCappedSampleIsUnloadedToHoldingArea())
+   {
+    Log["Error"]("Test failed: The Capped Sample is not unloaded to Holding Area.");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "F"); 
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+function GWT183555_02_DecapperStoppedHoldingNotAvailable()
+{
+
+  Log["AppendFolder"]("GWT183555_02: Decapper Stopped - Holding Area Configured and Not Available,Sample with only Analytical Work ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedHoldingNotAvailable"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperStoppedHoldingNotAvailable";
+
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "I");    
+  
+  //Given Decapper Is Configured with Holding Area configured and Not Available
+  Log["AppendFolder"]("Given Decapper Is Configured and DecapALL not selected"); 
+  if(!GivenDecapperConfiguredWithHoldingNotAvailable())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper is not configured properly");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  //And Decapper is in Stopped state
+  Log["AppendFolder"]("Decapper is in Stopped state"); 
+  if(!GivenDecapperIsInStoppedState())
+   {
+    Log["Error"]("Test failed : Precondition Failed- Decapper is not in Stopped State");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"](); 
+   
+   //Load Capped Sample with Analytical work
+   Log["AppendFolder"]("When Capped Sample with Analytical work is loaded "); 
+   if(!WhenCappedSampleWithAnalyticalWorkLoaded())
+   {
+    Log["Error"]("Test failed : Capped Sample tube is not loaded properly");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   //Verify whether the capped sample is not loaded to Decapper
+   Log["AppendFolder"]("Then the capped sample is not loaded to Decapper"); 
+   if(!ThenCappedSampleNotLoadedToDecapper()) 
+   {
+    Log["Error"]("Test failed: Verification failed for Sample Loading in Decapper");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Verify whether the capped sample is unloaded to Input Area
+   Log["AppendFolder"]("Then CappedSample tube is unloaded to Input Area"); 
+   if(!ThenCappedSampleIsUnloadedToInputArea())
+   {
+    Log["Error"]("Test failed: The Capped Sample is not unloaded to Input Area.");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+function GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked()
+{
+//  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT183555_04: Sorting destination requires decapping and decapper module is configured and available for decapping with Decap all is unchecked -Sorting work order only");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedSortingWorkOrderWithDecapAllUnchecked"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "I");  
+  
+  Log["AppendFolder"]("Given decapper is configured and decap all is not configured");
+  if(!GivenTestSortAreaIsConfiguredWithDecapAllUnchecked())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapepr is in stopped state");
+  if(!GivenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When a capped non exception sample with either analytical work or sorting work or no attelica work is placed in inut tray of SH");
+  if(!WhenCappedSampleOnlySortingWorkOrderIsLoaded())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the capped sample should not be sent to decapper for processing");
+  if(!ThenCappedSampleOnlySortingWorkOrderIsNotLoadedToDecapper())      /// get library from muru
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the capped sample should be unloaded to SH tray");
+  if(!ThenCappedSampleOnlySortingWorkOrderUnloadedToTestSortArea())     
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+
+
+function GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT183555_05: Sorting destination requires decapping and decapper module is configured and available for decapping with Decap all is unchecked -No work order only");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedNoWorkOrderWithDecapAllUnchecked"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "I");  
+  
+  Log["AppendFolder"]("Given decapper is configured and decap all is not configured");
+  if(!GivenSHDefaultPanelIsConfiguredWithDecapAllUnchecked())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapepr is in stopped state");
+  if(!GivenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When a capped non exception sample with either analytical work or sorting work or no attelica work is placed in input tray of SH");
+  if(!WhenCappedSampleNoWorkOrderIsLoaded())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the capped sample should not be sent to decapper for processing");
+  if(!ThenCappedSampleNoWorkOrderIsNotLoadedToDecapper())      /// get library from muru
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the capped sample should be unloaded to SH tray");
+  if(!ThenCappedSampleNoWorkOrderUnloadedToOutputNormal())     
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   
+   
+   Log["AppendFolder"]("TearDown - Restart SH and PCC");   //This teardown to handle drawer lock issue during CI execution
+   if(!TearDownSHReset())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+
+function GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT183555_03: Sorting destination requires decapping and decapper module is configured and available for decapping with Decap all is unchecked -Analytical work order only");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedAnalyticalWorkOrderWithDecapAllUnchecked"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperWasteBinDefault";
+    
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "I");  
+  
+  Log["AppendFolder"]("Given decapper is configured and decap all is not configured");
+  if(!GivenSHDefaultPanelIsConfiguredWithDecapAllUnchecked())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapepr is in stopped state");
+  if(!GivenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When a capped non exception sample with either analytical work or sorting work or no attelica work is placed in input tray of SH");
+  if(!WhenCappedSampleOnlyAnalyticalWorkOrderIsLoaded())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the capped sample should not be sent to decapper for processing");
+  if(!ThenCappedSampleOnlyAnalyticalWorkOrderIsNotLoadedToDecapper())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the capped sample should be unloaded to SH tray");
+  if(!ThenCappedSampleOnlyAnalyticalWorkOrderUnloadedToInputArea())     
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+
+function Sprint36_TC185255()
+{
+  InitializeMetaData();
+
+  Log["AppendFolder"]("Feature: Cap tube handling with Decapper"); 
+  
+ // GWT183555_TC185255_03_DecapNonExceptiontubes();
+  
+  //GWT183555_TC185255_05_DecapNonExceptiontubes(); 
+  
+  //GWT183555_TC185255_04_DecapNonExceptiontubes(); 
+  
+  //he above 3 gwts are reanamed as below according to CI pipeline requirement
+  
+  GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked()
+  
+  GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked(); 
+  
+  GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked();
+
+  Log["PopLogFolder"]();
+
+}
+
+//GWT_185694_Scenario12
+function GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT185694_01: Sorting destination requires Decapping and Decapper module is not configured");
+    NetworkSuite["Variables"]["SHScenario"] = "DecapperModuleNotConfigured";
+  
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "I");
+      
+    Log["AppendFolder"]("Given cap error sort area is configured");
+    if(!GivenCapErrorSortAreaIsConfigured())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And all available decappers are deactivated");
+    if(!GivenAllAvailableDecappersAreDeactivated())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+        Log["PopLogFolder"]();
+    Log["AppendFolder"]("When a capped sample is loaded");
+    if(!WhenCappedSampleIsLoaded())
+    {
+      Log["Error"]("Test failed");
+      
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "F");
+      Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then the Sample status will be cap error");
+    if(!ThenTheSampleStatusWillBeCapError())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "F");
+      Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Sample will be unloaded to the Cap error sort area if available, else to the output normal tray");
+    if(!ThenSampleWillBeUnloadedToTheCapErrorSortArea())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "F");
+      Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["AppendFolder"]("TearDown-Enabling Decapper Module");
+   if(!EnableDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();  
+   Log["PopLogFolder"](); 
+
+} 
+
+//Sprint37
+function GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable()
+{
+
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT183544_04: Decap the tubes with Atellica Test Order-Runnable Test And decapper not configured-Holding Archiving CapErrorSort not Available");
+    NetworkSuite["Variables"]["SHScenario"] = "TC185007HoldingAndArchivingWithCapErrorSortNotAvailable";
+  
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "I");
+      
+    Log["AppendFolder"]("Given decapper is not configured");
+    if(!GivenDecapeprNotConfiguredAndHoldingArchivingWithCapErrorSortAreaIsConfigured())
+    {
+      Log["Error"]("Test failed","GWT183544");
+      
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "F");
+      Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("When a capped sample tube with runnable work order is loaded into input tray of SH");
+    if(!WhenCappedSampleIsLoadedForHoldingAndArchingWithCapErrorSortNotAvailable())
+    {
+      Log["Error"]("Test failed","GWT183544");
+      
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "F");
+    Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then the Sample should not be sent ot analyzer for processing");
+    if(!ThenHoldingArchivingCapErrorSortNotAvailableCappedSampleIsNotLoadedToDecapper())
+    {
+      Log["Error"]("Test failed","GWT183544");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "F");
+      Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Sample should be unloaded to the SH tray - input tray");
+    if(!ThenCappedSampleForHoldingAndArchingWithCapErrorSortNotAvailableUnloadedToInputTray())
+    {
+      Log["Error"]("Test failed","GWT183544");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "F");
+      Log["PopLogFolder"]();
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+//     Log["AppendFolder"]("TearDown-Enabling Decapper Module"); 
+//    if(EnableDecapper_TearDown())
+//   {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//   Log["PopLogFolder"](); 
+//   
+//   Log["PopLogFolder"](); 
+    
+   Log["PopLogFolder"](); 
+
+} 
+
+
+function GWT187851_01_DecapTubesConfigurationNotAvailable()
+{
+
+//  InitializeMetaData();
+  Log["AppendFolder"]("GWT187851_01: Decap tubes-Configuration not available-ErrorSort screen");
+  
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_01_DecapTubesConfigurationNotAvailable", "I");
+      
+    Log["AppendFolder"]("Given operator configures sorting or archiving on the system");
+    if(!GivenCapErrorSortGroupIsCreated())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_01_DecapTubesConfigurationNotAvailable", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("When exception sort area or personality rack based sort group is selected as part of area, or an archive rack type is configured on the system");           
+    if(!WhenExceptionSortAreaIsSelected())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_01_DecapTubesConfigurationNotAvailable", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then capability to select decap tubes configuration is not available");           
+    if(!ThenVerifyDecapTubesDropdownNotPresentOnErrorSort())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_01_DecapTubesConfigurationNotAvailable", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+  Log["PopLogFolder"]();
+    
+}
+
+function GWT187851_02_DecapTubesConfigurationNotAvailable()
+{
+
+//  InitializeMetaData();
+  Log["AppendFolder"]("GWT187851_02: Decap tubes-Configuration not available-SHConfiguration screen");
+  
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_02_DecapTubesConfigurationNotAvailable", "I");
+      
+    Log["AppendFolder"]("Given operator configures sorting or archiving on the system");
+    if(!GivenConfigureSHWithHoldingAndArchiving())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_02_DecapTubesConfigurationNotAvailable", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("When exception sort area or personality rack based sort group is selected as part of area, or an archive rack type is configured on the system");           
+    if(!WhenHoldingAndArchivingPanelIsConfigured())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_02_DecapTubesConfigurationNotAvailable", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then capability to select decap tubes configuration is not available");           
+    if(!ThenVerifyDecapTubesDropdownNotPresentOnSHConfigurationScreen())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_02_DecapTubesConfigurationNotAvailable", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+  Log["PopLogFolder"]();
+    
+}
+
+
+function GWT183544_01_DecapperNotConfiguredCappedSample()
+{
+  Log["AppendFolder"]("GWT183544_01_: Decapper Not Configured - No Holding and Sort Area Configured ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperNotConfiguredCappedSample"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperNotConfiguredCappedSample";
+  
+ // InitializeMetaData();
+
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "I"); 
+  
+  
+  //Given Sort Config is set to Default
+  Log["AppendFolder"]("Given Sort Config is set to Default with No Sort/Hold Area"); 
+  if(!GivenSHSetToDefault())
+   {
+    Log["Error"]("Test failed : Precondition Failed- Sort Configuration is not set to Default","GWT183544");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();   
+  
+  //Given Decapper Is Not Configured 
+  Log["AppendFolder"]("Given Decapper Is Not Configured"); 
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+
+   
+   //Load Capped Sample with Analytical work
+   Log["AppendFolder"]("When Capped Sample with Analytical work is loaded "); 
+   if(!WhenCappedSampleTubeIsLoaded())
+   {
+    Log["Error"]("Test failed : Capped Sample tube is not loaded properly");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   //Verify whether the capped sample is not loaded to Decapper with Status = CAPERROR
+   Log["AppendFolder"]("Then the capped sample Tube status is CAP ERROR"); 
+   if(!ThenCappedSampleTubeNotLoadedToDecapper()) 
+   {
+    Log["Error"]("Test failed: Verification failed for Sample Status");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Verify whether the capped sample is unloaded to Output Normal
+   Log["AppendFolder"]("Then CappedSample tube is unloaded to Output Area"); 
+   if(!ThenCappedSampleTubeUnloadedToSH())
+   {
+    Log["Error"]("Test failed: The Capped Sample is not unloaded to Output Area.","GWT183544");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();  
+   
+//   Log["AppendFolder"]("TearDown-Enabling Decapper Module");            
+//  if(EnableDecapper_TearDown())
+//   {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//   Log["PopLogFolder"]();  
+   Log["PopLogFolder"](); 
+
+}
+
+
+
+//*****************************************************************************************************
+//This function verifies whether the sample is unloaded to CapError Sort Tray when Decapper is not configured
+//*****************************************************************************************************
+
+function GWT183544_02_DecapperNotConfiguredCappedSample()
+{
+  Log["AppendFolder"]("GWT183544_02: Decapper Not Configured - Holding and CapError Sort Area Configured ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperNotConfiguredWithCapErrorSortArea"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperNotConfiguredWithCapErrorSortArea";
+
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "I"); 
+  
+  
+  //Given Sort Config is set to Cap Error and Holding Sort config
+  Log["AppendFolder"]("Given Sort Config is set with Holding and CapError Sort Configured and Available"); 
+  if(!GivenSHSetToCapSortAndHoldingAvailable())
+   {
+    Log["Error"]("Test failed : Precondition Failed- Sort Configuration is not set properly");
+    
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();   
+  
+  //Given Decapper Is Not Configured 
+  Log["AppendFolder"]("Given Decapper Is Not Configured"); 
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   
+   //Load Capped Sample with Analytical work
+   Log["AppendFolder"]("When Capped Sample with Analytical work is loaded "); 
+   if(!WhenCappedSampleTubeLoaded())
+   {
+    Log["Error"]("Test failed : Capped Sample tube is not loaded properly");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   //Verify whether the capped sample is not loaded to Decapper with Status = CAPERROR
+   Log["AppendFolder"]("Then the capped sample Tube status is CAP ERROR"); 
+   if(!ThenCappedSampleTubeIsNotLoadedToDecapper()) 
+   {
+    Log["Error"]("Test failed: Verification failed for Sample Status");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Verify whether the capped sample is unloaded to Output Normal
+   Log["AppendFolder"]("Then CappedSample tube is unloaded to Cap Error Sort Area"); 
+   if(!ThenCappedSampleTubeUnloadedToSortArea())
+   {
+    Log["Error"]("Test failed: The Capped Sample is not unloaded to Cap Error Sort Area.")
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();  
+   
+//   Log["AppendFolder"]("TearDown-Enabling Decapper Module");         
+//  if(EnableDecapper_TearDown())
+//   {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//   Log["PopLogFolder"]();  
+   
+   Log["PopLogFolder"](); 
+
+}
+
+
+
+
+
+//*****************************************************************************************************
+//This function verifies whether the sample is unloaded to Holding Area when Decapper is not configured
+//*****************************************************************************************************
+
+function GWT183544_03_DecapperNotConfiguredCappedSample()
+{
+  Log["AppendFolder"]("GWT183544_03: Decapper Not Configured - Holding Available and CapError Sort Not Available ");
+  NetworkSuite["Variables"]["SHScenario"] = "DecapperNotConfiguredWithNoCapErrorSortArea"; 
+  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperNotConfiguredWithNoCapErrorSortArea";
+  
+//  InitializeMetaData();
+
+  ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "I"); 
+  
+  
+  //Given Sort Config is set to Cap Error and Holding Sort config
+  Log["AppendFolder"]("Given Sort Config is set with Holding Available and CapError Sort Not Available"); 
+  if(!GivenSHSetToCapSortAndHoldingAvailable())
+   {
+    Log["Error"]("Test failed : Precondition Failed- Sort Configuration is not set properly");
+     ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();   
+  
+  //Given Decapper Is Not Configured 
+  Log["AppendFolder"]("Given Decapper Is Not Configured"); 
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+     ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   
+   //Load Capped Sample with Analytical work
+   Log["AppendFolder"]("When Capped Sample with Analytical work is loaded "); 
+   if(!WhenCappedSampleTubeLoadedInSH())
+   {
+    Log["Error"]("Test failed : Capped Sample tube is not loaded properly");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   
+   //Verify whether the capped sample is not loaded to Decapper with Status = CAPERROR
+   Log["AppendFolder"]("Then the capped sample Tube status is CAP ERROR"); 
+   if(!ThenCappedSampleTubeIsNotSentToDecapper()) 
+   {
+    Log["Error"]("Test failed: Verification failed for Sample Status");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();
+   
+   //Verify whether the capped sample is unloaded to Output Normal
+   Log["AppendFolder"]("Then CappedSample tube is unloaded to Holding Area"); 
+   if(!ThenCappedSampleTubeUnloadedToHoldingArea())
+   {
+    Log["Error"]("Test failed: The Capped Sample is not unloaded to Holding Area.","GWT183544");
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "F");
+    Log["PopLogFolder"]();
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+   }
+   Log["PopLogFolder"]();  
+   
+//   Log["AppendFolder"]("TearDown-Enabling Decapper Module"); 
+//    if(EnableDecapper_TearDown())
+//   {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//   Log["PopLogFolder"](); 
+   
+   Log["PopLogFolder"](); 
+}
+
+
+
+function Sprint37_Sce12To14()
+{
+  InitializeMetaData();
+//  GWT183544_TC185007_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvalable();
+//  GWT187851_TC187865_01_DecapTubesConfigurationNotAvailable();
+//  GWT187851_TC187865_02_DecapTubesConfigurationNotAvailable();
+
+//The above gwt names have been renamed as below as per CI pipeline requirement
+  
+  GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvalable();
+  
+  GWT187851_01_DecapTubesConfigurationNotAvailable();
+  
+  GWT187851_02_DecapTubesConfigurationNotAvailable();
+}
+
+
+
+//function GeneralEvents_OnLogError(s,params)
+//{
+//switch(params["AdditionalText"])
+//{
+//  case "GWT183544" :
+//  case "GWT180537":
+//    if(!GWT183544_TearDown())
+//   {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    break;
+//
+//} 
+//}
+//function GeneralEvents_OnLogWarn(s,params)
+//{
+//switch(params["AdditionalText"])
+//{
+//  case "GWT183544" :
+//  case "GWT180537":
+//    if(!GWT183544_TearDown())
+//   {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    break;
+//  }
+//}  

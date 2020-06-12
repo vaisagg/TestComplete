@@ -1,0 +1,114 @@
+<Controls>
+	<Category Name="IA">
+		<Workflow Code="AMSim">
+			<Control Class="MenuStrip">
+				<Text></Text>
+				<ControlName>MenuStripAMSim</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>mainMenuStrip</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="MainForm">
+				<Text>Trinidad IA Instrument Simulator</Text>
+				<ControlName>MainForm</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MainForm</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxBarcode1</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtBarcode1</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="Button">
+				<Text>OK</Text>
+				<ControlName>btnSettingsOK</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OKBtn</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Use Data Generation Values</Text>
+				<ControlName>radioDataGeneration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rdoUseDataGeneration</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="RichTextBox">
+				<Text></Text>
+				<ControlName>txtBoxStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StatusTextBox</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="Button">
+				<Text>OK</Text>
+				<ControlName>btnOK</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnOK</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="DataGridView">
+				<Text></Text>
+				<ControlName>grdSampleReplicatesRLUValue</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>dataGridViewReplicates</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="Button">
+				<Text>Done</Text>
+				<ControlName>btnDone</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>buttonOk</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="DataGridViewTextBoxEditingControl">
+				<Text></Text>
+				<ControlName>txtBoxEditingControl</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Editing Control</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="SampleReplicateForm">
+				<Text></Text>
+				<ControlName>frmSampleReplicatesForm</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SampleReplicateForm</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx ControlType="WinFormsObject"/>
+			</Control>
+			<Control Class="Label">
+				<Text></Text>
+				<ControlName>lblSampleID</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>labelSampleIDValue</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx/>
+			</Control>
+		</Workflow>
+	</Category>
+</Controls>

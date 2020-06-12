@@ -1,0 +1,3505 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+var sCapCountBeforeDecapperResume;
+var sCapCountAfterWasteBinStatusOK;
+
+function GivenDecapperConfiguredAlmostFull()
+{
+    //Swt Capcount to 0
+  NetworkSuite["Variables"]["CapCount"] = "0";
+  
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+   
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+//  NetworkSuite["Variables"]["AlmostFullThreshold"] = AlmostFullThreshold;
+//  NetworkSuite["Variables"]["FullThreshold"] = FullThreshold;
+//  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+     
+}
+
+
+
+function GivenDecapperIsConfigured()
+{
+    //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+   
+	//Set Wastebin Threshold values
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+ 
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+     
+}
+
+function GivenDecapperConfigured()
+{
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+   
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","PersistWasteBinOnSystemResume")
+  var dictColumn=arrTestData[0];
+  
+  var AttributeName           = dictColumn["Item"]("File1Attributes");
+  var ExpectedAttributeValue  = dictColumn["Item"]("File1AttributesValues");
+  
+  if (!StepWasteBinThresholdValues(AttributeName,ExpectedAttributeValue))
+    return false;
+  
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+     
+}
+
+function GivenTheWasteBinStatusIsOK()
+{
+  return StepVerifyWasteBinStatus("WasteBinOK")
+}
+
+function WhenThereIsSuccessfulDecapping()
+{
+  
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperWasteBinAlmostFull")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+  //var sSampleID= new Array();
+ // sSampleID={"BatchSample1","BatchSample2",BatchSample3","BatchSample4","BatchSample5"};
+ 
+   if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+       
+  StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Capped", 10000)
+ //  return false;                                     //Commented out to handle sample getting decapped before verifying Capstatus
+      
+  return StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000)
+  
+  
+ }
+
+function WhenUpdatedCapcountEqualsOrExceedsTheAlmostFullThresholdAndIsLessThanTheFullThreshold()
+{
+    
+//  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperWasteBinAlmostFull")
+//  var dictColumn=arrDrawers[0]
+//  var SampleCount  = dictColumn["Item"]("SampleCount"); 
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0]
+  var FullThreshold               = dictColumn["Item"]("FullThreshold")
+  var AlmostFullThreshold         = dictColumn["Item"]("AlmostFullThreshold");
+  
+   
+  if(!StepGetCapCount())
+    return false;
+  
+  var CapCount = NetworkSuite["Variables"]["CapCount"];
+  
+  if ((aqConvert.StrToInt(CapCount)==aqConvert.StrToInt(AlmostFullThreshold))&&(aqConvert.StrToInt(CapCount)<aqConvert.StrToInt(FullThreshold)))//verify capcount equals to almost full threshold 
+  {
+    Log["Message"]("Updated Capcount Equals to the Almost full threshold value and less than full threshold : Cap Count="+CapCount+", Almost Full Threshold="+AlmostFullThreshold+" Full Threshold="+FullThreshold);
+    return true;
+  }
+  else
+  {
+    Log["Error"]("Updated Capcount is not equals to the Almost full threshold : Cap Count="+CapCount+", Almost Full Threshold="+AlmostFullThreshold+" Full Threshold="+FullThreshold);
+    return false;
+  }
+}
+
+function ThenWasteBinStatusIsStillAlmostFull()
+{
+  
+  var boolValue=StepVerifyWasteBinStatus("Almost full");
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_01_DecapperWasteBinAlmostFull", "F");
+    return false;  
+  }
+
+}
+
+function GivenDecapperConfiguredNearToFull()
+{
+  return DecapperConfiguredAndStatus();
+}
+
+function GivenTheWasteBinStatusIsAlmostFull()
+{
+  return StepVerifyWasteBinStatus("Almost full")
+}
+
+function GivenWasteBinIsAlmostFull()
+{
+  //Loads one capped sample so that WB reaches almost full, precondition  cap count=4
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperReadyWasteBinAlmostFull")
+  var dictColumn=arrTestData[1];
+ 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    return false;   
+    
+  return StepVerifyWasteBinStatus("Almost full"); 
+}
+
+function GivenWasteBinIsAlmostFullRemoveWasteBin()
+{
+  //Loads one capped sample so that WB reaches almost full, precondition  cap count=4
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder", "RemoveWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    return false;   
+    
+  return StepVerifyWasteBinStatus("Almost full"); 
+}
+
+function WhenThereIsSuccessfulDecappingWasteBinNearToFull()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperWasteBinNearToFull")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+  //var sSampleID= new Array();
+ // sSampleID={"BatchSample1","BatchSample2",BatchSample3","BatchSample4","BatchSample5"};
+ 
+   if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+       
+  StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Capped", 10000)
+  //  return false;                                     //Commented out to handle sample getting decapped before verifying Capstatus
+      
+  return StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000)
+}
+
+function WhenUpdatedCapcountExceedsTheAlmostFullThresholdAndIsLessThanTheFullThreshold()
+{
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0]
+  var FullThreshold               = dictColumn["Item"]("FullThreshold")
+  var AlmostFullThreshold         = dictColumn["Item"]("AlmostFullThreshold");
+   
+  if(!StepGetCapCount())
+    return false;
+  
+  var CapCount = NetworkSuite["Variables"]["CapCount"];
+  
+  if ((aqConvert.StrToInt(CapCount)==9)&&(aqConvert.StrToInt(CapCount)>aqConvert.StrToInt(AlmostFullThreshold))&& (aqConvert.StrToInt(CapCount)<aqConvert.StrToInt(FullThreshold)))//verify capcount exceeds almost full threshold 
+  {
+    Log["Message"]("Updated Capcount exceeds the Almost full threshold and less than full threshold : Cap Count="+CapCount+", Almost Full Threshold="+AlmostFullThreshold+" Full Threshold="+FullThreshold);
+    return true;
+  }
+  else
+  {
+    Log["Error"]("Updated Capcount is not exceeding the Almost full threshold : Cap Count="+CapCount+", Almost Full Threshold="+AlmostFullThreshold+" Full Threshold="+FullThreshold);
+    return false;
+  }
+}
+
+
+function ThenWasteBinStatusNearToFullIsStillAlmostFull()
+{
+  
+  var boolValue=StepVerifyWasteBinStatus("Almost full");
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178925_02_DecapperWasteBinNearToFull", "F");
+    return false;  
+  }
+
+}
+
+
+
+function DecapperWastebinTeardown()
+{
+  var FullThreshold               = 2000//dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = 50//dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          =1000//dictColumn["Item"]("AlmostFullThreshold");
+   
+//  NetworkSuite["Variables"]["AlmostFullThreshold"] = AlmostFullThreshold;
+//  NetworkSuite["Variables"]["FullThreshold"] = FullThreshold;
+//  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+    
+  if(!ClearApplicationData())
+      return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+  //////////////
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+}
+
+function GivenDecapperConfiguredWasteBinAlmostFull()
+{
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+   
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+  
+  var AttributeName           = dictColumn["Item"]("File1Attributes");
+  var ExpectedAttributeValue  = dictColumn["Item"]("File1AttributesValues");
+  
+  if (!StepWasteBinThresholdValues(AttributeName,ExpectedAttributeValue))
+    return false;
+      
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+ 
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+     
+}
+
+function GivenDecapperConfiguredFull()
+{
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+   
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinFull");
+  var dictColumn=arrTestData[0];
+  
+  var AttributeName           = dictColumn["Item"]("File1Attributes");
+  var ExpectedAttributeValue  = dictColumn["Item"]("File1AttributesValues");
+  
+  if (!StepWasteBinThresholdValues(AttributeName,ExpectedAttributeValue))
+    return false;
+
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutDownDecapperSim())
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  if(!StepLaunchAndLoadDecapper())
+    return false;  
+  
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+  
+  if(!StepWaitForVMMReady())
+    return false;
+  
+  aqUtils["Delay"](10000, "Waiting for Decapper status")
+
+  return StepVerifyModuleStatus("DECAPPER", "Stopped");
+     
+}
+
+function GivenWasteBinStatusAlmostFull()
+{
+  
+  return StepVerifyWasteBinStatus("AlmostFull");    
+} 
+
+function GivenWasteBinStatusFull()
+{
+   
+  return StepVerifyWasteBinStatus("Full");    
+} 
+
+
+function WhenTheWasteBinIsDetectedAsNotPresent()
+{
+  return StepVerifyWasteBinNotPresent();
+} 
+
+function ThenWasteBinStatusIsNotPresent()
+{
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Stopped");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_01_DecapperWasteBinNotPresentWithOK", "F");
+    return false;  
+  }  
+}
+function ThenWasteBinStatusIsNotPresentBinFull()
+{
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Stopped");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "F");
+    return false;  
+  }  
+}
+
+function ThenWasteBinStatusIsNotPresentBinStatusFull()
+{
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Stopped");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_04_WasteBinNotPresent_BinStatusFull", "F");
+    return false;  
+  }  
+}
+
+function ThenWasteBinStatusIsNotPresentBinStatusAlmostFull()
+{
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Stopped");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_03_WasteBinNotPresent_BinStatusAlmostFull", "F");
+    return false;  
+  }  
+}
+
+function ThenWasteBinStatusIsNotPresentRemoveWasteBin()
+{
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Stopped");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178951_02_RemoveWasteBin", "F");
+    return false;  
+  }  
+}
+
+function GivenACappedSampleHasBeenIdentifiedAsCandidateForDecapping()
+{
+  
+  //Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  //Verify decapper status
+  if(!StepVerifyDecapperStatus())
+    return false;
+  
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+    
+  //SHConfig
+  if(!IsSHConfigured())/////////// create panel only for holding area is configured
+     return false;
+     
+  if(StepIsHoldingAreaConfigured())
+    return false;
+   
+  //Create patient order and load sample
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdats
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false; 
+     
+  //verify sample attribute is capped
+  return StepVerifySampleAttribute(SampleId, "Capped");
+  
+}
+
+function ThenSystemAutomaticallyRoutesTheTubeToTheDecapperWasteBinAlmostFull()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "DecapperReadyWasteBinAlmostFull");
+  var dictColumn=arrTestData[0];
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  //Verify cap status is decapped
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 10000))
+    return false;
+    
+  //Verify no error/warning is displayed for decapper
+  if(!StepVerifyModuleStatus("DECAPPER", "Ready/Standby/Processing"))
+    return false;
+    
+  var boolValue = StepVerifyWasteBinStatus("Almost full")
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_02_DecapperReadyWasteBinAlmostFull", "F");
+    return false;  
+  }
+}
+
+function ThenSystemAutomaticallyRoutesTheTubeToTheDecapper()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "DecapperReadyWasteBinOK");
+  var dictColumn=arrTestData[0];
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  //Verify cap status is decapped
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 10000))
+    return false;
+    
+  //Verify no error/warning is displayed for decapper
+  var boolValue = StepVerifyModuleStatus("DECAPPER", "Ready/Standby/Processing")
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178972_01_DecapperReadyWasteBinOK", "F");
+    return false;  
+  }
+
+}
+
+
+function WhenACappedTubeIsIdentifiedAsCandidateForDecappingAndWasteBinAlmostFull()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "DecapperReadyWasteBinAlmostFull");
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepVerifyReagentAvailable(Assay))
+    return false;
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 10000)
+}
+
+function WhenACappedTubeIsIdentifiedAsCandidateForDecapping()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "DecapperReadyWasteBinOK");
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepVerifyReagentAvailable(Assay))
+    return false;
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 10000)
+}
+
+
+
+function GivenDecapperModuleConfigured()
+{
+ 
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinOK")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+    
+  
+  //Check Decapper is configured
+   if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+
+}
+
+function WhenDecappingIsSuccessfull()
+{
+  
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperWasteBinOK")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+  //var sSampleID= new Array();
+ // sSampleID={"BatchSample1","BatchSample2",BatchSample3","BatchSample4","BatchSample5"};
+ 
+   if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepPlaceOutputTray())
+  return false; 
+     
+//    
+  if(!StepLoadSample())
+    return false;
+       
+ StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Capped", 10000)
+ //  return false;                                     //Commented out to handle sample getting decapped before verifying Capstatus
+      
+  return StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000)
+  
+  
+ }
+ 
+ 
+ function WhenUpdatedCapcountLessThanTheAlmostFullThreshold()
+{
+    
+   var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinOK")
+  var dictColumn=arrTestData[0];
+  
+  
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+  
+  if(!StepGetCapCount())
+    return false;
+  
+  var CapCount = NetworkSuite["Variables"]["CapCount"];
+  
+  if (CapCount<AlmostFullThreshold)//verify capcount less than to almost full threshold 
+  {
+    Log["Message"]("Updated Capcount is less than the Almost full threshold value");
+    return true;
+  }
+  else
+  {
+    Log["Error"]("Updated Capcount "+CapCount+" is not less than  the Almost full threshold value ");
+    return false;
+  }
+  
+  
+}
+
+function ThenWasteBinStatusIsStillOK()
+{
+  
+  var boolValue=StepVerifyWasteBinStatus("WasteBinOK");
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178923_01_DecapperWasteBinOK", "F");
+    return false;  
+  }
+
+}
+
+function GivenWaseBinIsPresent()
+{
+  return StepVerifyWasteBinStatus("WasteBinOK")
+}
+
+
+function GivenDecapperModuleConfiguredWithWasteBin()
+{
+     
+//Set Wastebin Threshold values    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinNotPresentWithOK")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+
+    
+    
+  
+  //Check Decapper is configured
+ if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+  
+  return DecapperConfiguredAndStatus()
+
+}
+
+function WhenTheWasteBinIsDetectedAsNotPresentAfterLoadingASample()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "RemoveWasteBin");
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepVerifyReagentAvailable(Assay))
+    return false;
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+
+  return StepRemoveWasteBinWhenSampleAppearsInMM(SampleId);
+} 
+
+
+function GivenDecapperConfiguredForPersistWasteBinStatusOKOnSystemResume()
+{
+  //Set Wastebin Threshold values  
+  //Set Capcount to 0
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","PersistWasteBinOnSystemResume")
+  var dictColumn=arrTestData[0];
+  
+  var strAlomstFullthresholdPercent    = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var strFullThresholdValue            = dictColumn["Item"]("FullThreshold");
+  
+  if(!StepSetWasteBinThresholdlevelsInXML(strFullThresholdValue,strAlomstFullthresholdPercent))
+    return false;
+  
+  //if (!StepWasteBinThresholdValues(AttributeName,ExpectedAttributeValue))
+   // return false;
+  
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+  
+  
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+  
+  return DecapperConfiguredAndStatus()
+     
+}
+
+function GivenWaseBinStausOKIsPresent()
+{
+  return StepVerifyWasteBinStatus("WasteBinOK")
+}
+
+function WhenTheSystemIsResumedForWasteBinOK()
+{
+  //Create patient order and load sample
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","PersistWasteBinOKOnSystemResume")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdata
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+    return false;
+  
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    return false;
+    
+  //Verify sample gets unloaded to Input Only
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","PersistWasteBinOKOnSystemResume")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  var SampleID             = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+
+  if(!StepGetCapCount())
+    return false;
+  
+  sCapCountBeforeDecapperResume = NetworkSuite["Variables"]["CapCount"]
+  
+  if(!StepStopAnalyzer("DECAPPER"))
+    return false;
+    
+  return StepStartAnalyzer("DECAPPER")
+
+    
+ 
+}
+
+
+
+function ThenWasteBinCapCountRemainsSameAsLastKnownCapCountForWasteBinOK()
+{
+  var boolValue;
+  
+  if(!StepVerifyWasteBinStatus("WasteBinOK"))
+    return false;
+    
+  if(!StepGetCapCount())
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","PersistWasteBinOnSystemResume")
+  var dictColumn=arrTestData[0];
+  
+  var InitialCapCount    = dictColumn["Item"]("InitialCapCount");
+  
+  var FinalCapCount = aqConvert.StrToInt(InitialCapCount)+1;
+  
+  if((aqConvert.StrToInt(NetworkSuite["Variables"]["CapCount"])==aqConvert.StrToInt(sCapCountBeforeDecapperResume))&&(aqConvert.StrToInt(sCapCountBeforeDecapperResume)==FinalCapCount))
+  {
+    Log.Message("Verification passed: WasteBin count is same as before Decapper was stopped and it is the count noted before decapping the sample +1")
+    boolValue=true;
+  }
+  else
+  {
+    Log.Message("Verification failed: WasteBin count is not same as before Decapper was stopped")
+    boolValue=false;
+  }
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_01_PersistWasteBinStatusOKOnSystemResume", "F");
+    return false;  
+  }
+
+}
+
+
+function GivenDecapperConfiguredForPersistWasteBinStatusAlmostFullOnSystemResume()
+{
+  //Set Wastebin Threshold values  
+  //Set Capcount to 4
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","PersistWasteBinAlmostFullOnSystemResume")
+  var dictColumn=arrTestData[0];
+  
+  var strAlomstFullthresholdPercent    = dictColumn["Item"]("Almost Full Thershold Percent");
+  var strFullThresholdValue            = dictColumn["Item"]("Full Thershold");
+  
+  if(!StepSetWasteBinThresholdlevelsInXML(strFullThresholdValue,strAlomstFullthresholdPercent))
+    return false;
+  
+//  if (!StepWasteBinThresholdValues(AttributeName,ExpectedAttributeValue))
+//    return false;
+  
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+    //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+  
+  if(!DecapperConfiguredAndStatus())
+    return false;
+  
+  if(!StepVerifyWasteBinStatus("WasteBinOK"))
+    return false;
+    
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","PersistWasteBinAlmostFullOnSystemResume")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdata
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+    return false;
+  
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    return false;
+
+  if(!StepGetCapCount())
+    return false;
+  
+  sCapCountAfterWasteBinStatusOK = NetworkSuite["Variables"]["CapCount"]
+
+  return DecapperConfiguredAndStatus()
+     
+}
+
+function GivenWaseBinStausAlmostFullIsPresent()
+{
+  return StepVerifyWasteBinStatus("Almost full")
+}
+
+
+function WhenTheSystemIsResumedForWasteBinAlmostFull()
+{
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","PersistWasteBinAlmostFullOnSystemResume")
+  var dictColumn=arrTestData[1];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+    return false;
+  
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    return false;
+    
+  if(!StepGetCapCount())
+    return false;
+
+  sCapCountBeforeDecapperResume = NetworkSuite["Variables"]["CapCount"]
+  
+  if(!StepStopAnalyzer("DECAPPER"))
+    return false;
+    
+  return StepVerifyResumeErrorPopUpAfterWasteBinAlmostFullOrFull("DECAPPER"); 
+
+}
+
+
+function ThenWasteBinCapCountRemainsSameAsLastKnownCapCountForWasteBinAlmostFull()
+{
+  var boolValue;
+  if(!StepVerifyWasteBinStatus("Almost full"))
+    return false;
+    
+  if(!StepGetCapCount())    
+    return false; 
+  
+  if(aqConvert.StrToInt(NetworkSuite["Variables"]["CapCount"])==aqConvert.StrToInt(sCapCountBeforeDecapperResume))
+  {
+    Log.Message("Verification passed: WasteBin count is same as before Decapper was stopped")
+    boolValue=true;
+  }
+  else
+  {
+    Log.Message("Verfication failed: WasteBin count is not same as before Decapper was stopped")
+    boolValue=false;
+  }
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_02_PersistWasteBinStatusAlmostFullOnSystemResume", "F");
+    return false;  
+  }
+
+}
+
+
+function GivenDecapperConfiguredForPersistWasteBinStatusFullOnSystemResume()
+{
+  //Set Wastebin Threshold values  
+  //Set Capcount to 10
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","PersistWasteBinOnSystemResume")
+  var dictColumn=arrTestData[0];
+  
+  var strAlomstFullthresholdPercent    = dictColumn["Item"]("AlmostFullThersholdPercent");
+  var strFullThresholdValue            = dictColumn["Item"]("FullThershold");
+  
+  if(!StepSetWasteBinThresholdlevelsInXML(strFullThresholdValue,strAlomstFullthresholdPercent))
+    return false;
+ 
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+  
+  if(!StepShutdownAnalyzer("SH"))
+  return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+    
+  if(!StepShutDownDecapperSim())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+    
+  if(!StepLaunchAndLoadDecapper())
+    return false;
+  
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+  
+  if(!StepWaitForVMMReady())
+    return false;
+
+  return StepVerifyModuleStatus("DECAPPER", "Stopped");
+  
+  }
+  
+  function GivenWasteBinIsPresentAndStatusFull()
+  {
+    return StepVerifyWasteBinStatus("Full")  
+  
+  }
+  
+  function WhenTheSystemIsResumedForWasteBinFull()
+  {
+    if(!StepGetCapCount())
+      return false;
+
+    sCapCountBeforeDecapperResume = NetworkSuite["Variables"]["CapCount"]
+  
+    return StepVerifyResumeErrorPopUpAfterWasteBinAlmostFullOrFull("DECAPPER"); 
+  
+  }
+  
+function ThenWasteBinCapCountRemainsSameAsLastKnownCapCountForWasteBinFull()
+{
+  if(!StepVerifyWasteBinStatus("Full"))
+    return false;
+    
+  if(!StepGetCapCount())    
+    return false; 
+  
+  if(NetworkSuite["Variables"]["CapCount"]==sCapCountBeforeDecapperResume)
+  {
+    Log.Message("Verfication passed")
+    var boolValue=true;
+  }
+  else
+  {
+    Log.Message("Verfication failed")
+    var boolValue=false;
+  }
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT178957_03_PersistWasteBinStatusFullOnSystemResume", "F");
+    return false;  
+  }
+
+}
+
+function GivenThereIsOnlyOneDecapperOnTheSystem()
+{   
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinOK")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false; 
+  
+  //Check Decapper is configured
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+  
+  return DecapperConfiguredAndStatus()
+
+} 
+
+function WhenTheDecapperIsInStoppedState()
+{
+   if(!StepStopAnalyzer("DECAPPER"))
+    return false;
+    
+  return StepVerifyModuleStatus("DECAPPER","Stopped")
+  
+
+} 
+
+function WhenTheWasteBinStatusIsOK()
+{
+  return StepVerifyWasteBinStatus("WasteBinOK");  
+} 
+
+function ThenTheSamplesAreNotDecapped()
+{
+  
+  //Load capped samples
+ 
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinOK")
+  var dictColumn=arrTestData[0];
+ 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+   
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+ if(!StepSampleNotLoadedToDecapper(SampleId))
+    return false;
+  
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+  
+  
+  
+} 
+
+function ThenUnloadedToTheSH()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWhenStoppedAndWasteBinOK")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+ 
+  
+//  // Verify Holding area has empty slots
+//  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+//    return false;
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinOK")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+
+  
+  //Verify sample location shows SH
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+  return false;
+  
+  //Verify sample gets unloaded to Holding area 
+  var boolValue=StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_01_LoadCappedSampleWhenDecapperStoppedWasteBinOK", "F");
+    return false;  
+  }
+    
+} 
+function GivenThereIsOnlyOneDecapperOnTheSystemWasteBinAlmostFull()
+{   
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+      
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false; 
+
+    
+    
+  //Check Decapper is configured
+ if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+ 
+  return DecapperConfiguredAndStatus()
+
+} 
+
+function WhenTheWasteBinStatusIsAlmostFull()
+{
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+ 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+//  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+//    return false;
+  
+  if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    return false;
+  
+  //Verify sample location shows SH
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+  return false;    
+    
+  return StepVerifyWasteBinStatus("Almost full");  
+}
+
+function ThenTheSamplesAreNotDecappedWastebinAlmostFull()
+{
+  
+  //Load capped samples
+ 
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinAlmostFull")
+  var dictColumn=arrTestData[1];
+ 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+   
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+//  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+//    return false;
+  
+ if(!StepSampleNotLoadedToDecapper(SampleId))
+    return false;
+  
+    
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+
+  //return (StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000))
+  //Verify samples not loaded to the decapper
+  //return StepSampleNotLoadedToDecapper(SampleId, "CapStatus", "Capped")
+  
+  
+  
+} 
+
+function ThenUnloadedToTheSHWastebinAlmostFull()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWhenStoppedAndWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+ 
+  
+//  // Verify Holding area has empty slots
+//  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+//    return false;
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinAlmostFull")
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+
+  
+  //Verify sample location shows SH
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+  return false;
+  
+  //Verify sample gets unloaded to Holding area 
+  var boolValue=StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_02_LoadCappedSampleWhenDecapperStoppedWasteBinAlmostFull", "F");
+    return false;  
+  }
+    
+}
+
+function GivenThereIsOnlyOneDecapperOnTheSystemWasteBinFull()
+{   
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  
+	  //Set Wastebin Threshold values
+    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinAlmostFull")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+      
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false; 
+
+    
+    
+  //Check Decapper is configured
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutDownDecapperSim())
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  if(!StepLaunchAndLoadDecapper())
+    return false;  
+  
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+  
+  if(!StepWaitForVMMReady())
+    return false;
+  
+  return StepVerifyModuleStatus("DECAPPER","Stopped");
+
+} 
+
+function WhenTheWasteBinStatusIsFull()
+{
+  return StepVerifyWasteBinStatus("Full");  
+}
+
+function ThenTheSamplesAreNotDecappedWastebinFull()
+{
+  
+  //Load capped samples
+ 
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinFull")
+  var dictColumn=arrTestData[0];
+ 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+   
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  if(!StepSampleNotLoadedToDecapper(SampleId))
+    return false;
+  
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+ // return (StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000))
+     
+
+  //Verify samples not loaded to the decapper
+  //return StepSampleNotLoadedToDecapper(SampleId, "CapStatus", "Capped")
+  
+  
+  
+}  
+
+function ThenUnloadedToTheSHWastebinFull()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWhenStoppedAndWasteBinFull")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+ 
+  
+//  // Verify Holding area has empty slots
+//  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+//    return false;
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWhenStoppedAndWasteBinFull")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+
+  
+  //Verify sample location shows SH
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+  return false;
+  
+  //Verify sample gets unloaded to Holding area 
+  var boolValue=StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+   ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_03_LoadCappedSampleWhenDecapperStoppedWasteBinFull", "F");
+    return false;  
+  }
+    
+}
+
+
+
+
+
+function WhenTheWasteBinStatusIsOverflow()
+{
+  if(!StepTriggerOverflowSensor())
+    return false;
+
+  if(!StepVerifyWasteBinStatus("Overflow"))
+    return false;
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWasteBinOverflow")
+  var dictColumn=arrTestData[0];  
+
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  //return StepVerifySampleProperty(SampleId, "CapStatus", "DecapPending")
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+}
+
+
+function ThenTheSamplesAreNotDecappedBinStatusOverflow()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWasteBinOverflow")  
+  var dictColumn=arrTestData[0];  
+  var SampleId = dictColumn["Item"]("SampleId");
+
+  if(!StepSampleNotLoadedToDecapper(SampleId))
+    return false;
+	
+  //return StepVerifySampleProperty(SampleId, "CapStatus", "DecapPending")
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+}
+
+function ThenUnloadedToTheSHWasteBinOverflow()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedWasteBinOverflow")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_04_DecapperStoppedWasteBinOverflow", "F"); 
+    return false;
+  }
+}
+
+function WhenTheWasteBinStatusIsNotPresent()
+{
+  if(!StepVerifyWasteBinNotPresent())
+    return false;
+  
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWasteBinNotPresent")
+  var dictColumn=arrTestData[0];  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  //return StepVerifySampleProperty(SampleId, "CapStatus", "DecapPending")
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+}
+
+function ThenTheSamplesAreNotDecappedWasteBinNotPresent()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWasteBinNotPresent")
+  var dictColumn=arrTestData[0];  
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  if(!StepSampleNotLoadedToDecapper(SampleId))
+    return false;
+
+ // return StepVerifySampleProperty(SampleId, "CapStatus", "DecapPending")
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+}
+
+function ThenUnloadedToTheSHWasteBinNotPresent()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedWasteBinNotPresent")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190359_05_DecapperStoppedWasteBinNotPresent", "F"); 
+    return false;
+  }
+}
+
+function WhenTheWasteBinStatusIsOKRemoveWasteBin()
+{
+  if(!StepVerifyWasteBinStatus("WasteBinOK"))
+    return false;
+    
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWasteBinOKRemoveWasteBin")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+ // if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Capped", 60000))
+ //   return false;
+    
+  if(!StepRemoveWasteBin())
+    return false;
+    
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  return StepReplaceWasteBin() 
+
+}
+
+function ThenTheSamplesAreNotDecappedBinStatusOKRemoveWasteBin()
+{
+  if(!StepVerifyWasteBinStatus("WasteBinOK"))
+    return false;
+
+  return StepVerifyModuleStatus("DECAPPER","Ready/Standby/Processing")
+}
+
+function ThenUnloadedToTheSHBinStatusOKRemoveWasteBin()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWasteBinOKRemoveWasteBin")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var SampleCount          = dictColumn["Item"]("SampleCount");
+  
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+    
+  var boolValue = StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 60000);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wsatebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wsatebin", "GWT190359_06_DecapperStoppedWasteBinNotPresent", "F"); 
+    return false;
+  }
+} 
+
+function GivenDecapperIsInStoppedState()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinOK")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=2; 
+    
+   if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+     
+  //Check Decapper is configured
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+  
+  return DecapperConfiguredAndStatus()
+
+} 
+function DecapperStoppedDueToWasteBinRemoved()
+{
+    if(!StepGetCapCount())
+    return false;
+    
+     sCapCountBeforeDecapperResume = NetworkSuite["Variables"]["CapCount"];
+    
+    if(!StepRemoveWasteBin())
+    return false;
+    
+  if(!StepVerifyWasteBinStatus("Not present"))
+    return false;
+    
+  return StepVerifyModuleStatus("DECAPPER", "Stopped");
+ 
+}
+function DecapperStoppedDueToWasteBinOverflow()
+{
+    if(!StepGetCapCount())
+    return false;
+    
+     sCapCountBeforeDecapperResume = NetworkSuite["Variables"]["CapCount"];
+    
+    if(!StepTriggerOverflowSensor())
+    return false;
+                  // To handle localization issue for Wastebin status "Overflow"
+   if(!StepVerifyWasteBinStatus("UI_SIEMENS_TRINIDAD_MMBASE_INVENTORYINTERFACE_BULKREAGENTINVENTORY_ENUMBULKSTATUS_OVERFLOW"))
+  //if(!StepVerifyWasteBinStatus("Overflow"))
+    return false;
+    
+  return StepVerifyModuleStatus("DECAPPER", "Stopped");
+ 
+}
+
+
+function WhenWasteBinOpenCloseDoesNotTriggerCountReset()    //WasteBin Remove scenario
+{
+     return StepUncheckOverflowSensor();
+} 
+
+function WhenWasteBinOpenCloseNotTriggerCountReset()   // WasteBin Overflow scenario 
+{
+    if(!StepRemoveWasteBin())
+        return false;
+     return StepUncheckOverflowSensor();
+}
+
+function WhenWasteBinIsNotOverflowedAfterClosingWasteBin()
+{
+ return StepReplaceWasteBin() 
+} 
+function ThenDecapperResumesDecapping()
+{
+  return StepVerifyDecapperStatus() //StepVerifyModuleStatus("DECAPPER", "Ready/Standby/Processing");
+}
+function ThenWasteBinStatusIsOK()
+{
+  return StepVerifyWasteBinStatus("OK");
+} 
+
+function ThenWasteBinCountIsNotReset()
+{
+  sCapCountAfterWasteBinStatusOK = NetworkSuite["Variables"]["CapCount"];
+  if(!stepVerifyCapCountRetained(sCapCountBeforeDecapperResume,sCapCountAfterWasteBinStatusOK))
+    return false;
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder",NetworkSuite["Variables"]["SHScenario"]);
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepVerifyReagentAvailable(Assay))// testdata
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+    return false;
+  
+  var boolValue = StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000);
+    
+
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_01_DecapperResumesAndBinCountNotResetWasteBinOKRemoveWasteBin", "F");
+    return false;
+  }
+}
+
+function ThenWasteBinCountIsNotResetOverflow()
+{
+  sCapCountAfterWasteBinStatusOK = NetworkSuite["Variables"]["CapCount"];
+  if(!stepVerifyCapCountRetained(sCapCountBeforeDecapperResume,sCapCountAfterWasteBinStatusOK))
+    return false;
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+
+   //Create patient order and load sample to make wastebin almost full
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder",NetworkSuite["Variables"]["SHScenario"]);
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepVerifyReagentAvailable(Assay))// testdata
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  if(!StepVerifySampleAttribute(SampleId, "Capped"))
+    return false;
+  
+  var boolValue = StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000);
+    
+
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper WasteBin", "GWT186167_02_DecapperResumesAndBinCountNotResetWasteBinOKOverFlowWasteBin", "F");
+    return false;
+  }
+}
+
+
+
+
+
+function GivenThatTheDecapperIsInProcessingState()
+{
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+	//Set Wastebin Threshold values
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false; 
+ 
+  //Check Decapper is configured
+
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+  else
+    return true;
+
+}
+
+
+function WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTime()
+{
+
+  //Load 7 samples
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+
+
+
+
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+
+
+
+
+
+
+
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+
+
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+
+  if(!StepLoadSample())
+    return false;
+
+
+
+  
+  if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Capped", 60000))
+    return false;
+    
+
+
+
+
+  if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Decapped", 60000))
+    return false;  
+
+
+
+
+  return StepVerifyModuleStatus("DECAPPER","Processing")
+      
+} 
+
+
+function WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinFull()
+
+
+{
+
+  //Load 7 samples
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+
+
+
+
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+
+
+
+
+
+
+
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+
+
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+
+  if(!StepLoadSample())
+    return false;
+
+
+
+  
+  if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Capped", 60000))
+    return false;
+    
+
+
+
+
+  if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Decapped", 60000))
+    return false;  
+
+
+
+
+  return StepVerifyModuleStatus("DECAPPER","Processing")
+      
+} 
+function WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinOverflown()
+{
+  //Load 7 samples
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinOverflown")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  //Get Batch sampleIDs
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Capped", 60000))
+    return false;
+    
+  if(!StepWaitForSampleProperty(arrSampleIDs[0], "CapStatus", "Decapped", 60000))
+    return false;  
+
+  if(!StepVerifyModuleStatus("DECAPPER","Processing"))
+     return false;
+  
+  //Trigger overflow sensor
+  
+  var SampleId = arrSampleIDs[SampleCount-1];
+
+  return StepTriggerOverflowSensorWhenSampleAppearsInMM(SampleId);   
+     
+} 
+function AndWastebinStatusIsNotOK()
+{
+
+//verify WB status is full after 7th sample 
+  var arrTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrTestdata[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+  
+  //Verify all 7 samples decapped
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+
+
+    
+   if(!StepWaitForSampleProperty(arrSampleIDs[6], "CapStatus", "Decapped", 60000))
+    return false;
+
+
+
+
+  return StepVerifyWasteBinStatus("Full")
+  
+} 
+
+
+
+
+
+
+function ThenTheSyatemTransitionsToStoppedState()
+{
+  
+  var arrTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrTestdata[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+  
+  //Verify all 7 samples decapped
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+    
+  if(!StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000))
+    return false;
+   
+  //WB Status is Full
+  if(!StepVerifyWasteBinStatus("Full"))
+    return false;
+     
+  //Decapper goes t0 stopped
+  var boolValue =  StepVerifyModuleStatus("DECAPPER","Stopped");
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleSorting", "DecapperInProcessingWasteBinFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleSorting", "DecapperInProcessingWasteBinFull", "F"); 
+    return false;
+  }
+} 
+
+function ThenTheSystemTransitionsToStoppedStateWasteBinFull()
+{
+  
+  var arrTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrTestdata[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+  
+  //Verify all 7 samples decapped
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+    
+  if(!StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000))
+    return false;
+   
+  //WB Status is Full
+  if(!StepVerifyWasteBinStatus("Full"))
+    return false;
+     
+  //Decapper goes t0 stopped
+  var boolValue =  StepVerifyModuleStatus("DECAPPER","Stopped");
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_03_DecapperInProcessingWasteBinFull", "F"); 
+    return false;
+  }
+} 
+
+function AndWastebinStatusIsOverflown()
+
+
+{
+//verify WB status is full after 7th sample 
+  var arrTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinOverflown")
+  var dictColumn=arrTestdata[0]
+
+
+
+
+
+
+
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+
+
+
+
+
+
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+
+  
+  //Verify all 7 samples decapped
+
+
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+
+
+
+    
+   if(!StepWaitForSampleProperty(arrSampleIDs[6], "CapStatus", "Decapped", 60000))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return false;
+
+
+  return StepVerifyWasteBinStatus("Overflow")
+
+
+  
+}
+
+
+
+function ThenTheSystemTransitionsToStoppedStateWasteBinOverflown()
+{
+  
+  var arrTestdata = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperInProcessingWasteBinOverflown")
+  var dictColumn=arrTestdata[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+  
+  //Verify all 7 samples decapped
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+
+  if(!StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000))
+    return false;
+   
+  //WB Status is Overflown
+  if(!StepVerifyWasteBinStatus("Overflow"))
+    return false;
+     
+  //Decapper goes t0 stopped
+  var boolValue =  StepVerifyModuleStatus("DECAPPER","Stopped");
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_04_DecapperInProcessingWasteBinOverflown", "F"); 
+    return false;
+  }
+}
+
+function WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinOK()
+{
+
+
+
+
+
+
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperProcessingWasteBinOK")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+
+  //Get Batch sampleIDs
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+
+  if(!StepWaitForSampleProperty(arrSampleIDs[1], "CapStatus", "Capped", 60000))
+    return false;
+  
+
+  return StepWaitForSampleProperty(arrSampleIDs[1], "CapStatus", "Decapped", 60000)
+
+}
+
+function ThenTheSystemTransitionsToStoppedStateWasteBinOK()
+{
+  if(!StepVerifyWasteBinStatus("WasteBinOK"))
+    return false;
+
+
+
+
+
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Ready/Standby")
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_01_DecapperInProcessingWasteBinOK", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_01_DecapperInProcessingWasteBinOK", "F"); 
+    return false;
+  }
+}
+
+function WhenThereAreNoCappedTubesRoutedToTheDecapperForCertainTimeWasteBinAlmostFull()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperProcessingWasteBinAlmostFull")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+
+  //Get Batch sampleIDs
+  var arrSampleIDs=StepGetBatchOrderIDs(SampleID,SampleCount)
+  if(arrSampleIDs==false)
+    return false;
+
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+
+    
+  //Create patient orders in batch
+  if(!StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+
+   
+  if(!StepPlaceOutputTray())
+    return false; 
+     
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+
+
+  
+  StepWaitForSampleProperty(arrSampleIDs[1], "CapStatus", "Capped", 60000)
+     
+  return StepWaitForSampleProperty(arrSampleIDs[1], "CapStatus", "Decapped", 60000)
+
+
+
+}
+
+function ThenTheSystemTransitionsToStoppedStateWasteBinAlmostFull()
+{
+  if(!StepVerifyWasteBinStatus("Almost full"))
+    return false;
+
+  var boolValue = StepVerifyModuleStatus("DECAPPER","Ready/Standby")
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_02_DecapperInProcessingWasteBinAlmostFull", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186492_02_DecapperInProcessingWasteBinAlmostFull", "F"); 
+    return false;
+  }
+}
+
+function GivenArchiveRacksAreNotConfiguredToBeUsedInTheSystem()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SampleParking");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+   
+  //Configure SH
+  if(StepVerifySortPanelActive(PanelName))
+  {  
+    return true;
+  }
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+     return false;
+  
+  if(!StepShutdownAllApps())
+    return false;
+                      
+  if(!StepInvokeAllApps()) 
+    return false;
+  else
+    return true;
+
+}
+
+function WhenOperatorNavigatesThroughConfigurationScreens()
+{
+  return StepNavigateToConfigurationScreen();
+}
+
+
+function ThenArchiveRacksRelatedConfigurationsAreNotAvailable()
+{
+  var boolValue = StepVerifyArchiveNotAvailable();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Processing State", "GWT187979_01_ArchiveRackNotConfiguredForUse", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Processing State", "GWT187979_01_ArchiveRackNotConfiguredForUse", "F"); 
+    return false;
+  }
+} 
+
+function GivenThatTheDecapperIsInStoppedState()
+{   
+  //Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperInProcessingWasteBinFull")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+  
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutDownDecapperSim())
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  if(!StepLaunchAndLoadDecapper())
+    return false;  
+  
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+    
+  if(!StepWaitForVMMReady())
+    return false;
+
+  return StepVerifyModuleStatus("DECAPPER","Stopped")
+
+} 
+
+function WhenTheLastKnownWasteStatusIsFullAndDecapperStopped()
+{
+  if(!StepVerifyWasteBinStatus("Full"))
+    return false; 
+  
+  return StepVerifyModuleStatus("DECAPPER","Stopped")
+
+} 
+
+function WhenWastebinOpenOrCloseTriggersCountReset()
+{
+  //Remove waste bin
+  
+  return StepRemoveWasteBin()
+  
+  
+  
+}
+
+function AndWastebinDoesNotResultInOverflowAfterClosingTheWasteBin()
+{
+  
+//Replace wastebin after preconfigured time i.e 10 sec
+  
+  aqUtils["Delay"](10000,"Waiting for preconfigured time for Replacing waste bin")
+  
+  if(!StepReplaceWasteBin())
+    return false;
+  
+  //Verify overflow senor is not high
+  return StepVerifyOverflowSensor();
+  
+}
+
+
+
+function ThenWasteBinCountIsReset()
+{
+  
+  if(!StepGetCapCount())
+    return false;
+  
+  var CapCount = NetworkSuite["Variables"]["CapCount"];
+  if ((aqConvert.StrToInt(CapCount)==0))
+  {
+    Log["Message"]("Wastebin cap count is reset to 0")
+    return true;
+  }
+  else
+  {
+    Log["Error"]("Wastebin cap count does not reset to 0")
+    return false;
+  }
+
+} 
+
+function ThenAnEntryIsMadeInEventLogToIndicateWastebinIsReplacedEmpty()
+{
+  
+//Verify event log entry as waste bin is replaced with OK
+//InitializeMetaData()
+
+  sTime="15 Minutes"
+  var sModuleSerialNumber="All"
+  //sModuleSerialNumber="HS-SCIRG-DEC"//"Decapper"
+  sEvent="Waste bin emptied before replacement"//waste bin is replaced with OK
+  var DeCapperSerialNumbers=StepGetModuleNames("DECAPPER")
+    
+  if(!StepVerifyeventLog(sTime,DeCapperSerialNumbers[0],sEvent))
+    return false;
+  
+  //Load some capped samples and verify decapping
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperWasteBinCountReset")
+  var dictColumn=arrTestData[0];
+ 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  boolValue= StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT186185_01_DecapperWasteBinCountReset", "F"); 
+    return false;
+  }
+} 

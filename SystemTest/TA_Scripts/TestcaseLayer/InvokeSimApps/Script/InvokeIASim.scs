@@ -1,0 +1,35 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT IALibrary
+
+function InvokeIASim()
+{ 
+  try
+  {
+    var strAppName=" IA"
+
+      var strAppPath ="C:\\Siemens\\Bin\\StartENG.bat";
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+                              //Check if the IA Process exists
+      if(!Sys["WaitProcess"]("TriModuleDisplay")["Exists"])
+      {
+        InvokeIA(strAppName,strAppPath,"","")
+        aqUtils.Delay(1000); 
+      }
+      
+      //Check the IA RAMP Service is running
+      var res = StartService(".", "RAMP Service");
+      if(res == true)
+      {
+        Log.Message("The IA RAMP Service started successfully or already started"); 
+      }
+      else
+      {
+        Log.Error("Unable to start the IA RAMP Service");
+      }
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);    
+  }
+}

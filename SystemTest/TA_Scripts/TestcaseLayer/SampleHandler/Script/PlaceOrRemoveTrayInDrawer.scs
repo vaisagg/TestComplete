@@ -1,0 +1,91 @@
+﻿//USEUNIT DVSSimulator
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+
+var strWorkflowXMLPath=Project["Path"]+"TestData\\SHWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\SHControls.xml";
+
+function SelectPlaceInputTrayInDrawer()
+{
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  Log["AppendFolder"]("Placing the Tray in input zone in DVS Simualtor");
+  if(SelectAndPlaceTray("InputTray"))
+    NetworkSuite["Variables"]["TaskStatus"] = "True";
+  else
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+  Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+
+}
+
+function SelectPlaceOutputTrayInDrawer()
+{
+  
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  Log["AppendFolder"]("Placing the Tray in output zone in DVS Simualtor");
+  if(SelectAndPlaceTray("OutputTray"))
+    NetworkSuite["Variables"]["TaskStatus"] = "True";
+  else
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+  Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+
+}
+
+function RemoveTrayFromDrawer()
+{
+  
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  Log["AppendFolder"]("Removing Input or Output Tray in DVS Simualtor");
+  if(RemoveTrays())
+    NetworkSuite["Variables"]["TaskStatus"] = "True";
+  else
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+  Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+}
+
+function SelectPlaceFullyPopulatedOutputTrayInDrawer()
+{
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  Log["AppendFolder"]("Placing fully populated Input Tray in DVS Simualtor");
+  SelectAndPlaceFullyPopulatedTray("FullyPopulatedTray");
+  Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+}

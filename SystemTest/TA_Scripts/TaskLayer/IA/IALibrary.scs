@@ -1,0 +1,437 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT NetworkSuiteLibrary
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function LoadIAReagents()
+{
+  try
+  {
+    Log["AppendFolder"]("IA::LoadIAReagents");
+    NetworkSuite["Variables"]["TaskStatus"]=="False";
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("LoadReagent").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("LoadReagent").State;
+    if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+    {
+      Log.Message("Loading of reagents in IA completed")
+       Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("Loading of reagents in IA Failed")
+       Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+function SetIAAutoDataGeneration()
+{
+  try
+  {
+    Log["AppendFolder"]("IA::AutoDataGeneration");
+    NetworkSuite["Variables"]["TaskStatus"]=="False";
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("AutoDataGeneration").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("AutoDataGeneration").State;
+    if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+    {
+      Log.Message("AutoDataGeneration option set successfully")
+       Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("AutoDataGeneration option set Failed")
+       Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function SetRLUValueInSampleRepliactes()
+{
+  try
+  {
+    Log["AppendFolder"]("IA::SetRLUValueInSampleRepliactes");
+    NetworkSuite["Variables"]["TaskStatus"]=="False";
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("SetRLUValueInSampleRepliactes").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("SetRLUValueInSampleRepliactes").State;
+    if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+    {
+      Log.Message("Set RLU values in IA completed")
+       Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("Set RLU values in IA Failed")
+       Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeAMSimulator
+//*
+//*  Description: InvokeAMSimulator application
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeAMSimulator()
+//*
+//*  Author Name: Shrutika Tyagi
+//*
+//*  Date of Creating:  08/08/2018
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeAMSimulator(strAppPath,strProcessName)
+{
+   try
+   {
+      Log["AppendFolder"]("IALibrary::InvokeAMSimulator");
+
+      var oShell=Sys["OleObject"]("Shell.Application");
+      oShell.ShellExecute(strAppPath,"","C:\\Siemens\\Bin","runas",5);
+      
+      aqUtils.Delay(5000)
+       
+      if(strProcessName!="")
+      {
+          if(Sys["WaitProcess"](strProcessName,15000)["Exists"] == true)
+          {
+            var btnAMSimlutorOK = Aliases.AMSimulator.dlgAMSimulator.btnOK
+            var wndAMSimulator = Aliases.AMSimulator.MainForm
+            if(btnAMSimlutorOK["Exists"])
+            {
+              //btnAMSimlutorOK["Click"]
+              ClickControl(btnAMSimlutorOK);
+              if(wndAMSimulator["Exists"])
+              {
+                Log["Message"]("Application "+strProcessName+" has started successfully");
+                Log.PopLogFolder();
+                return true;
+              }
+            }
+            else if(wndAMSimulator["Exists"])
+            {
+              Log["Message"]("Application "+strProcessName+" has started successfully");
+              Log.PopLogFolder();
+              return true;
+            }
+          }// end of if to wait for AMSimulator if exists
+          
+          else  //when AMSimulator process does not exist
+          {           
+            Log["Error"]("Unable to start the application "+strProcessName);
+            Log.PopLogFolder();
+            return false;
+          }
+      }
+   }
+    
+   catch(exp)
+   {
+      Log["Error"]("Exception",exp["description"]); 
+      Log.PopLogFolder();
+      return false;   
+   }
+}
+
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : IAShutdown
+//*
+//*  Description: Shutdown IA
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: IAShutdown()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date: 02/12/2019
+//***********************************************************************************************************************************************************************************
+function IAShutdown()
+{
+  try
+  { 
+    Log["AppendFolder"]("IALibrary::IAShutdown");
+    var oShell=Sys["OleObject"]("Shell.Application");
+    var strshutdownPath = "C:\\Siemens\\Bin\\IA_Shutdown.bat"
+   
+    oShell.ShellExecute(strshutdownPath,"","C:\\Siemens\\Bin","runas",5);
+    aqUtils.Delay(1000)
+    boolFlag = false;
+    var intStartTime = aqDateTime["Time"]();
+    var intElapsedTime = 0;
+    while(!boolFlag && intElapsedTime < 480000)
+    {
+    if(Sys["WaitProcess"]("ICMessageViewer",20000)["Exists"] == false)
+        {
+          boolFlag = true;
+        }
+    
+     
+     aqUtils.Delay(2000, "Waiting for IA to shutdown");
+     intElapsedTime = aqDateTime["Time"]() - intStartTime;
+     }
+    if (Sys["WaitProcess"]("AMSimulator",5000)["Exists"] == true)
+    {
+      Sys.Process("AMSimulator").Terminate();
+      Log.Message("Stopped AMSimulator successfully");
+      aqUtils["Delay"](2000);
+    }
+    else
+    {
+      Log.Message("AMSimulator is not available");
+    } 
+    
+    if ((Sys["WaitProcess"]("ICMessageViewer",2000)["Exists"] == false)&&(Sys["WaitProcess"]("AMSimulator",2000)["Exists"] == false))
+    {
+      Log.Message("IA module is shutdown successfully")
+      NetworkSuite["Variables"]["TaskStatus"]="True";
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Message("IA module is not shutdown successfully")
+      NetworkSuite["Variables"]["TaskStatus"]="False";
+      Log.PopLogFolder(); 
+      return false;
+    }    
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    NetworkSuite["Variables"]["TaskStatus"]="True";
+    Log.PopLogFolder();
+    return false;   
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : LaunchIASim
+//*
+//*  Description: method to call network task to launch IA
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: LaunchIASim
+//*
+//*  Author Name: Shrutika Tyagi
+//*
+//*  Date of Creating: 10/08/2018
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+
+function LaunchIASim()
+{ 
+  try
+  {
+    Log["AppendFolder"]("IALibrary::LaunchIASim");
+    NetworkSuite["Variables"]["TaskStatus"]=="False";
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("StartIA").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("StartIA").State;
+    if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+    //if(TaskStatus ==true)
+    {
+      Log.Message("StartIA task is completed")
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("StartIA Failed");
+      Log.PopLogFolder();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]); 
+    Log.PopLogFolder();
+    return false;  
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ShutdownIASim
+//*
+//*  Description: method to call network task to shutdown IA
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: ShutdownIASim
+//*
+//*  Author Name: Shrutika Tyagi
+//*
+//*  Date of Creating:
+//*
+//*  Last Modified date: 10/08/2018
+//***********************************************************************************************************************************************************************************
+
+function ShutdownIASim()
+{
+  try
+  {
+    Log["AppendFolder"]("IALibrary::ShutdownIASim");
+    NetworkSuite["Variables"]["TaskStatus"]=="False";
+    NetworkSuite.Jobs.Items(0).Tasks.ItemByName("ShutdownIA").Run(true);
+    var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("ShutdownIA").State;
+    if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+    //if(TaskStatus==true)
+    {
+      Log.Message("ShutdownIA task is completed")
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+  
+      Log.Error("ShutdownIA Failed")
+      Log.PopLogFolder();
+      return false;
+    }   
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]); 
+    Log.PopLogFolder();   
+    return false;
+  }
+}
+
+function InvokeIA(strAppName,strAppPath,Testobj,strProcessName)
+{
+   try
+   {
+       var strpath = strAppPath// + strAppName;
+
+         var strpath = strAppPath// + strAppName;
+        var objWS = Sys["OleObject"]("WScript.Shell")
+       
+        var oShell=Sys["OleObject"]("Shell.Application");
+       oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5);
+       for(i=0;i<150;i++)
+       {
+       aqUtils.Delay(5000,"Waiting to Start the IA module");
+       status=Sys.Process("TriModuleDisplay").Find("WPFControlName","StatusTextBlock",20)  //..WPFObject("HwndSource: Shell", "Module Console").WPFObject("Shell", "Module Console", 1).WPFObject("AdornerDecorator", "", 1).WPFObject("RootGrid").WPFObject("StatusBarContentControl").WPFObject("StatusBarView", "", 1).WPFObject("Grid", "", 1).WPFObject("ContentControl", "", 2).WPFObject("StatusTextBlock");
+       if(status["Exists"])
+       {
+       if(status.Text.OleValue!="")
+       {
+        CurrStat=status.Text;
+        StartAMSimulator();
+        aqUtils.Delay(7500,"Waiting IA Simulator");
+        status=Sys.Process("TriModuleDisplay").Find("WPFControlName","StatusTextBlock",20) 
+        if(aqString.Compare(CurrStat.OleValue,status.Text.OleValue,false)==0)
+        { 
+          StartAMSimulator();
+        }
+        
+           break;
+        }
+       else
+       {
+         //Close and restart it
+       } 
+       }
+   }
+   }
+   catch(exp)
+   {
+      Log["Error"]("Exception",exp["description"]);    
+   }
+}
+
+function StartAMSimulator()
+{ 
+  try
+  {
+      var strAppPath ="C:\\Siemens\\Bin\\AMSimulator.exe";
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+      
+      if(Sys.WaitProcess("AMSimulator",1000)["Exists"])
+        {
+          Sys.Process("AMSimulator").Terminate();
+          aqUtils.Delay(2500,"Waiting to close previous AMSimulator instance");
+        } 
+       oShell.ShellExecute(strAppPath,"","C:\\Siemens\\Bin","runas",5);
+     // IAProcessobj = Sys["WaitProcess"]("TriModuleDisplay")["Exists"]//.WPFObject("HwndSource: Shell", "Module Console").WPFObject("Shell", "Module Console")).Exists;
+      //Check if the IA Process exists
+      msgbox=Sys.Process("AMSimulator").find("WndCaption","AMSimulator",5)// .Window("#32770", "AMSimulator", 1)
+      if(msgbox["Exists"])
+       {
+        bttn=Sys.Process("AMSimulator").Window("#32770", "AMSimulator").Window("Button", "OK");
+        bttn["Click"]();
+       }
+       aqUtils.Delay(5000,"Waiting for AM simulator");
+       
+      msgbox=Sys.Process("AMSimulator").find("WndCaption","AMSimulator",5)// Another error message
+      if(msgbox["Exists"])
+       {
+        bttn=Sys.Process("AMSimulator").Window("#32770", "AMSimulator").Window("Button", "OK");
+        bttn["Click"]();
+        aqUtils.Delay(2500,"Waiting for AM simulator");
+        oShell.ShellExecute(strAppPath,"","C:\\Siemens\\Bin","runas",5);
+        aqUtils.Delay(5000,"Waiting for AM simulator");
+         msgbox=Sys.Process("AMSimulator").find("WndCaption","AMSimulator",5)// .Window("#32770", "AMSimulator", 1)
+      if(msgbox["Exists"])
+       {
+        bttn=Sys.Process("AMSimulator").Window("#32770", "AMSimulator").Window("Button", "OK");
+        bttn["Click"]();
+       }
+       aqUtils.Delay(5000,"Waiting for AM simulator");
+       }
+       aqUtils.Delay(5000,"Waiting for AM simulator");
+       
+       msgbox=Sys.Process("AMSimulator").find("WndCaption","Fail to Initialize",7)
+       
+       if(msgbox["Exists"])
+       {
+        bttn=Sys.Process("AMSimulator").Window("#32770", "Fail to Initialize").Window("Button", "OK");
+        bttn["Click"]();
+       }
+   
+        Log.Message("AMSimulator is started successfully"); 
+     
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);    
+  }
+}

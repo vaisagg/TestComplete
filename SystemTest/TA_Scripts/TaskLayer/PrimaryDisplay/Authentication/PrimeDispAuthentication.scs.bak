@@ -1,0 +1,1884 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT ControlAccessLibrary
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+//USEUNIT HydraDMLSimulator
+//USEUNIT DiagnosticsLibrary
+
+//******************************************************************************
+//*  FunctionName : InitializeMetaDataHYDRA
+//*  Description: InitializeMetaDataHYDRA
+//*  Input: na
+//*  Output: na
+//*  Example: InitializeMetaDataHYDRA()
+//******************************************************************************
+function InitializeMetaDataHYDRA()
+{
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      DBDataFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls"
+	    AppConfigFilesPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\AppConfigFiles";
+      var strWorkflowXMLPath = arrPath[0]+"TaskLayer\\GUIAccessLibrary\\WorkflowNavigator\\PrimaryDisplayWorkflows.xml";
+      var strControlXMLPath  = arrPath[0]+"TaskLayer\\GUIAccessLibrary\\ControlAccess\\PrimaryDisplayControls.xml";
+
+      InitializeWorkflowXML(strWorkflowXMLPath);
+      InitializeControlXML(strControlXMLPath);
+      //AddNameMappingObjects();    
+}
+
+//******************************************************************************
+//*  FunctionName : LaunchHydraApplication
+//*  Description: Launch Start Trinidad,check IoT,start UDD, Atellica Application, DML simulator, Diagnsotics
+//*  Input: na
+//*  Output: boolean
+//*  Example: LaunchHydraApplication()
+//******************************************************************************
+function LaunchHydraApplication()
+{
+  try
+  {
+    
+    Log["AppendFolder"]("Launch Hydra Application");
+    
+    //start trinidad, check arm service is running, IoT status
+    if(!LaunchTrinidad())
+    {
+      Log["Error"]("Failed to launch Trinidad");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Start UDD
+    if(!InitializeUDDLayersForPrimeDisp())
+    {
+      Log["Error"]("Failed to start UDD");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Start Primary Display application
+    if(!LaunchPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to start primary UI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+//    //Launch Diagnostics Client - temprorary commented-shahana
+//    if(!LaunchDiagnosticsClient())
+//    {
+//      Log["Error"]("Failed to start diagnostic client");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+    
+    //Launch DML Simulator
+    if(!LaunchHydraDMLSimulator())
+    {
+      Log["Error"]("Failed to start DML simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("Launch Hydra Application :: Success");
+    Log["PopLogFolder"](); 
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+//******************************************************************************
+//*  FunctionName : ShutdownHydraApplication
+//*  Description: Shutdown Start Trinidad,check IoT,start UDD, Atellica Application, DML simulator, Diagnsotics
+//*  Input: na
+//*  Output: boolean
+//*  Example: ShutdownHydraApplication()
+//*  Created By : Shahana
+//******************************************************************************
+function ShutdownHydraApplication()
+{
+  try
+  {
+    Log["AppendFolder"]  ("Shutdown Hydra Application");
+     
+    //close DML simulator
+    if(!ShutdownDMLSimulator())
+    {
+      Log["Error"]("Failed to kill the DML Simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //close diagnostic
+    if(!CloseDiagnosticsClient())
+    {
+      Log["Error"]("Failed to kill the DML Simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //close atellica
+    if(!KillPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to kill the Primary UI");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+//    //close UDD - commented by shahana - shutdown trinidad closes UDD also
+//    if(!KillUDDLayersForPrimeDisp())
+//    {
+//      Log["Error"]("Failed to kill the UDD Layers");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+    
+    //shutdown trinidad
+    if(!ShutDownHydra())
+    {
+      Log["Error"]("Failed to shudown hydra");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("Shutdown Hydra Application :: Success");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+//******************************************************************************
+//*  FunctionName : LoginToHydra(Username,Password)
+//*  Description: Login to hydra application
+//*  Input: Username,Password
+//*  Output: boolean
+//*  Example: LoginToHydra(Username,Password)
+//******************************************************************************
+function LoginToHydra(Username,Password)
+{
+  try
+  {
+    Log["AppendFolder"]  ("Login to Hydra Application");
+    
+    //Wait for Login screen to load
+    for(i=1; i < 200; i++)
+    {
+      //Get login screen control
+      var loginPageCtrl = GetAutomationIDControl("Login", "pageLogin");
+      
+      //Check the login screen is displayed
+      if(VerifyObjectExists(loginPageCtrl))
+      {
+          Log["Message"]("Login screen loaded");
+          break;
+      } else {
+          aqUtils["Delay"](2000, "Waiting for Login screen to load") 
+      }
+       
+      //Fail Login, if the login screen is not displayed with in time frame
+      if(i==200)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Login failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+     } 
+    
+    //Check the operator id is successfully entered
+    if(!EnterOperatorIdInPrimeDisp(Username)) 
+    {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Login failed at entering the operator id");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    
+    //Check the password is successfully entered
+    if(!EnterPasswordInPrimeDisp(Password)) 
+    {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Login failed at entering the password");
+        Log["PopLogFolder"]();
+        return false; 
+    }
+    
+    //Check the login button is clicked
+    if(!ClickLoginButtonInPrimeDisp())
+    {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Login failed at clicking on login button");
+        Log["PopLogFolder"]();
+        return false; 
+    }
+    
+    //Wait for the dashbaord screen to load
+    //WaitForProgressRingToDisappear(60);
+    
+    //Verify Prime Disp Login
+    aqUtils["Delay"](1000);
+    Log["Message"]("Verifying whether Application is logged in successfully");
+    
+    var homePageCtrl = undefined;
+    for(i=1; i < 200; i++)
+    {
+      //Get the home page control
+      homePageCtrl = GetAutomationIDControl("HomeButton", "pageHome");
+        
+      //Check the home page is loaded & displayed
+      if(VerifyObjectExists(homePageCtrl)) 
+      {
+          Log["Checkpoint"]("Successfully logged in to Primary Display");
+          Log["PopLogFolder"]();
+          return true;
+      } 
+      else 
+      {
+          aqUtils["Delay"](2000, "Waiting for PrimeDisp dashbaord screen to get loaded");
+      }
+        
+    }
+      //Wait for the system dashboard screen to get loaded
+      if(i==200) 
+      {
+          Log["Error"]("Primary Display Login failed");
+          Log["PopLogFolder"]();
+          return false;
+      }
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+//***********************************************************************************************
+//* Function Name       : KillUDDLayersForPrimeDisp()
+//* Function Description: This function kills the existing UDD Layers (Communication & Datalayers) instances, if exists
+//* Inputs              : NA
+//* Output              : return true, if all the existing instances has been terminated successfully
+//*                       return false, incase unable to kill any of the existing instances of UDD Layers
+//* Date of Creating    : 19 June 2019
+//* Last Modified date  : NA
+//* Created By          : Prabu Ramaraj
+// ***********************************************************************************************
+function KillUDDLayersForPrimeDisp()
+{
+  try
+  {
+    //Kill the UDD.DataLayer
+    Log["AppendFolder"]("Shutdown Hydra Application :: Shutdown UDD layers");
+    
+    var dataLayerConsoleList = Sys["FindAllChildren"]("ProcessName", "UDD.DataLayer",1, true).toArray();
+   
+    for(i=0; i<dataLayerConsoleList.length; i++)
+    {
+      dataLayerConsoleList[i]["Terminate"]();
+      Log["Message"]("Terminated the '" + i + "' instance of the UDD.DataLayer");
+    }
+    
+    //Kill the UDD.CommunicationLayer
+    var commLayerConsoleList = Sys["FindAllChildren"]("ProcessName", "UDD.Communication",1, true).toArray();
+    
+    for(i=0; i<commLayerConsoleList.length; i++)
+    {
+      commLayerConsoleList[i]["Terminate"]();
+      Log["Message"]("Terminated the '" + i + "' instance of the UDD.Communication");
+    }
+    
+    var dataLayerConsoleList = Sys["FindAllChildren"]("ProcessName", "UDD.DataLayer",1, true).toArray();
+    var commLayerConsoleList = Sys["FindAllChildren"]("ProcessName", "UDD.Communication",1, true).toArray();
+    
+    if(dataLayerConsoleList.length > 1 || commLayerConsoleList.length > 1)
+    {
+      Log["Error"]("Unable to kill the UDD layers properly");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("UDD layers has been terminated successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+// ***********************************************************************************************
+//* Function Name       : KillPrimaryDisplayApplication()
+//* Function Description: This function kills the existing primary display application instances, if exists
+//* Inputs              : NA
+//* Output              : return true, if all the existing instances has been terminated successfully
+//*                       return false, incase unable to kill any of the existing instances of Primary Display Application
+//* Date of Creating    : 19 June 2019
+//* Last Modified date  : NA
+//* Created By          : Prabu Ramaraj
+// ***********************************************************************************************
+function KillPrimaryDisplayApplication()
+{
+  try
+  {
+    Log["AppendFolder"]("Shutdown Hydra Application :: Shutdown Atellica Application");
+    var appId = "5ceed41e-3bef-42e2-9ad9-eb1335f89a75";
+    var killAtempt = false;
+    
+    //Kill Primary Display application if it is exists
+    if (Sys["WaitProcess"](appId)["Exists"])
+    {
+        killAtempt = true;
+        Sys["Process"](appId)["Terminate"]();
+        Log["Message"]("Terminated the existing Primary Display window");
+        aqUtils["Delay"](1000);
+        Log["PopLogFolder"]();
+        return true;
+    } 
+    
+    //Check the kill process succcess
+    if(killAtempt && Sys["WaitProcess"](appId)["Exists"])
+    {
+      Log["Error"]("Primary Display Application Kill Attempt Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    else 
+    {
+      Log["Message"]("There is no Primary Display Instance Exists");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***********************************************************************************************
+//* Function Name       : ShutDownHydra()
+//* Function Description: This function shutsdown trinidad and pcm
+//* Inputs              : NA
+//* Output              : return true, shutdown is success
+//*                       return false, shutdwon is failed
+// ***********************************************************************************************
+function ShutDownHydra()
+{
+  try
+  {
+    //Project path
+    var AppConfigFiles =  "C:\\Siemens\\Installation\\Tools";
+        
+    //Open log
+    Log["Enabled"] = true;
+    Log["AppendFolder"]("Shutdown Hydra Application :: Shutdown Trinidad and PCM");
+        
+    //Initialize
+    var ARMConsole,UIW;
+    Log["Enabled"] = false;
+    var WinFolder = "C:\\Siemens\\Installation\\Tools";
+    //var obj = new ActiveXObject("WScript.shell")
+        
+    //Verify App
+    if(!aqFile["Exists"](WinFolder+"\\KillallAndPCM.bat"))
+    {
+      Log["Enabled"] =true;
+      Log["Checkpoint"]("No Application Installed to Shutdown")
+      Log["PopLogFolder"]()
+      return true;
+    }
+    
+    //Shutdown All    
+    var oShell=Sys["OleObject"]("Shell.Application");
+    oShell.ShellExecute("KillallAndPCM.bat","",WinFolder,"runas",1);
+    aqUtils["Delay"](10000,"Wait for the Kill All Commands to Run");
+    
+    //Close CMD
+    Options["Run"]["Delay"] =0;
+    Options["Run"]["Timeout"] =0;
+    //var proparr=["WndClass","WndCaption", "wText"]
+    //var vararr=["ConsoleWindowClass", "*Shutdown PCM Applications*"];
+    //var vararr=["ConsoleWindowClass", "*Press Enter to continue:*"];
+    //var vararr=["ConsoleWindowClass", "Administrator:  *","*Press Enter to continue:*"];
+    var proparr=["WndClass","WndCaption"];
+    var vararr=["ConsoleWindowClass", "Administrator: C:\\windows\\System32\\cmd.exe"];
+    
+        
+    var cmdObj =Sys["Find"](proparr,vararr,200)
+    if(cmdObj["Exists"])
+    {
+      aqUtils["Delay"](2000,"Wait for cmd")
+      cmdObj["Activate"]();
+      //cmdObj["Terminate"]();
+      //cmdObj["Close"]();
+      
+      //click enter to close the window
+      Sys["Keys"]("[Hold]![Enter]");
+      Sys["Keys"]("[Release]![Enter]");
+
+      aqUtils["Delay"](2000,"Close cmd")
+      } 
+        
+    //Close Log
+    Options["Run"]["Timeout"] =10000;
+    Log["Enabled"] = true;
+    Log["Checkpoint"]("Application closed successfully");
+    Log["PopLogFolder"]();
+        
+    return true;
+  }
+  catch (e)
+  {
+    Log["Enabled"] =true;  
+    Options["Run"]["Timeout"] =10000;
+    Log["PopLogFolder"]();
+    Log["Error"]("Exception : "+e["Description"]);
+    return false;
+  }
+}
+
+//***********************************************************************************************
+//* Function Name       : LaunchTrinidad()
+//* Function Description: This function starts trinidad,checks service is running checks IOT has started
+//* Inputs              : NA
+//* Output              : return true, launch is success
+//*                       return false, launch is failed
+//Modified 31 OCT 2019 Bhawya
+// ***********************************************************************************************
+function LaunchTrinidad()
+{
+  try
+  {
+    Log["AppendFolder"]("Launch Hydra Application :: Start Trinidad")
+    //Initialize
+    var explorer;
+    var folderView;
+    explorer = Aliases["explorer"];
+        
+    //Start Trinidad [Run RAMP.exe]
+    var rampExePath = "C:\\Siemens\\Bin";
+    Log["AppendFolder"]("Initialize Hydra :: Initialize Start Trinidad by launching Ramp.exe");
+    var obj=Sys["OleObject"]("Shell.Application");
+    obj.ShellExecute("RAMP.exe","", rampExePath,"runas",1);  
+    Log["PopLogFolder"]();
+      
+      
+    //Wait for the trinidad console StartServiceAndInitializeDiagnosticsClient to initialize IoT & other services
+    aqUtils["Delay"](20000,"Wait for components to Initialize")        
+    
+    //Verify ARM Service running
+    Log["AppendFolder"]("Initialize Hydra :: Verify ARMWindowsService state");
+    aqUtils["Delay"](2000,"Wait for ARMWindowsService to start")
+    serviceName = 'ARMWindowsService'
+    WMI["ComputerName"] = "."
+    
+    //Wait in loop for 10 Mins for service Start
+    timer = 0
+    do
+    {
+      aqUtils["Delay"](4000,"Wait for ARMWindowsService to run :Max 10 Mins")
+      timer = timer+1;
+    } while(WMI["GetServiceState"](serviceName) != "Running" && timer < 150)
+    
+    //Verify the Service state and log the result
+    if(WMI["GetServiceState"](serviceName) != "Running"){
+      Log["Error"]("ARMWindowsService doesnot start")
+      Log["PopLogFolder"]()
+      return false;
+    }else{
+      Log["Checkpoint"]("ARMWindowsService Started Sucessfully")
+      Log["PopLogFolder"]()
+    }
+    
+    
+    //Verify HydraInstrument Service running
+    Log["AppendFolder"]("Initialize Hydra :: Verify HydraInstrumentService state");
+    aqUtils["Delay"](2000,"Wait for HydraInstrumentService to start")
+    serviceName = 'Hydra Instrument Service'
+    WMI["ComputerName"] = "."
+
+    //Wait in loop for max 10 minutes
+    timer = 0
+    do
+    {
+      aqUtils["Delay"](4000,"Wait for HydraInstrumentService to run : Max 10 Mins")
+      timer = timer+1;
+    } while(WMI["GetServiceState"](serviceName) != "Running" && timer < 150)
+    
+    //Verify the Service state and log the result
+    if(WMI["GetServiceState"](serviceName) != "Running"){
+      Log["Error"]("HydraInstrumentService doesnot start")
+      Log["PopLogFolder"]()
+      return false;
+    }else{
+      Log["Checkpoint"]("HydraInstrumentService Started Sucessfully")
+      Log["PopLogFolder"]()
+    }
+    
+    //Verify IoT Started
+    Log["AppendFolder"]("Initialize Hydra :: Verify IoT started sucessfully")
+    var desktopObj=Sys["Desktop"];
+    var proparr=["WndClass", "wndCaption"];
+    var vararr=["ConsoleWindowClass", "Administrator:  StartIoT"];
+    var boolIoTFlag = false;
+    for(z=0; z<150; z++) // 5 minutes
+    {
+      var cmdObj =Sys["Find"](proparr,vararr,35)
+      if(!cmdObj["Exists"])
+        aqUtils["Delay"](2000, "Waiting for StartIoT window :Max 5 Mins");
+      else{
+          boolIoTFlag =true
+          break;}
+    }
+    if(!boolIoTFlag){
+      Log["Error"]("StartIoT console doesnot exist")
+      Log["PopLogFolder"]()
+      return false;
+    }
+    //Verify Configuration Complete Message [15 mins wait Max]
+    if(VerifyMessageInCMD(cmdObj,"Configuration complete",15)){
+      Log["Checkpoint"]("IoT started sucessfully")
+      Log["PopLogFolder"]();}
+    else{
+      Log["Error"]("Failed to start IoT")
+      Log["PopLogFolder"]()
+      return false}
+    
+//    //---------------------------------UDD layer--------------------------------
+//     
+//    Log["AppendFolder"]("Initialize Hydra :: Verify UDD Layer started");
+//      //Delete Old DataLayer Logs
+//      var sDataLayerLogPath="F:\\UDD\\DataLayerlog.log";
+//      if(aqFile["Exists"](sDataLayerLogPath))
+//      aqFileSystem["DeleteFile"](sDataLayerLogPath)
+//      
+//      //Launch Data Layer if doesnot exists
+//      //[Need to discuss this verification as currently in GAD, UDD launched with trinidad]
+//      var desktopObj=Sys["Desktop"];
+//      var proparr=["WndClass", "wndCaption"];
+//      var vararr=["ConsoleWindowClass", "*UDD Data Layer Version*"];
+//      var cmdObj =Sys["Find"](proparr,vararr,35);
+//      var boolUDDFlag=false;
+//      for(z=0; z<150; z++) // 5 minutes
+//    {
+//      var cmdObj =Sys["Find"](proparr,vararr,35)
+//      if(!cmdObj["Exists"])
+//        aqUtils["Delay"](2000, "Waiting for UDD Data layer window :Max 5 Mins");
+//      else{
+//          boolUDDFlag =true
+//          break;}
+//    }
+//    if(!boolUDDFlag){
+//      Log["Error"]("UDD data layer console doesnot exist")
+//      Log["PopLogFolder"]()
+//      return false;
+//    }
+//      
+//      //Wait for data layer to launch & connect [Max 5 minutes]
+//      if(!VerifyMessageInLogs(sDataLayerLogPath,"Finished initializing Executors",5)){
+//          Log["Error"]("Data layer Initialization Failed")
+//          Log["PopLogFolder"]();
+//          return false;}
+//      else{
+//          Log["Checkpoint"]("Datalayer : Finished initializing Executors")
+//          Log["PopLogFolder"]();
+//      }
+//      
+//      
+//    //---------------------------------Communication layer--------------------------------
+//    Log["AppendFolder"]("Initialize Hydra :: Verify UDD Communication layer started");
+//      
+//      //Launch Communication Layer if doesnot exists 
+//      //[Need to discuss this verification as currently in GAD, UDD launched with trinidad]
+//      var desktopObj=Sys["Desktop"];
+//      var proparr1=["WndClass", "wndCaption"];
+//      var vararr1=["ConsoleWindowClass", "*UDD.Communication.exe*"];
+//      var cmdCommObj =Sys["Find"](proparr1,vararr1,35)
+//       var boolCommFlag=false;
+//      for(z=0; z<150; z++) // 5 minutes
+//    {
+//      var cmdObj =Sys["Find"](proparr,vararr,35)
+//      if(!cmdObj["Exists"])
+//        aqUtils["Delay"](2000, "Waiting for UDD Commuincation window :Max 5 Mins");
+//      else{
+//          boolCommFlag =true
+//          break;}
+//    }
+//    if(!boolCommFlag){
+//      Log["Error"]("UDD Communication console doesnot exist")
+//      Log["PopLogFolder"]()
+//      return false;
+//    }
+//      
+//      //Wait for Communication layer to launch & connect [Max 5 minutes] 
+//      cmdCommObj =Sys["Find"](proparr1,vararr1,35)
+//      if(!VerifyMessageInCMD(cmdCommObj,"Application started",5)){
+//          Log["Error"]("Communication layer Initialization Failed")
+//          Log["PopLogFolder"]();
+//          return false;}
+//      else{
+//          Log["Checkpoint"]("Communication Layer started sucessfully")
+//          Log["PopLogFolder"]();
+//      } 
+      
+      
+	  //Close Log
+    Log["PopLogFolder"]();
+    return true;              
+  }
+  catch(e)
+  {
+    Log["Enabled"] =true;  
+    Log["Error"]("Exception : "+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+
+//***************************************************************************************
+//*   Function Name       : LaunchPrimeDisp()
+//*   Function Description: This function is used to laucn the PrimeDisp Application
+//*   Input               : NA
+//*   Output              : return true, if the Primary Display Application launch success 
+//*                         return false, if the Primary Display Application launch failed 
+//*   Date of Creating    : 13 Mar 2019
+//*   Last Modified date  : 1 Dec 2019 - Shahana
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function LaunchPrimaryDisplayApplication() 
+{
+  try
+  {
+    
+    //Initialize
+    var obj = new ActiveXObject("WScript.shell")
+    var count=0;
+    
+    //Project file Paths
+    var ProjPath = ProjectSuite["Path"];
+    var arrPath  = ProjPath["split"]("Hydra")
+    var testDataPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\AppConfigFiles";   
+    
+    // get Primiry UI Name (ex. 5ceed41e-3bef-42e2-9ad9-eb1335f89a75_qykmnxfx80qb6)
+    var uiName = GetUINameFromAppList();
+    
+    // write Start_PrimDisp.bat with UI name
+    var filePath = testDataPath + "\\Start_PrimDisp.bat";
+    
+    if((aqFile["Exists"])(filePath))
+    {
+        aqFile["Delete"](filePath);
+    }
+    var result = aqFile["Create"](filePath);
+    
+    // if file was created or it exists
+    if(result == 0)
+    {
+        var startPrimDispBat = aqFile["OpenTextFile"](filePath, aqFile.faWrite, aqFile.ctANSI);
+    
+        var line1 = "start shell:appsFolder\\" + uiName  + "!App  [Enter]";
+    
+        startPrimDispBat["WriteLine"](line1);
+        startPrimDispBat["Close"]();
+    }
+    else
+    {
+        var strError = aqUtils["SysErrorMessage"](result);
+        Log["Error"]("The File Start_PrimDisp.bat was not created " + strError)
+    }
+    
+    //Open log
+    Log["AppendFolder"]("Launch Hydra Application :: Launch the Primary Display Application");
+        
+    //Start PrimeDisp
+    Log["Enabled"] = false;
+    obj["Run"](testDataPath+"\\Start_PrimDisp.bat")
+    var primeDispObj = Sys["WaitProcess"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75", 240000);
+    primeDispObj["WaitProperty"]("Visible", true, 10000);
+	Log["Enabled"] =true; 
+	
+	//Kill UI - temporary fix for CI - shahana
+    Log["AppendFolder"]("Workaround : to close and launch UI again");
+    if(!KillPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to shutdown UI");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Start PrimeDisp
+    Log["Enabled"] = false;
+    obj["Run"](testDataPath+"\\Start_PrimDisp.bat")
+    var primeDispObj = Sys["WaitProcess"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75", 240000);
+    primeDispObj["WaitProperty"]("Visible", true, 10000);
+    
+    //wait for login page to appear
+    PrimaryDisplayWindow=Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["UIAObject"]("Atellica");
+    while(!PrimaryDisplayWindow["Exists"])
+    {
+      aqUtils["Delay"](10000,"Wait for Login window to enable");
+      Count++;
+      
+      //wait for 80 seconds for screen to enable
+      if(count==8)
+        break;
+    } 
+	Log["Enabled"] =true; 
+    
+    //Verify Primary Display Application Launched
+    if(VerifyObjectExists(PrimaryDisplayWindow)) 
+    {
+      //Maximize the window
+      PrimaryDisplayWindow["Maximize"]();
+      
+      Log["Message"]("Primary Display Application launched successfully");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Message"]("Primary Display Application failed to launch");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Enabled"] =true;  
+    Log["Error"]("Exception : "+ e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+// ***********************************************************************************************
+//* Function Name       : InitializeUDDLayersForPrimeDisp()
+//* Function Description: This function to initialize the UDD Layers (Communication & Datalayers) to connect PrimeDisp to Legacy system
+//* Inputs              : NA
+//* Output              : return true, if the UDD Layers launched successfully
+//*                       return false, incase unable to launch any of the UDD Layers
+//* Date of Creating    : 14 June 2019
+//* Last Modified date  : 31 Oct 2019 [bhawya]
+//* Created By          : Prabu Ramaraj
+// ***********************************************************************************************
+function InitializeUDDLayersForPrimeDisp() 
+{
+  try
+  {    
+      Log["AppendFolder"]("Launch Hydra Application :: Start UDD");
+      
+      var DATALayerPath = "C:\\Siemens\\UDD.DataLayer";
+      var COMMLayerPath = "C:\\Siemens\\UDD.Communication";
+      
+      
+      //---------------------------------Delete Old DataLayer Logs-----------------------------
+ /*
+        var sDataLayerLogPath="F:\\UDD\\DataLayerlog.log";
+        if(aqFile["Exists"](sDataLayerLogPath))
+          aqFileSystem["DeleteFile"](sDataLayerLogPath)
+*/
+
+      var sDataLayerLog = "Application.UDD.Datalayer.xml";
+      var sDataLayerLogPath = GetLatestLoggerFolder() + sDataLayerLog;
+
+      //---------------------------------Data Layer Initializtion-----------------------------
+      Log["AppendFolder"]("Initialize Backend :: Initialize Datalayer for Primary UI");
+      var obj=Sys["OleObject"]("Shell.Application");
+      
+      //Launch Data Layer if doesnot exists
+      //[Need to discuss this verification as currently in GAD, UDD launched with trinidad]
+      var desktopObj=Sys["Desktop"];
+      var proparr=["WndClass", "wndCaption"];
+      var vararr=["ConsoleWindowClass", "*UDD Data Layer Version*"];
+      var cmdObj =Sys["Find"](proparr,vararr,35)
+      if(!cmdObj["Exists"]){
+        obj.ShellExecute("UDD.DataLayer.exe","", DATALayerPath,"runas",1);
+        aqUtils["Delay"](5000,"Wait for Data Layer Launch")
+      }
+      
+      //Wait for data layer to launch & connect [Max 5 minutes]
+      if(!VerifyMessageInLogs(sDataLayerLogPath,"Finished initializing Executors",5)){
+          Log["Error"]("Data layer Initialization Failed")
+          Log["PopLogFolder"]();
+          return false;}
+      else{
+          Log["Checkpoint"]("Datalayer : Finished initializing Executors")
+          Log["PopLogFolder"]();
+      }
+      
+      //---------------------------------Communication Layer Initializtion-----------------------------
+      Log["AppendFolder"]("Initialize Backend :: Initialize Communication layer for Primary UI");
+      
+      //Launch Communication Layer if doesnot exists 
+      //[Need to discuss this verification as currently in GAD, UDD launched with trinidad]
+      var desktopObj=Sys["Desktop"];
+      var proparr1=["WndClass", "wndCaption"];
+      var vararr1=["ConsoleWindowClass", "*UDD.Communication.exe*"];
+      var cmdCommObj =Sys["Find"](proparr1,vararr1,35)
+      if(!cmdCommObj["Exists"]){
+        obj.ShellExecute("UDD.Communication.exe","", COMMLayerPath,"runas",1);
+        aqUtils["Delay"](5000,"Wait for Communication Layer Launch")
+      }
+      
+      //Wait for Communication layer to launch & connect [Max 5 minutes] 
+      cmdCommObj =Sys["Find"](proparr1,vararr1,35)
+      if(!VerifyMessageInCMD(cmdCommObj,"Application started",5)){
+          Log["Error"]("Communication layer Initialization Failed")
+          Log["PopLogFolder"]();
+          return false;}
+      else{
+          Log["Checkpoint"]("Communication Layer started sucessfully")
+          Log["PopLogFolder"]();
+      } 
+  
+      
+      Log["PopLogFolder"]();
+      return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    return false;
+  }
+}
+
+//************************************************************************************************
+//* Function Name       : EnterOperatorIdInPrimeDisp(OperatorId)
+//* Function Description: This function writes the UserName in the login window
+//* Inputs              : Username -> Username needed for the login operation
+//* Output              : return true, if the operator id entered successfully
+//*                       return false, if there is any issue / exception by entering the operator id
+//* Date of Creating    : 11 June 2019
+//* Last Modified date  : 05 July 2019
+//* Created By          : Prabu Ramaraj
+//************************************************************************************************
+function EnterOperatorIdInPrimeDisp(strOperatorID)
+{
+  try
+  {
+    Log["AppendFolder"]("Login to Hydra Application :: Entering the Operator Id in Login window");
+    
+    //Get operator ID control
+    var operatorIDCtrl = GetAutomationIDControl("Login","txtOperatorId");
+    
+    //Check the operator id control is displayed
+    if(VerifyObjectExists(operatorIDCtrl))
+    {
+      //Enter operator id 
+      SetValue(operatorIDCtrl,strOperatorID);
+    
+      //Check the operator ID entered correctly
+      if(operatorIDCtrl["Text"] == strOperatorID)
+      {
+        Log["Message"]("OperatorID '" + strOperatorID + "' has been successfully entered");
+        Log["PopLogFolder"]();
+        return true;      
+      } else {
+        Log["Error"]("Unable to enter the operator id properly");
+        Log["PopLogFolder"]();
+        return false;
+      }  
+    } else {
+      Log["Error"]("Unable to locate the operator id field in login screen");
+      Log["PopLogFolder"]();
+      return false;
+    }        
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//************************************************************************************************
+//* Function Name       : EnterPasswordInPrimeDisp(Password)
+//* Function Description: This function writes the password in Login window
+//* Inputs              : Password -> Password needed for the login operation
+//* Output              : return true, if the operator id entered successfully
+//*                       false => if there is any issue / exception by entering the operator id
+//* Date of Creating    : 11 June 2019
+//* Last Modified date  : 05 July 2019
+//* Created By          : Prabu Ramaraj
+//************************************************************************************************
+function EnterPasswordInPrimeDisp(strPswd)
+{
+  try
+  {
+    Log["AppendFolder"]("Login to Hydra Application :: Entering the Password in Login window");
+    
+    //Get the password txt control
+    var passwordCtrl = GetAutomationIDControl("Login","txtOperatorPassword");
+    
+    //Check the password control is displayed
+    if(VerifyObjectExists(passwordCtrl))
+    {
+      //Entered the password
+      SetValue(passwordCtrl,strPswd);  
+    
+      //Check the password entered correctly
+      if(passwordCtrl["Text"] != "")
+      {
+        Log["Message"]("Password is entered correctly");
+        Log["PopLogFolder"]();
+        return true;      
+      } else {
+        Log["Error"]("Unable to enter the password properly");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("Unable to locate the password field in the login screen");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("PrimeDisp application login failed");
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+// ***********************************************************************************************
+//* Function Name : ClickOnSignButton()
+//* Function Description: This function clicks the signin button in the login window
+//* Inputs : NA
+//* Output              : return true, if the Login button clicked successfully
+//*                       return false, if click on the login button failed / any exception
+//* Date of Creating    : 11 June 2019
+//* Last Modified date  : 05 July 2019
+//* Created By          : Prabu Ramaraj
+// ***********************************************************************************************
+function ClickLoginButtonInPrimeDisp()
+{
+  try
+  {
+    Log["AppendFolder"]("Login to Hydra Application :: Clicking on Login Button in Login Window");
+    
+    //Get the login button control at login screen
+    var loginBtnCtrl = GetAutomationIDControl("Login","btnLogin");
+    
+    //Check the login button is displayed in login screen
+    if(VerifyObjectEnabled(loginBtnCtrl))
+    {
+      Log["Message"]("Login button located and enbaled in login screen");
+      
+      //Click on the login button
+      ClickCtrl(loginBtnCtrl);  
+      
+      Log["Message"]("Clicked on the login button in primary ui");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the login button in login screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+//*************************************************************************
+//*  FunctionName : VerifyMessageInCMD(CMDObj,sSearchText,MaxTimeInMinutes)
+//*  Input: CMDObj,sSearchText,MaxTimeInMinutes
+//*  Output: Boolean
+//*  Date of Creating: 31 Oct 2019
+//*  Created By: Bhawya V J
+//************************************************************************* 
+function VerifyMessageInCMD(CMDObj,sSearchText,MaxTimeInMinutes)
+{
+    try
+    {    
+        //Maximum Wait : MaxTimeInMinutes [10 seconds polling]
+		if(!CMDObj["Exists"])
+          return false;
+        var TimeOut = MaxTimeInMinutes *6
+        for(var i=0;i<TimeOut;i++)
+        {
+          sText=CMDObj["wText"]
+          if(aqString["Find"](sText,sSearchText)>0)
+              return true;
+          else
+              aqUtils["Delay"](10000,"Waiting for "+sSearchText+" message in console : MaxWait "+MaxTimeInMinutes+" Mins");
+        }
+        if(i>=30)
+            return false;
+    }catch(exp){
+        Log["Error"]("Exception: " + exp["description"]);
+        return false;
+    } 
+    
+}  
+
+
+function CheckAnyAlertDialogDisplayedOnLogin()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Check any alert dialog displayed on login");
+    
+    //Refresh the root node of the app to get the popup updated
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the order placed acknowledge popup
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //check the alert dialog control is displayed
+    if(VerifyObjectExists(alertDialog))
+    {
+      //get the description of the alert dialog
+      var alertDescriptionContainer = Getchild(alertDialog, "AutomationId", "AlertContentPresenter")
+      var alertDescriptionCtrl = Getchild(alertDescriptionContainer, "ClassName", "TextBlock");
+      var alertDescription = alertDescriptionCtrl["Text"];
+      
+      //check the alert dialog is for sign-in failed      
+      if(aqString["Find"](alertDescription,"Sign-in failed") != -1)
+      {
+        Log["Message"]("The alert message dispalyed is for the 'Sign in Failed' warning message");
+        
+        //TODO: Need to handle the invalid credential alert popup
+        
+        Log["PopLogFolder"]();
+        return true;        
+      } 
+      
+      //check the alert is for first time login
+      else if(aqString["Find"](alertDescription,"First-time Sign-in: select Security Questions",0,false) != -1)
+      {
+        Log["Message"]("The alert message displayed is for the 'First Time Sign-in' and update security questions")  ;
+        
+        //update the security questions through UI and login again
+        if(UpdateSecurityQuestionsIfFirstTimeLogin())
+        {
+          Log["Message"]("Update Security Questions is successfully completed to Login");
+          Log["PopLogFolder"]();
+          return true;          
+        } else {
+          Log["Error"]("Failed to update the security questions on 'First Time Sign-in'");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+      
+      //check if the alert is for password expiry
+      else if(aqString["Find"](alertDescription,"The password will expire on",0,false) != -1)
+      {
+        Log["Message"]("The alert message dispalyed is for the 'Password expiring soon' warning message");
+        
+        //TODO: Handle the Password expiring alert popup
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      
+      //Default, there is no popup displayed
+      else 
+      {
+        Log["Error"]("There is some other unhandled popup is displayd on login")
+        Log["PopLogFolder"]();
+        return false;
+      }            
+    } else {
+      Log["Message"]("There is no alert dialog displayed on login");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOkButtonInAlertDialog()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Click on 'Ok' Button in Alert Dialog");
+    
+    //Refresh the root node of the app to get the popup updated
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the order placed acknowledge popup
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //check the alert dialog control is displayed
+    if(VerifyObjectExists(alertDialog))
+    {
+      var okBtnCtrl = Getchild(alertDialog, ["ClassName", "ObjectIdentifier"], ["Button","OK"]);
+      
+      if(VerifyObjectEnabled(okBtnCtrl))
+      {
+        Log["Message"]("Ok button is located in the alert dailog");
+        
+        //click on the ok btn
+        ClickCtrl(okBtnCtrl);
+        
+        Log["Message"]("Ok button is successfully clicked");
+        Log["PopLogFolder"]();
+        return true;        
+      } else if(VerifyObjectExists(okBtnCtrl)) {
+        Log["Error"]("Ok button is located and not enabled to click");
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        Log["Error"]("Unable to locate the ok button control in alert dialog displayed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("There is no alert dialog displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckChangeSecurityQuestionsAlertDialogDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Check the Change Secutiy Question Popup Displayed");
+   
+    var securityQuestionsPopupCtrl = GetAutomationIDControl("Login_SecurityQuestions", "securityQuestionsAlert");
+    
+    if(VerifyObjectExists(securityQuestionsPopupCtrl))
+    {
+      Log["Message"]("Change Security Questions Popup is displayed");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the change security questions popup displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectSecurityQuestionAndEnterAnswer(questionNumber, securityQuestion, securityAnswer)
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Selecting question 1 and entering answer");
+    
+    //Get security question control
+    var questionCtrl = GetAutomationIDControl("Login_SecurityQuestions","cmbBoxSecurityQuestion"+questionNumber);
+    var answerCtrl = GetAutomationIDControl("Login_SecurityQuestions","txtBoxSecurityAnswer"+questionNumber);
+              
+    //Verify if question dropdown exists
+    if(VerifyObjectExists(questionCtrl) && VerifyObjectExists(answerCtrl))
+    {
+                
+      //Selecting security question  
+      SelectComboBoxItem(questionCtrl,securityQuestion);      
+      var qustionSelected = questionCtrl["Selection"]["toArray"]()[0];
+      
+      //Check the security question selected
+      if(qustionSelected == securityQuestion)
+      {
+        Log["Message"]("Successfully selected the question '" + questionNumber + "'");
+      } else {
+        Log["Error"]("Unable to select the security question '" + questionNumber + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Entering security answer
+      SetValue(answerCtrl,securityAnswer);
+      
+      if(answerCtrl["Text"] == securityAnswer)
+      {
+        Log["Message"]("Successfully entered the answer for the security question '" + questionNumber + "'");
+      } else {
+        Log["Error"]("Unable to enter the answer for the security question '" + questionNumber + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+            
+      Log["PopLogFolder"]();
+      return true;  
+    } else {
+      Log["Error"]("Unable to locate the security question '" + questionNumber + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckSaveButtonEnabledInChangeSecurityQuestionsPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Check the 'Save' button enabled in the change security question popup");
+    
+    //get the save button ctrl
+    var saveBtnCtrl = GetAutomationIDControl("Login_SecurityQuestions", "btnSaveSecurityAnswers");
+    
+    //check the save button is enabled
+    if(VerifyObjectEnabled(saveBtnCtrl))
+    {
+      Log["Message"]("Save button is enabled in the Change Security Questions Popup");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Save button is not enabled in the change security questions popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnSaveButtonInChangeSecurityQuestionsPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Click on 'Save' button in the change security question popup");
+    
+    //get the save button control
+    var saveBtnCtrl = GetAutomationIDControl("Login_SecurityQuestions", "btnSaveSecurityAnswers");
+    
+    //check the button is enabled
+    if(VerifyObjectEnabled(saveBtnCtrl))
+    {
+      Log["Message"]("Save button is enabled in the Change Security Questions Popup");
+      
+      ClickCtrl(saveBtnCtrl);
+      
+      Log["Message"]("Clicked on the save button in Change Security Questions Popup");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Save button is not enabled in the change security questions popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOkButtonInSecurityQuestionsUpdatedConfirmationPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Click on 'Ok' Button in Confirmation Popup");
+    
+    //Refresh the root node of the app to get the popup updated
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the order placed acknowledge popup
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //check the alert dialog control is displayed
+    if(VerifyObjectExists(alertDialog))
+    {
+      var okBtnCtrl = Getchild(alertDialog, ["ClassName", "ObjectIdentifier"], ["Button","OK"]);
+      
+      if(VerifyObjectEnabled(okBtnCtrl))
+      {
+        Log["Message"]("Ok button is located in the alert dailog");
+        
+        //click on the ok btn
+        ClickCtrl(okBtnCtrl);
+        
+        Log["Message"]("Ok button is successfully clicked");
+        Log["PopLogFolder"]();
+        return true;        
+      } else if(VerifyObjectExists(okBtnCtrl)) {
+        Log["Error"]("Ok button is located and not enabled to click");
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        Log["Error"]("Unable to locate the ok button control in alert dialog displayed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Error"]("There is no alert dialog displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function UpdateSecurityQuestionsIfFirstTimeLogin()
+{
+  try
+  {
+    Log["AppendFolder"]("Authentication :: Update Security Questions, If First Time Signin Alert Dispalyed")
+            
+    //Click ok button in the first time sign in alert
+    if(!ClickOkButtonInAlertDialog())
+    {
+      Log["Error"]("Unable to Perform click operation on 'Ok' button in first time sign in alert");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Check the change security question popup is displayed
+    if(!CheckChangeSecurityQuestionsAlertDialogDisplayed())
+    {
+      Log["Error"]("Unable to locate the change security question alert dialog");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Select the security questions and enter the answer
+    
+    //Security Question 1
+    if(!SelectSecurityQuestionAndEnterAnswer("1", "What was your childhood nickname?", "test"))
+    {
+      Log["Error"]("Failed to select and enter the answer for the security question 1");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Security Question 2
+    if(!SelectSecurityQuestionAndEnterAnswer("2", "What is your mother's maiden name?", "test"))
+    {
+      Log["Error"]("Failed to select and enter the answer for the security question 2");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    
+    //Check the save button is enabled
+    if(!CheckSaveButtonEnabledInChangeSecurityQuestionsPopup())
+    {
+      Log["Error"]("Failed on saving the security question and answer updated");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //click on save button
+    if(!ClickOnSaveButtonInChangeSecurityQuestionsPopup())
+    {
+      Log["Error"]("Unable to click on the save button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click ok on the confirmation alert popup
+    if(!ClickOkButtonInSecurityQuestionsUpdatedConfirmationPopup())
+    {
+      Log["Error"]("Unable to acknowledge the security questions updated confirmation popup");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    
+    Log["PopLogFolder"]();
+    return true;      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function LogoutCurrentUser()
+{
+  try
+  {
+    Log["AppendFolder"]("Perform LogOff from Hamburger menu");
+    
+    //Verify if LoginPage is displayed
+    var loginPageCtrl = GetAutomationIDControl("Login","pageLogin");
+    if(VerifyObjectExists(loginPageCtrl))
+    {
+      Log["Message"]("User was already logged out");
+      Log["PopLogFolder"]();
+      return true;
+    }  
+    
+    if(!ClickOnHamBurgerAndClickOnDesiredOption("Logoff"))
+    {    
+      Log["Error"]("Failed to click Hamburger menu and select 'LogOff'");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    
+    if(!VerifyLogOffPoupDisplayed())
+    {    
+      Log["Error"]("Failed to locate the Logoff Popup");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    
+    if(!ClickOnSignOutFromLogOffPopupAndVerifyAlertDisplayed())
+    {
+      Log["Error"]("Failed to Click Logoff and verify confirmation popup");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    if(!VerifyLoginScreenDisplayedAfterSignedOut())
+    {
+      Log["Error"]("Failed to Verify Login screen displayed after logoff");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnHamBurgerAndClickOnDesiredOption(option)
+{
+  try
+  {
+    Log["AppendFolder"]("Clicking "+ option +" on Hamburger menu");
+    
+    //Click hamburger button
+    if(!ClickHamburgerToViewMenu())
+    {
+      Log["Error"]("Failed to click hamburger button");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    
+    //Click on desired option from Menu displayed
+    if(!ClickDesiredOptionOnHamburgerMenu(option))
+    {
+      Log["Error"]("Failed to click "+option+" on hamburgermenu");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+          
+  Log["PopLogFolder"]();
+  return true; 
+  }
+  catch(e)
+  {  
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickHamburgerToViewMenu()
+{
+  try 
+  {
+    var hamburger = GetAutomationIDControl("HomeButton","btnHamburger"); 
+    
+    //Verifying if the hamburger button exist
+    if(VerifyObjectExists(hamburger))
+    { 
+      ClickCtrl(hamburger);
+      Log["Message"]("Clicked hmaburger");
+      return true;
+    }
+    else
+    {
+      Log["Error"]("The Hmaburger button doesn't exist/displayed");
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickDesiredOptionOnHamburgerMenu(option)
+{
+  try
+  {
+    Log["AppendFolder"]("Select "+option+" from Hamburger menu");
+    
+    switch(option)
+    {
+      case "Logoff":
+        var optionCtrl =GetAutomationIDControl("BurgerMenu","LogOff");
+        break;
+    }
+    
+    if(VerifyObjectExists(optionCtrl))
+    {
+      Log["Message"]("Located the '"+option+"' control");
+      ClickCtrl(optionCtrl);
+      Log["Message"]("Clicked the '"+option+"' control");
+      Log["PopLogFolder"]();
+      return true;;
+    }
+    else
+    {
+      Log["Error"]("Failed to Locate the '"+option+"' control")
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {  
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyLogOffPoupDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("Verifying if LogOff PopUp is displayed"); 
+    var logoffPopCtrl = GetAutomationIDControl("BurgerMenu_LogOff","PopupLogOff");
+     
+    //Verify if LogOff PopUp is displayed  
+    if(!VerifyObjectExists(logoffPopCtrl))
+    {
+      Log["Error"]("LogOff popup doesn't exist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("LogOff PopUp is displayed");
+      Log["PopLogFolder"]();
+      return true;
+    }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickFromLogOffPopup(control)
+{
+  try
+  {
+    //Verify if the optionexist on LofOff ppUp
+    if(VerifyObjectExists(control))
+    {
+      ClickCtrl(control);
+      Log["Message"]("Clicked an option on LogOff POpUp");
+      return true;        
+    }
+    else
+    {
+      Log["Error"]("The option doesn't exist on LogOff PopUp");
+      return false;
+    }          
+    
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception: ", e["description"]);
+      return false;
+  }
+}
+
+function ClickOnSignOutFromLogOffPopupAndVerifyAlertDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("Click on SignOut From LogOff PopUp and verify Alert Displayed");
+    
+    var signoutBtnCtrl = GetAutomationIDControl("BurgerMenu_LogOff","btnSignOut");
+    
+    //Click SignOut from LogOff PopUp
+    if(!ClickFromLogOffPopup(signoutBtnCtrl))
+    {
+     Log["Error"]("Failed to Click signout from LogOff PopUp");
+     Log["PopLogFolder"]();
+     return false; 
+    }
+    
+    //Verify if Alert is displayed after clicking Singout
+    var alertCtrl = GetAutomationIDControl("SystemHealthCheck","alertDialog");    
+    if(!VerifyObjectExists(alertCtrl))
+    {
+      Log["Error"]("Confirm Signout alert doesn't exist");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+     
+    Log["PopLogFolder"]()
+    return true;
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception: ", e["description"]);
+      Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+function DecideOnConfirmSignOutAlert(decision)
+{
+   try
+   {
+     Log["AppendFolder"]("Clicking "+decision+" on Confirm SignOut alert");
+     
+     var decisionLwr = aqString["ToLower"](decision);
+     var decisionCtrl;
+     var alertCtrl = GetAutomationIDControl("SystemHealthCheck","alertDialog");
+     
+     if(decisionLwr == "yes")
+     {       
+       decisionCtrl = Getchild(alertCtrl,"AutomationId","PrimaryButton");
+     }
+     else if(decisionLwr == "no")
+     {
+       decisionCtrl = Getchild(alertCtrl,"AutomationId","SecondaryButton"); 
+     }
+     
+     if(VerifyObjectExists(decisionCtrl))
+     {
+        ClickCtrl(decisionCtrl);
+        Log["Message"]("Clicked "+decision+" on confirm signout PopUp");
+        Log["PopLogFolder"]();
+        return true;
+     }
+     else
+     {
+       Log["Error"](decision+" button on sign out alert doesn't exist");
+       Log["PopLogFolder"]();
+       return false;
+     }
+     
+   }
+   catch(e)
+   {
+      Log["Error"]("Exception: ", e["description"]);
+      Log["PopLogFolder"]();
+      return false;
+   }
+}
+
+function VerifyLoginScreenDisplayedAfterSignedOut()
+{
+  try
+  {
+   Log["AppendFolder"]("Verifying Login Screen is displayed after signed out");  
+   var decision = "Yes"
+      
+   //Click yes on confirm SignOut
+    if(!DecideOnConfirmSignOutAlert(decision))
+    {
+      Log["Error"]("Failed to click "+decision+" on confirm SignOut alert");
+      Log["PopLogFolder"]();
+      return false;
+    }
+      
+    aqUtils["Delay"](5000, "Waiting for Login screen to load : Maxwait(5Secs)") 
+    
+    //Wait 2oseconds till the progress ring disappears
+    WaitForProgressRingToDisappear(10);  
+    
+    //Verify if LoginPage is displayed after SignOut
+    var loginPageCtrl = GetAutomationIDControl("Login","pageLogin");
+    if(!VerifyObjectExists(loginPageCtrl))
+    {
+      Log["Error"]("Login Screen is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function GetCurrentSignedInuser()
+{
+  try
+  {
+    Log["AppendFolder"]("Get The Current User")
+    
+    var currentUserCtrl=GetAutomationIDControl("Login","pageLogin");
+    
+    if(VerifyObjectExists(currentUserCtrl))
+    {
+      Log["Message"]("CurrentUser Is '"+currentUserCtrl["Text"]+"'")
+      return currentUserCtrl["Text"];
+    }
+    else
+    {
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//*************************************************************************
+//*  FunctionName : GetUINameFromAppList
+//*  Description: Executes powershell script to get UI App Name that starts with 5ceed41e-, and writes to appname.txt file
+//*  Input: na (to implement startsWithString - to be implemented app name start string)
+//*  Output: UI App Name (for ex. 5ceed41e-3bef-42e2-9ad9-eb1335f89a75_t1jx13gsykmd2)r
+//*  Example: GetUINameFromAppList
+//*  Date of Creating: 01/30/2020
+//*  Created By: Y. Milman
+//*************************************************************************
+function GetUINameFromAppList()
+{
+    try
+    {
+        //Project file Paths
+        var ProjPath = ProjectSuite["Path"];
+        var arrPath  = ProjPath["split"]("Hydra")
+        var AppConfigFiles =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles";
+        var PS_GetAppNameFile = AppConfigFiles + "\\GetUIAppName.ps1";
+        var appNameFile = AppConfigFiles + "\\appName.txt";
+
+        WshShell["Run"]("powershell -file "+ PS_GetAppNameFile);   //This command directly runs the powershell script
+        aqUtils["Delay"](1000, "Waiting for App Name File");
+		
+        // Open appName text file
+        var openFile = aqFile["OpenTextFile"](appNameFile, aqFile["faRead"], aqFile["ctANSI"]);
+		
+        // Read the contents of file
+        var content = openFile["ReadLine"]();
+		
+		    //close the file
+        openFile["Close"]();
+        
+        if(contents = "")
+        {
+          return null;
+        }
+        else
+        {
+          return content;
+        }
+    }
+    catch(exp)
+    {
+        Log["Error"]("Exception - " + exp["description"]);
+        return null;
+    }
+}
+
+//*************************************************************************
+//*  FunctionName : GetLatestLoggerFolder
+//*  Description: Returns the path to the name of the latest logger folder from InstrumentOutput\\Logger
+//*  Input: na
+//*  Output: String - name of the folder
+//*  Example: GetLatestLoggerFolder
+//*  Date of Creating: 01/30/2020
+//*  Created By: Y. Milman
+//*************************************************************************
+function GetLatestLoggerFolder()
+{
+  try
+  {
+    var sRegisterIMFolderpath="F:\\InstrumentOutput\\Logger\\";
+    var oFolderobj=aqFileSystem["GetFolderInfo"](sRegisterIMFolderpath);
+    var oSubFoldersItems=oFolderobj["SubFolders"];
+    var arrLastModifiedtTime=new Array();
+    
+    var sGreater = oSubFoldersItems["Item"](0)["DateLastModified"];
+    var sGreatest=0;
+    
+    var sLatestLoggerFolderName = "";
+    
+    if(oSubFoldersItems != null)
+    {
+        for(var i = oSubFoldersItems["Count"] - 1; i >= 0; i--)
+        {
+            arrLastModifiedtTime[i] = oSubFoldersItems["Item"](i)["DateLastModified"];
+            if(sGreater < arrLastModifiedtTime[i])
+            {
+              sGreater = arrLastModifiedtTime[i];
+              sGreatest = i;
+            }
+        }
+        sLatestLoggerFolderName=oSubFoldersItems["Item"](sGreatest)["Name"];
+    }
+    else
+    {
+        return "";
+    }
+    
+    return sRegisterIMFolderpath + sLatestLoggerFolderName + "\\";
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    return "";
+  } 
+}

@@ -1,0 +1,449 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CapcolorTrainingFeatureSteps
+
+function CapColorTrainingIntegration()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Feature setup: Cap Color Training");
+  if(!CapColorTrainingSetup())
+  {
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "F");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "F"); 
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  GWT235505_TC290513_01_CapColorTrainingIsSuccessful();
+  GWT235505_TC290513_02_CapColorTrainingIsFailure();
+}
+
+function CapcolorTraining()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Feature setup: Cap Color Training");
+  if(!CapColorTrainingSetup())
+  {
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "F");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "F"); 
+    //Add the remaining result xml entries here
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  GWT235505_TC290513_01_CapColorTrainingIsSuccessful();
+  GWT235505_TC290513_02_CapColorTrainingIsFailure();
+  GWT235505_TC290521_01();
+  GWT235505_TC290521_02();
+  GWT235505_TC290949_01_CapColorGroupDelete();
+  GWT235505_TC290949_02_CapColorExtendedGroupDelete();
+  GWT235505_TC297554_01();
+  GWT235505_TC297554_02();
+} 
+
+function GWT235505_TC290513_01_CapColorTrainingIsSuccessful()
+{
+  Log["AppendFolder"]("GWT235505_TC290513_01 : Create Cap color group - Success");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_TC290513_01";
+
+  ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "I");
+
+  Log["AppendFolder"]("Given TCS is in the diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When TCS operator exercising routine(Perform cap color)");
+  if(!WhenTCSOperatorPerformCapColorTraining())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Routine Outcome is Success");
+  if(!ThenCapColorTrainingOutcomeIsSuccess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  Log["AppendFolder"]("Teardown: Exit Diagnostics mode");
+//    if(!StepExitDiagnosticsMode())
+//    {
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//  Log["PopLogFolder"](); 
+  Log["PopLogFolder"]();
+}
+function GWT235505_TC290513_02_CapColorTrainingIsFailure()
+{
+  Log["AppendFolder"]("GWT235505_TC290513_02 : Create Cap color group - Failure");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_TC290513_02";
+
+  ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "I");
+
+  Log["AppendFolder"]("Given TCS is in the diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+ 
+  Log["AppendFolder"]("Then Cap color training outcome is Failure");
+  if(!ThenCapColorTrainingOutcomeIsFailure())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290513_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  Log["AppendFolder"]("Teardown: Exit Diagnostics mode");
+//    if(!StepExitDiagnosticsMode())
+//    {
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//  Log["PopLogFolder"](); 
+  Log["PopLogFolder"]();
+}
+
+function GWT235505_TC297554_01()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT#235505 TC#297554 Sc1 : Imaging device availability for performing image analysis - Cap color training - Success");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_01";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT235505_TC297554_01", "I");
+  
+//  Log["AppendFolder"]("Given Atellica is initialized");
+//  if(!GivenAtellicaInitialized())
+//  {
+//    Log["Error"]("Test failed");
+//    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_01", "F");
+//    Log["PopLogFolder"]();
+//    Log["PopLogFolder"]();
+//    return false;
+//  }
+//  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS is in Diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When TCS operator exercising routine and routine outcome is success");
+  if(!WhenTCSOperatorExercisingRoutine_GWT235505_TC297554_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then cap color training is successful and system should be able to perform cap color determination while loading capped samples");
+  if(!ThenCapColorTrainingIsSuccessful_GWT235505_TC297554_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+}
+
+function GWT235505_TC297554_02()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT#235505 TC#297554 Sc2 : Imaging device availability for performing image analysis - Cap color training - Success");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_02";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT235505_TC297554_02", "I");
+  
+//  Log["AppendFolder"]("Given Atellica is initialized");
+//  if(!GivenAtellicaInitialized())
+//  {
+//    Log["Error"]("Test failed");
+//    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_02", "F");
+//    Log["PopLogFolder"]();
+//    Log["PopLogFolder"]();
+//    return false;
+//  }
+//  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS is in Diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When TCS operator exercising routine and routine outcome is success");
+  if(!WhenTCSOperatorExercisingRoutine_GWT235505_TC297554_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then cap color training is successful and system should be able to perform cap color determination while loading capped samples");
+  if(!ThenCapColorTrainingIsSuccessful_GWT235505_TC297554_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC297554_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+}
+
+function GWT235505_TC290521_01()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT#235505 TC#290521 Sc1 : Cap color training-Update the existing group - Extend Success");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_04";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT235505_TC290521_01", "I");
+  
+//  Log["AppendFolder"]("Given Atellica is initialized");
+//  if(!GivenAtellicaInitialized())
+//  {
+//    Log["Error"]("Test failed");
+//    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_01", "F");
+//    Log["PopLogFolder"]();
+//    Log["PopLogFolder"]();
+//    return false;
+//  }
+//  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS is in Diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When TCS operator exercising routine and routine outcome is success");
+  if(!WhenTCSOperatorExercisingRoutine_GWT235505_TC290521_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then cap color training is successful and system should be able to perform cap color determination while loading capped samples");
+  if(!ThenCapColorTrainingIsSuccessful_GWT235505_TC290521_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+}
+
+function GWT235505_TC290521_02()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("GWT#235505 TC#290521 Sc2 : Cap color training-Update the existing group - Replace Success");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_04";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT235505_TC290521_02", "I");
+  
+//  Log["AppendFolder"]("Given Atellica is initialized");
+//  if(!GivenAtellicaInitialized())
+//  {
+//    Log["Error"]("Test failed");
+//    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "F");
+//    Log["PopLogFolder"]();
+//    Log["PopLogFolder"]();
+//    return false;
+//  }
+//  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS is in Diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When TCS operator exercising routine and routine outcome is success");
+  if(!WhenTCSOperatorExercisingRoutine_GWT235505_TC290521_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then cap color training is successful and system should be able to perform cap color determination while loading capped samples");
+  if(!ThenCapColorTrainingIsSuccessful_GWT235505_TC290521_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Cap color training", "GWT235505_TC290521_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+}
+
+//**************************** Delete ****************
+function GWT235505_TC290949_01_CapColorGroupDelete()
+{
+  InitializeMetaData();
+
+  Log["AppendFolder"]("GWT235505_TC290949_01 : Delete a Cap color group");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_01";
+
+  ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "I");
+
+  Log["AppendFolder"]("Given TCS is in the diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When there is a Cap color group in current session");
+  if(!WhenThereIsACapColorGroupInCurrentSession())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Routine Outcome is Success");
+  if(!ThenCapColorGroupDeleteIsSuccess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  Log["AppendFolder"]("Teardown: Exit Diagnostics mode");
+//    if(!StepExitDiagnosticsMode())
+//    {
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//  Log["PopLogFolder"](); 
+  Log["PopLogFolder"]();
+}
+
+function GWT235505_TC290949_02_CapColorExtendedGroupDelete()
+{
+  InitializeMetaData();
+
+  Log["AppendFolder"]("GWT235505_TC290949_02 : Delete an Extended Cap color group");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT235505_TC290949_02_1";
+
+  ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "I");
+
+  Log["AppendFolder"]("Given TCS is in the diagnostic mode");
+  if(!GivenTCSInDiagnosticMode())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When TCS operator exercising routine(Perform cap color)");
+  if(!WhenThereIsACapColorGroupExtendedFromPreviousSession())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Routine Outcome is Success");
+  if(!ThenExtendedCapColorGroupDeleteIsSuccess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-CapColorTraining", "GWT235505_TC290949_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  Log["AppendFolder"]("Teardown: Exit Diagnostics mode");
+//    if(!StepExitDiagnosticsMode())
+//    {
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//  Log["PopLogFolder"](); 
+  Log["PopLogFolder"]();
+}
+

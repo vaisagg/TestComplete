@@ -1,0 +1,1103 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+//******************************************************************************
+//                             Resusable functions
+//******************************************************************************
+function ShutdownHydraApplication_QBU()
+{
+  return StepShutdownHydraApplication();
+}
+
+function LaunchHydraApplication_QBU()
+{
+  return StepLaunchHydraApplication();
+}
+
+function LoginToHydra_QBU()
+{
+  try
+  {
+      //Initailize variables
+      var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+      var G0User_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+      var G0_Username = G0User_Credentials[0]["Item"]("User");
+      var G0_Password = G0User_Credentials[0]["Item"]("Password"); 
+      
+      return StepLoginToHydra(G0_Username,G0_Password);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckSystemReadyState_QBU()
+{
+  return StepCheckAllSystemModulesReadyState();
+}
+
+function LoadReagents_QBU(PS_ReagentFile)
+{    
+  return StepLoadQBUReagents(PS_ReagentFile);
+}
+
+function MoveAllSamplesToHistorical_QBU()
+{
+  return StepMoveAllSamplesToHistorical();
+}
+
+function VerifyReagentsLoaded(arrTestData)
+{
+  try
+  {  
+    Log["AppendFolder"]("Verify Reagents is loaded on Reagents Overview Screen");
+    
+    //Initialize variables
+    var returnValCount= 0;
+    
+    //Read the reagent names from the test data
+    var dictColumn=arrTestData[0];
+    var Reagents = dictColumn["Item"]("Reagents");
+    var ArrReagents = Reagents["split"](",") ;
+    var reagentCount = ArrReagents.length;
+    var SeqNumber = dictColumn["Item"]("SequenceNumber");
+    var ArrSeqNumber = SeqNumber["split"](",") ;
+    
+    //Iterate through each reagent name
+    for(i=0;i<reagentCount;i++)
+    {   
+      //Check if reagent is loaded or not
+      if(StepCheckTheReagentIsListedInReagentOverview(ArrReagents[i],ArrSeqNumber[i]))
+      {
+        //Check Reagent inventory count
+        inventoryCount=StepGetReagentInventoryCountValue(ArrReagents[i]);
+        if(inventoryCount!=false)
+        {
+          Log["Checkpoint"]("Reagent is available with inventory count value as "+inventoryCount);
+          returnValCount = returnValCount+1;
+        }
+        else
+        {
+          Log["Error"]("Reagent is available but no inventory count");
+        }
+      }
+      else
+      {
+        Log["Error"](ArrReagents[i]+" reagent not available");
+      }
+    }
+    
+    //checking if all reagents are loaded or not
+    if(returnValCount==reagentCount)
+    {
+      Log["Checkpoint"]("All required reagents are displayed on Reagent Overview Screen");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else if(returnValCount==0)
+    {
+      Log["Error"]("All required reagents are NOT displayed on Reagent Overview Screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Error"]("Only some reagents are displayed on Reagent Overview Screen");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ImportWorklist_QBU(fileToImport)
+{
+  try
+  {  
+    //Initialize variable
+    var timeToWait=60;
+  
+  return StepImportWorklistOperation(fileToImport,timeToWait);
+  
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    return false;
+  }
+}
+
+function LoadSamplesForQBU(arrTestData) 
+{
+  try
+  {  
+    Log["AppendFolder"]("Load samples in DML simulator");
+    
+    //Initialize variables
+    var returnVal = new Array();
+    var finalReturnVal = true;
+    var dictColumn=arrTestData[0];
+    var SID = dictColumn["Item"]("SampleIDs");
+    var ArrSID = SID["split"](",") ;
+    var SampleCount = ArrSID.length;
+    var SampleArray=new Array();
+    var count=0;
+    
+    //loading samples to DML simulator in multiples of 6
+    for(j=0;j<SampleCount;j=j+6)
+    {
+      //selected 6 samples added to new array
+      for(i=0;i<6;i++)
+      {
+        SampleArray[i]=ArrSID[count++];
+      }
+      
+      //load samples
+      if(StepLoadSamplesinDMLSimulator(SampleArray))
+      {
+          Log["Checkpoint"]("Samples loaded successfully");   
+          returnVal[j]=true;
+      }
+      else
+      {
+          Log["Error"]("Failed to load samples");
+          returnVal[j]=false;
+      }
+    }
+    
+    //check if all samples loaded successfully
+    for(k=0;k<returnVal.length;k=k+6)
+    {
+      if(returnVal[k]==true&&finalReturnVal==true)
+        finalReturnVal = true;
+      else
+        finalReturnVal= false;
+    }
+    
+     Log["PopLogFolder"]();
+     return finalReturnVal;
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySampleStatusInSampleList_QBU(arrTestData)
+{
+  try
+  {
+    Log["AppendFolder"]("Verify Samples aspirated in Sample List screen");
+    
+    //Initialize variables
+    var returnValCount= 0;
+    
+    //Read the Sample names from the test data
+    var dictColumn=arrTestData[0];
+    var SampleID = dictColumn["Item"]("SampleIDs");
+    var ArrSampleID = SampleID["split"](",");
+    var SampleCount = ArrSampleID.length;
+    var SampleStatus = dictColumn["Item"]("SampleStatus"); 
+    var SampleArray = new Array();   
+    
+    //Add each sample in new array
+    for(i=0;i<SampleCount;i++)
+    {
+      SampleArray[i]=ArrSampleID[i];
+    }
+    
+    //Iterate through each SID
+    for(j=0;j<SampleCount;j++)
+    {   
+      //Check sample is aspirated or not
+      if(StepCheckSampleStatusinSampleList(SampleArray[j],SampleStatus))
+      {
+        returnValCount=returnValCount+1;
+      }
+    }
+        
+    if(returnValCount==SampleCount)
+    {
+      Log["Checkpoint"]("All Samples aspirated successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else if(returnValCount<SampleCount)
+    {
+      Log["Error"]("Not all samples aspirated");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Failed to aspirated all samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySampleResultInWorklist_QBU(arrTestData)
+{
+  try
+  {
+    Log["AppendFolder"]("Verify samples resulted in Worklist");
+    
+    //Initialize variables
+    var returnValCount= 0;
+    
+    //Read the reagent names from the test data
+    var dictColumn=arrTestData[0];
+    var SampleID = dictColumn["Item"]("SampleIDs");
+    var ArrSampleID = SampleID["split"](",");
+    var sampleCount = ArrSampleID.length; 
+    var SampleArray = new Array();
+    
+    //Add each sample in new array
+    for(i=0;i<sampleCount;i++)
+    {
+      SampleArray[i]=ArrSampleID[i];
+    }  
+    
+    //Iterate through each SID
+    for(i=0;i<sampleCount;i++)
+    {   
+      //Check sample is aspirated or not
+      if(StepVerifyTestResultInWorkList(SampleArray[i]))
+      {
+        returnValCount=returnValCount+1;
+      }
+    }
+        
+    if(returnValCount==sampleCount)
+    {
+      Log["Checkpoint"]("All Samples resulted successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else if(returnValCount<sampleCount)
+    {
+      Log["Error"]("Not all samples resulted");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Failed to get results for all samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+//******************************************************************************
+//                              QBU Protocols
+//******************************************************************************
+
+function EMR_Testing_QBU()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Electro-Mechanical Reliability Protocol");
+    
+    //----------------------Intialize variables---------------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\EMR_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","EMR_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("EMR Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("EMR Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("EMR Testing :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to load samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("EMR Testing :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("EMR Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SMT_Testing_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("SMT Testing");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\SMT_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","SMT_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("SMT Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("SMT Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+//    //--------------------Load Samples------------------------------------------
+//    Log["AppendFolder"]("SMT Testing :: Load Samples in DML Simulator");
+//    if(!LoadSamplesForQBU(arrTestData))
+//    {
+//      Log["Error"]("Failed to import worklist");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+//    
+//    
+//    //--------------Verify Sample status is aspirated---------------------------
+//    Log["AppendFolder"]("SMT Testing :: Verify Sample status is aspirated");
+//    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+//    {
+//      Log["Error"]("Failed to get aspirated status");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("SMT Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function TSH3UL_Testing_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("TSH3UL Testing");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\TSH3UL_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","TSH3UL_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("TSH3UL Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("TSH3UL Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("TSH3UL Testing :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("TSH3UL Testing :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("TSH3UL Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function Basepool_Testing_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("Basepool Testing");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\Basepool_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","Basepool_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("Basepool Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("Basepool Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("Basepool Testing :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("Basepool Testing :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("Basepool Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function Carryover_Testing_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("Carryover Testing");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\Carryover_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","Carryover_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("Carryover Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("Carryover Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+//    //--------------------Load Samples------------------------------------------
+//    Log["AppendFolder"]("Carryover Testing :: Load Samples in DML Simulator");
+//    if(!LoadSamplesForQBU(arrTestData))
+//    {
+//      Log["Error"]("Failed to load samples");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+//    
+//    
+//    //--------------Verify Sample status is aspirated---------------------------
+//    Log["AppendFolder"]("Carryover Testing :: Verify Sample status is aspirated");
+//    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+//    {
+//      Log["Error"]("Failed to get aspirated status");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("Carryover Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function Water_Carryover_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("Water Carryover");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\WaterCarryover_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","Water_Testing");
+    
+    
+//    //---------------------Verify Reagents loaded-------------------------------
+//    Log["AppendFolder"]("Water Carryover :: Verify Reagents loaded");
+//    if(!VerifyReagentsLoaded(arrTestData))
+//    {
+//      Log["Error"]("Failed : reagents unavailable");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("Water Carryover :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+//    //--------------------Load Samples------------------------------------------
+//    Log["AppendFolder"]("Water Carryover :: Load Samples in DML Simulator");
+//    if(!LoadSamplesForQBU(arrTestData))
+//    {
+//      Log["Error"]("Failed to load samples");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+//    
+//    
+//    //--------------Verify Sample status is aspirated---------------------------
+//    Log["AppendFolder"]("Water Carryover :: Verify Sample status is aspirated");
+//    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+//    {
+//      Log["Error"]("Failed to get aspirated status");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("Water Carryover :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SVK_Testing_QBU()
+{
+  try
+  {InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Repeatability/SVK Testing");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\SVK_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","SVK_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("SVK Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("SVK Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("SVK Testing :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to load samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("SVK Testing :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("SVK Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CH_System_Check_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("CH System Check Testing");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\CHSystemCheck_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","CHSystemCheck_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("CH System Check Testing :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("CH System Check Testing :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("CH System Check Testing :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to load samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("CH System Check Testing :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("CH System Check Testing :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function IMT_Functionality_QBU()
+{
+  try
+  {
+    Log["AppendFolder"]("IMT Functionality");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\IMT_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","IMTFunc_Testing");
+    
+    
+//    //---------------------Verify Reagents loaded-------------------------------
+//    Log["AppendFolder"]("IMT Functionality :: Verify Reagents loaded");
+//    if(!VerifyReagentsLoaded(arrTestData))
+//    {
+//      Log["Error"]("Failed : reagents unavailable");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("IMT Functionality :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("IMT Functionality :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to load samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("IMT Functionality :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("IMT Functionality :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function Photometric_Functionality_QBU()
+{
+  try
+  {InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Photometric Functionality");
+    
+    //---------------------------Initailize variables---------------------------
+    var WorklistFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\Worklist\\Photometric_Worklist.csv";
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"QBU","Photometric_Testing");
+    
+    
+    //---------------------Verify Reagents loaded-------------------------------
+    Log["AppendFolder"]("Photometric Functionality :: Verify Reagents loaded");
+    if(!VerifyReagentsLoaded(arrTestData))
+    {
+      Log["Error"]("Failed : reagents unavailable");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Import Worklist--------------------------------------
+    Log["AppendFolder"]("Photometric Functionality :: Import Worklist");
+    if(!ImportWorklist_QBU(WorklistFile))
+    {
+      Log["Error"]("Failed to import worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------------Load Samples------------------------------------------
+    Log["AppendFolder"]("Photometric Functionality :: Load Samples in DML Simulator");
+    if(!LoadSamplesForQBU(arrTestData))
+    {
+      Log["Error"]("Failed to load samples");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample status is aspirated---------------------------
+    Log["AppendFolder"]("Photometric Functionality :: Verify Sample status is aspirated");
+    if(!VerifySampleStatusInSampleList_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get aspirated status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //--------------Verify Sample Result in worklist----------------------------
+    Log["AppendFolder"]("Photometric Functionality :: Verify Sample Result in worklist");
+    if(!VerifySampleResultInWorklist_QBU(arrTestData))
+    {
+      Log["Error"]("Failed to get results in worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     
+    //--------------------------------------------------------------------------
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

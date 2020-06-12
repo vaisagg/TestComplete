@@ -1,0 +1,573 @@
+﻿//USEUNIT CommonUtilities
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InitializeTCCSConfigEditor
+//*
+//*  Description: Check the pre-requisite ti initialize TCCSConfiguratorEditor
+//*  
+//*  Input: strPath  [in] Required String i.e the path of the exe file
+//*
+//*  Output: Boolean
+//*
+//*  Example: InitializeTCCSConfigEditor()
+//*
+//*  Author Name: Praveen Lingaraju
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InitializeTCCSConfigEditor()
+{
+  try
+  {
+     strTCCSConfigEditorPath= Project["Variables"]["TCCSConfigEditorPath"];
+     if(FileFinder(strTCCSConfigEditorPath)!=true)
+     {
+        return false;
+     }
+     else
+     {
+        //Get the absolute path of InstrumentInfo.xml file
+        strInstrumentInfoConfigPath=GetPathOfInstrumentsInfo()
+        if(aqFile["Exists"](strInstrumentInfoConfigPath)!=true)
+        {
+          Log["Error"]("Unable to find the TCCSConfigEditor InstrumentInfo XML file in the specified path")
+          return false;
+        }
+        else
+        {
+          Log["Message"]("The InstrumentInfo XML file found in the location- "+strInstrumentInfoConfigPath)
+          return true;
+        } 
+     }
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetPathOfInstrumentsInfo
+//*
+//*  Description: gives the path of BuildInstrumentsInfo.xml
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: Initialize("D:\Installer\Files\CI_Pipeline")
+//*
+//*  Author Name: Praveen Lingaraju
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetPathOfInstrumentsInfo()
+{
+  try
+  {
+    var ProjPath = Project["Path"];
+    var sConfigPath=ProjPath + "\\TestData\\BuildInstrumentsInfo.xml";
+    return sConfigPath;
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeTCCSConfigEditor
+//*
+//*  Description: Launches TCCS Config editor
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeTCCSConfigEditor()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeTCCSConfigEditor()
+{
+  try
+  {
+    //Initialization
+    if(InitializeTCCSConfigEditor()!=true)
+    {
+      Log.Error("Initializing TCCSConfigEditor failed");
+      ReportTestStatusToResultXML("Initialize", "TCCS_Config", "F")
+      return false;
+    }
+  
+    //Launch TCCSConfigEditor
+    var strPath = Project["Variables"]["TCCSConfigEditorPath"];
+    var objShell = Sys["OleObject"]("WScript.Shell")
+    var objTCCSConfigLaunch = objShell.Exec(strPath)
+  
+    if (Aliases["TCCSConfigurationEditor"]["VistaConfigurationMainForm"]["Exists"])
+    { 
+      Log["Message"]("The TCCSConfigEditor launched successfully")
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Unable to launch the TCCSConfigEditor")
+      ReportTestStatusToResultXML("Initialize", "TCCS_Config", "F")
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetDeploymentType
+//*
+//*  Description: Get deployment type from BuildInstrumentInfo.xml
+//*  
+//*  Input: sConfigPath(path of BuildInstrumentInfo.xml)
+//*
+//*  Output: DeploymentType
+//*
+//*  Example:  GetDeploymentType("F:\Installer\Files\BuildInstrumentsInfo.xml")
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetDeploymentType(sConfigPath)
+{
+  try
+  {
+    var BuildInfoarray = ReadConfigFile(sConfigPath,"InstrumentsInfo/BuildInfo")
+  
+    for(var i=0;i<BuildInfoarray["length"];i++)
+    {
+      var aNodeVal = BuildInfoarray[i]["split"](",")
+      var aDepValues=aNodeVal[1]["split"](":");  
+      if (aDepValues[0]=="DEPLOYMENTTYPE")
+      {
+         DeploymentType=aDepValues[1];
+         return DeploymentType;
+         break;      
+      }
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetSIMComputer
+//*
+//*  Description: Get SIM computer IP from BuildInstrumentInfo.xml
+//*  
+//*  Input: InstrumentsArray
+//*
+//*  Output: strSIMIP
+//*
+//*  Example:  GetDeploymentType(InstrumentsArray)
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetSIMComputer(InstrumentsArray,DeploymentType)
+{
+  try
+  {
+    Modulename="PCC"
+    var strSIMIP = GetInstrumentIP(InstrumentsArray,Modulename)
+    return strSIMIP;
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetDLSHModule
+//*
+//*  Description: Get DL/SH computer IP from BuildInstrumentInfo.xml
+//*  
+//*  Input: InstrumentsArray
+//*
+//*  Output: DL/SH IP
+//*
+//*  Example:  GetDLSHModule(InstrumentsArray,sDeploymentType)
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetDLSHModule(InstrumentsArray,sDeploymentType)
+{
+    
+  try
+  {     
+    switch(sDeploymentType)
+    {
+      case "DLI":
+        //Get DLSH  module details
+        var PrimaryModIP = GetInstrumentIP(InstrumentsArray,"PCC"); 
+        var PrimaryModType ="DL";           
+        break;
+      case "DLC":
+        //Get DLSH  module details
+        var PrimaryModIP = GetInstrumentIP(InstrumentsArray,"PCC"); 
+        var PrimaryModType ="DL";           
+        break;
+          
+      case "SCI":
+        //Get DLSH  module details
+        var PrimaryModIP = GetInstrumentIP(InstrumentsArray,"SH")
+        var PrimaryModType ="SH";
+        break;
+        
+      default:
+        break;
+    }
+        
+    if (PrimaryModIP!="")
+    {
+      return PrimaryModType+":"+PrimaryModIP;
+    }
+    else
+    {
+      Log["Error"]("DL/SH IPAddress not found in XML")
+      return false;
+    }          
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetAdditionalModulesList
+//*
+//*  Description: Get Additional modules required for DL or SCI setup
+//*  
+//*  Input: InstrumentsArray,sDeploymentType
+//*
+//*  Output: Module type with IP
+//*
+//*  Example:  GetAdditionalModulesList(InstrumentsArray,sDeploymentType)
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetAdditionalModulesList(InstrumentsArray,sDeploymentType)
+{
+  try
+  {
+   switch(sDeploymentType)
+    {
+      case "DLI":
+        //Get additional module details
+        var sModule1IP = GetInstrumentIP(InstrumentsArray,"IM")
+        sModule1Type="IA"
+        return "IA"+":"+sModule1IP;
+        break;
+      case "DLC":
+        //Get additional module details
+        var sModule1IP = GetInstrumentIP(InstrumentsArray,"CH")
+        sModule1Type="CC"
+        return "CC"+":"+sModule1IP;
+        break;
+          
+      case "SCI":
+        //Get additional module details
+         var sModule1IP = GetInstrumentIP(InstrumentsArray,"CH")
+        sModule1Type="CC"
+        var sModule2IP = GetInstrumentIP(InstrumentsArray,"IM")
+        sModule2Type="IA"
+        var iModules=2;
+        return sModule1Type+":"+sModule1IP+";"+sModule2Type+":"+sModule2IP;
+        break;
+        
+     default:
+        break;
+    }    
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }    
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetNumberOfAdditionalModules
+//*
+//*  Description: Get no. of additional modules
+//*
+//*  Input: sDeploymentType
+//*
+//*  Output: No. of modules
+//*
+//*  Example:  GetNumberOfAdditionalModules(sDeploymentType)
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetNumberOfAdditionalModules(sDeploymentType)
+{    
+   try
+   {
+     switch(sDeploymentType)
+      {
+        case "DLI":
+          var iModules=1;
+          break;
+        case "DLC":
+          var iModules=1;
+          break;    
+        case "SCI":
+          var iModules=2;
+          break;
+        
+        default:
+          break;
+      }        
+     return iModules;
+    }
+    catch(exp)
+    {
+      Log["Error"](exp["description"])
+    } 
+}
+
+
+function SetTCCSConfigEditorModulesIP()
+{
+  try
+  {
+      var objConfigControl,strSIMIP,iModules,arrDLSHModule,strDLSHModule
+      var strAdditionalModules,arrAdditionalModules,iAdditionalModules,arrModuleDetails,strModuleType,strModuleIP,objModuleIP,objModuleType
+      var strTCCSConfigEditorPath = Project["Variables"]["TCCSConfigEditorPath"];
+        
+      objConfigControl=Aliases.TCCSConfigurationEditor.VistaConfigurationMainForm.m_tabControlAdv.m_tabPageAdvTwinningConfig.m_tccsConfigControl
+      objConfigControl.LeftSIMComputer.PCCIPAddress.WaitWinFormsObject("",3000)
+     
+      //Get the path of IntrumentInfo Xml file
+      var sConfigPath=GetPathOfInstrumentsInfo()
+  
+      UpdateBuildInfo(sConfigPath)
+    
+       var DeploymentType=GetDeploymentType(sConfigPath)
+       ReportTestStatusToResultXML("General","DeploymentType",DeploymentType);
+       
+      //Read modules from IntrumentConfigInfo
+      var InstrumentsArray = ReadConfigFile(sConfigPath,"Instruments/Instrument")
+      if(InstrumentsArray["length"]==0)
+      {
+          Log.Error("Unable to read the modules from InstrumentInfo xml file");
+          ReportTestStatusToResultXML("Initialize", "TCCS_Config", "F")
+          return  false;
+      }
+        
+       //Get Deployment type
+      var sDeploymentType=GetDeploymentType(sConfigPath)
+        
+      //Get SIM Computer Ip address
+      strSIMIP=GetSIMComputer(InstrumentsArray,sDeploymentType)
+      if(strSIMIP=="")
+      {
+         Log.Error("Unable to get SIM Computer IP");
+         return  false;
+      }
+      objConfigControl.LeftSIMComputer.PCCIPAddress.ClickItem(strSIMIP)
+        
+      //Get DLSH  module details
+      var strDLSHModule=GetDLSHModule(InstrumentsArray,sDeploymentType)
+      var arrDLSHModule =  strDLSHModule["split"](":");
+      if (arrDLSHModule["length"]==2)
+      {
+        objConfigControl.RightModules.m_tccsConfig.moduleIDEntryPrimary.PrimarymoduleIPAddress.SetText("");
+        objConfigControl.RightModules.m_tccsConfig.moduleIDEntryPrimary.PrimarymoduleIPAddress.SetText(arrDLSHModule[1]);
+        aqUtils.Delay(1000)
+        objConfigControl.RightModules.m_tccsConfig.moduleIDEntryPrimary.SelectPrimaryModule.ClickItem(arrDLSHModule[0]);
+        aqUtils.Delay(1000)
+      }
+      else
+      {
+        Log.Error("Unable to get DL/SH module details");
+        return  false;
+      }
+   
+      //set No Of Additional Modules
+      iModules=GetNumberOfAdditionalModules(sDeploymentType)
+      if(iModules=="")
+      {
+          Log.Error("Unable to get additional modules numbers"); 
+          return false;
+      }  
+      objConfigControl.RightModules.m_tccsConfig.m_nudModules.NoOfAdditionalModules.SetText("0")
+      objConfigControl.RightModules.m_tccsConfig.m_nudModules.NoOfAdditionalModules.Keys("[Enter]");
+      objConfigControl.RightModules.m_tccsConfig.m_nudModules.NoOfAdditionalModules.SetText(iModules);
+      objConfigControl.RightModules.m_tccsConfig.m_nudModules.NoOfAdditionalModules.Keys("[Enter]");
+      aqUtils.Delay(1000)
+        
+        
+      //set additinal Modules Type and IP addressess
+      strAdditionalModules=GetAdditionalModulesList(InstrumentsArray,sDeploymentType)
+      arrAdditionalModules=strAdditionalModules["split"](";");
+                  
+      for(i=0;i<arrAdditionalModules["length"];i++)
+      {
+          var iAdditionalModules=i+1
+          var arrModuleDetails = arrAdditionalModules[i]["split"](":")
+          strModuleType=arrModuleDetails[0]
+          strModuleIP=arrModuleDetails[1]
+       
+           switch(iAdditionalModules)
+           {
+              case 1:
+                 var objModuleIP=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry1.Module1IPaddress
+                 var objModuleType=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry1.SelectModule1Type
+                 break;
+              case 2:
+                 var objModuleIP=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry2.Module2IPaddress
+                 var objModuleType=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry2.SelectModule2Type
+                  break;
+               case 3:
+                 var objModuleIP=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry3.Module3IPaddress
+                 var objModuleType=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry3.SelectModule3Type
+                  break;
+              case 4:
+                 var objModuleIP=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry4.Module4IPaddress
+                 var objModuleType=objConfigControl.RightModules.m_tccsConfig.moduleIDEntry4.SelectModule4Type
+                  break; 
+              default:
+                  break;
+    
+           } //end of switch 
+            objModuleIP.SetText("")  
+            objModuleIP.SetText(strModuleIP)
+            aqUtils.Delay(1000)
+            objModuleType.ClickItem(strModuleType)
+            aqUtils.Delay(1000)
+       }//end of for loop
+       
+       return true;
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  } 
+}
+
+
+function ApplyChangesToTCCSConfigEditor()
+{
+  try
+  {
+    objConfigControl=Aliases.TCCSConfigurationEditor.VistaConfigurationMainForm.m_tabControlAdv.m_tabPageAdvTwinningConfig.m_tccsConfigControl
+    //click on apply changes
+    objConfigControl.m_xpTaskBar.m_xpTaskBarBoxActions.m_panelActions.Applychanges.Click();
+    aqUtils.Delay(15000)
+    
+     //Wait untill RegisterIM window disappears
+      var RegIMWindow=Sys.Process("RegisterIM").Window("ConsoleWindowClass", "Register IM", 1)
+  
+      Log.Enabled=false;
+                  
+      for(i=1;i<60;i++)
+      {
+        if(RegIMWindow.Exists)
+        {
+          return true;
+        }
+        else
+        {
+          aqUtils.Delay(5000)
+        }
+      }
+      Log.Enabled=true;
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }    
+}
+
+function VerifyTCCSConfiguration()
+{  
+    try
+    {
+      //Wait untill RegisterIM window disappears
+      var RegIMWindow=Sys.Process("RegisterIM").Window("ConsoleWindowClass", "Register IM", 1)
+  
+      Log.Enabled=false;
+                  
+      for(i=1;i<60;i++)
+      {
+        if(!RegIMWindow.Exists)
+        {
+          break;
+        }
+        else
+        {
+          aqUtils.Delay(5000)
+        }
+      }
+      Log.Enabled=true
+  
+    //Verify TCCS Configuaration successfull message
+      var oConfigSuccessMessage=Aliases.TCCSConfigurationEditor.VistaConfigurationMainForm.m_tabControlAdv.m_tabPageAdvTwinningConfig.m_tccsConfigControl.WinFormsObject("m_lbResponse")
+      if(oConfigSuccessMessage.Exists)
+      {
+        if(aqObject.GetPropertyValue(oConfigSuccessMessage,"Text")=="TCCS Configuration successfully completed")
+        {
+          Log.Message("TCCS Configuarion is successfull");
+          ReportTestStatusToResultXML("Initialize", "TCCS_Config", "P")
+          return true;
+        }
+       //Log to XML
+        else
+        {
+          log.Error("Unable to configure TCCS Configuration due to "+aqObject.GetPropertyValue(oConfigSuccessMessage,"Text"));
+          ReportTestStatusToResultXML( "Initialize", "TCCS_Config", "F")
+        }
+      }
+    }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  } 
+}
+
+function ExitTCCSConfigEditor()
+{
+   try
+   {
+   //click on ExitConfigurationEditor
+      Aliases.TCCSConfigurationEditor.VistaConfigurationMainForm.ExitConfigurationEditor.Click();
+      return true;
+   }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }  
+}

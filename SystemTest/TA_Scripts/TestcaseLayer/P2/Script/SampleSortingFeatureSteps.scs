@@ -1,0 +1,972 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT TCCSConfigLibrary
+//USEUNIT CommonFeatureUtils
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function GivenApplicationIsInitialized()
+{
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  if (StepIsTrinidadInitialized(DeploymentType))
+    return true;
+  else
+    return false;
+}
+
+function AreSuppliesReplaced()
+{  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"Supplies","BarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var Lot = dictColumn["Item"]("Lot");
+  var Sequence = dictColumn["Item"]("Sequence");
+  var IMTSensorLot = dictColumn["Item"]("IMTSensorLot");
+  
+  StepReplaceSupplies(Lot, Sequence,IMTSensorLot)
+}
+
+function CalibratorDefinitionExists()
+{
+  //var Testfile = Project["Path"]+"Testdata\\Test.xls";
+  var Assay = "Crea_2" 
+  var MaterialID="K1" //ToDo: Read from excel
+  StepCalibrationDefinitionExists(MaterialID)
+}
+
+function DecapperConfiguration()
+{
+//If decapper is present then disable it and restart all the apps
+  if(StepDetectDecapperConfiguration())
+  {
+    if(!StepDisableDecapper())    
+      return false;
+      
+//    if(!StepShutdownAnalyzer("SH"))
+//      return false;
+  
+    if(!StepShutdownTrinidad())
+      return false;
+  
+//    if(!StepLaunchAnalyzer("SH"))
+//      return false;
+  
+    return StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile)
+  }
+  else
+    return true;
+}
+
+function IdentifyCappedSample()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedError")
+  var dictColumn=arrTestData[0];
+    
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  return StepIsSampleCapped(SampleId, SampleAttribute)
+}
+
+//function CreateAndProcessPatientOrder()
+//{
+//  
+//  var Query = "SELECT PatientOrder1 FROM [PatientOrder$]";
+//  var arrPatientOrderData = new Array();
+//  arrPatientOrderData = GetTestItems(TestDataFile, Query, "PatientOrder1");
+//  
+//  var Assay     = arrPatientOrderData[0]
+//  var SampleId  = arrPatientOrderData[1]
+//  var Specimen  = arrPatientOrderData[2]
+//  var Analyzer  = arrPatientOrderData[3]
+//  var Priority  = dictColumn["Item"]("Priority");
+//  StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority)
+//  StepLaunchDVSinSH()
+//  StepPlaceOutputTray()
+//  StepPlaceSample("Plain")
+//  StepLoadSample()
+//  
+//}
+
+function LoadSample()
+{
+  StepLaunchDVSinSH()
+  StepPlaceOutputTray()
+  StepPlaceSample("Plain")
+  StepLoadSample()
+}
+
+function CapErrorUnload()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedError")
+  var dictColumn=arrTestData[0];
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  var boolValue=StepVerifyCapError(SampleId);
+  
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "F");  
+    return false;
+  }
+}
+
+
+
+function GivenSortingIsConfiguredWithBarcodeExceptionsSortArea()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "BarcodeErrorSort");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  return StepActivateSortPanel(PanelName);
+}
+
+function ConfigureBarcodeErrorSortArea()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "BarcodeErrorSort");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");  
+  
+  if (StepVerifySortPanelActive(PanelName))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+    return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "BarcodeErrorSort"))
+    return false;
+  
+  return StepStartAnalyzer("SH");
+}
+
+function ConfigureCalQCSortArea()
+{ 
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "CalQCSort");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (StepVerifySortPanelActive(PanelName))
+  {  
+    return true;
+  }
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "CalQCSort"))
+     return false;
+  
+  return StartAnalyzer("SH")
+}
+
+function IsSHConfiguredForCalQCSortArea()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "CalQCSort");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  return StepActivateSortPanel(PanelName);
+}
+
+
+function LoadSampleTray()
+{
+  var DrawerNumber  //ToDo: Read from excel
+  var DrawerZone
+  var DrawerPanel
+  var TrayType
+  var TubeType
+  
+  //LoadSample(DrawerNumber, DrawerZone, DrawerPanel, TrayType, TubeType)
+  //StepLoadSample()  \\uncomment once SH machine is up
+}
+
+function IsCalSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","CalQCSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");  
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+}
+
+function IsCalSampleUnloaded()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","CalQCSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F"); 
+    return false;
+  }
+}
+
+function IsInvalidBarcodeErrorSortAreaHasEmptySlots()
+{
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","InvalidBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function IsInvalidBarcodeSampleUnloaded()
+{ 
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","InvalidBarcodeErrorSort")
+    var dictColumn=arrTestData[0];
+    var TrayType             = dictColumn["Item"]("TrayType");
+    var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+    var DrawerZone           = dictColumn["Item"]("DrawerZone");
+    var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+    var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+    var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+    return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+}
+function IsDuplicateBarcodeErrorSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DuplicateBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");   
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+}
+
+function IsDuplicateBarcodeSampleUnloaded()
+{
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DuplicateBarcodeErrorSort")
+    var dictColumn=arrTestData[0];
+    var TrayType             = dictColumn["Item"]("TrayType");
+    var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+    var DrawerZone           = dictColumn["Item"]("DrawerZone");
+    var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+    var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+    var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+    return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+}
+
+function IsMissingBarcodeErrorSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","MissingBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");  
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+}
+
+function IsMissingBarcodeSampleUnloaded()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","MissingBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+}
+
+function IsBarcodeMismatchSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","BarcodeMismatchErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function IsBarcodeMismatchSampleUnloaded()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","BarcodeMismatchErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+
+function AreaData(AreaNumber)
+{
+    var Query = "SELECT " + AreaNumber + " FROM [SHTraysEmptySlots$]";
+    var arrTempAreaData = new Array();
+    arrTempAreaData = GetTestItems(TestDataFile, Query, AreaNumber);
+    return arrTempAreaData
+
+}
+
+function SampleExistInSortArea()
+{
+  var DrawerNumber  //ToDo: Read from excel
+  var DrawerZone
+  var RowNumber
+  
+  var ColumnName="QCDefinition1";
+  var Query = "SELECT QCDefinition1 FROM [QCDefinitions$]";
+  var Filepath = TestDataFile;
+  var arrQC = new Array(); 
+  arrQC = GetTestItems(Filepath,Query,ColumnName);
+  StepSamplePresentInSortArea(DrawerNumber, DrawerZone, RowNumber)
+}
+
+function ShutdownTrinidad()
+{
+  StepShutdownTrinidad();
+}
+
+
+function IsSampleLoadedWithBarcodeErrors()
+{  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeErrorSort")
+  var sFakeBarCodefilepath=Project["Path"]+"TestData";
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+     dictColumn=arrTestData[i];
+    var Assay                = dictColumn["Item"]("Assay");
+    var SampleId             = dictColumn["Item"]("SampleId");
+    var Specimen             = dictColumn["Item"]("Specimen");
+    var Analyzer             = dictColumn["Item"]("Analyzer");
+    var Priority             = dictColumn["Item"]("Priority");
+    
+    StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer,Priority)
+  }
+  
+  StepLaunchDVSinSH()
+  StepPlaceOutputTray()
+  StepPlaceSample("Plain")
+  StepLoadSample()
+  //LoadSample()
+}
+
+function  IsBarcodeErrorSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","BarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function  IsInputTrayEmpty(ScenarioName)
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHInputTraysEmpty",ScenarioName)
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleCount           = dictColumn["Item"]("SampleCount");
+  
+  StepVerifyInputTrayEmpty(SampleCount,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  //StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+
+
+function AreSamplesWithBarcodeIssuesUnloaded()
+{
+
+    IsInputTrayEmpty("BarcodeErrorSort");
+    
+    var Navigation = InvokeWorkflow("Samples_SampleList");
+    if (!Navigation)
+    Runner["Stop"]();
+ 
+    var objctrl = GetControl("Samples_SampleList","grdSamples");
+    for(i=0; i<60;i++)
+    {
+      intSampleCount = GetGridRowCount(objctrl);
+      if(intSampleCount == 5)
+        break;
+      else
+        aqUtils["Delay"](1000, "Waiting for all samples to appear on the Sample list grid")
+    }
+       
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeMismatchErrorSort")
+    var dictColumn=arrTestData[0];
+    var Assay                = dictColumn["Item"]("Assay");
+    var SampleId             = dictColumn["Item"]("SampleId");
+    var Specimen             = dictColumn["Item"]("Specimen");
+    var Analyzer             = dictColumn["Item"]("Analyzer");
+    var SampleLocation       = dictColumn["Item"]("SampleLocation");
+
+    //wait for sample's location as SAMPLEHA
+    if(StepVerifySampleLocationOnTrack(SampleId, SampleLocation))
+      StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer)  
+    else
+      Runner["Stop"]();
+
+   arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","BarcodeErrorSort")
+  
+//   for(var i=0;i<arrTestData["length"];i++)
+//  {
+    //dictColumn=arrTestData[i];
+     dictColumn=arrTestData[0]
+     TrayType             = dictColumn["Item"]("TrayType");
+     DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+     DrawerZone           = dictColumn["Item"]("DrawerZone");
+     DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+     RowNumbers           = dictColumn["Item"]("RowNumbers");    
+     SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+    StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+//  }
+   
+}
+
+function VerifyBarcodeErrors()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeErrorSort")
+  var dictColumn,SampleID,SampleStatus,SampleProblem
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    dictColumn=arrTestData[i];
+    SampleID = dictColumn["Item"]("OutputSampleID");
+    SampleStatus = dictColumn["Item"]("SampleStatus");
+    SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+    StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem)
+  }
+  
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeMismatchErrorSort")
+    dictColumn=arrTestData[0];
+    SampleID = dictColumn["Item"]("OutputSampleID");
+    SampleStatus = dictColumn["Item"]("SampleStatus");
+    SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+    StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem)
+  
+  
+}
+
+function WhenTheSampleIsMarkedWithInvalidBarcodeIssue()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","InvalidBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var OutputSampleID        = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(OutputSampleID))
+    return false;
+
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  if(!StepPlaceOutputTray())
+    return false;
+  if(!StepPlaceSample("Plain"))
+    return false;
+  
+  if (StepLoadSample())
+    return true;
+  else
+    return false;
+  //LoadSample()  
+  
+}
+
+function WhenTheSampleIsMarkedWithUnreadableMissingBarcodeIssue()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","MissingBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var TubeBarCode  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+  
+  if(!StepUpdateFakebarcodeReadingsFile(TubeBarCode))
+    return false;  
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+  
+  if(!StepPlaceSample("Plain"))
+    return false;
+  
+  if (StepLoadSample())
+    return true;
+  else
+    return false;  
+}
+
+function IsSampleLoadedWithDuplicateBarcodeError()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DuplicateBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+  
+  /* if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false; */
+   if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+	return false;
+  
+   if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+  if(!StepPlaceOutputTray())
+    return false;
+  if(!StepPlaceSample("Plain"))
+    return false;
+  
+  return StepLoadSample()
+  //LoadSample()
+
+}
+
+function IsSampleLoadedWithBarcodeMismatchError()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeMismatchErrorSort")
+  var dictColumn=arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+  if(!StepPlaceOutputTray())
+    return false;
+  if(!StepPlaceSample("Plain"))
+    return false;
+  return StepLoadSample();
+  //LoadSample()
+  
+}
+
+function IsSampleReloadedWithBarcodeMismatchError()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeMismatchErrorSort")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+
+  //wait for sample's location as SAMPLEHA
+  aqUtils["Delay"](20000);  //Sync for Sample to get unload to SH
+  if(StepVerifySampleLocationOnTrack(SampleId, SampleLocation))
+    return StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority)  
+  else
+   return false;
+}
+
+
+
+function VerifyMissingBarcodeError()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","MissingBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus = dictColumn["Item"]("SampleStatus"); 
+  var SampleProblem = dictColumn["Item"]("SampleProblem"); 
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  
+  if(StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem) == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "P")
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F")
+    return false;
+  }
+}
+
+function ThenTheSampleDetailsPageDisplaysIndicationThatSampleHasInvalidBarcode()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","InvalidBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleProblem = dictColumn["Item"]("SampleProblem");
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  
+  if(StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem) == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "P")
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F") 
+    return false;
+  }
+}
+
+function VerifyDuplicateBarcodeError()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DuplicateBarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleProblem = dictColumn["Item"]("SampleProblem");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  
+  if(StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem) == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "P")
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F")
+    return false;
+  }
+}
+
+function VerifyBarcodeMismatchError()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","BarcodeMismatchErrorSort")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleProblem = dictColumn["Item"]("SampleProblem");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  
+  if(StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem) == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+    return false;
+  }
+
+}
+
+
+
+function IsCalibrationSampleLoaded()
+{
+   
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","CalQCSort")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename=dictColumn["Item"]("FakeBarcodeFileName");
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");    
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+
+   if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+	
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","CalQCSort")
+  var dictColumn=arrTestData[0];
+  var SampleId=dictColumn["Item"]("SampleIDs");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+/*
+  //if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+   // return false;
+  
+//  StepShutdownTrinidad()
+//  
+//  StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+        
+//  var Query = "SELECT Nodes FROM [Initialization$]";
+//  var arrNodeInfo = new Array();
+//  arrNodeInfo = GetTestItems(TestDataFile, Query, "Nodes");
+//  if(AssayType == "CC")
+//  {
+//    Analyzer = arrNodeInfo[4]
+//  }
+//  else if(AssayType == "IA")
+//  {
+//    Analyzer =  arrNodeInfo[5] 
+//  }
+  var Nodepath = "Instruments//Instrument";
+  var InstrumentsArray = ReadConfigFile(sConfigPath,Nodepath)
+  var Analyzer = GetInstrumentName(InstrumentsArray,"CH")
+*/
+  var arrCCAnalyzer = StepGetModuleNames("CC");
+  var Analyzer = arrCCAnalyzer[0];
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+     return false;
+  if(!StepPlaceOutputTray())
+     return false;
+  if(!StepPlaceSample("Plain"))
+     return false;
+  
+  return StepLoadSample()
+  //LoadSample(); 
+
+}
+
+function IsCCReagentsLoaded()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents","LoadCCReagents")
+  var dictColumn=arrTestData[0];
+  var Assays=dictColumn["item"]("Assays")
+    
+  StepLoadCCReagents(Assays)
+  
+  StepVerifyReagentsLoaded(Assays,"CC")
+
+
+}
+
+function BarcodeErrorTeardown()
+{
+   // Change language to EN
+//  var Query = "SELECT Nodes FROM [Initialization$]";
+//  var arrNodes = new Array();
+//  arrNodes = GetTestItems(TestDataFile, Query, "Nodes");
+//  
+//  var Username = arrNodes[0]
+//  var Password = arrNodes[1]
+//  
+//  StepChangeLanguage("EN", Username, Password);
+  
+  //Clear all data
+  return ClearApplicationData(); 
+  
+  //Activate default sort panel
+  //StepActivateSortPanel("Default");
+}
+function CalQCSortingTeardown()
+{
+   // Change language to EN
+  var Query = "SELECT Nodes FROM [Initialization$]";
+  var arrNodes = new Array();
+  arrNodes = GetTestItems(TestDataFile, Query, "Nodes");
+  
+  var Username = arrNodes[0]
+  var Password = arrNodes[1]
+  
+  StepChangeLanguage("EN", Username, Password);
+  
+  //Clear all data
+  return ClearApplicationData(); 
+  
+  //Activate default sort panel
+  //StepActivateSortPanel("Default");
+}
+
+function CappedSampleError_TearDown()
+{
+  Log["AppendFolder"]("TearDown-Enabling Decapper Module");
+  
+    var DeploymentType = GetDeploymentTypeFromFederationConfig();
+    
+//    if(!StepShutdownAnalyzer("SH"))
+//    {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      return false;
+//    } 
+      
+    
+    if(!StepShutdownTrinidad())
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    if(!StepEnableDecapper())
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+//    if(!StepLaunchAnalyzer("SH"))
+//    {
+//      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+//      Log["PopLogFolder"]();
+//      return false;
+//    } 
+    
+    if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+    {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("TearDown-Enabling Decapper Module-Passed")
+      Log["PopLogFolder"]();
+      return true;
+    } 
+}

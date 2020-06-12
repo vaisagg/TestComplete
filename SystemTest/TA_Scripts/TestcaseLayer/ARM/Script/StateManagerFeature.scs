@@ -1,0 +1,1579 @@
+﻿//USEUNIT CommonFeatureUtils
+//USEUNIT Authentication
+//USEUNIT StateManagerFeatureSteps
+//USEUNIT TCNativeLibraries
+//USEUNIT DiagnosticsFeature
+//USEUNIT TCCSConfigLibrary
+//USEUNIT DiagnosticsLibrary
+//USEUNIT System
+
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                        TEST ITEMS DETAILS
+                                        Modified as on 3 Dec 2018
+                                        SmokeTestStateManager
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+                   
+                    
+                 /*^^^^^^^^^^^^^^^^^^^^^
+                        SMOKE TEST
+                /*^^^^^^^^^^^^^^^^^^^*/            
+                
+function SmokeTestStateManager()
+{ 
+    //Test Count
+    LogHighlight("Scenario Count [State Manager : 6")
+    
+    //Initialize Datafile and XMLS
+    InitializeMetaDataHYDRA();
+    
+    //Feature
+    FT232812_UserRequestedStateTransition();
+    
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                    FEATURES  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+                     
+//******************************************************************************
+//          FEATURE : 232812 - UserRequestedStateTransition
+//******************************************************************************
+function FT232812_UserRequestedStateTransition()
+{
+
+    //MIT : 329559
+    US237643_GWT_01_TransitionStopped_Paused_Diagnostics(); 
+    
+    //MIT : 329564
+    US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics()
+    
+    //MIT : 329560
+    US237686_GWT_01_TransitionStopped_Paused_Ready()
+    
+    //MIT : 329563
+    US237717_GWT_01_TransitionStopped_RapidStop_StartUp()
+    
+    //MIT : 329562
+    US237688_GWT_01_TransitionStopped_CheckSupplies_Ready
+    
+	
+    US232845_GWT_01_ReadyToStopped()
+    US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp()
+    US237612_GWT_01_Stopped_CheckHardwareToDiagnostics()
+    US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics()
+    US232847_GWT_01_ProcessingToMaintenance()
+    US232847_GWT_02_ProcessingToMaintenance()
+}
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                      GWT's  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/   
+
+//******************************************************************************
+//         GWT's [FEATURE : 232812 - UserRequestedStateTransition ]   
+//******************************************************************************
+
+//Bhawya
+
+/*------ MIT : 329559 ------*/
+function US237643_GWT_01_TransitionStopped_Paused_Diagnostics(){
+    
+    //USER STORY
+    var ScnarioName = "StoppedPausedDiagnostics"
+    LogHighlight("Scenario : Verify Transition from Stopped - Paused to Diagnostics")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US237643 : Transition Stopped -Paused to Diagnsotics")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("System_Status_StateTransition", "US237643_GWT_01_TransitionStopped_Paused_Diagnostics", "I");
+    
+//    //PreRequisite
+//    Log["AppendFolder"]("PREREQUISITE : Bring System to Ready State")
+//    if(!InitializeUIW_IoT()){
+//      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+//      Runner["Stop"]()}
+      
+    //GIVEN
+    Log.AppendFolder("GIVEN : Module is in STOPPED - Paused State");
+    if(!GIVENModuleInStoppedPausedState()){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237643_GWT_01_TransitionStopped_Paused_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    Log.AppendFolder("WHEN : Module Receives Request to Enter Diagnostics");
+    if(!WHENModuleReceivesEnterDiagnosticsRequest()){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237643_GWT_01_TransitionStopped_Paused_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : Module transitions to Diagnostics State");
+    if(!THENModuleTransitionsToExpectedState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237643_GWT_01_TransitionStopped_Paused_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : System updtaes an INFO Log entry of arrival at new State");
+    if(!THENVerifyEventLogForNewState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237643_GWT_01_TransitionStopped_Paused_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN : Exit Diagnostics State and Resume Module")
+    if(!ClickOnExitDiagnostics()){
+      Log["Error"]("Unable to Exit Diagnostics")
+      Log["PopLogFolder"]();
+      return false;}
+      
+    if(!POSTRUN_StopPauseOrResumeModule("RESUME")){
+      Log["Error"]("Unable to Exit Diagnostics")
+      Log["PopLogFolder"]();
+      return false;}
+    Log["PopLogFolder"]();
+    
+}
+
+
+/*------ MIT : 329560 ------*/
+function US237686_GWT_01_TransitionStopped_Paused_Ready(){
+    
+    //USER STORY
+    var ScnarioName = "StoppedPausedReady"
+    LogHighlight("Scenario : Verify Transition from Stopped-Paused to Ready")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US237686 : Transition Stopped -Paused to Ready")
+      
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("System_Status_StateTransition", "US237686_GWT_01_TransitionStopped_Paused_Ready", "I");
+
+//    //PreRequisite
+//    Log["AppendFolder"]("PreRequisite: Bring System to Ready State")
+//    if(!InitializeUIW_IoT()){
+//      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+//      Runner["Stop"]()}
+      
+    //GIVEN
+    Log.AppendFolder("GIVEN : Module is in STOPPED -Paused State");
+    if(!GIVENModuleInStoppedPausedState()){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237686_GWT_01_TransitionStopped_Paused_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    Log.AppendFolder("WHEN : Module Receives Request Resume");
+    if(!WHENModuleReceivesTransitionRequest(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237686_GWT_01_TransitionStopped_Paused_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : Module transitions to Ready State");
+    if(!THENModuleTransitionsToExpectedState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237686_GWT_01_TransitionStopped_Paused_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : System updtaes an INFO Log entry of arrival at new State");
+    if(!THENVerifyEventLogForNewState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237686_GWT_01_TransitionStopped_Paused_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+}
+
+
+/*------ MIT : 329564 ------*/
+function US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics(){
+    
+    //USER STORY
+    var ScnarioName = "StoppedRapidStopDiagnostics"
+    LogHighlight("Scenario : Verify Transition from Stopped-RapidStop to Diagnostics")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US237718 : Transition Stopped -Paused to Diagnsotics")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("System_Status_StateTransition", "US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics", "I");
+
+//    //PreRequisite
+//    Log["AppendFolder"]("PreRequisite: Bring System to Ready State")
+//    if(!InitializeUIW_IoT()){
+//      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+//      Runner["Stop"]()}
+      
+    //GIVEN
+    Log.AppendFolder("GIVEN : Module is in STOPPED - RapidStop State");
+    if(!GIVENModuleInStoppedRapidStopState()){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    Log.AppendFolder("WHEN : Module Receives Request to Enter Diagnostics");
+    if(!WHENModuleReceivesEnterDiagnosticsRequest()){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : Module transitions to Diagnostics State");
+    if(!THENModuleTransitionsToExpectedState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : System updtaes an INFO Log entry of arrival at new State");
+    if(!THENVerifyEventLogForNewState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237718_GWT_01_TransitionStopped_RapidStop_Diagnostics", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN : Exit Diagnostics State and Resume Module")
+    if(!ClickOnExitDiagnostics()){
+      Log["Error"]("Unable to Exit Diagnostics")
+      Log["PopLogFolder"]();
+      return false;}
+      
+    if(!POSTRUN_StopPauseOrResumeModule("RESUME")){
+      Log["Error"]("Unable to Exit Diagnostics")
+      Log["PopLogFolder"]();
+      return false;}
+    Log["PopLogFolder"]();
+    
+}
+
+
+/*------ MIT : 329563 ------*/
+function US237717_GWT_01_TransitionStopped_RapidStop_StartUp(){
+    
+    //USER STORY
+    var ScnarioName = "StoppedRapidStopStartUp"
+    LogHighlight("Scenario : Verify Transition from Stopped-RapidStop to StartUp -Initializing")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US237717 : Transition Stopped -RapidStop to Startup -Initializing")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("System_Status_StateTransition", "US237717_GWT_01_TransitionStopped_RapidStop_StartUp", "I");
+
+//      //PreRequisite
+//      Log["AppendFolder"]("PreRequisite: Bring System to Ready State")
+//      if(!InitializeUIW_IoT()){
+//        Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+//        Runner["Stop"]()}
+      
+    //GIVEN
+    Log.AppendFolder("GIVEN : Module is in STOPPED - Rapid Stop State");
+    if(!GIVENModuleInStoppedRapidStopState()){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237717_GWT_01_TransitionStopped_RapidStop_StartUp", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+
+    //WHEN
+    Log.AppendFolder("WHEN : Module Receives Request to Resume");
+    if(!WHENModuleReceivesTransitionRequest(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237717_GWT_01_TransitionStopped_RapidStop_StartUp", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : Module transitions to Startup -Initializing state");
+    if(!THENModuleTransitionsToExpectedState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237717_GWT_01_TransitionStopped_RapidStop_StartUp", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : System updtaes an INFO Log entry of arrival at new State");
+    if(!THENVerifyEventLogForNewState(ScnarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237717_GWT_01_TransitionStopped_RapidStop_StartUp", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+}
+
+
+/*------ MIT : 329562 ------*/
+function US237688_GWT_01_TransitionStopped_CheckSupplies_Ready(){
+    
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    
+    var ScenarioName = "StoppedCheckSuppliesReady"
+    LogHighlight("Scenario : Verify Transition from Stopped_CheckSupplies to Ready")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US237688 : Transition Stopped_CheckSupplies to Ready")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "I");
+
+//    PreRequisite 1
+//    Log["AppendFolder"]("PREREQUISITE : Empty All Supplies")
+//    if(!PREReq_EmptySupplies(ScenarioName)){
+//        ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+//		    Log["PopLogFolder"]();
+//        return false;
+//    }
+//    Log["PopLogFolder"]()
+//    
+//    PreRequisite 2
+//    Log["AppendFolder"]("PREREQUISITE : Initialize UIW")
+//    if(!InitializeHydra()){
+//      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+//      Runner["Stop"]()}
+ //setup
+    Log["AppendFolder"]("Setup : Empty All Supplies")
+    if(!StoppedCheckSupplies())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+      Log["PopLogFolder"]();
+     // Teardown_FillSupplies();
+      //Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Module is in STOPPED_CheckSupplies State");
+    //if(!GivenHydraModuleIsInStoppedCheckSupplies())
+    if(!VerifyEventLogForTransientStateWithTimeModuleParameters(ScenarioName))
+    {
+        Log["Error"]("Test failed");
+       ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+        Log["PopLogFolder"]();
+       Teardown_FillSupplies();
+      //  Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+
+
+   // //GIVEN
+   // Log.AppendFolder("GIVEN : Module is in STOPPED_CheckSupplies State");
+   // if(!GIVENModuleInExpectedState(ScenarioName)){
+   //   ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+   //	    Log["PopLogFolder"]();
+   //   return false;
+   // }
+   //  Log["PopLogFolder"]()
+
+    //WHEN
+    Log.AppendFolder("WHEN : Module no longer detects any system-wide supply or waste error conditions");
+    if(!WHENSuppliesErrorConditionCleared(ScenarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    if(!InitializeHydra()){
+      Log["Error"]("STOP EXECUTION : Initialize UIW failed")
+      Runner["Stop"]()}
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : Module transitions to READY state");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN : System updtaes an INFO Log entry of arrival at new State");
+    if(!THENVerifyEventLogForNewState(ScenarioName)){
+        ReportTestStatusToResultXML("System_Status_StateTransition", "US237688_GWT_01_TransitionStopped_CheckSupplies_Ready", "F");
+		    Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]()
+    
+}
+
+//SHRUTIKA
+function US232845_GWT_01_ReadyToStopped()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "ReadyToStopped_Paused"
+    Log["AppendFolder"]("Scenario : US232845_GWT_01_ReadyToStopped")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    LogHighlight("US232845 : State transition from Ready -> STOPPED - PAUSED")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN module is in READY State");
+    if(!GivenHydraModuleIsInReadyState())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN 
+    Log.AppendFolder("WHEN module receives user-generated Pause request");
+    if(!WhenModuleReceivesPauseRequestFromUser())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - SM transitions to Pausing transient Status and takes the appropriate actions");
+    Log.Message("- SM updates module with current transient status - SM makes an INFO Log entry of new transient status");
+    if(!VerifyEventLogForTransientStateWithTimeModuleParameters(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "F");
+      Log["PopLogFolder"]();
+      if(!Teardown_ResumeHydraFromStopped_Paused())
+      {
+        Log["PopLogFolder"]();
+      }
+      return false;
+    }
+    
+    Log.Message("when conditions allow, SM transitions through READY to STOPPED - Paused state, and takes the appropriate actions");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    //if(!ThenVerifyModuleStateAndOperatorEventLog())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "F");
+      Log["PopLogFolder"]()
+      if(!Teardown_ResumeHydraFromStopped_Paused())
+      {
+        Log["PopLogFolder"]();
+      }
+      return false;
+    }
+    Log.Message("- SM updates module with current State- SM makes an INFO Log entry of arrival at new State");
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "F");
+      Log["PopLogFolder"]()
+      if(!Teardown_ResumeHydraFromStopped_Paused())
+      {
+        Log["PopLogFolder"]();
+      }
+      return false;
+    }
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232845_GWT_01_ReadyToStopped", "P");
+    
+    //teardown to make hydra ready state
+    Log["AppendFolder"]("Teardown - US232845 : State transition from Ready To Stopped_Paused")
+    Teardown_ResumeHydraFromStopped_Paused();
+    Log["PopLogFolder"]()
+    Log["PopLogFolder"]();
+}
+
+function US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Scenario : State transition US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US232842 : Ready To Maintenance")
+    Log.Message("US232861 : Maintenance To StartUp_WarmingUp")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp", "I");
+
+    //GIVEN *****
+    Log.AppendFolder("GIVEN module is in READY State");
+    if(!GivenHydraModuleIsInReadyState())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN *****
+    Log.AppendFolder("WHEN the module receives user request to enter MAINTENANCE State");
+    if(!WhenUserPerformMaintenanceActivity())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        
+      }
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN  - module transitions to MAINTENANCE State and makes the appropriate user interface updates");
+    Log.Message(" - SM updates module with current MAINTENANCNE State  - SM makes an INFO Log entry of arrival at new MAINTENANCE State");
+    Log.Message(" -module transitions to STARTUP - Warming Up State, and takes the appropriate actions");
+    Log.Message("- updates State Manager with current State - makes an INFO Log entry of arrival at new State");
+    if(!ThenVerifyModuleMaintenanceStateThenStartupStateAndOperatorEventLog())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      if(!GivenHydraModuleIsInReadyState())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      return false
+    }
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp", "P");
+    
+    //Teardown
+    Log["AppendFolder"]("Teardown - US232842_US232861_GWT_01_ReadyToMaintenance_MaintenanceToStartUp_WarmingUp") 
+    if(GivenHydraModuleIsInReadyState())
+    {
+      Log["Message"]("Teardown pass")
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+    }
+    else
+    {
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+      Log["Message"]("Teardown fails")
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+      }
+    }
+}
+
+function US237612_GWT_01_Stopped_CheckHardwareToDiagnostics()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName ="Stopped_CheckHardwareToDiagnostics";
+    Log["AppendFolder"]("Scenario : US237612_GWT_01_Stopped_CheckHardwareToDiagnostics")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    LogHighlight("US232845 : US: transition STOPPED - Check Hardware -> Diagnostics")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State Manager", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN module is in STOPPED - Check Hardware State");
+    if(!GivenHydraModuleIsInStoppedCheckHardware())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "F");
+      Log["PopLogFolder"]()
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        return false 
+      }
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log.AppendFolder("WHEN module receives request to enter DIAGNOSTICS State");
+    if(!WhenOperatorEntersDiagnostics())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "F");
+      Log["PopLogFolder"]()
+      if(!StepResumeHydraToReady())
+      {
+        Log["PopLogFolder"]()
+        return false 
+      }
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN  - module transitions to DAIGNOSTICS State, and takes appropriate actions");
+    Log.Message(" -updates State Manager with current State ")
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    //if(!ThenVerifyHydraDiagnosticsStateAndOperatorEventLog())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "F");
+      Log["PopLogFolder"]()
+      if(!Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState())
+      {
+        Log["PopLogFolder"]()
+        return false 
+      }
+    }
+    Log.Message(" -makes an INFO Log entry of arrival at new State");
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "F");
+      Log["PopLogFolder"]()
+      if(!Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState())
+      {
+        Log["PopLogFolder"]()
+        return false 
+      }  
+    }
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "P");
+    
+    //teardown to make hydra ready state
+    Log["AppendFolder"]("Teardown - US237612 : US: transition Stopped_CheckHardware -> Diagnostics")
+    Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+    Log["PopLogFolder"]()
+    Log["PopLogFolder"]()
+}
+
+function US232847_GWT_01_ProcessingToMaintenance()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Scenario : State transition US232847_GWT_01_ProcessingToMaintenance--  not running tests")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US232847 : US: transition Processing -> Maintenance")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "I");
+
+    //GIVEN *****
+    Log.AppendFolder("GIVEN module is in PROCESSING State AND not running any tests");
+    if(!GivenHydraModuleIsInProcessing())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN *****
+    Log.AppendFolder("WHEN module receives [user] request to enter MAINTENANCE State");
+    if(!WhenOperatorEntersMaintenanceFromProcessing())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      if(GivenHydraModuleIsInReadyState())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN-when conditions allow, SM transitions to Pausing transient status, and takes the appropriate actions");
+    Log.Message("-SM updates module with current State, and informs SIM: transient status Entering Maintenance");
+    Log.Message("-SM makes an INFO Log entry of new transient status");
+    Log.Message("-when conditions allow, SM transitions through READY to MAINTENANCE State, and takes the appropriate actions")
+    Log.Message("-SM updates module with current State");
+    Log.Message("-SM makes an INFO Log entry of arrival at new State");
+    if(!ThenVerifyHydraMaintenanceStateFromProcessingAndOperatorEventLog())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      if(GivenHydraModuleIsInReadyState())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      Log["PopLogFolder"]()
+      return false
+    }
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "P");
+    
+    //TO DO -teardown to make hydra ready state
+    Log["AppendFolder"]("Teardown :Scenario US232847_GWT_01_ProcessingToMaintenance - not running any tests[priming]")
+    if(GivenHydraModuleIsInReadyState())
+    {
+      
+      Log["Message"]("Teardown success")
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+    }
+    if(!InitializeHydraWithModuleStatusCheck())
+    {
+      Log["Message"]("Teardown fails")
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+    }
+    Log["Message"]("Teardown success")
+    Log["PopLogFolder"]()
+    Log["PopLogFolder"]()
+
+}
+
+function US232847_GWT_02_ProcessingToMaintenance()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    Log["AppendFolder"]("Scenario : State transition US232847_GWT_02_ProcessingToMaintenance - running tests")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US232847 : US: transition Processing -> Maintenance")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_02_ProcessingToMaintenance", "I");
+
+    //GIVEN *****
+    Log.AppendFolder("GIVEN module is in PROCESSING State AND not running any tests");
+    if(!GivenHydraModuleIsInProcessingForATest())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_02_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN *****
+    Log.AppendFolder("WHEN module receives [user] request to enter MAINTENANCE State");
+    if(!WhenOperatorEntersMaintenanceFromProcessingRunningATest())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_02_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      if(GivenHydraModuleIsInReadyState())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN-when conditions allow, SM transitions to Pausing transient status, and takes the appropriate actions");
+    Log.Message("-SM updates module with current State, and informs SIM: transient status Entering Maintenance");
+    Log.Message("-SM makes an INFO Log entry of new transient status");
+    Log.Message("-when conditions allow, SM transitions through READY to MAINTENANCE State, and takes the appropriate actions")
+    Log.Message("-SM updates module with current State");
+    Log.Message("-SM makes an INFO Log entry of arrival at new State");
+    if(!ThenVerifyHydraMaintenanceStateFromProcessingAndOperatorEventLog())
+    {
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_02_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      if(GivenHydraModuleIsInReadyState())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      if(!InitializeHydraWithModuleStatusCheck())
+      {
+        Log["PopLogFolder"]()
+        return false
+      }
+      Log["PopLogFolder"]()
+      return false
+    }
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_02_ProcessingToMaintenance", "P");
+    
+    //TO DO -teardown to make hydra ready state
+    Log["AppendFolder"]("Teardown :Scenario US232847_GWT_02_ProcessingToMaintenance - running a test")
+    if(GivenHydraModuleIsInReadyState())
+    {
+      
+      Log["Message"]("Teardown success")
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+    }
+    if(!InitializeHydraWithModuleStatusCheck())
+    {
+      Log["Message"]("Teardown fails")
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+    }
+    Log["Message"]("Teardown success")
+    Log["PopLogFolder"]()
+    Log["PopLogFolder"]()
+
+}
+
+function US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    
+    var ScenarioName = "StoppedCheckSuppliesDignostics"
+    Log["AppendFolder"]("Scenario : US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    LogHighlight("US232847 : Transition Stopped_CheckSupplies -> Diagnostics")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics", "I");
+
+    //setup
+    Log["AppendFolder"]("Setup : Empty All Supplies- US232847 : Transition Stopped_CheckSupplies -> Diagnostics")
+    if(!StoppedCheckSupplies())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics", "F");
+      Log["PopLogFolder"]();
+      Teardown_FillSupplies();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    //GIVEN
+    Log.AppendFolder("GIVEN : Module is in STOPPED_CheckSupplies State");
+    //if(!GivenHydraModuleIsInStoppedCheckSupplies())
+    if(!VerifyEventLogForTransientStateWithTimeModuleParameters(ScenarioName))
+    {
+        Log["Error"]("Test failed");
+        ReportTestStatusToResultXML("UserRequestedStateTransition", "US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics", "F");
+        Log["PopLogFolder"]();
+        Teardown_FillSupplies();
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log.AppendFolder("WHEN module receives request to enter DIAGNOSTICS State");
+    if(!WhenOperatorEntersDiagnostics())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics", "F");
+      Log["PopLogFolder"]();
+      Teardown_FillSupplies();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log.AppendFolder("THEN- module transitions to DIAGNOSTICS State, and takes appropriate actions");
+    Log.Message("- updates State Manager with current State");
+    //if(!ThenVerifyHydraDiagnosticsStateFromMaintenanceAndOperatorEventLog())
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics", "F");
+      Log["PopLogFolder"]();
+      if(!ClickOnExitDiagnostics())
+      {
+        Log["PopLogFolder"]();
+        return false
+      }
+      if(!Teardown_FillSupplies())
+      {
+        Log["PopLogFolder"]();
+        return false
+      }
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //THEN 2
+    Log.Message("- makes an INFO Log entry of arrival at new State");
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US237687_GWT_01_Stopped_CheckSuppliesToDiagnostics", "F"); 
+      Log["PopLogFolder"]();
+      if(!ClickOnExitDiagnostics())
+      {
+        Log["PopLogFolder"]();
+        return false
+      }
+      if(!Teardown_FillSupplies())
+      {
+        Log["PopLogFolder"]();
+        return false
+      }
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US237612_GWT_01_Stopped_CheckHardwareToDiagnostics", "P"); 
+    
+        //TO DO -teardown to make hydra ready state
+    Log["AppendFolder"]("Teardown - US232847 : US: transition Stopped_CheckSupplies -> Diagnostics")
+    if(!ClickOnExitDiagnostics())
+    {
+      Log["Error"]("Teardown fails")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+    }
+    if(!Teardown_FillSupplies())
+    {
+      Log["Error"]("Teardown fails")
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+    }
+    else
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+    
+}
+
+function US232846_GWT_01_ProcessingToDiagnostics()
+{
+  InitializeMetaDataHYDRA();
+    
+    var ScenarioName = "MIT329555ProcessingToDiagnostics"
+    Log["AppendFolder"]("Scenario : US232846_GWT_01_ProcessingToDiagnostics")
+    LogHighlight("Scenario : US232846_GWT_01_ProcessingToDiagnostics")
+    Log.Message("FEATURE: 232812 - UserRequestedStateTransition")
+    Log.Message("US232847 : Transition Stopped_CheckSupplies -> Diagnostics")
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232846_GWT_01_ProcessingToDiagnostics", "I");
+
+    //setup
+    Log.AppendFolder("GIVEN Hydra is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+
+    //GIVEN
+    Log.AppendFolder("GIVEN module is in PROCESSING State");
+    if(!GivenHydraModuleIsInProcessing(scenarioname))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN
+    Log.AppendFolder("WHEN module receives request to enter DIAGNOSTICS State");
+    if(!WhenOperatorEntersDiagnostics())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN
+    Log.AppendFolder("THEN- module transitions to DIAGNOSTICS State, and takes appropriate actions");
+    Log.Message("- updates State Manager with current State");
+    //if(!ThenVerifyHydraDiagnosticsStateFromMaintenanceAndOperatorEventLog())
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F");
+      Log["PopLogFolder"]();
+      Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log.Message("- makes an INFO Log entry of arrival at new State");
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      ScenarioPassOrFail(false)
+      ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "F"); 
+      Log["PopLogFolder"]();
+      Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ScenarioPassOrFail(true)
+    ReportTestStatusToResultXML("UserRequestedStateTransition", "US232847_GWT_01_ProcessingToMaintenance", "P"); 
+    
+    //TO DO -teardown to make hydra ready state
+    Log["AppendFolder"]("Teardown - US232847_GWT_01_ProcessingToMaintenance")
+    Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+
+
+
+function US237544_GWT_01_DiagnosticsToStartup_WarmingUp()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "DiagnosticsToStartup_WarmingUp"
+    Log["AppendFolder"]("Scenario : US237544_GWT_01_DiagnosticsToStartup_WarmingUp")
+    Log.Message("FEATURE: 232813 - State transition based on user actions")
+    LogHighlight("US237544 : US: transition DIAGNOSTICS -> Startup_WarmingUp")
+    Log.Message("User story needs to be updated and script is written based on discussion with developers")
+    
+    //MIT 329556
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN Hydra is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And hydra is ready");
+    if(!GivenHydraModuleIsInReadyState())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And module is in Diagnostics State");
+    if(!WhenOperatorEntersDiagnostics())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //WHEN 
+    Log.AppendFolder("WHEN module receives request to leave DIAGNOSTICS (and enter STARTUP-Warmingup) State");
+    if(!WhenHydraModuleTransitionsFromExitDiagnosticsToResume())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Teardown_ResumeHydraDiagnosticsStopped_CheckHardwareState()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - module transitions to STOPPED - Check Hardware State and takes the appropriate actions");
+    Log.Message("- updates State Manager with current State; no update to SIM -  makes an INFO Log entry of arrival at new State");
+    Log.Message("when conditions allow, module transitions to Startup_WarmingUp");
+    Log.Message("- SM updates module with current State- SM makes an INFO Log entry of arrival at new State");
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237544_GWT_01_DiagnosticsToStartup_WarmingUp", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+		Log["PopLogFolder"]()
+    Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("State transition based on user actions", "US232845_GWT_01_ReadyToStopped", "P");
+}
+
+function US237723_GWT_01_ReadyToOff()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "US237723_GWT_01_ReadyToOff"
+    sState = "Ready"
+    Log["AppendFolder"]("Scenario : US237723_GWT_01_ReadyToOff")
+    Log.Message("FEATURE: 232813 - State transition based on user actions")
+    LogHighlight("US237723 : US: power down the module")
+    
+    //MIT 
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN Hydra software is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And hydra module is ready");
+    if(!GivenHydraModuleIsInReadyState())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("When module receives power-down request");
+    if(!WhenOperatorShutdownHydra(sState))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - System makes an INFO Log entry of power down - Module reports Shutting Down transient status");
+    Log.Message("- Module takes the appropriate actions to power down - When conditions are right, module powers down");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      ScenarioPassOrFail(false);
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    ScenarioPassOrFail(true);
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_01_ReadyToOff", "P");
+    
+    Log["AppendFolder"]("Teardown - US237723_GWT_01_ReadyToOff")
+    if(InitializeHydraWithModuleStatusCheck())
+    {
+      Log["Message"]("Teardown pass")
+      Log["PopLogFolder"]();
+    }
+    else
+    {
+      Log["Message"]("Teardown fail")
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"](); 
+}
+
+function US237723_GWT_02_RapidStopToOff()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "US237723_GWT_02_RapidStopToOff"
+    var sInitialState = "Stopped"
+    Log["AppendFolder"]("Scenario : US237723_GWT_02_RapidStopToOff")
+    LogHighlight("Scenario : US237723_GWT_02_RapidStopToOff")
+    Log.Message("FEATURE: 232813 - State transition based on user actions")
+    Log.Message("US237723 : US: power down the module")
+    
+    //MIT 329556
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN Hydra software is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And Initial State = module is up and running, in STOPPED - Rapid Stop state");
+    if(!GIVENModuleInStoppedRapidStopState())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And module receives power-down request");
+    if(!WhenOperatorShutdownHydra(sInitialState))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - System makes an INFO Log entry of power down - Module reports Shutting Down transient status");
+    Log.Message("- Module takes the appropriate actions to power down - When conditions are right, module powers down");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      ScenarioPassOrFail(false);
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    ScenarioPassOrFail(true);
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_02_RapidStopToOff", "P");
+    
+    Log["AppendFolder"]("Teardown - US237723_GWT_02_RapidStopToOff")
+    if(InitializeHydraWithModuleStatusCheck())
+    {
+      Log["Message"]("Teardown pass")
+      Log["PopLogFolder"]();
+    }
+    else
+    {
+      Log["Message"]("Teardown pass")
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"](); 
+}
+
+function US237723_GWT_03_ProcessingToOff()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "US237723_GWT_03_ProcessingToOff"
+    var sInitialState = "Processing"
+    Log["AppendFolder"]("Scenario : US237723_GWT_03_ProcessingToOff- From processing To Off and user selects Yes")
+    LogHighlight("Scenario : US237723_GWT_03_ProcessingToOff")
+    Log.Message("FEATURE: 232813 - State transition based on user actions")
+    Log.Message("US237723 : US: power down the module")
+    
+    //MIT 329556
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN Hydra software is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And that the module is in PROCESSING state");
+    if(!GIVENModuleInProcessingState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("When module receives power-down request and user selects Yes");
+    if(!WhenOperatorShutdownHydra(sInitialState))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - System makes an INFO Log entry of power down - Module reports Shutting Down transient status");
+    Log.Message("- Module takes the appropriate actions to power down - When conditions are right, module powers down");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    
+    if(!VerifyEventLogForFinalStateWithTimeModuleParameters(ScenarioName))
+    {
+      ScenarioPassOrFail(false);
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      InitializeHydraWithModuleStatusCheck()
+      Log["PopLogFolder"]()
+      return false
+    }
+    ScenarioPassOrFail(true);
+		Log["PopLogFolder"]()
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_03_ProcessingToOff", "P");
+    
+    Log["AppendFolder"]("Teardown - US237723_GWT_03_ProcessingToOff")
+    if(InitializeHydraWithModuleStatusCheck())
+    {
+      Log["Message"]("Teardown pass")
+      Log["PopLogFolder"]();
+    }
+    else
+    {
+      Log["Message"]("Teardown fail")
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"](); 
+}
+
+function US237723_GWT_04_ProcessingToOff()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "US237723_GWT_04_ProcessingToOff"
+    var sInitialState = "Processing"
+    Log["AppendFolder"]("Scenario : US237723_GWT_04_ProcessingToOff-From processing To Off and user selects No")
+    LogHighlight("Scenario : US237723_GWT_04_ProcessingToOff")
+    Log.Message("FEATURE: 232813 - State transition based on user actions")
+    Log.Message("US237723 : US: power down the module")
+    
+    //MIT 329556
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_04_ProcessingToOff", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN Hydra software is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_04_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And that the module is in PROCESSING state");
+    if(!GIVENModuleInProcessingState(ScenarioName))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_04_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("When module receives power-down request and user selects Yes");
+    if(!WhenOperatorShutdownHydraWhenUserSelectsNo(sInitialState))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_04_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]();
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - System makes an INFO Log entry of power down - Module reports Shutting Down transient status");
+    Log.Message("- Module takes the appropriate actions to power down - When conditions are right, module powers down");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      ScenarioPassOrFail(false);
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_04_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"](); 
+      return false
+    }
+    
+    ScenarioPassOrFail(true);
+	Log["PopLogFolder"]()
+    Log["PopLogFolder"](); 
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_04_ProcessingToOff", "P");
+
+}
+
+function US237723_GWT_05_ProcessingToOff()
+{
+    //USER STORY
+    InitializeMetaDataHYDRA();
+    var ScenarioName = "US237723_GWT_05_ProcessingToOff"
+    var sInitialState = "Processing"
+    Log["AppendFolder"]("Scenario : US237723_GWT_05_ProcessingToOff- From processing To Off and user selects cancel")
+    LogHighlight("Scenario : US237723_GWT_05_ProcessingToOff")
+    Log.Message("FEATURE: 232813 - State transition based on user actions")
+    Log.Message("US237723 : US: power down the module")
+    
+    //MIT 329556
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_05_ProcessingToOff", "I");
+
+    //GIVEN
+    Log.AppendFolder("GIVEN Hydra software is initialized");
+    //if(!HydraIsInitialized())
+    if(!StepCheckModuleStatusHydra())
+    {
+      Log["Error"]("Test failed - Hydra is not initialized");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_05_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("And that the module is in PROCESSING state");
+    if(!GIVENModuleInProcessingState())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_05_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    Log.AppendFolder("When module receives power-down request and user selects Cancel");
+    if(!WhenOperatorShutdownHydraWhenUserSelectsCancel(sInitialState))
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_05_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    Log["PopLogFolder"]()
+    
+    //THEN
+    Log.AppendFolder("THEN - Shutdown request is cancelled, processing continues; no further action");
+    if(!THENModuleTransitionsToExpectedState(ScenarioName))
+    {
+      ScenarioPassOrFail(false);
+      ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_05_ProcessingToOff", "F");
+      Log["PopLogFolder"]()
+      Log["PopLogFolder"]()
+      return false
+    }
+    ScenarioPassOrFail(true);
+		Log["PopLogFolder"]()
+    Log["PopLogFolder"](); 
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML("State transition based on user actions", "US237723_GWT_05_ProcessingToOff", "P");
+       
+}

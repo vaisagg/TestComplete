@@ -1,0 +1,15 @@
+<TestDetails>		
+    <TestType>Regression</TestType>
+	<IntegrationRelease>TBD</IntegrationRelease>
+	<Configuration>SCD</Configuration>
+    	<TotalInstallationWorkflowCount_HYDRA>2</TotalInstallationWorkflowCount_HYDRA>
+    	<TotalDeploymentUsableWorkflowCount_HYDRA_Smoke>4</TotalDeploymentUsableWorkflowCount_HYDRA_Smoke>
+    	<TotalTestWorkflowCount_HYDRA_Smoke>27</TotalTestWorkflowCount_HYDRA_Smoke>
+		<TotalDeploymentUsableWorkflowCount_HYDRA_RoundTrip>3</TotalDeploymentUsableWorkflowCount_HYDRA_RoundTrip>
+	<TotalTestWorkflowCount_HYDRA_RoundTrip>10</TotalTestWorkflowCount_HYDRA_RoundTrip>
+    <IPAddress>10.120.12.42</IPAddress>
+	<RAM>8 GB</RAM>
+	<OS>Windows 10 Enterprise</OS>
+	<SystemType>64 Bit</SystemType>
+</TestDetails>
+		

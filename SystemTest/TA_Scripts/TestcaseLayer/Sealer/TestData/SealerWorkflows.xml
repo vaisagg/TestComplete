@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Workflows>
+		<Category name="Sealer">
+			<Workflow code = "SealerSimulator">
+					<NavigationPath target="Sealer Simulator">
+					</NavigationPath>
+					<ExitPath> </ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+			<Workflow code = "SealerModuleManager">
+					<NavigationPath target="Siemens - Module Manager">
+					</NavigationPath>
+					<ExitPath> </ExitPath>
+					<Description>NA</Description>
+					<Level>0</Level>			
+					<WorkflowID>1</WorkflowID>
+			</Workflow>
+		</Category>
+</Workflows>	

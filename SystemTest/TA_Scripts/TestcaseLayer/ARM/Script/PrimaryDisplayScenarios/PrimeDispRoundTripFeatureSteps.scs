@@ -1,0 +1,385 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+function MoveAllSamplesToHistoricalforRT()
+{
+  try
+  {
+    return StepMoveAllSamplesToHistorical();
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+}
+
+function VerifyReagentsInventoryCountForRT(arrTestData1)
+{
+ try
+  {         
+      //Initialize variables       
+      var counter = arrTestData1["length"]
+      var reagentsAndInvCount= new Array();
+      
+      Log["AppendFolder"]("Checking the Inventory Count Displayed in the Reagent Overview Screen For Each Reagents");
+      
+      //Verify Reagent status
+      for(z=0;z<counter;z++)
+      {
+        var assayName = arrTestData1[z]["Item"]("Assay")
+        
+        if(assayName == "Albumin")
+        {
+          assayName = "ALB"; 
+        }
+          
+        //Verify the Reagent availability and its Count value
+        var invCount = StepGetReagentInventoryCountValue(assayName);
+        if(invCount)
+        {
+          reagentsAndInvCount["push"](assayName + ":" + invCount);
+        }         
+      }
+      
+      Log["PopLogFolder"]();
+      return reagentsAndInvCount;
+  }  
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+}
+
+function CreatePatientOrderForRT(arrTestData1) 
+{
+  try
+  {
+    var POECount=0;
+    
+    Log["AppendFolder"]("Creating Patient Orders for the Round Trip Execution");
+    
+    for(counter=0;counter<arrTestData1["length"];counter++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData1[counter];
+      var sampleId = dictColumn1["Item"]("SampleId");
+      var specimen = dictColumn1["Item"]("Specimen");
+      var priority = dictColumn1["Item"]("Priority");
+      var analyzer = dictColumn1["Item"]("Analyzer");
+      var assay = dictColumn1["Item"]("Assay");
+      var replicates = dictColumn1["Item"]("Replicates");
+      
+      //Create patient order
+      if(StepCreatePatientOrder(sampleId,specimen,priority,analyzer,assay,replicates))
+      {
+        POECount=POECount+1; 
+      }
+    }
+    
+    if(POECount==0)
+    {
+      Log["Error"]("Create Patient Order Failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else if(POECount<arrTestData1["length"])
+    {
+      Log["Error"]("Some of the patient order for the samples are not placed");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+    else 
+    {
+      Log["Checkpoint"]("All the samples are created successfully from patient order screen");
+      Log["PopLogFolder"]();
+      return true;  
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function LoadSamplesFromHydraDMLSimulator(arrTestData) 
+{
+  try
+  {
+    Log["AppendFolder"]("Loads Sample tubes in DL");
+    var sampleIds = new Array();
+    
+    //Read the samples from the test data
+    for(i=0;i<arrTestData["length"];i++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData[i];
+      sampleIds[i] = dictColumn1["Item"]("SampleId");
+    }
+
+    //Load Samples through DML Simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleIds)) 
+    {
+      Log["Error"]("Load Samples through Hydra DML Simulator Failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySampleStatusForRT(arrTestData1)
+{
+ try
+  {      
+    //Initialize variables       
+    var sampleStatus="Aspirated";
+    var sampleCount=0;
+    var counter = arrTestData1["length"];
+      
+    Log["AppendFolder"]("Checking the Sample Aspirated / Completed Status in Sample List Screen");
+      
+    //Verify Sample status
+    for(z=0;z<counter;z++)
+    {
+      dictColumn1=arrTestData1[z];
+      var sampleId = dictColumn1["Item"]("SampleId")
+        
+      if(StepCheckSampleStatusinSampleList(sampleId,sampleStatus))
+      {
+        sampleCount = sampleCount+1; 
+      }
+    }
+      
+    if(sampleCount==0)
+    {
+      Log["Error"]("None of the Samples are Aspirated");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else if(sampleCount < counter)
+    {
+      Log["Error"]("Few Samples are not Aspirated")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Checkpoint"]("All the samples are successfully aspirated");
+      Log["PopLogFolder"]();
+      return true;
+    }      
+  }  
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+}
+
+function VerifyResultsForRT(arrTestData1)
+{
+try
+  {
+    var blnResult = 0;
+      
+    Log["AppendFolder"]("Check the Sample Resulted Status in WorkList Screen");
+      
+    for(y=0;y<arrTestData1["length"];y++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData1[y];
+      var sampleId = dictColumn1["Item"]("SampleId")
+        
+      //Verify sample status
+      if(StepVerifyTestResultInWorkList(sampleId))
+      {
+        blnResult = blnResult+1; 
+      }
+    }  
+    
+    if(blnResult==0)
+    {
+      Log["Error"]("All the given samples are not resulted and have some error");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else if(blnResult < arrTestData1["length"])
+    {
+      Log["Error"]("Sample Result Verification Failed")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Checkpoint"]("All the given samples are resulted successfully")
+      Log["PopLogFolder"]();
+      return true;
+    }
+  } 
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+} 
+
+function VerifyReagentInventoryCountBeforeAndAfterAspiration(invCountBeforeAsp, invCountAfterAsp)
+{
+  try
+  {
+    Log["AppendFolder"]("Verifying the Reagent inventory count before and after aspiration for each reagents")
+    var isInventoryCountUpdated = true;
+    if(invCountBeforeAsp.length == invCountAfterAsp.length)
+    {
+      for(i=0; i<invCountBeforeAsp.length; i++)
+      {
+        Log["AppendFolder"]("Check inventory counts for reagent '" + invCountBeforeAsp[i].split(':')[0] + "'");
+        
+        if(invCountBeforeAsp[i].split(':')[1] > invCountAfterAsp[i].split(':')[1])
+        {
+          Log["Message"]("Reagent Inventory count updated for the reagent '" + invCountBeforeAsp[i].split(':')[0] + "'");
+          Log["Message"]("Inventory Count Before Aspiration : '" + invCountBeforeAsp[i].split(':')[1] + "'");
+          Log["Message"]("Inventory Count After Aspiration : '" + invCountAfterAsp[i].split(':')[1] + "'");
+          Log["CheckPoint"]("Reagent Inventory Count Before & After Aspiration Passed");
+          Log["PopLogFolder"]();
+         
+        } else {
+          Log["Error"]("Reagent Inventory count not updated for the reagent '" + invCountBeforeAsp[i].split(':')[0] + "'");
+          Log["Error"]("Inventory Count Before Aspiration : '" + invCountBeforeAsp[i].split(':')[1] + "'");
+          Log["Error"]("Inventory Count After Aspiration : '" + invCountAfterAsp[i].split(':')[1] + "'");
+          Log["Error"]("Reagent Inventory Count Before & After Aspiration Failed");
+          Log["PopLogFolder"]();
+          isInventoryCountUpdated = false;
+        }
+      }
+      
+      Log["PopLogFolder"]();
+      return isInventoryCountUpdated;
+      
+    } else {
+      Log["Error"]("Reagent Inventory count does not updated / decremented after sample processed");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return 0;
+  } 
+}
+
+function PerformIMTCalibrationAndVerifyStatusForRT()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Perform IMT Calibration If Calibration Is Not Completed");
+       
+    //Get IMTCalibration Status
+    IMTCalibrationStatus = StepGetIMTCalibrationStatus();
+    if(IMTCalibrationStatus==false)
+    {
+      Log["Error"]("Failed to Locate the Calibration Status");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    else if(IMTCalibrationStatus == "IMT Calibration Finished" || IMTCalibrationStatus == "IMT Calibration Completed")
+    {
+      Log["CheckPoint"]("IMT Calibration already in completed status");
+      Log["PopLogFolder"]();
+      return true; 
+    } 
+    else 
+    {
+      if(StepPerformIMTCalibration())
+      {
+        Log["Checkpoint"]("IMT Calibration has been triggered successfully");
+        
+        if(StepVerifyIMTCalibrationStatusIsCompleted())
+        {
+          Log["Checkpoint"]("IMT Calibration Completed Successfully");
+          Log["PopLogFolder"]();
+          return true;
+        } 
+        else 
+        {
+          Log["Error"]("IMT calibration status verification failed");
+          Log["PopLogFolder"]();
+          return false;
+        }        
+      } 
+      else 
+      {
+        Log["Error"]("Unable to trigger the IMT calibration");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyTheETATimeForRT(arrTestData1)
+{
+  try
+  {
+    //Navigate to WorkList Screen
+    if(!InvokeWorkFlowInPrimeDisp("Navigate_To_WorkList_Old")){
+      return false;
+    }
+      
+    Log["AppendFolder"]("Checking the Sample ETA Time");
+      
+    aqUtils["Delay"](60000, "Waiting to Display ETA Time");
+    
+    for(i=0;i<arrTestData1["length"];i++)
+    {
+      //Initialize variables
+      dictColumn1=arrTestData1[i];
+      var sampleId = dictColumn1["Item"]("SampleId")
+       
+      //Verify the ETA time Displayed for the PQCV Sample
+      if(StepVerifyTheSampleETADisplayedInWorkList(sampleId))
+      {
+        Log["Message"]("ETA time for the sample '" + sampleId + "' located successfully");
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else 
+      {
+        Log["Error"]("Failed to locate the ETA time for the sample '" + sampleId + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+  
+}

@@ -1,0 +1,2209 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispSystemHealthCheck
+
+//***************************************************************************************
+//*   Function Name        : UnSelectAllTheSelectedModules()
+//*   Function Description : This function is used to Unselect the modules(s) if any module selected already
+//*   Input                : -
+//*   Output               : return true, if all the modules are in UNSELECTED state
+//*                          return false, if any of the modules selected
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 30/07/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function UnSelectAllTheSelectedModules()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: Unselect all the selected modules");
+    
+    //Get the operatorDiagnostics control
+    var operatorDiagnostics = GetAutomationIDControl("Troubleshooting", "checkBoxOperatorDiagnostics");
+    
+    //Get the EventLog control
+    var operatorEventLog = GetAutomationIDControl("Troubleshooting", "checkBoxEventLog");
+    
+    //Get the LisLog control
+    var lisLog= GetAutomationIDControl("Troubleshooting", "checkBoxLisLog");
+    
+    var checkBoxList = [operatorDiagnostics,operatorEventLog,lisLog]
+    isAllUnSelect = true;
+    
+    //Iterate the Modules for Unselecting the selection
+    for(i=0;i<checkBoxList.length;i++)
+    {    
+      //Verify the checkbox is selected
+      if(GetToggleState(checkBoxList[i]) == 1)
+      {
+        
+        //Click on checkbox to unselect if already selected
+        ClickCtrl(checkBoxList[i]);
+        
+        Log["Message"]("Checkbox '" + checkBoxList[i]["ObjectIdentifier"] + "' is clicked to unselect");
+        
+        //Check the checkbox is successfully unselected      
+        if(GetToggleState(checkBoxList[i]) != 0)
+        {
+          Log["Error"]("Checkbox '" + checkBoxList[i]["ObjectIdentifier"] + "' is not unseelcted");
+          isAllUnSelect = false; 
+        }
+      }
+    }
+    
+    if(isAllUnSelect)
+    {
+      Log["Message"]("All the Modules are UnSelected")
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Few checkbox is not successfully un selected");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : "+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : SelectOperatorEventLogModule()
+//*   Function Description : This function is used to Select the Operator Event log
+//*   Input                : -
+//*   Output               : return true, if the Module is selected
+//*                          return false, if the Module is not selected
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 30/07/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function SelectOperatorEventLogModule()
+{
+  try
+  {
+    Log["AppendFolder"]("TroubleShooting :: Select Event Log Module From Troubleshooting View");
+    
+    //Un select all the checkbox displayd in the left side panel of the troubleshooting
+    if(!UnSelectAllTheSelectedModules())
+    {
+      Log["Error"]("Unable to unselect all the selected modules");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Get the Event Log checkbox control    
+    var operatorEventLog = GetAutomationIDControl("Troubleshooting", "checkBoxEventLog");
+    
+    //Verify the Event Log checkbox is displayed
+    if(VerifyObjectExists(operatorEventLog))
+    {
+      Log["Message"]("Event log checkbox is located");
+      
+      //Click on Event Log checkbox
+      ClickCtrl(operatorEventLog);
+            
+      //Verify the Event Log Toggle State 
+      if(GetToggleState(operatorEventLog) == 1)
+      {
+        Log["Message"]("Operator Event Log is Selected Successfully");
+        Log["PopLogFolder"]();
+        return true;
+      } else{
+        Log["Error"]("Selecting Operator event log failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//---------------------------------Operator Diagnostics-----------------------------------
+
+//***************************************************************************************
+//*   Function Name        : SelectModuleFromOperatorDiagnosticsScreen()
+//*   Function Description : This function is used to select the Module in Operator Diagnotic Screen
+//*   Input                : moduleName
+//*   Output               : return true, if the given Module Name is selected in Operator Diagnostic screen
+//*                          return false, if unable to select the given Module Name in Operator Diagnostic screen
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function SelectModuleFromOperatorDiagnosticsScreen(moduleName)
+{
+  try
+  {
+    Log["AppendFolder"]("OperatorDiagnostics :: Select '" + moduleName + "' Module in Operator Diagnostics Screen");        
+    
+    //Get Operator Diagnostics Grid Ctrl
+    var OperatorDiagnosticsScreen = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "pageOperatorDiagnostics");
+        
+    var DLModuleName = GetActualSystemModuleName("DL");
+    var HydraModuleName = GetActualSystemModuleName("HYDRA");
+    
+    //Get module based on given system module names
+    var dlModuleObj = Getchild(OperatorDiagnosticsScreen, ["Text", "ClassName"], [DLModuleName, "TextBlock"]);
+    var hydraModuleObj = Getchild(OperatorDiagnosticsScreen, ["Text", "ClassName"], [HydraModuleName, "TextBlock"]);
+    
+    //Check the system module displayed and click on the respective module to display the list items
+    if(VerifyObjectExists(dlModuleObj)) 
+    {
+      //click on the dl module obj which is selected
+      ClickCtrl(dlModuleObj);
+    } else if (VerifyObjectExists(hydraModuleObj)) {
+      
+      //click on the hydra module object which is selected
+      ClickCtrl(hydraModuleObj);
+    } else {
+      Log["Error"]("Unable to select the module object from operator diagnostics");
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Adding delay to goto expand module options
+    aqUtils["Delay"](1000,"Adding delay to goto expand module options");
+    
+    //Refresh the root node to update the module list items   
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+      
+    //Get the module list items
+    var moduleListItems = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "lstModuleItems");
+    
+    //Get the module in Operator Diagnostics screen
+    var moduleOptionObj = Getchild(moduleListItems, "ObjectIdentifier", moduleName);
+      
+    //Check the module in Operator Diagnostics screen
+    if(VerifyObjectExists(moduleOptionObj))
+    {
+      //Click on the Hydra1 module
+      ClickCtrl(moduleOptionObj);
+       
+      //Adding delay to Select module
+      aqUtils["Delay"](1000,"Adding delay to Select " + moduleName);
+     
+      Log["PopLogFolder"]();
+      return true;     
+    } else {
+      Log["Error"]("Unable to locate and select the '" + moduleName + "' module");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ClickOnExitDiagnosticButton()
+//*   Function Description : This function is used to Click on Exit Diagnostic button in Operator Diagnostic screen
+//*   Input                : - 
+//*   Output               : return true, if Clicked on Exit Diagnostic button
+//*                          return false, if unable to click on Exit Diagnostic button
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function ClickOnExitDiagnosticButton()
+{
+  try
+  {
+    Log["AppendFolder"]("OperatorDiagnostics :: Click on 'Exist Diagnostics' button");
+    
+    //Get Operator Diagnostics Grid Ctrl
+    var OperatorDiagnosticsScreen = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "pageOperatorDiagnostics");
+    
+    //Get Exit Diagnostics button obj
+    var exitDiagnosticsBtn = Getchild(OperatorDiagnosticsScreen, ["ObjectIdentifier", "ClassName"], ["Exit_Diagnostics", "Button"]);
+    
+    //Check the exit diagnostics button obj enabled
+    if(VerifyObjectEnabled(exitDiagnosticsBtn)) 
+    {
+      //Click on the Exit Diagnostics button 
+      ClickCtrl(exitDiagnosticsBtn);
+      
+      Log["Message"]("Clicked on the exist diagnostics button");
+      
+      //Adding delay to exit from Diagnostic mode
+      aqUtils["Delay"](15000,"Adding delay to exit from the diagnostic mode");
+      
+      //Get Enter Diagnostics button obj
+      var enterDiagnosticsBtn = Getchild(OperatorDiagnosticsScreen, ["ObjectIdentifier", "ClassName"], ["Enter_Diagnostics", "Button"]);
+         
+      //Check the enter diagnostics button displayed
+      if(VerifyObjectExists(enterDiagnosticsBtn)) 
+      {
+        Log["Message"]("Enter diagnostics button displayed");
+        Log["Message"]("Successfully Exited from Diagnostics mode");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Failed to exit from Diagnostics mode");
+        Log["PopLogFolder"]();
+        return false;  
+      }   
+    } else {
+      Log["Error"]("Unable to locate 'Exit Diagnostics' tile from dashboard");
+      Log["PopLogFolder"]();
+      return false;
+    }          
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ClickOnEnterDiagnosticButton()
+//*   Function Description : This function is used to Click on Enter Diagnostic button in Operator Diagnostic screen
+//*   Input                : - 
+//*   Output               : return true, if Clicked on Enter Diagnostic button
+//*                          return false, if unable to click on Enter Diagnostic button
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function ClickOnEnterDiagnosticButton()
+{
+  try
+  {
+    Log["AppendFolder"]("OperatorDiagnostics :: Click on 'Enter Diagnostics' button");
+    
+    //Get Operator Diagnostics Grid Ctrl
+    var OperatorDiagnosticsScreen = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "pageOperatorDiagnostics");
+    
+    //Get Enter Diagnostics button obj
+    var enterDiagnosticsBtnObj = Getchild(OperatorDiagnosticsScreen, ["ObjectIdentifier", "ClassName"], ["Enter_Diagnostics", "Button"]);
+    
+    //Check the enter diagnostics button obj enabled
+    if(VerifyObjectEnabled(enterDiagnosticsBtnObj)) 
+    {
+      //Click on the Enter Diagnostics button 
+      ClickCtrl(enterDiagnosticsBtnObj);
+      
+      Log["Message"]("Clicked on the Enter diagnostics button");
+      
+      //Adding delay to Enter Diagnostic mode
+      aqUtils["Delay"](15000,"Adding delay to Enter diagnostic mode");
+      
+      //Get Exit Diagnostics button obj
+      var exitDiagnosticsBtnObj = Getchild(OperatorDiagnosticsScreen, ["ObjectIdentifier", "ClassName"], ["Exit_Diagnostics", "Button"]);
+         
+      //Check the exit diagnostics button displayed
+      if(VerifyObjectExists(exitDiagnosticsBtnObj)) 
+      {
+        Log["Message"]("Exit diagnostics button displayed");
+        Log["Message"]("Successfully Entered into Diagnostics mode");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Failed to enter Diagnostics mode");
+        Log["PopLogFolder"]();
+        return false;  
+      }   
+    } else {
+      Log["Error"]("Unable to locate 'Enter Diagnostics' button in Operator Diagnostics screen");
+      Log["PopLogFolder"]();
+      return false;
+    }          
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformExitDiagnosticsMode()
+//*   Function Description : This function is used to perform Exit Diagnostic Operation in Operator Diagnostic screen
+//*   Input                : moduleType 
+//*   Output               : return true, if Exit from Diagnostic mode
+//*                          return false, if unable to exit from Diagnostic mode
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformExitDiagnosticsMode(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("Operator Diagnostics :: Exit Diagnostics mode from operator diagnsotics screen");
+    
+    //Get the module Name from module type
+    var systemModuleName  = GetActualSystemModuleName(moduleType);
+  
+    //check the system module name is retrieved 
+    if(!systemModuleName)
+    {
+      Log["Error"]("Unable to get the system module name '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Select the module name from the operator diagnostics
+    if(!SelectModuleFromOperatorDiagnosticsScreen(systemModuleName))
+    {
+      Log["Error"]("Unable to select the system module name '" + systemModuleName + "' from the operator diagnostics");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on exit diagnostics button
+    if(!ClickOnExitDiagnosticButton())
+    {
+      Log["Error"]("Unable to perform the exit diagnostics mode from operator diagnsotics screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformEnterDiagnosticsMode()
+//*   Function Description : This function is used to perform Enter Diagnostic Operation in Operator Diagnostic screen
+//*   Input                : moduleType 
+//*   Output               : return true, if Exit from Diagnostic mode
+//*                          return false, if unable to exit from Diagnostic mode
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function PerformEnterDiagnosticsMode(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("Operator Diagnostics :: Enter Diagnostics mode from operator diagnsotics screen");
+    
+    //Get the module Name from module type
+    var systemModuleName  = GetActualSystemModuleName(moduleType);
+  
+    //check the system module name is retrieved 
+    if(!systemModuleName)
+    {
+      Log["Error"]("Unable to get the system module name '" + systemModuleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Select the module name from the operator diagnostics
+    if(!SelectModuleFromOperatorDiagnosticsScreen(systemModuleName))
+    {
+      Log["Error"]("Unable to select the system module name '" + systemModuleName + "' from the operator diagnostics");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on enter diagnostics button    
+    if(!ClickOnEnterDiagnosticButton())
+    {
+      Log["Error"]("Unable to perform the exit diagnostics mode from operator diagnsotics screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function PerformAndVerifyOperatorDiagnosticsAction(moduleName, subSystemName, diagnosticName)
+{
+  try
+  {    
+    Log["AppendFolder"]("OperatorDiagnostics::Perform '" + diagnosticName + "' Operation from '" + moduleName + "' module for '" + subSystemName + "' subsystem");
+    
+    //Select the module in operator diagnostics
+    if(!SelectModuleFromOperatorDiagnosticsScreen(moduleName))
+    {
+      Log["Error"]("Failed on selecting the module in operator diagnostics");
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    
+    //Select the sub system
+    if(!SelectSubSystemFromOperatorDiagnosticsScreen(subSystemName)) 
+    {
+      Log["Error"]("Failed on selecting the '" + subSystemName + "' sub system under the '" + moduleName + "' in operator diagnostics screen");
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    
+    //Select the diagnostic 
+    if(!SelectDiagnosticNameFromOperatorDiagnosticsScreen(diagnosticName)) 
+    {
+      Log["Error"]("Failed on selecting the diagnostics action '" + diagnosticName + "' from operator diagnostics screen");
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    
+    //Click on perform button
+    if(!ClickOnPerformButtonAtOperatorDiagnosticsScreen()) 
+    {
+      Log["Error"]("Failed on perform '" + DiagnosticName + "' diagnostics operation selected");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Accept the activity confirmation popup
+    if(!AcceptActivityConfirmationPopup()) 
+    {
+      Log["Error"]("Failed on accepting the activity confirmation popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Adding delay to goto expand module options
+    aqUtils["Delay"](10000,"Adding delay to goto Activity is inprocess popup");
+    
+    //refresh to get the latest popup details
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get home page control
+    var homepageCtrl = GetAutomationIDControl("HomeButton", "pageHome");
+    
+    //Get activity alert from home page control
+    var activityAlert = Getchild(homepageCtrl, ["AutomationId","ObjectIdentifier"], ["txtTitle","Activity_is_inprocess"]);
+         
+    //Check Activity Alertbox displayed
+    if(VerifyObjectExists(activityAlert)) 
+    {
+      //3mins wait time for 5secs pooling interval
+      var count = 36;
+      
+      for(i=0; i<count; i++) 
+      {
+        //Adding delay to get Activity finished in Perform Diagnostic Operation
+        aqUtils["Delay"](5000,"Adding delay to Perform Diagnostic Operation");
+        
+        //refresh to get the latest popup details
+        Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+        
+        //Get the activity confirmation popup
+        var activityfinishedConfirmationPopup = GetAutomationIDControl("SystemHealthCheck", "alertDialog");  
+        
+        //Check the final Alert Confirmation Popup displayed
+        if(VerifyObjectExists(activityfinishedConfirmationPopup))
+        {
+          //Get the ok button cotnrol from confirmation popup
+          var btnOkDiagnosticsObj = GetAutomationIDControl("Worklist", "btnYesMoveToHistorical");
+          
+          //Check the button is displayed
+          if(VerifyObjectExists(btnOkDiagnosticsObj))
+          {
+            Log["Message"]("Ok button on the Diagnostics operation perfromed confirmation popup");
+            
+            //Click on ok button in confirmation popup
+            ClickCtrl(btnOkDiagnosticsObj);
+            
+            Log["Message"]("Clicked on the ok button in confirmation popup");
+          }
+        }
+      }
+    } else {
+      Log["Message"]("Activity in progress popup is not displayed / unable to locate");
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    
+    if(CheckActivityPerformedStatusDisplayed("PerformCompleted")) 
+    {
+      Log["Message"]("Activity status verification passed as the status is expected as 'PerformCompleted'");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("Activity verification failed as the status is not as expected");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectSubSystemFromOperatorDiagnosticsScreen(subSystemName)
+{
+  try
+  {
+    Log["AppendFolder"]("Operator Diagnostics :: Select the sub system '" + subSystemName + "' to perform diagnostics");
+    
+    //Get the SubSystems Datagrid Control
+    var subSystemsGridCtrl = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "dtgrdSubSystemsDataGrid");
+        
+    //Get the subsystems by name
+    var subSystems = Getchild(subSystemsGridCtrl, ["Text", "AutomationId"], [subSystemName,"ModuleTxt"]);
+    
+    //Check the Subsystem is displayed in Operator Diagnostics
+    if(VerifyObjectExists(subSystems)) 
+    {
+      Log["Message"]("Subsystem '" + subSystemName + "' located in the subsystems datagrid in operator diagnostics screen");
+      
+      //Select the Subsystem in Operator Diagnostics
+      ClickCtrl(subSystems);
+      
+      Log["Message"]("Clicked on the subsystem '" + subSystemName + "' to perform diagnostics");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("Unable to locate / select the subsystem '" + subSystemName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectDiagnosticNameFromOperatorDiagnosticsScreen(diagnosticName)
+{
+  try
+  {
+    Log["AppendFolder"]("OperatorDiagnostics::Select the diagnostic name '" + diagnosticName + "' to perform diagnostics operation");
+    
+    //Get the diagnostics list datagrid control
+    var diagnosticNameGridCtrl = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "dtgrdDiagnosticsDataGrid");
+    
+    //Get the diagnostics name displayed in the diagnostics datagrid
+    var diagnosticName = Getchild(diagnosticNameGridCtrl, ["Text", "AutomationId"], [diagnosticName,"ModuleTxt"]);
+      
+    //Check the Diagnostic Name is displayed in Operator Diagnostics
+    if(VerifyObjectExists(diagnosticName)) 
+    {
+      Log["Message"]("Diagnostics '" + diagnosticName + "' located in the diagnostics datagrid");
+      
+      //Select the Diagnostic Name in Operator Diagnostics
+      ClickCtrl(diagnosticName);
+     
+      Log["Message"]("Clicked on the diagnostics name to select");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("Unable to locate / select the diagnostic name '" + diagnosticName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOnPerformButtonAtOperatorDiagnosticsScreen()
+{
+  try
+  {
+    Log["AppendFolder"]("Click on the perform button to perform the diagnostics operation");
+    
+    //Get the Perform button in Operator Diagnostics
+    var performButtonObj = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "btnPerformDiagnostics");
+      
+    //Check the Perform button is displayed
+    if(VerifyObjectExists(performButtonObj)) 
+    {
+      //Check the perform button is enabled
+      if(VerifyObjectEnabled(performButtonObj))
+      {
+        Log["Message"]("Perform Activity button is located and enabled");
+      
+        //Select the Diagnostic Name in Operator Diagnostics
+        ClickCtrl(performButtonObj);
+      
+        Log["Message"]("Perform button is clicked in operator diagnostics screen");      
+        Log["PopLogFolder"]();
+        return true;  
+      } else {
+        Log["Message"]("Perform button is located in the operator diagnostics screen, But perform button is not enabled");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Message"]("Unable to locate the perform activity button");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AcceptActivityConfirmationPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Accept Activity Confirmation Alert");
+    
+    //Refresh Root node to take the latest popup values
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"]();
+    
+    //Get the Alert Confirmation after Perform action in Operator Diagnostics
+    var alertConfirmationPopup = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+
+    //Check the perform diagnostics confirmation popup is displayed
+    if(VerifyObjectExists(alertConfirmationPopup))
+	  {
+      Log["Message"]("Activity confirmation alert is located");
+     
+      //Check the yes button on the confirmation popup is displayed 
+      var yesButton = GetAutomationIDControl("PrimeDispOperatorDiagnosticsScreen", "btnAcceptPerformConfirmation");
+      
+      //Check the Yes button is displayed
+      if(VerifyObjectExists(yesButton))
+      {
+        Log["Message"]("Clicking on the yes button, to confirm the activity to perform");
+        
+        //Click on the yes button
+        ClickCtrl(yesButton);
+        
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else 
+      {
+        Log["Message"]("Unable to locate the yes button in activity confirmation alert");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } 
+    else 
+    {
+      Log["Message"]("Unable to locate the activity confirmation alert");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckActivityPerformedStatusDisplayed(status)
+{
+  try
+  {
+    Log["AppendFolder"]("Operator Diagnostics :: Check the status of the activity performed");
+    
+    //Adding delay to get 'Status' in Perform Diagnostic Operation
+    aqUtils["Delay"](3000,"Adding delay to get 'Status' in Perform Diagnostic Operation");
+		
+    //Get the status control	  
+		var statusTextBlock  = GetAutomationIDControl("Troubleshooting_OperatorDiagnostics", "txtStatusDiagnostics");
+			  
+    //Check the Status block displayed
+    if(VerifyObjectExists(statusTextBlock))
+    {               
+      var statusValue = statusTextBlock["Text"];
+               
+      //Check the Status Value is Completed
+      if(statusValue == status)//"PerformCompleted")
+      {
+        Log["Message"]("Completed Status displayed sucessfully in 'Operator Diagnostics' screen");
+        Log["PopLogFolder"]();
+        return true;
+      } 
+      else
+      {
+        Log["Error"]("Completed Status is not displayed sucessfully in Operator Diagnostics screen");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } 
+    else 
+    {
+      Log["Message"]("Unable to locate the activity status in operator diagnostic screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//----------------------------------------------------------------------------------------
+
+
+
+//--------------------------------Operator Event Log--------------------------------------
+
+
+//***************************************************************************************
+//*   Function Name        : VerifyTheLogInEventLogGrid()
+//*   Function Description : This function is used Verify the Log message & code present in Event Log Grid
+//*   Input                : eventCode,eventMessage
+//*   Output               : return true, if the log is present in Event Log grid
+//*                          return false, if the log is not present in Event Log grid
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 30 July 2019
+//*   Modified By          : Prabu Ramaraj/Shrutika Tyagi
+//*   Modified Date        : 04 December 2019/06Dec2019
+//*****************************************************************************************
+function VerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter,filterDateAndTime)
+{
+  try
+  {
+        
+    //Select Event Log Checkbox in trouble shooting view
+    if(!SelectOperatorEventLogModule())
+    {
+      Log["Error"]("Unable to Select Event Log Module");
+      Log["PopLogFolder"](); 
+      return false;
+    }
+    
+    //Wait for the process ring to close
+    WaitForProgressRingToDisappear(60);
+    
+    //Wait fro the grid to get loaded with data
+    aqUtils["Delay"](15000,"Waiting to load data in Event Log Datagrid for 15 secs");
+    
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"](); 
+    
+    
+    //Check the advance filter paramters are given to apply filter
+    if(eventTypeToFilter != undefined)
+    {
+      Log["Message"]("Applying the advance filter options for the event log grid");
+      var eventValue = "";
+      
+      //check the event type to apply filter (Code / Message)
+      if(eventTypeToFilter == "Code")
+      {
+        eventValue = eventCode;        
+      } else if (eventTypeToFilter == "Message") {
+        eventValue = eventMessage;
+      }
+      
+      //Extract the start date time & end date time
+      var startDate = filterDateAndTime.StartDate;
+      var endDate = filterDateAndTime.EndDate;
+      var startTime = filterDateAndTime.StartTime;
+      var endTime = filterDateAndTime.EndTime
+      
+      // try with the advance filter option
+      if(AdvanceFilterOptionsInOperatorEventLog(moduleTypeToFilter,startDate,startTime,endDate,endTime,eventTypeToFilter,eventValue))
+      {
+        Log["Message"]("Successfully applied the adavnce filter for the operator event log");              
+      } else {
+        Log["Error"]("Failed to apply the adavnce filter for the operator event log");      
+        return false;
+      }
+    }
+    
+    Log["AppendFolder"]("Operator Event Log :: Verify the log message displayed in 'Event Log'");
+    
+    //Get the Grid control Container
+    var eventLogGrid = GetAutomationIDControl("Troubleshooting_OperatorEventLog", "dtgrdEventLog");
+    
+    //Check the Event Log datagrid is dispalyed
+    if(!VerifyObjectExistance(eventLogGrid))
+    {
+      Log["Error"]("Unable to locate Event Log grid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //get the row details from the datagrid    
+    var rowDetails = GetSFGridRowDetails(eventLogGrid);
+    
+    if(!rowDetails)
+    {
+      Log["Error"]("There are no records displayed in the event Log datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Get the Column index of Event Code & Message Cell
+    var filterExpandedState = IsDataGridDisplayedAsFullView();
+    var codeColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Troubleshooting_OperatorEventLog","Code",filterExpandedState);
+    var eventColumnIndex =  GetDataGridColumnIndexFromMetadataSheet("Troubleshooting_OperatorEventLog", "Event",filterExpandedState);
+    var isDataExist = false;
+    
+    //Iterate the rows  to get the row of the given sample id
+    for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+    {
+      
+      //Get the All the cells in a row
+      var rowParent = rowDetails[rowIndex];
+      var datagridcells = GetAllChildren(rowParent, "ClassName", "GridCell");
+      datagridcells = datagridcells.reverse();
+      
+      //Get the Code Cell
+      var codeCell = Getchild(datagridcells[codeColumnIndex], "ClassName", "TextBlock"); 
+      
+      //Verify the Code value exist
+      if(aqString.Trim(codeCell["Text"]) == eventCode)
+      {       
+        //Get the Event Cell
+        var eventCell = Getchild(datagridcells[eventColumnIndex], "ClassName", "TextBlock");
+      
+        //Verify the Event message exists
+        if(aqString["Find"](aqString.Trim(eventCell["Text"]),eventMessage,0,false) != -1)
+        {
+          Log["Message"]("Event message '" + eventMessage + "' is located in the 'Event Log' grid")
+          isDataExist = true;
+          break;
+        }
+      }
+    }
+        
+    //Verify the log displayed in Event log grid
+    if(isDataExist)
+    {
+      Log["Message"]("Event Log message '" + eventMessage + "' with event code '" + eventCode + "' is displayed in Event Log Grid");
+      Log["PopLogFolder"](); 
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the event log message '" + eventMessage + "' with event code '" + eventCode + "' in Event Log Grid");
+      Log["PopLogFolder"](); 
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+//--------------------------Operator Event Log Advanced Filters---------------------------
+
+function IsAdvancedFiltersPopUpDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Verify Advanced filters PopUp displayed");
+    
+    //Getting parent control
+    var parentCtrl = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+        
+    parentCtrl["Refresh"]();
+    
+    //Get advanced filter text control 
+    var advacedFilterTxt = Getchild(parentCtrl,["AutomationId","Text"],["txtTitle","Advanced Filter"]);
+    
+    //verify text displayed (exist)
+    if(VerifyObjectExists(advacedFilterTxt))
+    {
+      Log["Message"]("Advanced Filters Popup is displayed in Operator Event Log page");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("Advanced filters poup is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickAdvancedFilters()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog - Click on 'Advanced Filters' in Operator Event Log grid");
+    
+    //Get the Grid control Container
+    var eventLogGrid = GetAutomationIDControl("Troubleshooting_OperatorEventLog", "pageOperatorEventLog");
+    
+    //Check the Event Log datagrid is dispalyed
+    if(!VerifyObjectExistance(eventLogGrid))
+    {
+      Log["Error"]("Unable to locate Event Log grid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Get the advanced filter btn ctrl
+    var adnvacedFilterBtnCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog","btnAdvancedFilter");
+    
+    //check the advanced filter button enabled
+    if(VerifyObjectEnabled(adnvacedFilterBtnCtrl))
+    {
+      Log["Message"]("Advanced filter button is located and enabled");
+      
+      //Click advanced filters
+      ClickCtrl(adnvacedFilterBtnCtrl);
+  
+      Log["Message"]("Clicked on the advanced fitler button in operator event log screen");    
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the advanced filter button / the button is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnableFilterByDateRangeInEventLogAdvancedFilter()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Enabling the filter by date range");
+    
+    //get the date by range checkbox control
+    var checkBoxByDateCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","checkBoxByDate");
+   
+    //check the date by range checkbox control is displayed
+    if(VerifyObjectExists(checkBoxByDateCtrl))
+    {
+      
+      //Check the date by range checkbox is selected
+      if(GetToggleState(checkBoxByDateCtrl) == 0)
+      {
+        Log["Message"]("Date range check box is unselected by default");
+        
+        //click on the check box to select
+        ClickCtrl(checkBoxByDateCtrl);
+        
+        Log["Message"]("Clicked on the date by range checkbox to select");
+        
+        //get the calendar date picker control
+        var startDateCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","calenderStartDate");
+    
+        //check the date picker is enabled
+        if(VerifyObjectEnabled(startDateCtrl))
+        {
+          Log["Message"]("Successfully enabled the filter by date range in advanced filter");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Enabling the filter by date range action failed in adavnced filter");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      } else {
+        Log["Message"]("Date range check box is already selected by default");
+        Log["PopLogFolder"]();
+        return true;
+      }
+    } else {
+       Log["Error"]("By date range checkbox is not enabled/exists");
+       Log["PopLogFolder"]();
+       return false;
+    }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function SelectStartDateInEventLogAdvancedFilter(date, month, year)
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Selecting Start date from the date picker");
+    
+    //get the calendar date picker control
+    var startDateCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","calenderStartDate");
+    
+    //check the date picker is enabled
+    if(VerifyObjectEnabled(startDateCtrl))
+    {
+      //click on the start date picker control
+      ClickCtrl(startDateCtrl)
+      
+      Log["Message"]("Clicked on the Start Date calendar");
+      
+      //Getting parent control
+      var parentCtrl = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");        
+      parentCtrl["Refresh"]();
+    
+      //select the date
+      if(!SelectDateFromCalendarViewControl(date,month,year))
+      {
+        Log["Error"]("Unable to select the given date from the calendar control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate / the date picker control is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function SelectEndDateInEventLogAdvancedFilter(date, month, year)
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Selecting End date from the date picker");
+    
+    //get the calendar date picker control
+    var endDateCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","calenderEndDate");
+    
+    //check the date picker is enabled
+    if(VerifyObjectEnabled(endDateCtrl))
+    {
+      //click on the end date picker control
+      ClickCtrl(endDateCtrl)
+      
+      Log["Message"]("Clicked on the End Date calendar");
+      
+      //Getting parent control
+      var parentCtrl = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");        
+      parentCtrl["Refresh"]();
+      
+      //select the date
+      if(!SelectDateFromCalendarViewControl(date,month,year))
+      {
+        Log["Error"]("Unable to select the given date from the calendar control");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate / the date picker control is not enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function EnterStartTimeInEventLogAdvancedFilter(hour,minute,meridiem)
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Entering the 'Start Time' in eventlog advanced filter popup");
+
+    //get the parent element of the start time control    
+    var parentElement = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    
+    //get the start time ctrl
+    var startTimeCtrl = Getchild(parentElement,["ObjectIdentifier","AutomationId"],["Start_Time","textBox"]);
+    
+    //check the start time textbox ctrl is enabled
+    if(VerifyObjectEnabled(startTimeCtrl))
+    {
+      //click on the start time textbox ctrl
+      ClickCtrl(startTimeCtrl);
+    
+      //Clear the text inside the start time textbox
+      SetValue(startTimeCtrl,"");
+    
+      //Enter the time stamp value in the start time textbox
+      SetValue(startTimeCtrl, hour + ":" + minute + " " + meridiem);
+    
+      Log["Message"]("Start time is successfully entered");
+      Log["PopLogFolder"]();
+      return true;
+      
+    } else {
+      Log["Error"]("Unable to locate / the start time control is disabled");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function EnterEndTimeInEventLogAdvancedFilter(hour,minute,meridiem)
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Entering the 'End Time' in eventlog advanced filter popup");
+
+    //get the parent element of the end time control    
+    var parentElement = Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75");
+    
+    //get the end time ctrl
+    var endTimeCtrl = Getchild(parentElement,["ObjectIdentifier","AutomationId"],["End_Time","textBox"]);
+    
+    //check the end time textbox ctrl is enabled
+    if(VerifyObjectEnabled(endTimeCtrl))
+    {
+      //click on the end time textbox ctrl
+      ClickCtrl(endTimeCtrl);
+    
+      //Clear the text inside the end time textbox
+      SetValue(endTimeCtrl,"");
+    
+      //Enter the time stamp value in the end time textbox
+      SetValue(endTimeCtrl, hour + ":" + minute + " " + meridiem);
+    
+      Log["Message"]("End time is successfully entered");
+      Log["PopLogFolder"]();
+      return true;
+      
+    } else {
+      Log["Error"]("Unable to locate / the end time control is disabled");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function EnableFilterByEventInEventLogAdvancedFilter()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Enabling the filter by event checkbox");
+    
+    //get the filter by event checkbox control
+    var checkBoxByEventCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","checkBoxByEvent");
+   
+    //check the filter by event checkbox control is displayed
+    if(VerifyObjectExists(checkBoxByEventCtrl))
+    {
+      
+      //Check the filter by event checkbox is selected
+      if(GetToggleState(checkBoxByEventCtrl) == 0)
+      {
+        Log["Message"]("Filter by Event check box is unselected by default");
+        
+        //click on the check box to select
+        ClickCtrl(checkBoxByEventCtrl);
+        
+        Log["Message"]("Clicked on the filter by event checkbox to select");
+        
+        //get the event radio button control
+        var eventRadioBtnCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","radioBtnEventText");
+        
+        //check the event radio button control enabled
+        if(VerifyObjectEnabled(eventRadioBtnCtrl))
+        {
+          Log["Message"]("Successfully enabled the filter by event in advanced filter");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Error"]("Event code radio button is not enabled/exists");
+          Log["PopLogFolder"]();
+          return false;
+        }        
+      } else {
+        Log["Message"]("Filter by event check box is already selected");
+        Log["PopLogFolder"]();
+        return true;
+      }
+    } else {
+       Log["Error"]("By Event checkbox is not enabled/exists");
+       Log["PopLogFolder"]();
+       return false;
+    }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function EnterEventFilterValueInEventLogAdvancedFilter(eventFilterType,eventFilterValue)
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Enter the event value to filter");
+    
+    var eventRadioBtnCtrl = undefined;
+    var eventTextBoxCtrl = undefined;
+    
+    //get the control based on the event type    
+    switch (eventFilterType)
+    {
+      case "Code":
+        
+        eventRadioBtnCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","radioBtnEventCode");
+        eventTextBoxCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","txtBoxEventCode");
+        break;    
+      case "Event":
+        eventRadioBtnCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","radioBtnEventText");
+        eventTextBoxCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","txtBoxEventText");
+        break;
+    }
+    
+    //check the event controls are enabeld
+    if(VerifyObjectEnabled(eventRadioBtnCtrl))
+    {
+      Log["Message"]("Filter by event fields are located and enabled");
+      
+      //select the event radio button
+      ClickCtrl(eventRadioBtnCtrl);
+      
+      Log["Message"]("Clicked on the event '" + eventFilterType + "'");
+      
+      //enter the event value
+      SetValue(eventTextBoxCtrl,eventFilterValue);
+      
+      Log["Message"]("Entered the event value '" + eventFilterValue + "'");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the event radio button / the control is disabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function SelectFilterByModule(moduleName)
+{
+  try
+  {         
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Selecting filter by module '" + moduleName + "' in advanced filters");
+    
+    var isSelected = true;
+    
+    //get the filter by module category ctrl
+    var moduleDataGrdCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","dtgrdModule");
+    
+    //check the filter by module grid displayed
+    if(VerifyObjectExists(moduleDataGrdCtrl))
+    {
+        
+      //check if all the module needs to be selected
+      if(aqString["ToLower"](moduleName) == "all")  
+      {
+        //get the header row control
+        var moduleCtrl = Getchild(moduleDataGrdCtrl,"ClassName","GridHeaderRow");
+        
+        //get the checkbox control from the header row
+        var moduleCheckBocCtrl = Getchild(moduleCtrl,"ClassName","CheckBox")
+        
+        if(GetToggleState(moduleCheckBocCtrl) != "1")
+        {
+          Log["Message"]("module checkbox is located");
+          
+          //click on the select all module checkbox
+          ClickCtrl(moduleCheckBocCtrl);
+          
+          Log["Message"]("Clicked on the select all module checkbox");
+          Log["PopLogFolder"]();
+          return true;
+        } else {
+          Log["Message"]("All modeul filters in advanced filters popup is already been selected");
+          Log["PopLogFolder"]();
+          return true;
+        }
+      } else {        //Unselect the all checkbox
+      
+        //get the header row control
+        var moduleCtrl = Getchild(moduleDataGrdCtrl,"ClassName","GridHeaderRow");
+        
+        //get the checkbox control from the header row
+        var moduleCheckBocCtrl = Getchild(moduleCtrl,"ClassName","CheckBox")
+        
+        if(GetToggleState(moduleCheckBocCtrl) == "1")
+        {
+          Log["Message"]("All module checkbox is selected by default");
+          
+          //click 2 times on the all checkbox to deselect
+          ClickCtrl(moduleCheckBocCtrl);
+          ClickCtrl(moduleCheckBocCtrl);
+          
+          Log["Message"]("Unselected the All module checkbox");
+        } else {
+          
+          //get the row details from the datagrid    
+          var rowDetails = GetSFGridRowDetails(moduleDataGrdCtrl);
+    
+          if(!rowDetails)
+          {
+            Log["Error"]("There are no records displayed in the datagrid");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        
+          var isModuleLocated = false;
+        
+          //iterate the row informations
+          for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+          {
+            //get the row parent
+            var rowParent = rowDetails[rowIndex];                    
+            var moduleNameCtrl = Getchild(rowParent,["ClassName","Text"],["TextBlock",moduleName]);
+          
+            //check the module name control is displayed
+            if(VerifyObjectExists(moduleNameCtrl))
+            {
+              isModuleLocated = true;
+            
+              Log["Message"]("Module type '" + moduleName + "' is located to select");
+            
+              //get the checkbox control
+              var moduleCheckboxCtrl = Getchild(rowParent,"AutomationId","ModuleCheckBox");
+            
+              if(GetToggleState(moduleCheckboxCtrl) == 0)
+              {
+                //Click on the checkbox to select
+                ClickCtrl(moduleCheckboxCtrl);
+              
+                Log["Message"]("Clicked on the module '" + moduleName + "' checkbox to select");
+                Log["PopLogFolder"]();
+                return true;
+              } else {
+                Log["Message"]("The checkbox for the module '" + moduleName + "' is already selected");
+                Log["PopLogFolder"]();
+                return true;
+              }
+            }          
+          }
+        
+          //check the module is located or not
+          if(!isModuleLocated)
+          {
+            Log["Error"]("Unable to locate the module '" + moduleName + "' in the advanced filter popup");
+            Log["PopLogFolder"]();
+            return false;          
+          }          
+        }              
+      }    
+    } else {
+      Log["Error"]("Module data grid doesn't exist in advanced filters popup");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickOkInAdvancedFilters()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Click OK on advanced filters popup");
+
+    //get the ok btn control   
+    var btnOkCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","btnOkAdvancedFilters");
+   
+    //check the ok btn is enabled
+    if(VerifyObjectEnabled(btnOkCtrl))
+    {
+     Log["Message"]("Ok btn is located and enabled in advanced filter popup");
+     
+     //Click on the ok btn control
+     ClickCtrl(btnOkCtrl);
+     
+     //wait for the process ring to get closed 
+     WaitForProgressRingToDisappear(20);
+     
+     //check the advanced filter popup is closed
+     if(!IsAdvancedFiltersPopUpDisplayed())
+     {
+       Log["Message"]("Advanced filter popup is successfully closed by click on Ok btn");
+       Log["PopLogFolder"]();
+       return true;        
+     } else {
+       Log["Message"]("Advanced filter popup is not getting closed after clicking on the Ok btn");
+       Log["PopLogFolder"]();
+       return false;
+     }     
+   } else {
+     Log["Error"]("OK button on advanced filters popup doesn't exist/enabled");
+     Log["PopLogFolder"]();
+     return false;
+   }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ClickResetInAdvancedFilters()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Click Reset on advanced filters popup");
+   
+    //get the restore default button control
+    var btnResetCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","btnResetAdvancedFilters");
+       
+    //Check the reset btn is enabled
+    if(VerifyObjectEnabled(btnRestCtrl))
+    {
+      Log["Message"]("Reset button on the advanced filter popup is located");
+      
+      //click on the reset button
+      ClickCtrl(btnResetCtrl);
+
+      Log["Message"]("Reset button is clicked on the adavanced filter");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Reset button in advaced filters popup doesn't exist/enabled");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CloseOperatorEventLogAdvancedFilterPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Troubleshooting :: EventLog_AdvancedFilter - Close the advanced filter popup")
+    
+    //get the close button control
+    var closeBtnCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","btnCancelAdvancedFilters");
+    
+    //check the button is displayed and enabled
+    if(VerifyObjectEnabled(closeBtnCtrl))
+    {
+      Log["Message"]("Located the cancel button in the operator event log advanced filter");
+      
+      //Click on the cancel button
+      ClickCtrl(closeBtnCtrl);
+      
+      Log["Message"]("Clicked on the Cancel button to close the adavnced filter of operator event log");
+      
+      //check the advanced filter popup closed
+      if(!IsAdvancedFiltersPopUpDisplayed())
+      {
+        Log["Message"]("Adavnced filter popup is successfully closed");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Advanced filter is not closed after click on the cancel button");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the close button control");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+//DateFormat - DD-Month-YYYY
+//TimeFormat - HH-MM-Median
+function ApplyAdvanceFilterByDateRange(startDate,startTime,endDate,endTime)
+{
+  try
+  {        
+    Log["AppendFolder"]("TroubleShooting :: EventLog - Apply Advanced Filter with date and time range");
+
+    var startdate = startDate["split"]("-")[0];
+    var startmonth = startDate["split"]("-")[1];
+    var startyear = startDate["split"]("-")[2];
+    
+    var enddate = endDate["split"]("-")[0];
+    var endmonth = endDate["split"]("-")[1];
+    var endyear = endDate["split"]("-")[2];
+        
+    var startTimeHour = startTime["split"]("-")[0];
+    var startTimeMinute = startTime["split"]("-")[1];
+    var startTimeMeridiem = startTime["split"]("-")[2];
+    
+    var endTimeHour = endTime["split"]("-")[0];
+    var endTimeMinute = endTime["split"]("-")[1];
+    var endTimeMeridiem = endTime["split"]("-")[2];
+    
+    
+    //Apply Filter by date range
+    if(EnableFilterByDateRangeInEventLogAdvancedFilter())
+    {
+      //Select start date to filter
+      if(!SelectStartDateInEventLogAdvancedFilter(startdate, startmonth, startyear))
+      {
+        Log["Error"]("Failed to select the start date in advanced filter");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Enter start time to filter
+      if(!EnterStartTimeInEventLogAdvancedFilter(startTimeHour,startTimeMinute,startTimeMeridiem))
+      {
+        Log["Error"]("Failed to enter the start time in the adavanced filter");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Select end date to filter
+      if(!SelectEndDateInEventLogAdvancedFilter(enddate, endmonth, endyear))
+      {
+        Log["Error"]("Failed to select the end date in advanced filter");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Enter end time filter
+      if(!EnterEndTimeInEventLogAdvancedFilter(endTimeHour,endTimeMinute,endTimeMeridiem))
+      {
+        Log["Error"]("Failed to enter the end time in the adavanced filter");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Failed to enable the filter by date range in operator event log advanced filter");
+      Log["PopLogFolder"]();
+      return false;
+    }   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ApplyAdvanceFilterByEvent(eventType,eventValue)
+{
+  try
+  {
+    Log["AppendFolder"]("TroubleShooting :: EventLog - Apply Advanced Filter with event details");
+    
+    //enable the filter by event section
+    if(EnableFilterByEventInEventLogAdvancedFilter())
+    {
+      if(!EnterEventFilterValueInEventLogAdvancedFilter(eventType,eventValue))
+      {
+        Log["Error"]("Failed to select and enter the filter by event values");
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        Log["Message"]("Successfuly applied the filter by event values in advance filter");
+        Log["PopLogFolder"]();
+        return true;
+      }
+    } else {
+      Log["Error"]("Failed to enable the filter by event in operator event log advanced filter");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ApplyAdvanceFilterByModule(moduleType)
+{
+  try
+  {
+    Log["AppendFolder"]("TroubleShooting :: EventLog - Apply Advanced Filter with Module Type");
+    
+    var systemModuleName = "";
+    
+    if(moduleType != "All")
+    {
+      //Get the module Name from module type
+      systemModuleName  = GetActualSystemModuleName(moduleType);
+  
+      //check the system module name is retrieved 
+      if(!systemModuleName)
+      {
+        Log["Error"]("Unable to get the system module name '" + systemModuleName + "'");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      systemModuleName = "All";
+    }
+    
+    Log["Message"]("System module to be selected to apply filter is '" + systemModuleName + "'");
+    
+    //Select the module name
+    if(!SelectFilterByModule(systemModuleName))
+    {
+      Log["Error"]("Failed to select the system module name in adavanced filter");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Message"]("Successfully selected the module '" + systemModuleName + "' in adavnced filter");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AdvanceFilterOptionsInOperatorEventLog(moduleTypeToFilter,startDate,startTime,endDate,endTime,eventType,eventValue)
+{
+  try
+  {
+    Log["AppendFolder"]("Using advanced filters in Operator event log page");
+    
+    //Click Advanced filters
+    if(!ClickAdvancedFilters())
+    {
+      Log["Error"]("Failed to click advanced filters in Operator event log page");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    aqUtils["Delay"](2000, "Wait for the advanced filter popup to be diisplayed");
+    
+    //Click advanced filters
+    if(!IsAdvancedFiltersPopUpDisplayed())
+    {
+      Log["Error"]("Failed to click advanced filters in Operator event log page");
+      Log["PopLogFolder"]();
+      return false;   
+    }
+        
+    //Apply filter by module
+    if(!ApplyAdvanceFilterByModule(moduleTypeToFilter))
+    {
+      Log["Error"]("Unable to apply the module type in the operator event log advanced filter popup");
+      
+      if(!CloseOperatorEventLogAdvancedFilterPopup())
+        Log["Error"]("Failed to close the advanced filter");
+      
+      Log["PopLogFolder"]();
+      return false;
+    }
+        
+    //Apply filter by date range
+    if(!ApplyAdvanceFilterByDateRange(startDate,startTime,endDate,endTime))
+    {
+      Log["Error"]("Unable to apply the filter by date range in operator event log advanced filter");
+      
+      if(!CloseOperatorEventLogAdvancedFilterPopup())
+        Log["Error"]("Failed to close the advanced filter");
+      
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Apply filter by event
+    if(!ApplyAdvanceFilterByEvent(eventType,eventValue))
+    {
+      Log["Error"]("Unable to apply the filter by event in operator event log advanced filter");
+      
+      if(!CloseOperatorEventLogAdvancedFilterPopup())
+        Log["Error"]("Failed to close the advanced filter");
+      
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Click on save button
+    if(!ClickOkInAdvancedFilters())
+    {
+      Log["Error"]("Failed to click on the ok button in operator event log advanced filter");
+      
+      if(!CloseOperatorEventLogAdvancedFilterPopup())
+        Log["Error"]("Failed to close the advanced filter");
+        
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Message"]("Advance filter is successfully applied in the operator event log grid");
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//TODO - Update the filter by category / subsystem & operating mode
+function AdvancedFilterByCategory(categoryList)
+{
+  try
+  {
+    Log["AppendFolder"]("Filtering category in advanced filters")    
+    
+    var isSelected = true;
+   // categoryList = categoryList["split"](";");
+    
+    if(!IsAdvancedFiltersPopUpDisplayed())
+    {
+      Log["Error"]("Advanced filters popup is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var categoryDataGridCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","dtgrdCategory");
+    
+    if(VerifyObjectExists(categoryDataGridCtrl))
+    {
+      
+      if(aqString["ToLower"](categoryList) == "all")  
+      {
+        var categoryCtrl = Getchild(categoryDataGridCtrl,"ClassName","GridHeaderRow");
+        
+        var categoryCheckBocCtrl = Getchild(categoryCtrl,"ClassName","CheckBox")
+        
+        if(categoryCheckBocCtrl["ToggleState"] != "1")
+        {
+          ClickCtrl(categoryCheckBocCtrl);
+          Log["Message"]("Selected all category filters in advanced filters popup");
+          Log["PopLogFolder"]();
+          return true;    
+        }
+        else
+        {
+          Log["Message"]("All category filters in advanced filters popup are already been selected");
+          Log["PopLogFolder"]();
+          return true;           
+        }
+      }
+      
+      //get the row details from the datagrid    
+      var totalCategoryRows = GetSFGridRowDetails(categoryDataGridCtrl);
+    
+      if(!totalCategoryRows)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      categLoop:
+       
+      for(j=0;j<categoryList.length;j++)
+      {
+        
+        for(var i=0;i<totalCategoryRows.length;i++)
+        {      
+          var totalCells = GetAllChildren(totalCategoryRows[i],"ClassName","TextBlock");
+        
+          for(var txt = 0;txt<totalCells.length;txt++)
+          {
+            if(aqString["Find"](totalCells[txt]["NativeUIAObject"]["Name"],categoryList[j]) != -1)
+            {
+              var categoryCheckBoxCtrl = Getchild(totalCategoryRows[i],"AutomationId","CategoryCheckBox");
+              
+              if(categoryCheckBoxCtrl["ToggleState"] != "1") //Checking if already selected
+              {
+                ClickCtrl(categoryCheckBoxCtrl);
+              
+                if(categoryCheckBoxCtrl["ToggleState"] == "1")
+                {
+                  Log["Message"]("Selected Category '"+categoryList[j]+"' in Advanced filters");
+                  if(j == categoryList.length-1)
+                  {
+                    break categLoop;
+                  }
+                  continue categLoop;
+                } else {
+                  Log["Error"]("Failed to select Category '"+categoryList[j]+"' in Advanced filters");         
+                }   
+              } else {
+                Log["Message"]("Category '"+categoryList[j]+"' in Advanced filters is already been selected");
+                Log["PopLogFolder"]();
+                continue categLoop;
+              }
+            }  
+          }    
+       }
+        Log["Error"]("Category type : '"+categoryList[j]+"' in advanced filters doesn't exist");
+        isSelected = false;    
+      }
+        
+      //check the category is selected
+      if(!isSelected)
+      {    
+        Log["PopLogFolder"]();
+        return isSelected;
+      } else {
+        Log["PopLogFolder"]();
+        return true;
+      }          
+    } else {
+      Log["Error"]("Category filter data grid doesn't exist in advanced filters");
+      Log["PopLogFolder"]();
+      return false; 
+    }    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AdvancedFilterBySubSystem(subSystemList)
+{
+  try
+  {
+    Log["AppendFolder"]("Filtering SubSystem in advanced filters")  
+    
+    var isSelected = true;
+//    var subSystemList = "Ancillary Probe;Calibration"
+//    subSystemList = subSystemList["split"](";");
+    
+    if(!IsAdvancedFiltersPopUpDisplayed())
+    {
+      Log["Error"]("Advanced filters popup is not displayed");      
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var subSystemDataGridCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","dtgrdSubSystem");
+    
+    if(VerifyObjectExists(subSystemDataGridCtrl))
+    {
+      if(aqString["ToLower"](subSystemList) == "all")  
+      {
+        var subSystemCtrl = Getchild(subSystemDataGridCtrl,"ClassName","GridHeaderRow");
+        
+        var subSystemCheckBocCtrl = Getchild(subSystemCtrl,"ClassName","CheckBox")
+    
+        if(subSystemCheckBocCtrl["ToggleState"] != "1")
+        {
+            ClickCtrl(subSystemCheckBocCtrl);
+            Log["Message"]("Selected all SubSystem filters in advanced filters popup");
+            Log["PopLogFolder"]();
+            return true;
+        }
+        else
+        {
+          Log["Message"]("All SubSystem filters in advanced filters popup are already been selected");
+          Log["PopLogFolder"]();
+          return true;           
+        }    
+      }
+      //get the row details from the datagrid    
+      var totalSubSystemRows = GetSFGridRowDetails(subSystemDataGridCtrl);
+    
+      if(!totalSubSystemRows)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //label to break whole loop from inner
+      subSysLoop:
+       
+      for(j=0;j<subSystemList.length;j++) //iterating subsystems
+      {           
+        Log["AppendFolder"]("Selecting subsystem '"+subSystemList[j]+"' in advanced filter");
+        
+        for(var i=0;i<totalSubSystemRows.length;i++) //iterating rows
+        {
+          var totalCells = GetAllChildren(totalSubSystemRows[i],"ClassName","TextBlock");
+        
+          for(var txt = 0;txt<totalCells.length;txt++) //iterating cells
+          {
+            if(aqString["Find"](totalCells[txt]["NativeUIAObject"]["Name"],subSystemList[j]) != -1)
+            {
+              var subSystemCheckBoxCtrl = Getchild(totalSubSystemRows[i],"AutomationId","SubsystemCheckBox");
+              
+              if(subSystemCheckBoxCtrl["ToggleState"] != "1") //Checking if already selected
+              {
+                ClickCtrl(subSystemCheckBoxCtrl);
+              
+                if(subSystemCheckBoxCtrl["ToggleState"] == "1")
+                {
+                  Log["Message"]("Selected SubSystem '"+subSystemList[j]+"' in Advanced filters");
+                  if(j == subSystemList.length-1)
+                  {
+                    break subSysLoop;
+                  }
+                  Log["PopLogFolder"]();
+                  continue subSysLoop;
+                } else {
+                  Log["Error"]("Failed to select SubSystem '"+subSystemList[j]+"' in Advanced filters");         
+                }   
+              } else {
+                Log["Message"]("SubSystem '"+subSystemList[j]+"' in Advanced filters is already been selected");
+                Log["PopLogFolder"]();
+                continue subSysLoop;
+              }                              
+            }
+          }
+       }
+          Log["Error"]("SubSystem type : '"+subSystemList[j]+"' in advanced filters doesn't exist");
+          isSelected = false;
+          Log["PopLogFolder"]();    
+      }
+        
+      if(!isSelected)
+      {    
+        Log["PopLogFolder"]();
+        return isSelected;
+      }
+      else
+      {
+        Log["PopLogFolder"]();
+        return true;
+      }
+          
+    }
+    else
+    {
+      Log["Error"]("SubSystem filter data grid doesn't exist in advanced filters");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function AdvancedFilterByOperatingMode(modeList)
+{
+  try
+  {
+    Log["AppendFolder"]("Filtering Operating Mode in advanced filters");
+    
+    var isSelected = true;
+    
+//    var modeList = "Off;Cleaning"
+//    modeList = modeList["split"](";");
+    
+    if(!IsAdvancedFiltersPopUpDisplayed())
+    {
+      Log["Error"]("Advanced filters popup is not displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var modeDataGridCtrl = GetAutomationIDControl("Troubleshooting_OperatorEventLog_AdvancedFilter","dtgrdOperatingMode");
+    
+    if(VerifyObjectExists(modeDataGridCtrl))
+    {
+      
+      if(aqString["ToLower"](modeList) == "all")  
+      {
+        var modeCtrl = Getchild(modeDataGridCtrl,"ClassName","GridHeaderRow");
+        
+        var modeCheckBocCtrl = Getchild(modeCtrl,"ClassName","CheckBox")
+        
+        ClickCtrl(modeCheckBocCtrl);
+        
+        Log["Message"]("Selected all operating mode filters in advanced filters popup");
+        Log["PopLogFolder"]();
+        return true;    
+      }
+      //get the row details from the datagrid    
+      var totalmodeRows = GetSFGridRowDetails(modeDataGridCtrl);
+    
+      if(!totalmodeRows)
+      {
+        Log["Error"]("There are no records displayed in the datagrid");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //label to break whole loop from inner
+      modeLoop:
+       
+      for(j=0;j<modeList.length;j++) //iterating modelist
+      {           
+        Log["AppendFolder"]("Selecting operating mode '"+modeList[j]+"' in advanced filter");
+        
+        for(var i=0;i<totalmodeRows.length;i++) //iterating rows
+        {      
+          var totalCells = GetAllChildren(totalmodeRows[i],"ClassName","TextBlock");
+        
+          for(var txt = 0;txt<totalCells.length;txt++) //iterating cells
+          {
+            if(aqString["Find"](totalCells[txt]["NativeUIAObject"]["Name"],modeList[j]) != -1)
+            {
+              var modCheckBoxCtrl = Getchild(totalmodeRows[i],"AutomationId","OperatingModeCheckBox");
+              
+              if(modCheckBoxCtrl["ToggleState"] != "1") //Checking if already selected
+              {
+                ClickCtrl(modCheckBoxCtrl);
+              
+                if(modCheckBoxCtrl["ToggleState"] == "1")
+                {
+                  Log["Message"]("Selected Operating Mode '"+modeList[j]+"' in Advanced filters");
+                  if(j == modeList.length-1)
+                  {
+                    break modeLoop;
+                  }
+                  Log["PopLogFolder"]();
+                  continue modeLoop;
+                }
+                else
+                {
+                  Log["Error"]("Failed to select Operating Mode '"+modeList[j]+"' in Advanced filters");         
+                }   
+              }
+              else
+              {
+                Log["Message"]("Operating Mode '"+modeList[j]+"' in Advanced filters is already been selected");
+                Log["PopLogFolder"]();
+                continue modeLoop;
+              }
+                                       
+            }  
+          }    
+       }
+          Log["Error"]("Operating Mode : '"+modeList[j]+"' in advanced filters doesn't exist");
+          isSelected = false;
+          Log["PopLogFolder"]();    
+      }
+        
+      if(!isSelected)
+      {    
+        Log["PopLogFolder"]();
+        return isSelected;
+      }
+      else
+      {
+        Log["PopLogFolder"]();
+        return true;
+      }
+          
+    }
+    else
+    {
+      Log["Error"]("Operating mode filter data grid doesn't exist in advanced filters");
+      Log["PopLogFolder"]();
+      return false; 
+    }   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//----------------------------------------------------------------------------------------
+
+

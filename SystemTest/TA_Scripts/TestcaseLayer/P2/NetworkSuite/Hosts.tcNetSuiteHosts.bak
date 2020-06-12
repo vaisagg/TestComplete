@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="child list">
+			<Node name="dc">
+				<Node name="item data">
+					<Node name="settings"/>
+					<Prp name="address" type="S" value="192.168.1.101"/>
+					<Prp name="base path" type="S" value=""/>
+					<Prp name="caption" type="S" value="DC"/>
+					<Prp name="domain" type="S" value=""/>
+					<Prp name="logonmode" type="I" value="0"/>
+					<Prp name="password" type="S" value="2E1D078CD74F1514FDF197DC1CCA5F44BACF3A9AE2864BFCF20EB01D3F1E48BC2293E0D00999A409"/>
+					<Prp name="signature" type="S" value="{4C283132-D38F-4C25-B72C-75AD0D8A3093}"/>
+					<Prp name="source" type="S" value=""/>
+					<Prp name="user name" type="S" value="Siemensserviceuser"/>
+					<Prp name="version" type="S" value="12.0"/>
+				</Node>
+				<Prp name="index" type="I" value="1"/>
+				<Prp name="key" type="S" value="{ED3349B7-D67A-4B78-82FC-C38B338A0A0A}"/>
+				<Prp name="pluginname" type="S" value="Network Suite"/>
+				<Prp name="type" type="S" value="{4C283132-D38F-4C25-B72C-75AD0D8A3093}"/>
+				<Prp name="typename" type="S" value="Host"/>
+			</Node>
+			<Node name="sh">
+				<Node name="item data">
+					<Node name="settings"/>
+					<Prp name="address" type="S" value="192.168.1.140"/>
+					<Prp name="base path" type="S" value=""/>
+					<Prp name="caption" type="S" value="SH"/>
+					<Prp name="domain" type="S" value=""/>
+					<Prp name="logonmode" type="I" value="0"/>
+					<Prp name="password" type="S" value="2E1D078CD74F1514FDF197DC1CCA5F44BACF3A9AE2864BFCF20EB01D3F1E48BC2293E0D00999A409"/>
+					<Prp name="signature" type="S" value="{4C283132-D38F-4C25-B72C-75AD0D8A3093}"/>
+					<Prp name="source" type="S" value=""/>
+					<Prp name="user name" type="S" value="Siemensserviceuser"/>
+					<Prp name="version" type="S" value="12.0"/>
+				</Node>
+				<Prp name="index" type="I" value="0"/>
+				<Prp name="key" type="S" value="{5123A046-D1DF-4F0E-8E4B-D1CB3ED707F4}"/>
+				<Prp name="pluginname" type="S" value="Network Suite"/>
+				<Prp name="type" type="S" value="{4C283132-D38F-4C25-B72C-75AD0D8A3093}"/>
+				<Prp name="typename" type="S" value="Host"/>
+			</Node>
+		</Node>
+		<Node name="folders"/>
+		<Node name="settings"/>
+		<Prp name="signature" type="S" value="{1478418C-D916-49E9-8E78-BF4561C164F9}"/>
+		<Prp name="version" type="S" value="12.0"/>
+	</Node>
+</Nodes>

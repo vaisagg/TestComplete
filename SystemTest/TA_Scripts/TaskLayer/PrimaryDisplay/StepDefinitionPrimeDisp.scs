@@ -1,0 +1,3536 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT ControlAccessLibrary
+//USEUNIT HydraDMLSimulator
+//USEUNIT EmulatorLibrary
+//USEUNIT DiagnosticsLibrary
+//USEUNIT PrimeDispAssaySetup
+//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispCalibration
+//USEUNIT PrimeDispDashboard
+//USEUNIT PrimeDispMaintenance
+//USEUNIT PrimeDispPatientOrders
+//USEUNIT PrimeDispQC
+//USEUNIT PrimeDispReagents
+//USEUNIT PrimeDispSampleList
+//USEUNIT PrimeDispSupplies
+//USEUNIT PrimeDispSystemHealthCheck
+//USEUNIT PrimeDispSystemSettings
+//USEUNIT PrimeDispTroubleshooting
+//USEUNIT PrimeDispUtilities
+//USEUNIT PrimeDispWorklist
+
+
+//*******************************Common Functions*******************************
+function StepLaunchHydraApplication()
+{
+  try
+  {
+    if(!LaunchHydraApplication())
+    {
+      Log["Error"]("Failed to start Hydra application");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+//    //Launch Diagnostics Client - temprorary commented-shahana
+//    Log["AppendFolder"]("Launch Diagnostics Client");
+//    if(!LaunchDiagnosticsClient())
+//    {
+//      Log["Error"]("Failed to start diagnostic client");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //Launch DML Simulator
+    Log["AppendFolder"]("Launch Hydra DML Simulator");
+    if(!LaunchHydraDMLSimulator())
+    {
+      Log["Error"]("Failed to start DML simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepShutdownHydraApplication()
+{
+  try
+  {
+    return ShutdownHydraApplication();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepKillPrimaryDisplayApplication()
+{
+  try
+  {
+    return KillPrimaryDisplayApplication();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepLaunchPrimaryDisplayApplication()
+{
+  try
+  {
+    return LaunchPrimaryDisplayApplication();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepLoginToHydra(Username,Password)
+{
+  try
+  {
+    return LoginToHydra(Username,Password);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepExecSQLQueryFromString(strQuery,strConString)
+{
+  try
+  {
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1) 
+        return true;
+     else
+        return false;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepLogout()
+{
+  try
+  {
+    //need to code
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepRestartAndLoginToHydra(Username,Password)
+{
+  try
+  {
+    //Shutdown Hydra Application
+    if(!StepShutdownHydraApplication())
+    {
+      Log["Error"]("Shutdown Hydra Application : Failed");
+      return false;
+    }
+    
+    //Launch Hydra Application
+    if(!StepLaunchHydraApplication())
+    {
+      Log["Error"]("Launch Hydra Application : Failed");
+      return false;
+    }
+  
+    return LoginToHydra(Username,Password);
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepGetCurrentLoggedInUsername()
+{
+  try
+  {
+    //need to code - returns the currently logged in user name
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepLogoutAndLoginUser(ExpectedUsername,Password)
+{
+  try
+  {
+    //need to code - StepGetCurrentLoggedInUser, StepLogout
+    
+    //verify logged in user is the desired user
+    var ActualUser = StepGetCurrentLoggedInUser();    
+    if(ExpectedUsername == ActualUser)
+    {
+      Log["Message"]("Expected and actual logged in user are same. Logout not required");
+      return true;
+    }
+    else
+    {
+      Log["Message"]("Expected and actual logged in user are not same. Logout is required");
+      
+      //logout current user
+      if(!StepLogout())
+      {
+        Log["Error"]("Logout : Failed");
+        return false;
+      }
+      
+      //login
+      if(!StepLoginToHydra(ExpectedUsername,Password))
+      {
+        Log["Error"]("Login : Failed");
+        return false;
+      }
+      return true;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepLogoutCurrentUser()
+{
+  try
+  {
+    return LogoutCurrentUser();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+//*******************************DML Simulator**********************************
+function StepLoadSamplesinDMLSimulator(sampleIds)
+{
+  try
+  {
+    return LoadSamplesinDMLSimulator(sampleIds);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//********************************Emulator Library******************************
+function StepLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodes,barcodePositions)
+{
+   try
+  {
+    //Navigate to Reagent Loading screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    return CopyBarcodesAndLoadReagentsWithoutDiagnosticsSequences(reagentType,barcodes,barcodePositions);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);    
+    return false;
+  }
+}
+
+function StepLoadCHReagentsDirectlyToCHCompartment(barcodes,barcodePositions)
+{
+  try
+  {
+    return CopyBarcodesAndLoadCHReagentsDirectlyToCHCompartment(barcodes,barcodePositions);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);    
+    return false;
+  }
+}
+
+function StepClearReagentPositions(ReagentType,barcodePostionsToEmpty)
+{
+  try
+  {
+    //Navigate to Reagent Loading screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    
+    return ClearReagentPositions(ReagentType,barcodePostionsToEmpty);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepOpenAndCloseIMPrimaryReagentDoorAndSendFile()
+{
+  try
+  {
+    return LoadReagentForIMPrimary()
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+
+//*********************************Reagents*************************************
+function StepGetReagentInventoryCountValue(assay)
+{    
+  try
+  {
+    //Navigate to Reagent overview screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      return false;
+    }
+      
+    return GetInventoryCountByReagent(assay);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepLoadQBUReagents(ReagentsFilePath)
+{
+  try
+  {
+    return LoadQBUReagents(ReagentsFilePath);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCheckTheReagentIsListedInReagentOverview(reagentName,seqNumber)
+{
+  try
+  {
+    //Navigate to Reagent overview screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      return false;
+    }
+      
+    return CheckTheReagentIsListedInReagentOverview(reagentName,seqNumber);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepUnloadReagentIfExists(reagentType,reagentName)
+{
+  try
+  {
+    //Navigate to Reagent overview screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      return false;
+    }
+    
+     return UnloadReagentIfExists(reagentType,reagentName);     
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyIfCHPositionsAreCleared()
+{
+  try
+  {
+    //Navigate to Reagent Loading screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    return VerifyIfCHPositionsAreCleared();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyChDrawerIsLoaded(totalUnloadedReagent)
+{
+  try
+  {
+    //Navigate to Reagent Loading screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    
+    return VerifyChDrawerIsLoaded(totalUnloadedReagent);
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyDefaultSortingInReagentOverviewGrid(DefaultSortColumn)
+{
+  try
+  {
+     if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+      
+     
+     return  VerifyDefaultSortingInReagentOverviewGrid(DefaultSortColumn);
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyColumnPresentInReagentOverviewGrid(ColumnList)
+{
+  try
+  {
+     if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+      
+     
+    return VerifyColumnPresentInReagentOverviewGrid(ColumnList);
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+
+}
+
+function StepVerifyGroupByReagentInReagentOverviewGrid()
+{
+  try
+  {
+     if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+      
+     
+    return VerifyGroupByReagentInReagentOverviewGrid();
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifySortingInReagentOverviewGrid(SortColumn,SortOrder)
+{
+  try
+  {
+     if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+      
+     
+    return VerifySortingInReagentOverviewGrid(SortColumn,SortOrder);
+      
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepGetCHInUseCountValue()
+{
+  try
+  {
+    //Navigate to Reagent Loading screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    return GetCHInUseCountValue()
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepSelectReagentByNameAndSequenceNumber(reagentName,seqNumber,lotNo)
+{
+  try
+  {
+    //Navigate to Reagent overview screen
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+
+    return SelectReagentByNameAndSequenceNumber(reagentName,seqNumber,lotNo)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepSelectReagentAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+    
+    if(!SelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+      return false;
+    
+    return VerifyReagentDetails(reagentType,ReagentDetailsParameters,ReagentDetailsParametersExpectedValues)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+
+}
+
+function StepUnloadReagentByNameAndSequenceNumberAndLotNo(reagentType,reagentName,seqNumber,lotNo)
+{
+  try
+  {
+  if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    return false;
+  
+  return UnloadReagentByNameAndSequenceNumberAndLotNo(reagentType,reagentName,seqNumber,lotNo)
+  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepGetTheIMReagentAvailableInReagentLoadingScreen(reagentType,position)
+{
+  try
+  {
+    //Navigate to Reagent Loading
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    return GetTheIMReagentAvailableInReagentLoadingScreen(reagentType,position);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepEnterPackIDAndSaveInManualEntryPopup(reagentType,positionArray,packID)
+{
+  try
+  {
+    //if(!InvokeWorkFlowInPrimeDisp("Navigate_To_ReagentLoading"))
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      Log["PopLogFolder"]()
+      return false;
+    }
+    return EnterPackIDAndSaveInManualEntryPopup(reagentType,positionArray,packID);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepClickOnAPostionInIMCompartmentAndVerifyPopUpExistance(reagentType,positionArray)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+      return false;
+    return ClickOnAPostionInIMCompartmentAndVerifyPopUpExistance(reagentType,positionArray)
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyManualEntryConfirmationPopup()
+{
+  try
+  {
+    return VerifyManualEntryConfirmationPopup()
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function StepSelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,SelectOrUnSelect)
+{
+  try
+  {
+    //if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading")) // naviagation is not possible here since pop up is visible
+      //return false;
+    return SelectOrUnselectTheManualEnteredPackInConfirmationPopUp(ExpectedPositionNo,ExpectedAssay,SelectOrUnSelect)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    return false;
+  }
+}
+
+function StepDisableOrEnableReagentLot(reagentName,seqNumber,lotNumber,DisableOrEnableLot)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      Log["Error"]("Navigate to Reagent Overview Screen Failed")
+      return false;
+    }      
+    return DisableOrEnableReagentLot(reagentName,seqNumber,lotNumber,DisableOrEnableLot)   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepDisableOrEnableReagentPack(reagentName,seqNumber,lotNumber,DisableOrEnablePack)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      Log["Error"]("Navigate to Reagent Overview Screen Failed")
+      return false;
+    }
+    return DisableOrEnableReagentPack(reagentName,seqNumber,lotNumber,DisableOrEnablePack)   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCHWellStatus(well,expectedWellStatus)
+{
+  try
+  {
+    //to navigate this page call method StepSelectReagentByNameAndSequenceNumber- to avoid multiple navigation
+    return VerifyCHWellStatus(well,expectedWellStatus)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCHWellCount(wellNumber,expectedWellCount)
+{
+  try
+  {
+    //to navigate this page call method StepSelectReagentByNameAndSequenceNumber- to avoid multiple navigation in scenario where checking the well count for next 15 mins
+    return VerifyCHWellCount(wellNumber,expectedWellCount)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyIMPrimaryReagentPackUsableOrUnusableStateOnReagentLoadingScreen(expectedPosition,expectedState)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentLoading"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    return VerifyIMPrimaryReagentPackUsableOrUnusableStateOnReagentLoadingScreen(expectedPosition,expectedState)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+
+function StepGetReagentRowColumnValues(expectedColumns,reagentName,seqNumber,lotNumber)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      Log["Error"]("Navigate to Reagent Loading Screen Failed")
+      return false;
+    }
+    
+    return GetReagentRowColumnValues(expectedColumns,reagentName,seqNumber,lotNumber)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception",e["description"]);    
+    return false;
+  }
+}
+
+function StepSelectCHPairedPackAndVerifyParametersInReagentDetails(reagentName,sequenceNo,lotNo,reagentType,ReagentDetailsParametersTab1,ReagentDetailsParametersExpectedValuesTab1,ReagentDetailsParametersTab2,ReagentDetailsParametersExpectedValuesTab2)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+    
+    if(!SelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+      return false;
+      
+     var arrsequenceNo = new Array();
+     var arrsequenceNo = sequenceNo["split"]("/");
+    for(var i=0;i<arrsequenceNo.length;i++)
+    {
+      if(i==0)//for tab1
+      {
+        var tab1result = SelectSequenceTabForCHPairedPackAndVerifyReagentDetails(arrsequenceNo[i],reagentType,ReagentDetailsParametersTab1,ReagentDetailsParametersExpectedValuesTab1)
+      }
+      else if(i==1)//for tab2
+      {
+        var tab2result = SelectSequenceTabForCHPairedPackAndVerifyReagentDetails(arrsequenceNo[i],reagentType,ReagentDetailsParametersTab2,ReagentDetailsParametersExpectedValuesTab2)
+      }
+    }
+    if((tab1result)&&(tab2result))
+    {
+      Log["Message"]("Tab1 and Tab2 of CH paired pack verification passed")
+      return true;
+    }
+    else if((!tab1result)&&(!tab2result))
+    {
+      Log["Message"]("Tab1 and Tab2 of CH paired pack verification failed")
+      return false;
+    }
+    else if(!tab1result)
+    {
+      Log["Message"]("Tab1 of CH paired pack verification failed")
+      return false;
+    }
+    else if(!tab2result)
+    {
+      Log["Message"]("Tab2 of CH paired pack verification failed")
+      return false;
+    }
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepSelectCHPairedPackAndVerifyWellCount(reagentName,sequenceNo,lotNo,reagentType,expectedWell1Count,expectedWell2Count)
+{
+  try
+  {
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+    
+    if(!SelectReagentByNameAndSequenceNumber(reagentName,sequenceNo,lotNo))
+      return false;
+      
+     var arrsequenceNo = new Array();
+     var arrsequenceNo = sequenceNo["split"]("/");
+    for(var i=0;i<arrsequenceNo.length;i++)
+    {
+      if(i==0)//for tab1
+      {
+        var tab1result = VerifyCHWellCount("Well1",expectedWell1Count)
+      }
+      else if(i==1)//for tab2
+      {
+        var tab2result = VerifyCHWellCount("Well2",expectedWell2Count)
+      }
+    }
+    if((tab1result)&&(tab2result))
+    {
+      Log["Message"]("Tab1 and Tab2 of CH paired pack well count verification passed")
+      return true;
+    }
+    else if((!tab1result)&&(!tab2result))
+    {
+      Log["Message"]("Tab1 and Tab2 of CH paired pack well count verification failed")
+      return false;
+    }
+    else if(!tab1result)
+    {
+      Log["Message"]("Tab1 of CH paired pack well count verification failed")
+      return false;
+    }
+    else if(!tab2result)
+    {
+      Log["Message"]("Tab2 of CH paired pack well count verification failed")
+      return false;
+    }
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyDisableEnableReagentPackButtonState(reagentName,seqNumber,lotNumber,disablePackButtonOrEnablePackButton)
+{
+  try
+  {
+  if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      Log["Error"]("Navigate to Reagent Overview Screen Failed")
+      return false;
+    }
+	return VerifyDisableEnableReagentPackButtonState(reagentName,seqNumber,lotNumber,disablePackButtonOrEnablePackButton)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyHydraReagentRowIsEnabled(reagentName,sequenceNo,lotNo)
+{
+  try
+  {
+  if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+    {
+      Log["Error"]("Navigate to Reagent Overview Screen Failed")
+      return false;
+    }
+  return VerifyHydraReagentRowIsEnabled(reagentName,sequenceNo,lotNo)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//*******************************Patient Orders*********************************
+function StepCreatePatientOrder(sampleId, specimen, priority, analyzer, assay, replicates,dilutonValue,isManualDilution)
+{    
+  try
+  {
+    //Navigate to Patient Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_PatientOrders"))
+    {
+      return false;
+    }
+    
+    return CreatePatientOrder(sampleId, specimen, priority, analyzer, assay, replicates,dilutonValue,isManualDilution);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCreateBatchOrderBySampleId(sampleId, sampleCount, specimen, analyzer, assay, priority)
+{
+  try
+  {
+    //Navigate to Batch Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_BatchOrders"))
+    {
+      return false;
+    }
+    
+    return CreateBatchOrderBySampleId(sampleId, sampleCount, specimen, analyzer, assay, priority);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr)
+{
+  try
+  {
+    //Navigate to Patient Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_PatientOrders")){
+      return false;
+    }
+    
+    Log["AppendFolder"]("Step :: Create multiple patient order");    
+    var patientOrderCount = sampleIdArr.length;
+    var counter = 0;
+    
+    for(var i=0; i<patientOrderCount; i++)
+    {
+      //Create patient order
+      if(CreatePatientOrder(sampleIdArr[i],specimenArr[i], priorityArr[i], analyzerArr[i], assayArr[i], replicatesArr[i]))
+      {
+        counter = counter + 1; 
+      }
+    }
+      
+    if(counter == 0)
+    {
+      Log["Error"]("Failed to create the patient order for the given sample");
+      Log["PopLogFolder"]();
+      return false;      
+    } else if (counter < patientOrderCount) 
+    {
+      Log["Warning"]("Unable to create some of the patient orders");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Message"]("All the patient order samples are created successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function StepCreateBatchOrderByRackId(batchName, specimen, rackId, analyzer, assay)
+{
+  try
+  {
+    //Navigate to Batch Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_BatchOrders"))
+    {
+      return false;
+    }
+    
+    return CreateBatchOrderByRackId(batchName, specimen, rackId, analyzer, assay);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCheckBatchNameListedInViewBatchOrders(batchName) 
+{
+  try
+  {
+    //Navigate to View Batch Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_BatchOrders_ViewBatchOrders"))
+      return false;
+    
+    return CheckTheBatchNameListedInViewBatchOrderDataGrid(batchName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCreateRunIDForAllPatientOrders(runId)
+{
+  try
+  {
+    //Navigate to Patient Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_PatientOrders"))
+      return false;
+    
+    return CreateRunIDInAllPatientOrders(runId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepDisableRunIdSettingsForAllPatientOrders()
+{
+  try
+  {
+    //Navigate to Patient Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_PatientOrders"))
+      return false;
+    
+    return DisableRunIdSettingsForAllPatientOrders();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCreateBatchOrderBySampleIdWithRunIdSetting(SampleId,SampleCount,Specimen,AssayType,Assay,Priority, RunId)
+{
+  try
+  {
+      //Navigate to Batch Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_BatchOrders"))
+      return false;
+      
+    return CreateBatchOrderBySampleIdWithRunIdSetting(SampleId,SampleCount,Specimen,AssayType,Assay,Priority, RunId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCreateBatchOrderByRackIdWithRunIdSetting(batchName, specimen, rackId, analyzer, assay, runId)
+{
+  try
+  {
+      //Navigate to Batch Order
+    if(!InvokeWorkFlowInPrimeDisp("Orders_BatchOrders"))
+      return false;
+      
+    return CreateBatchOrderByRackIdWithRunIdSetting(batchName, specimen, rackId, analyzer, assay, runId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepGetBatchOrderIDs(strSampleID, intSampleCount)
+{
+  try
+  {
+    return GetBatchOrderIDs(strSampleID, intSampleCount)
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+///****************************Sample List**************************************
+function StepCheckSampleStatusinSampleList(sampleId,sampleStatus)
+{ 
+  try
+  {
+     //Navigate to SampleList Screen
+    if(!InvokeWorkFlowInPrimeDisp("SampleList"))
+    {
+      return false;
+    }
+    
+    return VerifySampleStatusInSampleList(sampleId,sampleStatus); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifySampleStatusInSampleListWithOnly20secsDelayForASampleToShowInGrid(sampleId,sampleStatus)
+{ 
+  try
+  {
+     //Navigate to SampleList Screen
+    if(!InvokeWorkFlowInPrimeDisp("SampleList"))
+    {
+      return false;
+    }
+    
+    return VerifySampleStatusInSampleListWithOnly20secsDelayForASampleToShowInGrid(sampleId,sampleStatus); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+///****************************STATs Screen*************************************
+function StepCheckSampleListedInSTATSampleInterventionNeededGrid(sampleId)
+{
+  try
+  {
+     //navigate to the STATS screen
+     if(!InvokeWorkFlowInPrimeDisp("STATsScreen"))
+          return false;
+  
+    return CheckSampleListedInSTATSampleInterventionNeededGrid(sampleId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+///***************************Routine Screen************************************
+function StepCheckSampleListedInRoutineInterventionNeededDataGrid(sampleId)
+{
+  try
+  {
+     //navigate to the Routine screen
+     if(!InvokeWorkFlowInPrimeDisp("RoutineScreen"))
+          return false;
+  
+    return CheckSampleListedInRoutineInterventionNeededDataGrid(sampleId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//********************************Worklist**************************************
+function StepMoveAllSamplesToHistorical()
+{
+  try
+  {
+    var isAllSamplesMovedToHistoric = false;
+
+    //Navigate to the worklist screen    
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    } 
+    
+    //Move all samples to historical
+    if(!MoveAllSamplesToHistorical())
+    {
+      Log["Error"]("Failed on move to historical operation");
+      return false;
+    }
+    
+    //Navigate to the worklist screen    
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    } 
+    
+    //Check all the records in the worklist datagrid is moved to historical    
+    if(CheckWorklistDataGridDoesnotHaveAnyRecords())
+    {
+      isAllSamplesMovedToHistoric = true;
+    } 
+    else 
+    {
+      isAllSamplesMovedToHistoric =  false;
+    }  
+     
+    return isAllSamplesMovedToHistoric;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);   
+    return false;
+  }
+}
+
+function StepMoveSpecificSamplesToHistorical(assayName)
+{
+  try
+  {
+    
+    //Navigate to the worklist screen    
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    } 
+    
+    //Move all samples to historical
+    if(!MoveSpecificSamplesToHistorical(assayName))
+    {
+      Log["Error"]("Failed on move to historical operation");
+      return false;
+    }
+    return true;   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyTheSampleETADisplayedInWorkList(sampleId)
+{
+  try
+  { 
+    //Navigate to WorkList Screen
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    }
+    
+    return VerifyTheSampleETADisplayedInWorkList(sampleId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyTestResultInWorkList(sampleId)
+{
+  try
+  { 
+    //Navigate to WorkList Screen
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    }
+    
+    //Verify Sample result in worklist screen
+    return VerifyTheSampleResultedStatusInWorkList(sampleId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+} 
+
+function StepVerifyTheSampleResultedStatusInWorkListWithoutErrorSymbol(sampleId)
+{
+  try
+  { 
+    //Navigate to WorkList Screen
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    }
+    
+    //Verify Sample result in worklist screen
+    return VerifyTheSampleResultedStatusInWorkListWithoutErrorSymbol(sampleId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepImportWorklistOperation(fileToImport,timeToWait)
+{
+  try
+  {
+    //Navigate to worklist
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+    {
+      return false;
+    }
+    
+    return ImportWorklist(fileToImport,timeToWait);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyTheOrderExistsInWorkListGrid(SampleID)
+{
+  try
+  {
+    //Navigate to worklist
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+      return false;
+    
+    return VerifyTheOrderExistsInWorkListGrid(SampleID);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyRunIdInWorkListScreen(runId)
+{
+  try
+  {
+    //Navigate to worklist
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+      return false;
+    
+    return VerifyRunIdInWorkListScreen(runId);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//*****************************IMT Calibration**********************************
+function StepGetIMTCalibrationStatus()
+{
+  try
+  {
+    //Navigate to IMT Calibration screen
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_IMTCalibration"))
+    {
+      Log["Error"]("Failed to Navigate to IMTCalibration Calibration Screen");
+      return false;
+    }
+    
+    return GetIMTCalibrationStatus();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepPerformIMTCalibration()
+{
+  try
+  {
+    //Navigate to IMT Calibration screen
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_IMTCalibration"))
+    {
+      Log["Error"]("Failed to Navigate to IMTCalibration Calibration Screen");
+      return false;
+    }
+    
+    return PerformIMTCalibration();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifyIMTCalibrationStatusIsCompleted()
+{
+  try
+  {
+    //Navigate to IMT Calibration screen
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_IMTCalibration"))
+    {
+      return false;
+    }
+    
+    return VerifyIMTCalibrationStatusIsCompleted();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//****************************System Health Check*******************************
+function StepCheckAllSystemModulesReadyState()
+{  
+  try
+  {
+    //Navigate to dashboard
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    return CheckSystemReadyState();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepPerformStopActionOnSystemModule(moduleType)
+{ 
+  try
+  { 
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    //click on stop button for module
+    return PerformStopActionOnSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifySystemToBeInExpectedStatus(moduleType,ExpectedStatus)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    return CheckForSystemToBeInExpectedStatus(moduleType, ExpectedStatus);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepPerformResumeActionOnSystemModule(moduleType)
+{   
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    //Perform resume action
+    return PerformResumeActionOnSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepPerformPauseActionOnSystemModule(moduleType)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    //Perform the pause action on the module
+    return PerformPauseActionOnSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepPerformShutdownActionOnSystemModule(moduleType)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    //Perform the Shut Down action on the module
+    return PerformShutdownActionOnSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepPerformEnterDiagnosticsOnSystemModule(moduleType)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    //Perform the Diagnostics action on the module
+    return PerformEnterDiagnosticsOnSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepGetCurrentStateOfSystemModule(moduleType)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    return GetCurrentStateOfSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepGetCurrentTransientStateOfSystemModule(moduleType)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    return GetCurrentTransientStateOfSystemModule(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function StepVerifyTheTransientStateOfSystemModule(moduleType,expectedTransientState)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    return VerifyTheTransientStateOfSystemModule(moduleType,expectedTransientState);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function StepVerifyTheTrasientStateOfSystemModuleByControlAction(moduleType, controlAction, expectedTransientState)
+{
+  try
+  {
+    //Navigate to dashbaord
+    if(!NavigateToDashboardScreen()) 
+    {
+      return false;
+    }
+    
+    return VerifyTheTrasientStateOfSystemModuleByControlAction(moduleType, controlAction, expectedTransientState)
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function StepGetActualSystemModuleName(moduleType)
+{
+  try
+  {   
+    return GetActualSystemModuleName(moduleType)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//***************************Dashboard******************************************
+function StepGetMaintenanceTileTotalCount()
+{
+  try
+  {
+      //Navigate to dashbaord
+      if(!NavigateToDashboardScreen()) 
+        return false;
+
+      return GetTileCountByTileName("Maintenance");
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+function StepVerifyReagentNeedsTileCount(expectedTileCount)
+{
+  try
+  {
+      //Navigate to dashbaord
+      if(!NavigateToDashboardScreen()) 
+        return false;
+
+      return VerifyReagentNeedsTileCount(expectedTileCount);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " +e["description"]);
+    return false;  
+  }
+}
+
+function StepGetReagentNeedsTileCount()
+{
+  try
+  {
+      //Navigate to dashbaord
+      if(!NavigateToDashboardScreen()) 
+        return false;
+
+      return GetReagentNeedsTileCount();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " +e["description"]);
+    return false;  
+  }
+}
+
+function StepCheckSTATsInProcessCountWithPoolingIntervel(waitTime, expectedSTATsInProcessTileCount)
+{
+  try
+  {
+    if(!NavigateToDashboardScreen())
+      return false;
+  
+    return CheckSTATsInProcessCountWithPoolingIntervel(waitTime, expectedSTATsInProcessTileCount); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+} 
+
+function StepCheckSTATsInterventionNeededCountWithPoolingIntervel(waitTime, expectedSTATsInterventionneededTileCount)
+{
+  try
+  {
+    if(!NavigateToDashboardScreen())
+      return false;
+  
+    return CheckSTATsInterventionNeededCountWithPoolingIntervel(waitTime, expectedSTATsInterventionneededTileCount);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCheckSTATsTileTotalCountWithPoolingInterval(waitTime, expectedSTATsTotalCount)
+{
+  try
+  {
+    if(!NavigateToDashboardScreen())
+      return false;
+  
+    return CheckSTATsTileTotalCountWithPoolingInterval(waitTime, expectedSTATsTotalCount);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+
+function StepCheckRoutineSampleTilePatientInterventionNeededCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileInterventionneededCount)
+{
+  try
+  {
+    if(!NavigateToDashboardScreen())
+      false;
+  
+    return CheckRoutineSampleTilePatientInterventionNeededCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileInterventionneededCount);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepCheckRoutineSamplesTileTotalCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileTotalCount)
+{
+  try
+  {
+    if(!NavigateToDashboardScreen())
+      return false;
+  
+    return CheckRoutineSamplesTileTotalCountWithPoolingInterval(waitTime,expectedRoutineSamplesTileTotalCount);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+
+//*******************************Supplies***************************************
+function StepUpdateSupplyThresholdValues(supplyNamesArr,thresholdValuesArr)
+{
+  try
+  {
+    //Navigate to view all supplies screen
+    if(!InvokeWorkFlowInPrimeDisp("Supplies_ViewAllSupplies")){
+      return false;
+    }
+    
+    return UpdateSupplyThresholdValues(supplyNamesArr,thresholdValuesArr); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false
+  }
+}
+
+function StepActionOnTipTrayConfirmationAlert(trayName,alertAction)
+{
+  try
+  {
+    return ActionOnTipTrayConfirmationAlert(trayName,alertAction);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false
+  }
+}
+
+function StepOpenTipTray(trayTopen)
+{
+  try
+  {
+     return OpenTipTray(trayTopen);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false
+  }  
+}
+
+function StepCloseTipTray(trayToClose)
+{
+  try
+  {
+     return CloseTipTray(trayToClose);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false
+  }
+}
+
+function StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName)
+{
+  try
+  {
+    //Navigate to view all supplies screen
+    if(!InvokeWorkFlowInPrimeDisp("Supplies_ViewAllSupplies")){
+      return false;
+    }
+    return GetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepGetAllFluidsDetails(fluidNames)
+{
+  try
+  {
+    //Navigate to view all supplies screen
+    if(!InvokeWorkFlowInPrimeDisp("Supplies_ViewAllSupplies")){
+      return false;
+    }
+    
+    return GetAllFluidsDetails(fluidNames);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false; 
+  }
+}
+
+function StepGetFluidDetailsFromSupplyNeeds(fluidName)
+{
+  try
+  {
+    //Navigate to view all supplies screen
+    if(!InvokeWorkFlowInPrimeDisp("Supplies_ViewAllSupplies")){
+      return false;
+    }
+    
+    return GetFluidDetailsFromSupplyNeeds(fluidName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false; 
+  } 
+}
+
+function StepVerifyTheSupplyNameNotDisplayedInSupplyNeedsAlert(supplyName)
+{
+  try
+  {
+    //Check the screen is navigated to the supply needs screen
+    if(!InvokeWorkFlowInPrimeDisp("SupplyNeeds")){
+      return false;
+    }
+    return VerifyTheSupplyNameNotDisplayedInSupplyNeedsAlert(supplyName);
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);    
+    return false;
+  }
+  
+}
+
+function StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus)
+{
+  try
+  {
+    //Check the screen is navigated to the supply needs screen
+    if(!InvokeWorkFlowInPrimeDisp("SupplyNeeds")){
+      return false;
+    }
+    return VerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepRefillSuppliesFromSupplyNeeds(suppliesList,lotNumberArr,seqNumberArr,expirayDateArr,expirayMonthArr,expiryYearArr)
+{
+  try
+  {
+    //Check the screen is navigated to the supply needs screen
+    if(!InvokeWorkFlowInPrimeDisp("SupplyNeeds")){
+      return false;
+    }
+    
+    return RefillSuppliesFromSupplyNeeds(suppliesList,lotNumberArr,seqNumberArr,expirayDateArr,expirayMonthArr,expiryYearArr);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+
+//*******************************Troubleshooting********************************
+function StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter,minElapsed)
+{
+  try
+  {
+    //Navigate to Troubleshooting
+    if(!InvokeWorkFlowInPrimeDisp("Troubleshooting"))
+    {
+      return false; 
+    }
+
+    //Check the advance filter paramters are given to apply filter
+    if(eventTypeToFilter != undefined)
+    {
+      var filterDateAndTime = GetDateAndTimeToApplyEventLogAdvanceFilter(minElapsed);  
+    }
+    
+    //recheck the event code and event message in evvent log grid
+    return VerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter,filterDateAndTime);              
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function GetDateAndTimeToApplyEventLogAdvanceFilter(minElapsed) // minElapsed - no of minutes to go back
+{
+  try
+  {
+    if(minElapsed == undefined)
+    {
+      minElapsed = 5 ;
+    }
+    var starting = aqDateTime["AddMinutes"](aqDateTime["Now"](),-minElapsed);
+    var ending = aqDateTime["AddMinutes"](aqDateTime["Now"](),2);
+    
+    //Get Date
+    var startDate = aqDateTime["GetDay"](starting) +'-'+ aqConvert.DateTimeToFormatStr(starting, "%B") +'-'+ aqDateTime["GetYear"](starting);
+    var endDate = aqDateTime["GetDay"](ending)+'-'+ aqConvert.DateTimeToFormatStr(ending, "%B") +'-'+ aqDateTime["GetYear"](ending);
+    
+    //Get meridian
+    var startMeridian = aqDateTime["GetHours"](starting) >= 12 ? "PM" : "AM"; //Assign meridian based on current hour count
+    var endMeridian = aqDateTime["GetHours"](ending) >= 12 ? "PM" : "AM"; //Assign meridian based on current hour count
+    
+    var startMinute = aqString["Format"]("%0*i", 2,aqDateTime["GetMinutes"](starting));
+    var endMinute = aqString["Format"]("%0*i", 2,aqDateTime["GetMinutes"](ending));
+    
+    //Get hour
+    var startTime = aqDateTime["GetHours"](starting) + "-" + startMinute + "-" + startMeridian; 
+    var endTime = aqDateTime["GetHours"](ending) + "-" + endMinute + "-" + endMeridian; 
+
+
+    var dateAndTime  = {
+      "StartDate" : startDate,
+      "StartTime" : startTime,      
+      "EndDate" : endDate,
+      "EndTime" : endTime      
+    }
+    
+    return dateAndTime;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+function GetDateAndTimeToApplyEventLogAdvanceFilter_old()
+{
+  try
+  {
+    var today = new Date();    
+    
+    //get mintue
+    var startMinute = aqString["Format"]("%0*i", 2, (today.getMinutes()-5)) //5 miniutes less than current time
+    var endMinute = aqString["Format"]("%0*i", 2, today.getMinutes())
+    
+    
+    //Get Date
+    var startDate = today.getDate()+'-'+ aqConvert.DateTimeToFormatStr(aqDateTime["Today"]() , "%B") +'-'+today.getFullYear();
+    var endDate = today.getDate()+'-'+ aqConvert.DateTimeToFormatStr(aqDateTime["Today"]() , "%B") +'-'+today.getFullYear();
+    
+    //Get meridian
+    var meridian = today.getHours() >= 12 ? "PM" : "AM"; //Assign meridian based on current hour count
+    
+    //Get hour
+    var startTime = today.getHours() + "-" + startMinute + "-" + meridian; 
+    var endTime = today.getHours() + "-" + endMinute + "-" + meridian;
+
+
+    var dateAndTime  = {
+      "StartDate" : startDate,
+      "StartTime" : startTime,      
+      "EndDate" : endDate,
+      "EndTime" : endTime      
+    }
+    
+    return dateAndTime;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+
+function StepPerformExitDiagnosticsMode(moduleType)
+{
+  try
+  {
+    //Navigate to Troubleshooting
+    if(!InvokeWorkFlowInPrimeDisp("Troubleshooting"))
+      return false;
+    
+    return PerformExitDiagnosticsMode(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function StepPerformEnterDiagnosticsMode(moduleType)
+{
+  try
+  {
+    //Navigate to Troubleshooting
+    if(!InvokeWorkFlowInPrimeDisp("Troubleshooting"))
+      return false;
+      
+    return PerformEnterDiagnosticsMode(moduleType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function StepPerformAndVerifyOperatorDiagnosticsAction(moduleName, subSystemName, diagnosticName)
+{
+  try
+  {
+    //Navigate to Troubleshooting
+    if(!InvokeWorkFlowInPrimeDisp("Troubleshooting"))
+      return false;
+      
+    return PerformAndVerifyOperatorDiagnosticsAction(moduleName, subSystemName, diagnosticName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+function StepUseAdvancedFilters(startDate,startTime,eventType,eventtype_txt,moduleType,categoryList,subSystemList,modeList)
+{
+  try
+  {
+   return UseAdvancedFilters(startDate,startTime,eventType,eventtype_txt,moduleType,categoryList,subSystemList,modeList); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;
+  }
+}
+
+//********************************Assay Setup***********************************
+function StepEnableAssaysFromAssayList(assayType,assayList)
+{
+  try
+  {
+    //Select workflow code for assay setup, seelct assay type and assay name and navigate to desired tdef tab
+    if(!NavigateToViewEditTdefScreen(assayType, assayList[0], "Assay List"))
+    {
+      Log["Error"]("Navigation failed for the Tdef screen");
+      return false;
+    }
+    
+    return EnableAssaysFromAssayList(assayList);   
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+   
+}
+
+function StepDisableAssaysFromAssayList(assayType,assayList)
+{
+  try
+  {
+    //Select workflow code for assay setup, seelct assay type and assay name and navigate to desired tdef tab    
+    if(!NavigateToViewEditTdefScreen(assayType, assayList[0], "Assay List"))
+    {
+      Log["Error"]("Navigation failed for the Tdef screen");
+      return false;
+    }
+    
+    return DisableAssaysFromAssayList(assayList);  
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepClickFinishAndExitAfterSaving()
+{
+  try
+  {
+    return ClickFinishAndExitAfterSaving();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepFinishAndExitAssaySetup()
+{
+  try
+  {
+    return FinishAndExitAssaySetup();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepModifyCIStatusAndDisplayNameInDefinition(assayType,assayName,tDefScreen,imStatus,displayName)
+{
+  try
+  {
+    //Navigate to TDef
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return ModifyCIStatusAndDisplayName(imStatus,displayName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }  
+}
+
+function StepModifyDisplayNameInDefinition(assayType,assayName,tDefScreen,displayName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return ModifyDisplayNameInDefinition(displayName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }  
+}
+
+function StepVerifyTDefSuccessSavePopup()
+{
+  try
+  {
+    return VerifyTDefSuccessSavePopup(); 
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyTDefFailedSavePopup()
+{
+  try
+  {
+    return VerifyTDefFailedSavePopup();    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyCIStatusAndDisplayNameIsModified(assayType,assayName,tDefScreen,ciStatus,displayName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyCIStatusAndDisplayNameIsModified(ciStatus,displayName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyDisplayNameIsModified(assayType,assayName,tDefScreen,displayName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyDisplayNameIsModified(displayName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyDisplayNameIsNotModified(assayType,assayName,tDefScreen,displayName)
+{
+  try
+  {
+   if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }      
+    return VerifyDisplayNameIsNotModified(displayName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepUncheckControlBracketedTest(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    } 
+    return UncheckControlBracketedTest();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+  
+}
+
+function StepUnLockControlLevelInDefinition(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    return UnLockControlLevelInDefinition();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyControlLevelisDisabled()
+{
+  try
+  {
+    return VerifyControlLevelisDisabled();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetCalibrationLotInterval(assayType,assayName,tDefScreen,CalibrationLotInterval)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return ModifyCalibrationLotInterval(CalibrationLotInterval);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetMinimumReplicates(assayType,assayName,tDefScreen,minimumReplicates)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetMinimumReplicates(minimumReplicates);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepIncreaseCalibrationLotInterval(assayType,assayName,tDefScreen,CalibrationLotInterval)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return IncreaseCalibrationLotInterval(CalibrationLotInterval);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetNewLotReplicatesLessThanMinimumReplicates(assayType,assayName,tDefScreen,newLotReplicates)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetNewLotReplicatesLessThanMinimumReplicates(newLotReplicates);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepCheckCalibrationTriggerCheckbox(assayType,assayName,tDefScreen,CalibrationTrigger)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return CheckCalibrationTriggerCheckbox(CalibrationTrigger);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepUnCheckCalibrationTriggerCheckbox(assayType,assayName,tDefScreen,CalibrationTrigger)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return UnCheckCalibrationTriggerCheckbox(CalibrationTrigger);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCalibrationTrigger(assayType,assayName,tDefScreen,CalibrationTrigger)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyCalibrationTrigger(CalibrationTrigger);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCalibrationTriggerNotChecked(assayType,assayName,tDefScreen,CalibrationTrigger)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyCalibrationTriggerNotChecked(CalibrationTrigger);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCalibrationTriggerCheckboxNotModified(assayType,assayName,tDefScreen,CalibrationTrigger)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyCalibrationTriggerCheckboxNotModified(CalibrationTrigger);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCentrifugeForRepeatCheckBoxIsEnabled(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyCentrifugeForRepeatCheckBoxIsEnabled();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepGetCentrifugeForRepeatCheckBoxStatus(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return GetCentrifugeForRepeatCheckBoxStatus();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepModifyCentrifugeForRepeatCheckBoxAndSave(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    return ModifyCentrifugeForRepeatCheckBoxAndSave();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+
+function StepNavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    return NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyUnitIsEditable(assayType)
+{
+  try 
+  {
+    return VerifyUnitIsEditable(assayType);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyUnitIsNotEditable(assayType)
+{
+  try
+  {
+    return VerifyUnitIsNotEditable(assayType);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyAssayComparisonCorrelationIsEditable(CorrelationCoefficient,CorrelationCoefficientValue)
+{
+  try
+  {
+    return VerifyAssayComparisonCorrelationIsEditable(CorrelationCoefficient,CorrelationCoefficientValue);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyAssayComparisonCorrelationInIMIsEditable()
+{
+  try
+  {
+    return VerifyAssayComparisonCorrelationInIMIsEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifySlopeAndInterceptIsAvailable()
+{
+  try
+  {
+    return VerifySlopeAndInterceptIsAvailable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepEnableHILInCalculation(assayType,assayName,tDefScreen,HILName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return EnableHILInCalculation(assayType,HILName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepDisableHILInCalculation(assayType,assayName,tDefScreen,HILName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return DisableHILInCalculation(assayType,HILName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }  
+}
+
+function StepVerifyHILThresholdIsEditable(assayType,assayName,tDefScreen,HILThreshold)
+{
+  try
+  {  
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+        return false;
+      }
+    return VerifyHILThresholdIsEditable(assayType,HILThreshold);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyHILIsEditable(assayType,HILNameList)
+{
+  try
+  {
+    return VerifyHILIsEditable(assayType,HILNameList);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyHILIsNotEditable(assayType,HILNameList)
+{
+  try
+  {
+    return VerifyHILIsNotEditable(assayType,HILNameList);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepSetUnitValueAsMasterCurveUnit(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetUnitValueAsMasterCurveUnit(assayType,assayName,tDefScreen);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetUnitValueNotSameAsMasterCurveUnit(assayType,assayName,tDefScreen,unit)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetUnitValueNotSameAsMasterCurveUnit(assayType,unit);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepDecimalPlacesAreNotLocked(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetDecimalPlacesAsNotLocked();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepDecimalPlacesAreLocked(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetDecimalPlacesAsLocked();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetDisplayedResultType(assayType,assayName,tDefScreen,displayResultType)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetDisplayedResultType(displayResultType);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetResultType(assayType,assayName,tDefScreen,resultType)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetResultType(resultType);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyDecimalPlaceIsModified(concentrationDecimal,indexDecimal)
+{
+  try
+  {
+    return VerifyDecimalPlaceIsModified(concentrationDecimal,indexDecimal);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyDecimalPlaceIsEditable()
+{
+  try
+  {
+    return VerifyDecimalPlaceIsEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyDecimalPlaceIsNotEditable()
+{
+  try
+  {
+    return VerifyDecimalPlaceIsNotEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyDisplayResultTypeIsEditable()
+{
+  try
+  {
+    return VerifyDisplayResultTypeIsEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyDisplayResultTypeIsNotEditable()
+{
+  try
+  {
+    return VerifyDisplayResultTypeIsNotEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyResultTypeIsEditable()
+{
+  try
+  {
+    return VerifyResultTypeIsEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyResultTypeIsNotEditable()
+{
+  try
+  {
+    return VerifyResultTypeIsNotEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyResultTypeValue(resultType)
+{
+  try
+  {
+    return VerifyResultTypeValue(resultType);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyConversionFactorIsEditable()
+{
+  try
+  {
+    return VerifyConversionFactorIsEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyAssayComparisonCorrelationForIMIsEditable()
+{
+  try
+  {
+    return VerifyAssayComparisonCorrelationForIMIsEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyAssayComparisonCorrelationForIMIsNotEditable()
+{
+  try
+  {
+    return VerifyAssayComparisonCorrelationForIMIsNotEditable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepDisableAssayComparisonCorrelationForIM(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return DisableAssayComparisonCorrelationForIM();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepEnableAssayComparisonCorrelationForIM(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return EnableAssayComparisonCorrelationForIM();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepGetCalibrationControlLockStatus(assayType,assayName,tDefScreen,calibrationLockCtrlName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return GetCalibrationControlLockStatus(calibrationLockCtrlName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepLockCalibrationControl(calibrationLockCtrlName)
+{
+  try
+  {
+    return LockCalibrationControl(calibrationLockCtrlName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepUnLockCalibrationControl(calibrationLockCtrlName)
+{
+  try
+  {
+    return UnLockCalibrationControl(calibrationLockCtrlName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepGetCalibrationCheckboxStatus(assayType,assayName,tDefScreen,calibrationCheckBoxCtrlName)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return GetCalibrationCheckboxStatus(calibrationCheckBoxCtrlName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyAncillaryDiluentReagentNotDisplayed(reagentType)
+{
+  try
+  {
+    return VerifyAncillaryDiluentReagentNotDisplayedInTdef(reagentType);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyPrimaryReagentDetails(AssayName,reagentCode,solidWell,solidVolume,liteWell,liteVolume,ancillaryWell,ancillaryVolume)
+{
+  try
+  {
+    return VerifyPrimaryReagentDetails(AssayName,reagentCode,solidWell,solidVolume,liteWell,liteVolume,ancillaryWell,ancillaryVolume);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyAncillaryAndDiluentDetails(reagentType,reagentName,productCode,obsTrigger,Volume,obsUsage)
+{
+  try
+  {
+    return VerifyAncillaryAndDiluentDetails(reagentType,reagentName,productCode,obsTrigger,Volume,obsUsage); 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepTurnOnCalibrationCheckboxControl(calibrationCheckBoxCtrlName)
+{
+  try
+  {
+    return TurnOnCalibrationCheckboxControl(calibrationCheckBoxCtrlName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepTurnOffCalibrationCheckboxControl(calibrationCheckBoxCtrlName)
+{
+  try
+  {
+    return TurnOffCalibrationCheckboxControl(calibrationCheckBoxCtrlName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyReagentCalCode(calCode)
+{
+  try
+  {
+    return VerifyReagentCalCode(calCode);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyReagentUseForInventoryIsSelected()
+{
+  try
+  {
+    return VerifyReagentUseForInventoryIsSelected();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCalibrationCheckBoxIsEditable(calibrationCheckBoxCtrlName)
+{
+  try
+  {
+    return VerifyCalibrationCheckBoxIsEditable(calibrationCheckBoxCtrlName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }  
+}
+
+function StepVerifyCalibrationCheckBoxIsNotEditable(calibrationCheckBoxCtrlName)
+{
+  try
+  {
+    return VerifyCalibrationCheckBoxIsNotEditable(calibrationCheckBoxCtrlName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }  
+}
+
+function StepVerifyUnRefrigeratedOBSHrsAvailable(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyUnRefrigeratedOBSHrsAvailable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyRefrigeratedOBSHrsAvailable(assayType,assayName,tDefScreen)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return VerifyRefrigeratedOBSHrsAvailable();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepReadReagentParametersFromXML(FileName)
+{
+  try
+  {
+    return ReadReagentParametersFromXML(FileName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepSetPackCalIntervalWithinInternalTimeframe(assayType,assayName,tDefScreen,PackCalInterval)
+{
+  try
+  {
+    if(!NavigateToViewEditTdefScreen(assayType,assayName,tDefScreen)){
+      return false;
+    }
+    return SetPackCalIntervalWithinInternalTimeframe(PackCalInterval);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepVerifyCalibrationFeildCanBeDecreased(Calibrationfeild)
+{
+  try
+  {
+    return VerifyCalibrationFeildCanBeDecreased(Calibrationfeild);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyCalibrationFeildCannotBeIncreased(Calibrationfeild)
+{
+  try
+  {
+    return VerifyCalibrationFeildCannotBeIncreased(Calibrationfeild);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepVerifyLotCalibrationIntervalCannotBeModified()
+{
+  try
+  {
+    return VerifyLotCalibrationIntervalCannotBeModified();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;  
+  }
+}
+
+function StepReadCalCodeFromXML(FileName)
+{
+  try
+  {
+    return ReadCalCodeFromXML(FileName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+//*******************************Maintenance************************************
+function StepPerformMaintenanceActivityInAllActivities(moduleType,activityName)
+{
+  try
+  {
+    //Navigation for Assay Type Selection Popup
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance_AllActivities")){
+      return false;
+    }
+    
+    return PerformMaintenanceActivityInAllActivities(moduleType,activityName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepGetActivityStatusFromMaintenanceList(moduleType,activityName)
+{
+  try
+  {
+    //Navigation for Assay Type Selection Popup
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance")){
+      return false;
+    }
+        
+    return GetActivityStatusFromMaintenanceList(moduleType,activityName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepStopActivityInMaintenanceScreen(moduleType, activityName)
+{
+  try
+  {
+    //Navigation for Assay Type Selection Popup
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance")){
+      return false;
+    }
+    
+    return StopActivityInMaintenanceScreen(moduleType,activityName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+function StepVerifyTheDateDisplayedInMaintenanceScreen(expectedDate)
+{
+  try
+  {
+    //Navigation to Maintenance screen
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance"))
+      return false;
+    
+    return VerifyTheDateDisplayedInMaintenanceScreen(expectedDate);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+function StepGetCountOfDisplayedMaintenanceActivities()
+{
+  try
+  {
+    //Navigation to Maintenance screen
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance"))
+      return false;
+    
+    return GetCountOfDisplayedMaintenanceActivities();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+function StepCheckTheMaintenaceActivityDetailsByActivityName(activityName,expectedDescription,expectedStatus,expectedDate)
+{
+  try
+  {
+    //get maintenance tile count
+    var maintenanceTileCount = StepGetMaintenanceTileTotalCount();
+      
+    //Navigation to Maintenance screen
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance"))
+      return false;
+      
+    return CheckTheMaintenaceActivityDetailsByActivityName(maintenanceTileCount,activityName,expectedDescription,expectedStatus,expectedDate);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    return false;  
+  }
+}
+
+function StepPerformActivityByActivityName(activityName)
+{
+  try
+  {
+    //Navigate to Maintenance
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance"))
+      return false;
+        
+    return PerformActivityByActivityName(activityName);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepNotPerformActivityByActivityNameWithoutComments(activityName)
+{
+  try
+  {
+    //Navigate to Maintenance
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance"))
+      return false;
+        
+    return NotPerformActivityByActivityNameWithoutComments(activityName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepNotPerformActivityByActivityNameWithComments(activityName,commentBoxComment)
+{
+  try
+  {
+    //Navigate to Maintenance
+    if(!InvokeWorkFlowInPrimeDisp("Maintenance"))
+      return false;
+        
+    return NotPerformActivityByActivityNameWithComments(activityName,commentBoxComment);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+
+//******************************Calibration*************************************
+function StepVerifyCalibrationDefinitionExists(materialName,materialId,lotNo)
+{
+  try
+  {
+    //Navigate to calibration definition
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_CalibrationDefinitions"))
+      return false;
+    
+    return VerifyCalibrationDefinitionExists(materialName,materialId,lotNo);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepDeleteCalibrationDefinitionByMaterialName(materialName,materialId,lotNo)
+{
+  try
+  {
+    //Navigate to calibration definition
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_CalibrationDefinitions"))
+      return false;
+    
+    return DeleteCalibrationDefinitionByMaterialName(materialName,materialId,lotNo);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepAddIMCalibrationDefinition(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2)
+{
+  try
+  {
+    //Navigate to add calibration definition window
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_CalibrationDefinitions_AddNew"))
+      return false;
+    
+    return AddIMCalibrationDefinition(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepEditIMCalibrationDefinitionDetails(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2)
+{
+  try
+  {
+    //Navigate to calibration definition
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_CalibrationDefinitions"))
+      return false;
+    
+    return EditIMCalibrationDefinitionDetails(assayType,materialName,materialId,lotNo,date,month,year,isActive,assayName,checkSumValue,level2)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+function StepUpdateMaterialNameInCalibrationDefinition(materialName,materialId,lotNo,newMaterialName)
+{
+  try
+  {
+    //Navigate to calibration definition
+    if(!InvokeWorkFlowInPrimeDisp("CalibrationOverview_CalibrationDefinitions"))
+      return false;
+    
+    return UpdateMaterialNameInCalibrationDefinition(materialName,materialId,lotNo, newMaterialName);
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);    
+    return false;
+  }
+}
+
+
+//******************************************************************************
+////SHRUTIKA
+function StepCheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo)
+{
+  try
+  {
+    //Navigate to Reagent overview screen
+    //if(!InvokeWorkFlowInPrimeDisp("Navigate_To_ReagentOverview")) commented this due to structure
+    if(!InvokeWorkFlowInPrimeDisp("ReagentNeeds_ReagentOverview"))
+      return false;
+  
+    return CheckHydraReagentIsLoadedAndEnabled(reagentName,sequenceNo,lotNo)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+
+function StepVerifySampleTestDataInWorkList(SampleId,TestName,Columns,ExpectedColumnValues)
+{
+  try
+  {
+    //Navigate to WorkList Screen
+    if(!InvokeWorkFlowInPrimeDisp("WorkList"))
+      return false;
+
+    return VerifySampleTestDataInWorkList(SampleId,TestName,Columns,ExpectedColumnValues)
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    return false;
+  }
+}
+

@@ -1,0 +1,155 @@
+﻿//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeCC
+//*
+//*  Description: Invoke CC application
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeCC()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeCC(strAppName,strAppPath,Testobj,strProcessName)
+{
+   try
+   {
+        var strpath = strAppPath// + strAppName;
+        var objWS = Sys["OleObject"]("WScript.Shell")
+       
+        var oShell=Sys["OleObject"]("Shell.Application");
+        oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5);
+//        oShell.ShellExecute(strpath,strAppName,"C:\\hydra.dev\\drop\\Bin","runas",5)
+       //Waits for the Shell Process to initialize. Max waiting time : 30 seconds
+        aqUtils.Delay(5000)
+       
+       if(strProcessName!="")
+       {
+          if(Sys["WaitProcess"](strProcessName,100000)["Exists"] == true)
+          {
+         
+            Sys.Process(strProcessName)["Refresh"]();
+      
+            Log["Message"]("The Process "+strProcessName+" has started successfully");
+            for(i=1;i<=100;i++)
+            {
+              if (Testobj!="")
+              {
+                if(Testobj["Exists"]==true)
+                { 
+                  break;    
+                }
+              }
+            }
+            if (Testobj!="")
+            {
+              if(Testobj["Exists"])
+              {
+                ProjectSuite.Variables.StartCCStatus=true;
+                Log["Message"]("The Application "+strAppName+" launched successfully");
+                return true;
+              }
+            
+              else
+              {
+                ProjectSuite.Variables.StartCCStatus=false;
+                Log["Message"]("Unable to launch the Application "+strAppName);
+                return false;
+              }
+            }
+          }
+          else
+          {
+          ProjectSuite.Variables.StartCCStatus=false;
+            Log["Error"]("Unable to start the process "+strProcessName);
+            return false;
+          }
+       }
+   }
+   catch(exp)
+   {
+      Log["Error"]("Exception",exp["description"]);    
+   }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : CCShutdown
+//*
+//*  Description: Shutdown CC Simulator App
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: CCShutdown()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function t()
+{
+for(i=0;i<25;i++)
+{
+  if(i<20)
+  {
+    Log.Message(i);
+  } 
+  else
+  {
+    break;
+  } 
+} 
+}
+function CCShutdown()
+{
+  try
+  {
+    var oShell=Sys["OleObject"]("Shell.Application");
+    var strshutdownPath = "C:\\Siemens\\Installation\\Tools\\Killall.bat" 
+    oShell.ShellExecute(strshutdownPath,"","C:\\Siemens\\Installation\\Tools","runas",5);
+    var CCProcessobj =Sys.WaitProcess("TriModuleDisplay");
+  //  while(CCProcessobj["Exists"])
+  for(i=0;i<10000;i++)
+    {
+    if(!CCProcessobj["Exists"])
+    {
+     Log.Message("CC Module is closed successfully");
+      break;
+    } 
+    else
+    {
+      aqUtils["Delay"](2000);
+      Log.Message("Waiting to complete");
+    }
+    }
+    Log.Enabled=false;
+    if(!Sys["Process"]("TriModuleDisplay")["Exists"])
+    {
+      Log.Enabled=true;
+     // ProjectSuite.Variables.ShutdownCCStatus=true;
+      Log["Message"]("CC application shutdown completed successfully");
+      return true;
+    }
+    else
+    {
+      Log.Enabled=true;
+     // ProjectSuite.Variables.ShutdownCCStatus=false;
+       Log["Message"]("Could not complete CC application shutdown");
+      return false; 
+    }
+     
+  }
+  catch(exp)
+  {
+  ProjectSuite.Variables.ShutdownCCStatus=false;
+    Log["Error"]("Exception",exp["description"]);
+  }
+}

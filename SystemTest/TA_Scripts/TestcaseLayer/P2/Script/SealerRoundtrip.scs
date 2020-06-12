@@ -1,0 +1,328 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function SealerRoundTrip()
+{
+  try
+  {
+    InitializeMetaData();
+    Log["AppendFolder"]("Feature: Sealer Roundtrip ");
+    NetworkSuite["Variables"]["SHScenario"] = "SealerRoundtrip";
+        
+    /////////////////////// 1.Verify Sealer Status /////////////////////////////////////////////////////////////
+    
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Verify Sealer status", "I");
+    Log["AppendFolder"]("Verify Sealer status");
+	if(!GivenAtellicaInitialized())
+    {
+      Log["PopLogFolder"]();
+      return false; 
+    }    
+	
+	if(StepVerifyModuleStatus("SEALER","Ready/Standby"))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify Sealer status", "P");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify Sealer status", "F");
+      Log["Error"]("Verification of sealer status failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+	StepConfigureHILSettings("CH-Based HIL", "manual hil", "", "");
+
+    var DeploymentType=GetDeploymentTypeFromFederationConfig()
+   
+    ////////////////////////// 2.Move Samples to historical//////////////////////////////////////////////////////
+    
+    Log["AppendFolder"]("Move samples to historical")
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Move samples to historical", "I"); 
+    if(!StepClearAllData(TestDataFile,DeploymentType))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Move samples to historical", "F");
+      Log["Error"]("Move samples to historical failed");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Move samples to historical", "P");
+       Log["PopLogFolder"]();
+    }    
+        
+    ///////////////////////////// 3.Configure SH with archival panel /////////////////////////////////////////////////////////////////
+    
+    Log["AppendFolder"]("Configure Sample handler")
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Configure SH", "I"); 
+    var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapWithHolding");
+    var PanelName       = arrDrawers[0]["Item"]("Panel");
+    var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+    var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+    
+    if (!StepVerifySortPanelActive(PanelName))
+    {
+     
+      if(!StepStopAnalyzer("SH"))
+      {
+        ReportTestStatusToResultXML("Sealer Roundtrip", "Configure SH", "F");
+        Log["Error"]("Configure SH failed")
+        Log["PopLogFolder"]();
+        return false;
+      } 
+    
+      if(!StepAddPanel(PanelName))
+      {
+        ReportTestStatusToResultXML("Sealer Roundtrip", "Configure SH", "F");
+        Log["Error"]("Configure SH failed")
+        Log["PopLogFolder"]();
+        return false;
+      } 
+            
+      if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapWithHolding"))
+      {
+        ReportTestStatusToResultXML("Sealer Roundtrip", "Configure SH", "F");
+        Log["Error"]("Configure SH failed")
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        ReportTestStatusToResultXML("Sealer Roundtrip", "Configure SH", "P");
+      } 
+    
+    }
+    else
+    {
+       ReportTestStatusToResultXML("Sealer Roundtrip", "Configure SH", "P");
+    } 
+    
+     ////////////////// 4.Enable/Disable seal archiving samples //////////////////////////////////
+      if(!StepStopAnalyzer("SH"))
+      {
+        Log["Error"]("Stop SH failed")
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      
+      if(!StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig", "DecapWithHolding"))
+      {
+        Log["Error"]("Set WaitForResultsWorkflowSettings failed")
+        Log["PopLogFolder"]();
+        return false;
+      } 
+      
+     Log["AppendFolder"]("Enable/Disable seal archiving samples")
+         
+     ReportTestStatusToResultXML("Sealer Roundtrip", "Enable Seal archiving samples", "I");
+     if(StepEnableDisableSealArchivingSamples(1))
+     {
+       ReportTestStatusToResultXML("Sealer Roundtrip", "Enable Seal archiving samples", "P");
+       Log["Message"]("Enable seal archiving samples is successfull")
+       Log["PopLogFolder"]();
+     }
+     else
+     {
+       ReportTestStatusToResultXML("Sealer Roundtrip", "Enable Seal archiving samples", "F");
+       Log["Error"]("Enable seal archiving samples is failed");
+       Log["PopLogFolder"]();
+       return false;
+     } 
+       
+    if(!StepStartAnalyzer("SH"))
+    {
+      Log["Error"]("Start SH failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["Message"]("SH configured successfully")
+        
+    if(!GivenAtellicaInitialized())
+    {
+      Log["PopLogFolder"]();
+      return false; 
+    }
+   
+     Log["PopLogFolder"]();
+      
+///////////////////////////////////// 5.Create PatientOrder ////////////////////////////////////////////////////////////
+    
+    Log["AppendFolder"]("Create patient order")
+    
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Create PatientOrder", "I");
+    var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SealerRoundtrip");
+    var dictColumn           = arrTestData[0];
+  
+    
+    var Assay                = dictColumn["Item"]("Assay");
+    var SampleId             = dictColumn["Item"]("SampleId");
+    var Specimen             = dictColumn["Item"]("Specimen");
+    var Analyzer             = dictColumn["Item"]("Analyzer");
+    var Priority             = dictColumn["Item"]("Priority");
+    
+    if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+    if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Create PatientOrder", "F");
+      Log["Error"]("Create PatientOrder failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Create PatientOrder", "P");
+      Log["PopLogFolder"]();
+    } 
+
+    //////////////////////////////// 6.Load samples //////////////////////////////////////////////////////////////////////
+    
+    Log["AppendFolder"]("Load a sample")
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Load sample", "I");
+    NetworkSuite["Variables"]["SHScenario"] = "SealerRoundtrip";
+    if(!StepLaunchDVSinSH())
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Load sample", "F");
+      Log["Error"]("Load a sample failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!StepPlaceOutputTray())
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Load sample", "F");
+      Log["Error"]("Load a sample failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    if(!StepPlaceSample("Plain"))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Load sample", "F");
+      Log["Error"]("Load a sample failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+	var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SealerRoundtrip")
+	var dictColumn=arrTestData[0];
+	var SampleId = dictColumn["Item"]("SampleId");
+    if(!StepLoadSample())
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Load sample", "F");
+      Log["Error"]("Load a sample failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Load sample", "P");
+      Log["PopLogFolder"]();
+    }
+     	
+    ///////////////////////////////////////7.Verify sample property(decapped) ////////////////////////////////////////////////////////////
+	Log["AppendFolder"]("Verify sample property - Decapped")   
+    if(!StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample property - Decapped", "F");
+      Log["Error"]("Verify sample status failed")
+      Log["PopLogFolder"]();
+     return false;
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample property - Decapped", "P");
+      Log["PopLogFolder"]();
+    } 
+    
+    //////////////////////////////////////////// 8.Verify sample status(aspirated/complete) /////////////////////////////////////
+    
+    Log["AppendFolder"]("Verify sample status")
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample status", "I");
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SealerRoundtrip")
+    var dictColumn=arrTestData[0];
+    var SampleID = dictColumn["Item"]("SampleId");
+    var SampleStatus=dictColumn["Item"]("SampleStatus");
+     
+    if(!StepWaitForSampleStatus(SampleID, "Complete"))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample status", "F");
+      Log["Error"]("Verify sample status failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample status", "P");
+      Log["PopLogFolder"]();
+    } 
+    
+    //9.Verify sample is sealed
+     Log["AppendFolder"]("Verify sample seal status")
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample seal status", "I");
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SealerRoundtrip")
+    var dictColumn=arrTestData[0];
+    var SampleID = dictColumn["Item"]("SampleId");
+    var SealStatus=dictColumn["Item"]("SealStatus");
+    
+   
+    if(!StepWaitForSampleProperty(SampleID, "SealStatus", SealStatus, 60000))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample seal status", "F");
+      Log["Error"]("Verify sample status failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample seal status", "P");
+      Log["PopLogFolder"]();
+    } 
+    
+    ////////////////////////////////////////// 10.Verify sample unloads to matching area////////////////////////////////////////////
+    
+    Log["AppendFolder"]("Verify sample unloading location")
+    ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample unloading location", "I");
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SealerRoundtrip")
+    var dictColumn=arrTestData[0];
+    var TrayType             = dictColumn["Item"]("TrayType");
+    var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+    var DrawerZone           = dictColumn["Item"]("DrawerZone");
+    var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+    var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+    var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+    if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample unloading location", "F");
+      Log["Error"]("Verify sample status failed")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      ReportTestStatusToResultXML("Sealer Roundtrip", "Verify sample unloading location", "P");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    Log["PopLogFolder"]();
+	Log["PopLogFolder"]();
+     
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  } 
+} 

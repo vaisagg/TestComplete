@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<folder name="TaskLayer">
+			<folder name="PCC">
+				<child name="Authentication" key="{757A10CA-E281-4EE0-9362-6400FA1028BF}" path="..\..\..\TaskLayer\PCC\Authentication\Authentication.scs" />
+				<child name="CommonUtilities" key="{12770F86-BE4C-4B09-A470-90CA3300A9AE}" path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+				<child name="ControlAccessLibrary" key="{9C77A09C-4D4A-4443-9915-D8D9AD130181}" path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+				<child name="TCNativeLibraries" key="{6AD49569-2620-445F-A36E-1998A38D161E}" path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+				<child name="WorkflowNavigator" key="{9FD2670F-A92A-4508-BC88-C8E2C64CF3A9}" path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+				<child name="System" key="{7BCBD7B7-AE2F-4828-B2A3-E36D055C4509}" path="..\..\..\TaskLayer\PCC\System\System.scs" />
+				<child name="SQLUtilities" key="{BB18A8FD-F725-4868-B9CE-4517B622E577}" path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+				<child name="LocalizationUtilities" key="{8C5B6DEF-C47F-45BD-A78F-12105F86C7CF}" path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+				<child name="Setup" key="{5E051BE5-D2A2-4D01-ACEC-E5FF7A84AAAB}" path="..\..\..\TaskLayer\PCC\Setup\Setup.scs" />
+				<child name="Inventory" key="{DC4762FE-B125-4EF2-A3E5-A75E88D019B1}" path="..\..\..\TaskLayer\PCC\Inventory\Inventory.scs" />
+				<child name="PatientOrders" key="{4F6301A7-3347-4E09-BC74-D56DE4F8EEA4}" path="..\..\..\TaskLayer\PCC\PatientOrders\PatientOrders.scs" />
+				<child name="Samples" key="{85955DE6-BECA-40F5-A804-4C902472F379}" path="..\..\..\TaskLayer\PCC\Samples\Samples.scs" />
+				<child name="QC" key="{6B747015-8721-4F5F-AEF7-101F31065BB9}" path="..\..\..\TaskLayer\PCC\QC\QC.scs" />
+				<child name="Worklist" key="{FE5CC4D1-8BA9-480E-8B97-02F009146506}" path="..\..\..\TaskLayer\PCC\Worklist\Worklist.scs" />
+				<child name="Maintenance" key="{2752FB48-FFA3-4B09-AC32-42E7C2960511}" path="..\..\..\TaskLayer\PCC\Maintenance\Maintenance.scs" />
+			</folder>
+			<folder name="CommonLibrary">
+				<child name="TCCSConfigLibrary" key="{83F5EDA9-54CA-4721-AD68-D2B4D7D3293C}" path="..\..\..\TaskLayer\PCC\TCCSConfigLibrary.scs" />
+			</folder>
+			<folder name="Diagnostics">
+				<child name="DiagnosticsLibrary" key="{90064CAF-6786-4655-98CA-662229CC0E8C}" path="..\..\..\TaskLayer\Diagnostics\DiagnosticsLibrary.scs" />
+			</folder>
+			<folder name="WorkFlows">
+				<child name="StepDefinitionHydra" key="{1845D326-0266-43C9-B8AA-AE24103F78DD}" path="..\..\..\TaskLayer\PCC\StepDefinitionHydra.scs" />
+				<child name="StepDefinitionPrimeDisp" key="{15C82805-B0C1-47AF-8010-45E50791F0B3}" path="..\..\..\TaskLayer\PrimaryDisplay\StepDefinitionPrimeDisp.scs" />
+			</folder>
+			<folder name="HydraDMLSimulator">
+				<child name="HydraDMLSimulator" key="{3A6FD391-406F-4815-8161-20E0F7663D3F}" path="..\..\..\TaskLayer\HydraDMLSimulator\HydraDMLSimulator.scs" />
+			</folder>
+			<folder name="PrimaryDisplay">
+				<child name="PrimeDispWorklist" key="{547657B6-28A2-4331-98C4-99AC70D6937A}" path="..\..\..\TaskLayer\PrimaryDisplay\Worklist\PrimeDispWorklist.scs" />
+				<child name="PrimeDispReagents" key="{9E058B0C-D98F-4069-82C1-75C70E39F4B3}" path="..\..\..\TaskLayer\PrimaryDisplay\Reagents\PrimeDispReagents.scs" />
+				<child name="PrimeDispPatientOrders" key="{AFBD5B8C-BECA-41C9-985A-983407C98BE1}" path="..\..\..\TaskLayer\PrimaryDisplay\PatientOrders\PrimeDispPatientOrders.scs" />
+				<child name="PrimeDispCalibration" key="{8F33B737-4479-4062-AB9D-83EBA31559F3}" path="..\..\..\TaskLayer\PrimaryDisplay\Calibration\PrimeDispCalibration.scs" />
+				<child name="PrimeDispSystemHealthCheck" key="{E65AF8F7-6EE9-4878-93A8-F19695775497}" path="..\..\..\TaskLayer\PrimaryDisplay\SystemHealthCheck\PrimeDispSystemHealthCheck.scs" />
+				<child name="PrimeDispAuthentication" key="{EC852028-AFBA-46D9-9091-A1816515578D}" path="..\..\..\TaskLayer\PrimaryDisplay\Authentication\PrimeDispAuthentication.scs" />
+				<child name="PrimeDispSampleList" key="{FE80E1E9-AF4C-4C9D-81EE-7F4DA11E2AE0}" path="..\..\..\TaskLayer\PrimaryDisplay\SampleList\PrimeDispSampleList.scs" />
+				<child name="EmulatorLibrary" key="{A264E985-705A-415A-8BBA-2ADA61E43E33}" path="..\..\..\TaskLayer\Emulator\EmulatorLibrary.scs" />
+				<child name="PrimeDispDashboard" key="{4E256109-8E13-4CEB-B720-D397E2800877}" path="..\..\..\TaskLayer\PrimaryDisplay\Dashboard\PrimeDispDashboard.scs" />
+				<child name="PrimeDispTroubleshooting" key="{88B3DA79-9C99-49B6-897A-B909614CF5C1}" path="..\..\..\TaskLayer\PrimaryDisplay\Troubleshooting\PrimeDispTroubleshooting.scs" />
+				<child name="PrimeDispAssaySetup" key="{6902CD35-4311-4714-828A-40646C3A1E43}" path="..\..\..\TaskLayer\PrimaryDisplay\AssaySetup\PrimeDispAssaySetup.scs" />
+				<child name="PrimeDispMaintenance" key="{E62C86C2-484D-450D-9834-FD32B1C3F5B3}" path="..\..\..\TaskLayer\PrimaryDisplay\Maintenance\PrimeDispMaintenance.scs" />
+				<child name="PrimeDispQC" key="{73F608FB-7FD3-4320-A9C3-B17B7DE22EED}" path="..\..\..\TaskLayer\PrimaryDisplay\QC\PrimeDispQC.scs" />
+				<child name="PrimeDispSystemSettings" key="{CD475AA9-149C-40AA-A5BE-9D548354D205}" path="..\..\..\TaskLayer\PrimaryDisplay\SystemSettings\PrimeDispSystemSettings.scs" />
+				<child name="PrimeDispUtilities" key="{5466F96C-79AF-4DB1-BEF7-B8C0B0AF30F5}" path="..\..\..\TaskLayer\PrimaryDisplay\Utilities\PrimeDispUtilities.scs" />
+				<child name="PrimeDispSupplies" key="{0A558270-1404-434B-A99F-CEA988B3DC4E}" path="..\..\..\TaskLayer\PrimaryDisplay\Supplies\PrimeDispSupplies.scs" />
+			</folder>
+		</folder>
+		<folder name="TestCaseLayer">
+			<child name="Initialize" key="{E6D90C25-9DA7-4955-B847-AD9655863269}" path="Initialize.scs" />
+			<child name="InstallARM" key="{99E4C26D-04D6-44D9-8B04-B570E264547D}" path="InstallARM.scs" />
+			<child name="UserAccountSetup" key="{53B9BB61-BE83-4303-B0E2-DE41E2B2DC32}" path="UserAccountSetup.scs" />
+			<child name="InitializePrimaryDisplay" key="{9C1BC02D-64BD-47FC-BC3B-B8CA352815DE}" path="InitializePrimaryDisplay.scs" />
+		</folder>
+	</children>
+</Root>

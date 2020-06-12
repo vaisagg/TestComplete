@@ -1,0 +1,2707 @@
+﻿//USEUNIT Authentication
+//USEUNIT Calibration
+//USEUNIT Inventory
+//USEUNIT PatientOrders
+//USEUNIT Samples
+//USEUNIT Setup
+//USEUNIT SHLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT WorkflowNavigator
+//USEUNIT LocalizationUtilities
+//USEUNIT Worklist
+//USEUNIT DecapperLibrary
+//USEUNIT QC
+//USEUNIT IALibrary
+//USEUNIT SealerLibrary
+
+function StepLaunchAndLoadDecapper()
+{
+  var strDepType = GetDeploymentTypeFromFederationConfig();
+  if(aqString["Find"](strDepType, "D") > 0)
+  {
+   return LaunchAndLoadDecapper();   
+  }
+  else
+  {
+    return true;
+  } 
+  
+  
+  //return LaunchAndLoadDecapper();
+} 
+
+function StepShutDownDecapperSim()
+{
+  
+  var strDepType = GetDeploymentTypeFromFederationConfig();
+  if(aqString["Find"](strDepType, "D") > 0)
+  {
+   return ShutDownDecapperSim();   
+  }
+  else
+  {
+    return true;
+  } 
+  
+  //return ShutDownDecapperSim();
+} 
+function StepIsTrinidadInitialized(DeploymentType)
+{
+  //if(InitializeTrinidad(PCCUsername, Password, VMM, SHNode, CCNode, IANode) != true)
+  if(CheckSystemStatus(DeploymentType) != true)
+  {
+    Log["Warning"]("All nodes were not in Ready or Standby state");
+    return false;
+  }
+  else
+    return true;
+}
+
+
+function StepCreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority)
+{
+  var Navigation = InvokeWorkflow("PatientOrders_CreatePatientOrders");
+  if (!Navigation)
+    return false;
+  
+  return CreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority)
+
+}
+
+function StepGetBatchOrderIDs(strSampleID, intSampleCount)
+{
+  return GetBatchOrderIDs(strSampleID, intSampleCount);
+}
+
+function StepVerifyBatchWorkOrder(strSampleID, intSampleCount)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+    
+  return (VerifyBatchWorkOrder(strSampleID, intSampleCount)) 
+} 
+
+function StepCreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount)
+{
+  
+  var Navigation = InvokeWorkflow("PatientOrders_CreateBatchOrdersBySID");
+  if (!Navigation)
+    return false;
+
+  //return CreateBatchOrder("GluH_3", "Sample10", "Serum", "CH", "", "Number of Samples", 4);
+  if(! CreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount))
+    return false;
+  
+  return StepVerifyBatchWorkOrder(SampleID, SampleCount)
+  
+}
+
+
+function StepIsSampleCapped(SampleID, SampleAttribute)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+    
+  return (IsSampleCapped(SampleID, SampleAttribute))
+
+}
+
+function StepIsSampleBarcodeMismatch(SampleID,SampleProblem)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+    
+  SampleProblemsAssociated(SampleID,SampleProblem)
+
+}
+
+function StepDetectDecapperConfiguration()
+{
+  return (IsDecapperConfigured())
+
+}
+function StepDetectCCConfiguration()
+{
+  return (IsCCConfigured())
+}
+
+function StepVerifyCapError(SampleId)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  Delay(25000,"Waiting for the the Sample");
+  if(VerifyCapError(SampleId) == true)
+  {
+    return true;
+//    attr["FontColor"] = clGreen
+//    Log["Message"]("Test Passed",null,pmNormal,attr);
+  }
+  else
+  {
+    
+    return false;
+//    attr["FontColor"] = clRed
+//    Log["Message"]("Test Failed",null,pmNormal,attr);  
+  }
+}
+
+
+function StepAddCalibratorDefinition(CalInfo)
+{
+
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Regional");
+  if (!Navigation)
+    return false;
+
+  var sSeparator = GetRegionalDecimalSeparator()
+  
+  var Navigation = InvokeWorkflow("Calibration_CalibratorDefinitions");
+  if (!Navigation)
+    return false;
+  
+  if(!CalibrationDefinitionExists(CalInfo["Item"]("Material")))
+  {
+    var Navigation = InvokeWorkflow("Calibration_CalibratorDefinitions_AddNewCalibratorDefinition");
+    if (!Navigation)
+      return false;
+
+    return AddCalibratorDefinition(CalInfo,sSeparator)
+  }
+  return true;
+}
+
+function StepCalibrationDefinitionExists(MaterialID)
+{
+  var Navigation = InvokeWorkflow("Calibration_CalibratorDefinitions");
+  if (!Navigation)
+    return false;
+    
+  //Read data from excel here
+  if (!CalibrationDefinitionExists(MaterialID))
+  {
+    
+  }
+  
+}
+
+
+//function StepCalibrationDefinitionExists(Assay)
+//{
+//  var Navigation = InvokeWorkflow("Calibration_CalibratorDefinitions");
+//  if (!Navigation)
+//    Runner["Stop"]();
+//    
+//  //Read data from excel here
+//  CalibrationDefinitionExists(Assay)
+//}
+
+function StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName)
+{
+  //Get the Workflow Navigation Path to be invoked
+  var Navigation = InvokeWorkflow("Calibration_CreateCalibrationOrder");
+  if (!Navigation)
+    return false;
+    
+  return PlaceCalibrationOrder(Assay, Analyzer, CalMaterialName)
+}
+
+function StepVerfiyCalibrationOrder(ItemHeader,Assay,Status)
+{
+  //Get the Workflow Navigation Path to be invoked
+  var Navigation = InvokeWorkflow("Calibration_CalibrationResults");
+  if (!Navigation)
+    return false;
+    
+  return VerifyCalStatusInCalResults(ItemHeader,Assay,Status)
+}
+
+function StepVerifySampleProperty(SampleId, PropertyName, ExpectedPropertyValue)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  return VerifySampleProperty(SampleId, PropertyName, ExpectedPropertyValue)
+  
+}
+
+function StepVerifySampleAttribute(SampleId, ExpectedSampleAttributes)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+
+  return VerifySampleAttributesFromSampleList(SampleId, ExpectedSampleAttributes);
+  
+}
+
+function StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber, DrawerZone, DrawerPanels, RowNumbers)
+{
+  //Push drawer from SH to make slots appear in PCC
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+  if (!Navigation)
+    return false;
+  
+  return VerifySortAreaHasEmptySlots(TrayType,DrawerNumber, DrawerZone,DrawerPanels, RowNumbers)
+}
+/*
+function StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+{
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+  if (!Navigation)
+    Runner["Stop"]();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+var  arrSampleIDs=SampleIDs["split"](",");
+
+    for(var i=0;i<arrSampleIDs["length"];i++)
+    {
+      if (arrSampleIDs[i]=="Failed Barcode Read")
+      {
+        var transFailedBarcodeRead = GetTranslatedString("Failed Barcode Read","")
+        arrSampleIDs[i] = transFailedBarcodeRead
+      }
+      boolValue = VerifyUnloadedSample(arrSampleIDs[i],TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+      if(boolValue == true)
+      {
+        attr["FontColor"] = clGreen
+        Log["Message"]("Test Passed",null,pmNormal,attr);
+      }
+      else
+      {
+        attr["FontColor"] = clRed
+        Log["Message"]("Test Failed",null,pmNormal,attr);  
+      }
+  
+    }
+
+}
+*/
+function StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+  if (!Navigation)
+    return false;
+  
+  if (SampleIDs=="Failed Barcode Read")
+  {
+    var transFailedBarcodeRead = GetTranslatedString("Failed Barcode Read","")
+    SampleIDs = transFailedBarcodeRead
+  }
+  
+  boolValue = VerifyUnloadedSample(SampleIDs, TrayType, DrawerNumber, DrawerZone, DrawerPanels, RowNumbers)
+  return boolValue;
+}
+
+
+function StepVerifyInputTrayEmpty(SampleCount,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+  if (!Navigation)
+    return false;
+    
+  return VerifyInputTrayEmpty(SampleCount,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function StepLaunchDVSinSH()
+{
+  return LaunchDVS()
+}
+
+function StepPlaceOutputTray()
+{
+  return PlaceOutputTrayAndSave()
+}
+
+function StepPlaceCappedSample()
+{
+  PlaceSampleAndSave("Capped")
+}
+
+function StepLoadSample()
+{
+  return OpenCloseDrawer()
+}
+function StepPlaceSample(SampleType)
+{
+  return PlaceSampleAndSave(SampleType)
+}
+
+
+function StepPerformSortConfiguration(TestDataFile, SheetName, Feature)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+
+  return PerformSortConfiguration(TestDataFile, SheetName, Feature)
+}
+function StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,sFakeBarCodefilename)
+{
+  return UpdateFakeBarcodes(sFakeBarCodefilepath,sFakeBarCodefilename)
+
+}
+function StepShutdownAllApps()
+{
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  switch(DeploymentType)
+  {
+      case "SCD":
+            if(!StepShutdownAnalyzer("CC"))
+              return false;
+            
+            if(!StepShutdownAnalyzer("SH"))
+              return false;
+   
+            if(!StepShutDownDecapperSim())
+              return false;
+  
+            if(!StepShutdownTrinidad())
+              return false;
+            else
+              return true;
+              
+            break;
+      
+      case "SC":
+            if(!StepShutdownAnalyzer("CC"))
+              return false;
+            
+            if(!StepShutdownAnalyzer("SH"))
+              return false;
+
+            if(!StepShutdownTrinidad())
+              return false;
+            else
+              return true;
+              
+           break;
+           
+      case "SCID":
+            if(!StepShutdownAnalyzer("CC"))
+              return false;
+            if(!StepShutdownAnalyzer("IA"))
+              return false;    
+            if(!StepShutdownAnalyzer("SH"))
+              return false;
+   
+            if(!StepShutDownDecapperSim())
+              return false;
+  
+            if(!StepShutdownTrinidad())
+              return false;
+            else
+              return true;
+              
+           break;
+	  case "SCDR":
+            if(!StepShutdownAnalyzer("CC"))
+              return false;
+            
+            if(!StepShutdownAnalyzer("SH"))
+              return false;
+   
+            if(!StepShutDownDecapperSim())
+              return false;
+              
+            if(!StepShutDownSealerSim())
+              return false;
+              
+            if(!StepShutdownTrinidad())
+              return false;
+            else
+              return true;
+              
+            break;
+	case "SCR":
+            if(!StepShutdownAnalyzer("CC"))
+              return false;
+            
+            if(!StepShutdownAnalyzer("SH"))
+              return false;
+   
+            if(!StepShutDownSealerSim())
+              return false;
+              
+            if(!StepShutdownTrinidad())
+              return false;
+            else
+              return true;
+              
+            break;
+	case "SCIDR":
+            if(!StepShutdownAnalyzer("CC"))
+              return false;
+            
+			if(!StepShutdownAnalyzer("IA"))
+              return false; 
+			
+            if(!StepShutdownAnalyzer("SH"))
+              return false;
+   
+            if(!StepShutDownDecapperSim())
+              return false;
+              
+            if(!StepShutDownSealerSim())
+              return false;
+              
+            if(!StepShutdownTrinidad())
+              return false;
+            else
+              return true;
+              
+            break;
+           
+      default:
+                break;
+    }
+} 
+
+function StepInvokeAllApps()
+{
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  switch(DeploymentType)
+  {
+      case "SCD":
+            if(!StepLaunchAnalyzer("CC"))
+              return false;
+              
+            if(!StepLaunchAnalyzer("SH"))
+              return false;
+              
+            if(!StepLaunchAndLoadDecapper())
+              return false;
+  
+            if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+              return false;
+            else
+              return true;
+              
+           break;
+           
+      case "SC":
+            if(!StepLaunchAnalyzer("CC"))
+              return false;
+              
+            if(!StepLaunchAnalyzer("SH"))
+              return false;
+  
+            if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+              return false;
+            else
+              return true;
+              
+           break;
+           
+      case "SCID":
+            if(!StepLaunchAnalyzer("CC"))
+              return false;
+            if(!StepLaunchAnalyzer("IA"))
+              return false;
+              
+            if(!StepLaunchAnalyzer("SH"))
+              return false;
+              
+            if(!StepLaunchAndLoadDecapper())
+              return false;
+  
+            if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+              return false;
+            else
+              return true;
+              
+           break;
+     case "SCDR":
+            
+            if(!StepLaunchAnalyzer("CC"))
+              return false;
+                         
+            if(!StepLaunchAnalyzer("SH"))
+              return false;
+              
+            if(!StepLaunchAndLoadDecapper())
+              return false;
+              
+            if(!StepLaunchSealerSim())
+              return false;
+              
+            if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+              return false;
+            else
+              return true;
+              
+           break;  
+		   
+	 case "SCR":
+            
+            if(!StepLaunchAnalyzer("CC"))
+              return false;
+                         
+            if(!StepLaunchAnalyzer("SH"))
+              return false;
+              
+            if(!StepLaunchSealerSim())
+              return false;
+              
+            if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+              return false;
+            else
+              return true;
+              
+           break;
+	  case "SCIDR":
+            
+            if(!StepLaunchAnalyzer("CC"))
+              return false;
+            if(!StepLaunchAnalyzer("IA"))
+              return false;
+              
+            if(!StepLaunchAnalyzer("SH"))
+              return false;
+              
+            if(!StepLaunchAndLoadDecapper())
+              return false;
+              
+            if(!StepLaunchSealerSim())
+              return false;
+              
+            if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType))
+              return false;
+            else
+              return true;
+              
+           break;  
+      default:
+                break;
+    }
+} 
+function StepShutdownTrinidad()
+{
+  return PCCShutdown();
+}
+
+function StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+{
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+  
+   if (CheckSystemStatus(DeploymentType))
+    return true;
+  else
+  {
+    switch(DeploymentType)
+    {
+      case "SCD":
+				if(!StepShutdownAllApps())
+                    return false;
+                  
+                  if(!StepLaunchAnalyzer("CC"))
+                    return false;
+                                
+                  if(!StepLaunchAnalyzer("SH"))
+                    return false;
+              
+                  if(!StepLaunchAndLoadDecapper())
+                    return false;
+                  
+                  if(!StepLoginToTrinidad(TestDataFile))
+                    return false;
+                    
+                  return CheckSystemStatus(DeploymentType)
+                  break;
+	  case "SCDR":
+				   if(!StepShutdownAllApps())
+                    return false;
+                  
+                  if(!StepLaunchAnalyzer("CC"))
+                    return false;
+                                
+                  if(!StepLaunchAnalyzer("SH"))
+                    return false;
+              
+                  if(!StepLaunchAndLoadDecapper())
+                    return false;
+                  
+                  if(!StepLaunchSealerSim())
+                    return false;
+                  
+                  if(!StepLoginToTrinidad(TestDataFile))
+                    return false;
+                    
+                  return CheckSystemStatus(DeploymentType)
+                  break;
+	case "SCR":
+				   if(!StepShutdownAllApps())
+                    return false;
+                  
+                  if(!StepLaunchAnalyzer("CC"))
+                    return false;
+                                
+                  if(!StepLaunchAnalyzer("SH"))
+                    return false;
+                               
+                  if(!StepLaunchSealerSim())
+                    return false;
+                  
+                  if(!StepLoginToTrinidad(TestDataFile))
+                    return false;
+                    
+                  return CheckSystemStatus(DeploymentType)
+                  break;
+              
+      case "SC":
+                  if(!StepShutdownAllApps())
+                    return false;
+                    
+                  if(!StepLaunchAnalyzer("CC"))
+                    return false;
+                    
+                  if(!StepLaunchAnalyzer("SH"))
+                    return false;
+                    
+                  if(!StepLoginToTrinidad(TestDataFile))
+                    return false;
+                    
+                  return CheckSystemStatus(DeploymentType)              
+                  break;
+                  
+      case "SCID":
+                 if(!StepShutdownAllApps())
+                    return false;
+                  
+                  if(!StepLaunchAnalyzer("CC"))
+                    return false;
+                    
+                  if(!StepLaunchAnalyzer("IA"))
+                    return false;
+              
+                  if(!StepLaunchAnalyzer("SH"))
+                    return false;
+              
+                  if(!StepLaunchAndLoadDecapper())
+                    return false;
+                  
+                  if(!StepLoginToTrinidad(TestDataFile))
+                    return false;
+                    
+                 return CheckSystemStatus(DeploymentType)              
+                  break;
+	  case "SCIDR":
+                 if(!StepShutdownAllApps())
+                    return false;
+                  
+                  if(!StepLaunchAnalyzer("CC"))
+                    return false;
+                    
+                  if(!StepLaunchAnalyzer("IA"))
+                    return false;
+              
+                  if(!StepLaunchAnalyzer("SH"))
+                    return false;
+              
+                  if(!StepLaunchAndLoadDecapper())
+                    return false;
+				  
+				   if(!StepLaunchSealerSim())
+                    return false;
+                  
+                  if(!StepLoginToTrinidad(TestDataFile))
+                    return false;
+                    
+                 return CheckSystemStatus(DeploymentType)              
+                  break;
+      default:
+                break;
+    }
+  }
+    
+}
+
+
+function StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile)
+{
+  if(!StepLoginToTrinidad(TestDataFile))
+    return false;
+  
+  if(CheckAvailableModuleStatus())
+  {
+     return true;
+  }
+  else
+    {
+   AvlModules=  GetDeploymentTypeFromFederationConfig();   // Getting module configuration from Federationconfig.xml
+   for(var i=0;i<aqString["GetLength"](AvlModules);i++)
+   {
+    switch(aqString["ToUpper"](aqString["GetChar"](AvlModules,i)))
+    {
+      case "S" : if(!StepShutdownAnalyzer("SH"))
+                  return false;
+                  break;
+      case "C" : if(!StepShutdownAnalyzer("CC"))
+                  return false;
+                 break;
+      case "I" : //if(!StepShutdownAnalyzer("IA"))
+                 // return false;
+                 break; 
+      }
+   }
+      if(!StepShutdownTrinidad())
+        return false;
+        
+    for(var i=0;i<aqString["GetLength"](AvlModules);i++)
+   {
+    switch(aqString["ToUpper"](aqString["GetChar"](AvlModules,i)))
+    {
+      case "S" : if(!StepLaunchAnalyzer("SH"))
+                  return false;
+                  break;
+      case "C" : if(!StepLaunchAnalyzer("CC"))
+                  return false;
+                 break;
+      case "I" : //if(!StepLaunchAnalyzer("IA"))
+                // return false;
+                 break; 
+      }
+   }
+       if(!StepLoginToTrinidad(TestDataFile))
+          return false;
+       return CheckAvailableModuleStatus()
+    } 
+    
+}
+
+function StepCheckAvailableModuleStatus()
+{  
+  return CheckAvailableModuleStatus()    
+}
+function StepLoginToTrinidad(TestDataFile)
+{
+  var Query = "SELECT Nodes FROM [Initialization$]";
+  var arrNodes = new Array();
+  arrNodes = GetTestItems(TestDataFile, Query, "Nodes");
+  
+  var PCCUsername = arrNodes[0]
+  var Password = arrNodes[1]
+  
+  return LaunchAndLoginToTrinidad(PCCUsername,Password)
+}
+
+function StepWaitForVMMReady()
+{
+  var transReady=GetTranslatedString("Ready","")
+  var transStandby=GetTranslatedString("Standby","")
+  for(i=1; i < 80; i++)
+  {
+    var VMMStatus = GetModuleStatus("VMM");
+    var SHStatus = GetModuleStatus("SH");
+    if (!((VMMStatus==transReady || VMMStatus==transStandby) &&(SHStatus==transReady || SHStatus==transStandby) ))
+    {
+      aqUtils["Delay"](5000, "Waiting for VMM & SH nodes to come to Ready/Standby state");
+    }
+    else
+    {
+      return true;
+    }
+  }
+  if(i==60)
+  {
+    Log["Message"]("VMM Status : " + VMMStatus);
+    Log["Message"]("SH Status : " + SHStatus);
+    return false;
+  }
+}
+
+
+
+
+function StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName)
+{
+  
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_ErrorSortGroup");
+  if (!Navigation)
+    return false;
+    
+//  If Error Sort Group is already present in the list then skip the creation part for the same
+  if(!VerifyErrorSortGroup(sSortGroupName))
+    return AddAnErrorSortGroup(sErrorStatus,sSortGroupName)
+  else
+    return true;
+
+}
+
+function StepTestSortDecapTubes(sTestSortGroupName, sDecapTubes, boolSave)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_TestSortGroup");
+  if (!Navigation)
+    return false;
+    
+  return TestSortDecapTubes(sTestSortGroupName, sDecapTubes, boolSave);
+}
+
+function StepAddTestSortGroup(sTestType,sTest,sTestSortGroupName,sDecapTubes)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_TestSortGroup");
+  if (!Navigation)
+    return false;
+    
+//  If Test Sort Group is already present in the list then skip the creation part for the same
+  if(sDecapTubes == null || sDecapTubes =="")
+    sDecapTubes = "Always";
+    
+  if(!VerifyTestSortGroup(sTestSortGroupName))
+    return AddTestSortGroup(sTestType,sTest,sTestSortGroupName, sDecapTubes)
+  else
+    return true;
+  
+   
+}
+function StepVerifySampleLocationOnTrack(SampleId, SampleLocation)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  return VerifySampleLocationOnTrack(SampleId, SampleLocation) 
+}
+
+function StepVerifySampleLocationInSampleList(SampleId, SampleLocation)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  return VerifySampleLocationInSampleList(SampleId, SampleLocation)
+   
+}
+function StepWaitForSampleStatus(SampleId, SampleStatus)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  return WaitForSampleStatus(SampleId, SampleStatus)
+}
+
+
+function StepVerifySampleStatus(SampleId, SampleStatus,SampleProblem)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  
+  if (SampleId=="Failed Barcode Read")
+  {
+    var transFailedBarcodeRead = GetTranslatedString("Failed Barcode Read","")
+    SampleId = transFailedBarcodeRead
+  }
+  
+  var transSampleStatus=GetTranslatedString(SampleStatus,"")
+  if (SampleProblem!=null)
+  {
+    var transSampleProblem=GetTranslatedString(SampleProblem,"")
+  }
+  var transDuplicateSampleID=GetTranslatedString("Duplicate Sample ID","")
+  var transBarcodemismatch=GetTranslatedString("Barcode mismatch","")
+  if(transSampleStatus == transDuplicateSampleID)
+  {
+    if(VerifyDuplicateSample(SampleId, transSampleStatus) == true)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+  }
+  else if (transSampleProblem ==transBarcodemismatch)
+  {
+    if(VerifySampleStatus(SampleId, transSampleStatus) == true)
+    {
+      if (VerifySampleProblemsAssociated(SampleId,transSampleProblem)== true)
+        {
+          return true;
+        }
+        else
+        {
+          return false;  
+        }
+    }
+    else
+    {
+      return false;   
+    }
+  }
+  else
+  {
+    if(VerifySampleStatus(SampleId, transSampleStatus) == true)
+    {
+      if((SampleProblem!=null) && (SampleProblem!=""))
+      {
+        if (VerifySampleProblemsAssociated(SampleId,transSampleProblem)== true)
+        {
+          return true; 
+        }
+        else
+        {
+          return false;  
+        }
+      }
+      else if((SampleProblem== "")||(SampleProblem== null))
+      {
+        return true;
+      }
+    }
+    else
+    {  
+      return false;
+    }
+  }
+}
+
+
+function StepStopAnalyzer(sModuleName)
+{
+  return StopAnalyzer(sModuleName)
+}
+
+function StepStartAnalyzer(sModuleName)
+{
+ return StartAnalyzer(sModuleName)
+  
+}
+
+function StepShutdownAnalyzer(sModuleName)
+{
+  switch(sModuleName)
+  {
+    case "SH":
+                return ShutdownSHSim();  
+                break;             
+    case "CC":
+                return ShutdownCCSim();
+                break;
+    case "IA":
+                return ShutdownIASim();
+                break;
+  }
+}
+
+
+function StepLaunchAnalyzer(sModuleName)
+{
+  switch(sModuleName)
+  {
+    case "SH":
+                return LaunchSHSim();
+                 break;              
+    case "CC":
+                return LaunchCCSim();
+                break;
+    case "IA":
+                return LaunchIASim();
+                break;
+  }
+}
+
+function StepCalQCStorageAreaHasAvailableSlots()
+{
+  var Navigation = InvokeWorkflow("Inventory_CalQCStorageInventory");
+  if (!Navigation)
+    return false;
+    
+  var SlotsNumber=GetAvailableSlotsNumberInCalQCStorageArea();
+  
+  if (SlotsNumber>0)
+  {
+    Log["Message"]("CalQC Storage area has available slots");
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+  
+}
+
+
+function StepConfirmCalQCStorageContents()
+{
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  
+  var bValue=ConfirmCalQCStorageContents();
+  if (!bValue)
+  {
+    Log["Error"]("Unable to Confirm Cal QC Storage Contents")
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
+/*
+function StepVerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName)
+{
+  var Navigation = InvokeWorkflow("Inventory_CalQCStorageInventory");
+  if (!Navigation)
+    Runner["Stop"]();
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;  
+  
+  if(VerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName))
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);  
+  }
+}
+*/
+
+function StepVerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName)
+{
+  var Navigation = InvokeWorkflow("Inventory_CalQCStorageInventory");
+  if (!Navigation)
+    return false;
+  
+  
+  var boolValue = VerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName)
+  return boolValue;
+}
+function StepReplaceSupplies(Lot, Sequence,IMTSensorLot)
+{
+  var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+  if (!Navigation)
+    return false;
+  
+  ReplaceCCSupplies(Lot, Sequence,IMTSensorLot);
+}
+
+function StepChangeLanguage(LanguageId, Username, Password)
+{
+/*
+  Username = "SiemensInternal"
+  Password = "Siemens1234567!"
+  LanguageId = "EN"
+  var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+  var strControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  AddNameMappingObjects();
+*/  
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Regional");
+  if (!Navigation)
+    return false;
+  sValue=ChangeLanguage(LanguageId)
+   if (sValue==1)
+    {
+
+      if(!Logout())
+        return false;
+      if(!EnterUserName(Username))
+      return false;
+      if(!EnterPassword(Password))
+        return false;
+      if(!ClickOnSignButton())
+        return false;
+      return VerifySignin();
+    } 
+    else if(sValue==0)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+}
+
+
+
+function StepClearAllData(TestDataFile,DeploymentType)
+{
+  
+   var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+  
+  return MoveAllSamplesToHistorical();
+//   PCCShutdown();
+//   
+//   StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+}
+
+function StepLoadCCReagents(Assays)
+{  
+  var arrAssays=Assays["split"](";") ;
+  var iFlag=0;
+  for(var i=0;i<arrAssays["length"];i++)
+  {
+    var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+      return false;
+
+    if (!(VerifyReagentLoaded(arrAssays[i],"CC"))) 
+    {
+      var Navigation = InvokeWorkflow("Inventory_ReagentCatridgeEntry");
+      if (!Navigation)
+        return false;
+ 
+      if(LoadCCReagents(arrAssays[i]))
+        iFlag=iFlag+1;
+    }
+    else
+      iFlag=iFlag+1;
+  }
+  
+  if(iFlag==arrAssays["length"])
+    return true;
+  else
+    return false;
+}
+
+function StepVerifyReagentsLoaded(Assays,Analyzer)
+{
+  var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+  if (!Navigation)
+    return false;
+   var iFlag=0;
+  var arrAssays=Assays["split"](";") ;
+  for(var i=0;i<arrAssays["length"];i++)
+  {
+     if(VerifyReagentLoaded(arrAssays[i],Analyzer))
+      iFlag=iFlag+1;
+  }
+   if(iFlag==arrAssays["length"])
+  return true;
+  else
+  return false;
+}
+
+function StepSetCCModuleConfiguration()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_ModuleConfiguration");
+  if (!Navigation)
+    return false;
+    
+  return SetCCModuleConfiguration();
+}
+
+function StepSetCalibrationRequiredForCCAssays()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_ModuleConfiguration");
+  if (!Navigation)
+    return false;
+    
+  return SetCalibrationRequiredForCCAssays();
+}
+
+function StepUncheckCalibrationRequiredForCCAssays()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_ModuleConfiguration");
+  if (!Navigation)
+    return false;
+    
+  return UncheckCalibrationRequiredForCCAssays();
+}
+
+/*
+function StepVerifyAssayNotCalibrated(Assay)
+{
+   var Navigation = InvokeWorkflow("Calibration_CalibrationOverview");
+  if (!Navigation)
+    return false;
+    
+  var sCalibrationStatus
+
+  sCalibrationStatus=GetCalibrationStatus(Assay)
+  transNotCalibratedText = GetTranslatedString("Not Calibrated", "");
+  //if (sCalibrationStatus==transNotCalibratedText)
+  if (sCalibrationStatus=="NotCalibrated")
+  {
+    Log["Message"]("The overall calibartion status of the assay is "+sCalibrationStatus)
+    return true;
+  }
+  else if (sCalibrationStatus=="")
+  {
+    Log["Message"]("Assay is not available in the calibarion overview screen")
+    return true;
+  }
+  else
+  {
+     Log["Error"]("The overall calibartion status of the assay is "+sCalibrationStatus)
+     return false;
+  }
+  
+}
+*/
+
+function StepVerifyAssayNotCalibrated(Assay)
+{
+  var Navigation = InvokeWorkflow("Calibration_CalibrationResults");
+  if (!Navigation)
+    return false;
+    
+  var sCalibrationStatus;
+  
+  sCalibrationStatus=GetCalibrationStatusFromCalResults(Assay);
+  if(sCalibrationStatus == "NotCalibrated")
+    return true;
+  else
+    return false;
+}
+
+function StepAddPanel(PanelName)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+
+  return CreatePanel(PanelName);
+}
+
+function StepVerifySortPanelActive(PanelName)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+    
+  return IsSortPanelActive(PanelName);
+}
+
+function StepActivateSortPanel(PanelName)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+
+  if(IsSortPanelActive(PanelName))
+    return true;
+  else
+  {
+    if(!StopAnalyzer("SH"))
+      return false;
+    
+    var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+    if (!Navigation)
+      return false;
+          
+    if(!ActivateSortPanel(PanelName))
+      return false;
+      
+    if(!SaveDrawerConfig())
+      return false;
+    
+    return StartAnalyzer("SH");
+  }
+}
+
+function StepVerifyReagentNotLoaded(Assays,Analyzer)
+{
+  //TrinidadIsInitialized();
+  var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+  if (!Navigation)
+    return false;
+    
+    var iFlag=0;
+    
+  var arrAssays=Assays["split"](";") ;
+  for(var i=0;i<arrAssays["length"];i++)
+  {
+     if(UnloadReagent(arrAssays[i],Analyzer))
+     {
+       if(VerifyReagentUnloaded(arrAssays[i],Analyzer))
+          iFlag=iFlag+1;
+     }          
+     
+     
+  }
+  if (iFlag==arrAssays["length"])
+    return true;
+  else
+    return false;
+}
+
+function StepConfigureArchivalTimeout(sTimeOut)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SystemConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+
+  return SetArchivalTimeout(sTimeOut);
+
+}
+
+function StepVerifyConfiguredTimerExpires(intArchiveTimeout)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+    
+  return VerifyArchiveTimerExpires(intArchiveTimeout)
+}
+
+function StepIsHoldingAreaConfigured()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+    
+  return IsHoldingConfigured();
+}
+
+function StepIsHoldingAreaConfiguredInMultiSH(strSHName)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+  
+  if(StepSelectSHForDrawerConfig(strSHName) == true)
+  {
+    return IsHoldingConfigured();
+  }
+  else
+    return false;
+}
+
+function StepIsArchiveAreaConfigured()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+  
+  return IsArchivingConfigured();
+}
+
+function StepIsArchiveAreaConfiguredInMultiSH(strSHName)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+  
+  if(StepSelectSHForDrawerConfig(strSHName) == true)
+  {
+    return IsArchivingConfigured(strSHName);
+  }
+  else
+    return false;
+}
+
+function StepLoadDecapper()
+{
+  InitializeMetaData();
+  return LoadDecapper();
+  
+}
+
+function StepIsSTATsArchived(sExpectedValue)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return IsSTATsArchived(sExpectedValue);
+}
+
+function StepRemoveTray()
+{
+  return RemoveTrayAndSave();
+
+}
+function StepPlaceFullyPopulatedTray()
+{
+  return PlaceFullyPopulatedTray();
+
+}
+
+function StepVerifySHAreaHasNoEmptySlots(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+
+  if (!Navigation)
+    return false;
+  return VerifySHAreaHasNoEmptySlots(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+}
+
+function StepVerifyTrayNotPresent(TrayType,DrawerNumber,DrawerZone,DrawerPanels)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+
+  if (!Navigation)
+    return false;
+    
+  return VerifyTrayNotPresent(TrayType,DrawerNumber,DrawerZone,DrawerPanels);;
+
+}
+
+function StepVerifyDecapperStatus()
+{
+  var transReady=GetTranslatedString("Ready","")
+  var transStandby=GetTranslatedString("Standby","")
+  for(i=1; i < 60; i++)
+  {
+    var DecapperStatus = GetModuleStatus("DECAPPER");   
+    if (!((DecapperStatus==transReady || DecapperStatus==transStandby)))
+    {
+      aqUtils["Delay"](5000, "Waiting for Decapper to come to Ready/Standby state");
+    }
+    else
+    {
+      return true;
+    }
+  }
+  if(i==60)
+  {
+    Log["Message"]("Decapper Status : " + DecapperStatus);
+    return false;
+  }
+}
+
+function StepVerifyModuleStatus(Module,Status)
+{
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+    
+  var ModuleStatus = GetModuleStatus(Module);
+  Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Module " +Module +" state is : " +ModuleStatus);
+  var  arrModuleStatus = Status["split"]("/");
+  for(var i=0;i<arrModuleStatus["length"];i++)
+  {
+    var transStatus = GetTranslatedString(arrModuleStatus[i],"")
+    if(aqString["Compare"](transStatus, ModuleStatus, false) == 0)
+    {   
+      boolValue = 1;
+      return true;
+    }
+    else
+    {
+
+      boolValue= 0;
+    }
+  }
+
+  if (boolValue == 0)
+    return false;
+
+}
+
+
+
+function StepVerifyReagentAvailable(Reagent)
+{
+  var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+  if (!Navigation)
+    return false;
+  
+  return VerifyReagentAvailable(Reagent)
+}
+
+function StepVerifySampleHasWorkorder(SampleID)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+    
+  return VerifySampleHasWorkorder(SampleID)
+
+}
+
+function StepUpdateFakebarcodeReadingsFile(sSampleID)
+{
+  return UpdateFakebarcodeReadingsFile(sSampleID)
+}
+
+function StepConfigureDecapAllTubes(value)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+  
+  return ConfigureDecapAllTubes(value)
+}
+
+function StepWaitForSampleProperty(SampleId, PropertyName, ExpectedPropertyValue, intWaitTimeMS)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  return WaitForSampleProperty(SampleId, PropertyName, ExpectedPropertyValue, intWaitTimeMS)
+}
+
+
+
+
+
+function StepVerifyBatchSamplesProperty(arrSampleIDs,PropertyName, ExpectedPropertyValue, intWaitTimeMS)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+
+ //verify sample attribute is capped
+   var intFailCount=0;
+   for(var i=0;i<arrSampleIDs["length"];i++)
+   {
+      var SampleId=arrSampleIDs[i];
+      boolFlag=WaitForSampleProperty(SampleId, PropertyName, ExpectedPropertyValue, intWaitTimeMS)
+      if(boolFlag == false)
+      {
+        intFailCount++;
+      } 
+    }
+    if(intFailCount > 0)
+    {
+      return false;
+    }
+    else
+    {
+      return true;
+    }
+
+}
+
+
+
+function StepSetWasteBinThresholdLevel(strValue)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SystemConfiguration_AlertSettings");
+  if (!Navigation)
+    return false;
+  
+  return SetWasteBinAlmostFullThresholdLevel(strValue);
+} 
+
+
+function StepNavigateToAlertSettingsConfigPage()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SystemConfiguration_AlertSettings");
+  if (!Navigation)
+    return false;
+  else 
+    return true;
+}
+
+function StepVerifyWasteBinThresholdLevel(strPropertyName, strPropertyValue)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SystemConfiguration_AlertSettings");
+  if (!Navigation)
+    return false;
+  
+  return VerifyWasteBinThresholdLevel(strPropertyName, strPropertyValue)
+} 
+
+
+function StepAddOperatordefinedSortTestCode(sSortCode)
+{
+    
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_SortTestDefinition");
+  if (!Navigation)
+    return false;
+  
+  if (VerifySortTestCodeAvailable(sSortCode))
+  {
+      return true;
+  }
+  else
+  {
+    var Navigation = InvokeWorkflow("Setup_Testdefinition_SortTestDefinition_AddCode");
+    if (!Navigation)
+    return false;
+  
+    return AddOperatordefinedSortTestCode(sSortCode)
+      
+  }
+         
+}
+
+function StepVerifyWasteBinStatus(sStatus)
+{
+    
+  var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+  
+  if (!Navigation)
+    return false;
+    
+  var sWasteBinStatus=GetWasteBinStatus()
+  if (sWasteBinStatus==false)
+  {
+    return false;
+  }
+ 
+  var transStatus=GetTranslatedString(sStatus,"")
+    
+  if ( aqString["ToUpper"](sWasteBinStatus)== aqString["ToUpper"](transStatus))
+  {
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Waste Bin status is "+sWasteBinStatus);
+    return true;
+  }
+  else
+  {
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Waste Bin status is "+sWasteBinStatus);
+    Log["Error"]("Expected Waste Bin status does not match with actual waste bin status");
+    return false;
+  }
+    
+}
+function StepGetCapCount()
+{
+  //return GetDecapperXMLWasteBinCapCount(FilePath,Directnode,AttributeName)
+  return GetDecapperXMLWasteBinCapCount()
+}
+
+function StepSetWasteBinThresholdlevelsInXML(strFullThresholdValue,strAlomstFullthresholdPercent)
+{
+  if(SetWasteBinThresholdsInPCC("FULL_THERSHOLD",strFullThresholdValue)==false)
+    return false;
+  
+  return SetWasteBinThresholdsInPCC("ALMOSTFULL_THERSHOLD_PERCENT",strAlomstFullthresholdPercent);
+}
+
+
+function StepWasteBinThresholdValues(AttributeName,ExpectedAttributeValue)
+{
+  var  arrAttributeName = AttributeName["split"](",");
+  var  arrAttributeValue = ExpectedAttributeValue["split"](",");
+  for(var i=0;i<arrAttributeName["length"];i++)
+  {
+    var configfileupdate = SetWasteBinThresholdsInPCC(arrAttributeName[i],arrAttributeValue[i]);
+  }
+
+  return configfileupdate;
+
+}
+
+function StepThresholdsAndCapCountInDecapper()
+{
+
+  return SetDecapperXMLWasteBinCount();
+}
+function StepVerifyWasteBinNotPresent()
+{
+   return InvokeTaskFromNetworkSuite("UnCheckWasteBinPresent");
+}
+
+function StepRemoveWasteBinWhenSampleAppearsInMM(SampleId)
+{
+  return RemoveWasteBinWhenSampleAppearsInMM(SampleId);
+} 
+
+
+
+function StepVerifyResumeErrorPopUpAfterWasteBinAlmostFullOrFull(sModuleName)
+{
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  return VerifyResumeErrorPopUpfterWasteBinAlmostFullOrFull(sModuleName)
+
+}
+
+function StepDisableDecapper()
+{
+Log["Message"]("Set Decapper status to Disable");
+return EnableDisableModule("DECAPPER","False");
+}
+function StepEnableDecapper()
+{
+Log["Message"]("Set Decapper status to Enable");
+return EnableDisableModule("DECAPPER","True");
+
+}
+function StepDisableCC()
+{
+Log["Message"]("Set CH status to Disable");
+return EnableDisableModule("CC","False");
+}
+function StepEnableCC()
+{
+Log["Message"]("Set CH status to Enable");
+return EnableDisableModule("CC","True");
+
+}
+function StepDisableIA()
+{
+Log["Message"]("Set IA status to Disable");
+return EnableDisableModule("IA","False");
+}
+function StepEnableIA()
+{
+Log["Message"]("Set IA status to Enable");
+return EnableDisableModule("IA","True");
+
+}
+function StepCheckDecapperNotExists()
+{
+Log["Message"]("Checking Decapper is NOT available in System Tab");
+   var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  return (!CheckModuleExists("DECAPPER"));
+} 
+function StepCheckCCNotExists()
+{
+
+Log["Message"]("Checking CH module is NOT available in System Tab");
+   var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  return (!CheckModuleExists("CC"));
+} 
+
+function StepTriggerOverflowSensor()
+{
+//  return InvokeTaskFromNetworkSuite("CheckWasteBinFull");
+  return TriggerOverflowSensor();
+}
+
+function StepTriggerOverflowSensorWhenSampleAppearsInMM(SampleId)
+
+{
+   return TriggerOverflowSensorWhenSampleAppearsInMM(SampleId);  
+
+} 
+function StepUncheckOverflowSensor()
+{
+  return UncheckOverflowSensor();
+}
+
+function StepSampleNotLoadedToDecapper(SampleId)
+{
+  //Verify Sample in Decapper MM Screen
+  NetworkSuite["Variables"]["DCapSampleID"] = SampleId;
+  var SampleInMM = VerifySampleLoadedInDecapper();
+  var boolRes1 =  NetworkSuite["Variables"]["SampleInDecapper"];   
+  
+  return (boolRes1);
+}
+
+function StepRemoveWasteBin()
+{
+  return RemoveWasteBin();
+}
+
+function StepReplaceWasteBin()
+{
+  return ReplaceWasteBin();
+}
+function StepVerifyeventLog(sTime,sModuleSerialNumber,sEvent)
+{
+
+  var Navigation = InvokeWorkflow("System_Logs_OperatorEventLog");
+  if (!Navigation)
+    return false;
+
+  return VerifyEventLog(sTime,sModuleSerialNumber,sEvent)
+} 
+function StepVerifyOperatorEventLogForCapColorSpecimenTypeMismatch(sTime, sModuleSerialNumber, sEvent,sEventParam)
+{
+  var Navigation = InvokeWorkflow("System_Logs_OperatorEventLog");
+  if (!Navigation)
+    return false;
+  
+  return VerifyOperatorEventLogForCapColorSpecimenTypeMismatch(sTime, sModuleSerialNumber, sEvent,sEventParam)
+}
+
+function  StepVerifyNoErrorEventLog(sTime,sModuleSerialNumber,iErrorcodes)
+{
+   var Navigation = InvokeWorkflow("System_Logs_OperatorEventLog");
+   if (!Navigation)
+    return false;
+
+  return VerifyNoErrorEventLog(sTime,sModuleSerialNumber,iErrorcodes)
+}
+ 
+function StepVerifyOverflowSensor()
+{
+  return VerifyOverflowSensor();
+} 
+
+function stepVerifyCapCountRetained(sCapCountBeforeDecapperResume,sCapCountAfterWasteBinStatusOK)
+{
+   if(sCapCountAfterWasteBinStatusOK==0)
+   {  
+      Log["Warning"]("Cap count is resetted")
+      return false;
+   }
+     if(sCapCountAfterWasteBinStatusOK<=sCapCountBeforeDecapperResume)
+     {
+       Log["Message"]("Cap count is NOT resetted");
+       return true;
+     } 
+     else
+     {
+       Log["Warning"]("Cap count is resetted")
+      return false;
+     } 
+   
+ } 
+
+
+
+function StepVerifyAnErrorSortGroup(sSortGroupName)
+{
+  
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_ErrorSortGroup");
+  if (!Navigation)
+    return false;
+  
+  return VerifyErrorSortGroup(sSortGroupName)
+
+}
+
+function StepAddAnErrorSortGroupOnly(sErrorStatus,sSortGroupName)
+{
+  
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_ErrorSortGroup");
+  if (!Navigation)
+    return false;
+
+  return AddAnErrorSortGroup(sErrorStatus,sSortGroupName)
+
+}
+
+function StepVerifyDecapTubesComboBoxErrorSortScreen()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_ErrorSortGroup");
+  if (!Navigation)
+    return false;
+
+  return VerifyDecapTubesComboBox()
+
+}
+
+function StepVerifyDecapTubesComboBoxSHConfigurationScreen()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+
+  return VerifyDecapTubesComboBox()
+}
+
+function StepVerifyArchiveNotAvailable()
+{
+
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return VerifyArchiveSettingsDisabled();
+}
+
+function StepNavigateToConfigurationScreen()
+
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+  else
+    return true;  
+}
+
+function StepDisableVirtualKeyboard()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Connectivity");
+  if (!Navigation)
+    return false;
+    
+  return DisableVirtualKeyboard();
+}
+
+function StepConfigureHILSettings(strHILAnalysis, strCHHILOrdering, strDefiniteHIL, strQuestionableHIL)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Patient");
+  if (!Navigation)
+    return false;
+  
+  return ConfigureHILSettings(strHILAnalysis, strCHHILOrdering, strDefiniteHIL, strQuestionableHIL);
+}
+
+function StepIsCHBasedHILSettingsAvailable()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Patient");
+  if (!Navigation)
+    return false;
+  
+  return IsCHBasedHILSettingsAvailable();
+}
+
+
+function StepVerifyAvailableSQC(intSQCCount, intTCSVersion)
+{
+  return VerifyAvailableSQC(intSQCCount, intTCSVersion);
+}
+function StepSetHILIndicesForCHAssay(sAssay,iHvalue,iIvalue,iLvalue)
+{
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_CHTestDefinition");
+  if (!Navigation)
+    return false;  
+  
+  if(!SelectAnAssayInTdefScreen(sAssay))
+    return false;
+  
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_CHTestDefinition_Calculation");
+  if (!Navigation)
+    return false;  
+  
+  return SetHILIndices(iHvalue,iIvalue,iLvalue)
+} 
+
+function StepVerifyHILDisabledForAnAssay(sAssay)
+{
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_CHTestDefinition");
+  if (!Navigation)
+    return false;  
+  
+  if(!SelectAnAssayInTdefScreen(sAssay))
+    return false;
+  
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_CHTestDefinition_Calculation");
+  if (!Navigation)
+    return false;  
+    
+  return VerifyHILDisabledForAnAssay(sAssay);
+
+} 
+function StepSetHILDisabledForAnAssay(sAssay)
+{
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_CHTestDefinition");
+  if (!Navigation)
+    return false;  
+  
+  if(!SelectAnAssayInTdefScreen(sAssay))
+    return false;
+  
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_CHTestDefinition_Calculation");
+  if (!Navigation)
+    return false;  
+    
+  return SetHILDisabledForAnAssay(sAssay);
+
+}
+
+
+function StepUnCheckHILIndicesForIAAssay(sAssay)
+{
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_IATestdefinition");
+  if (!Navigation)
+    return false;  
+  
+  if(!SelectAnAssayInTdefScreen(sAssay))
+    return false;
+
+  var objCtrl=GetControl("Setup_Testdefinition_IMTestdefinition","tDefTabCtrl");
+  if (!SelectTdefTabs(objCtrl,"Calculation"))
+    return false;  
+  
+  return UnCheckIAHILIndices();
+} 
+
+function StepSetHILIndicesForIAAssay(sAssay,iHvalue,iIvalue,iLvalue)
+{
+  var Navigation = InvokeWorkflow("Setup_Testdefinition_IATestdefinition");
+  if (!Navigation)
+    return false;  
+  
+  if(!SelectAnAssayInTdefScreen(sAssay))
+    return false;
+
+  return SetIAHILIndices(iHvalue,iIvalue,iLvalue)
+} 
+function StepUpdateAnalysisData(TestDataFile, SheetName, Feature)
+{
+  return UpdateAnalysisData(TestDataFile, SheetName, Feature)
+  
+
+}
+
+function StepDisableModule(sModuleSerialNumber)//StepDisableModule(sModuleType)
+
+{
+  //Log["AppendFolder"]("Set CH Analyzer status to Disable");
+  return EnableDisableModule("CH","False");
+}
+function StepVerifyHILWorkOrderNotPresent(strSampleID)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+    
+  return VerifyHILWorkOrderNotPresent(strSampleID);
+}
+
+function StepSelectSHForDrawerConfig(strSHName)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleProcessing");
+  if (!Navigation)
+    return false;
+    
+  return SelectSHForDrawerConfig(strSHName);
+}
+
+function StepCheckCCExists()
+{
+  //Log["AppendFolder"]("Checking CC is available in System Tab");
+   var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  return (!CheckModuleExists("CC"));
+} 
+
+function StepVerifySampleTestHasVisionError(SampleId, SampleTest,SampleError)
+{
+  
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+    if (!Navigation)
+      return false;
+  
+  return VerifySampleTestHasVisionError(SampleId, SampleTest,SampleError)
+} 
+function StepVerifySampleTestHasSpecimenMismatchError(SampleId,SampleTest,SampleError)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+  
+  return VerifySampleTestHasSpecimenMismatchError(SampleId,SampleTest,SampleError);
+} 
+
+function StepVerifySampleTestHasNotThisVisionError(SampleId, SampleTest,SampleError)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+    if (!Navigation)
+      return false;
+  
+  return VerifySampleTestHasNotThisVisionError(SampleId, SampleTest,SampleError)
+}
+
+
+function StepVerifySampleHasVisionEntry(SampleId,VisionEntry)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+    if (!Navigation)
+      return false;
+  
+  return VerifySampleHasVisionEntry(SampleId,VisionEntry)
+
+}
+
+function StepStopAllAvailableModules(sModuleType)
+{
+   //Module types are : IM,CC,SH,DECAPPER
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  
+  return StopAllAvailableModules(sModuleType);
+} 
+
+function StepStopModuleByName(sModuleName)
+{
+ //Module names are SERIAL_NO of specific module type in federation config.xml file
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  
+  return StopModuleByName(sModuleType);
+} 
+
+function StepGetModuleNames(sModuleType)
+{
+   //Module types are : IM,CC,SH,DECAPPER
+  return GetModuleNames(sModuleType);
+} 
+
+function StepLaunchDVSForMultipleSH(sTaskInSH)
+{
+  return LaunchDVSForMultipleSH(sTaskInSH)
+}
+
+function StepPlaceOutputTrayForMultiSH(sTaskInSH)
+{
+  return PlaceOutputTrayAndSaveForMultipleSH(sTaskInSH)
+}
+
+function StepLoadSampleForMultiSH(sTaskInSH)
+{
+  return OpenCloseDrawerForMultipleSH(sTaskInSH)
+}
+
+function StepPlaceSampleForMultiSH(SampleType,sTaskInSH)
+{
+  return PlaceSampleAndSaveForMultipleSH(SampleType,sTaskInSH)
+}
+
+
+function StepVerifySampleLocationMultiSH(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers,SampleHandler)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleHandler");
+  if (!Navigation)
+    return false;
+  
+  if(!SelectSHOnSampleHandlerScreen(SampleHandler))
+    return false;
+    
+  if(!SelectRackTabOnSampleHandler())
+    return false;
+    
+  boolValue = VerifyUnloadedSample(SampleIDs, TrayType, DrawerNumber, DrawerZone, DrawerPanels, RowNumbers)
+  return boolValue;
+}
+
+function StepVerifyAvailableSampleHandlers(intExpectedSHCount)
+{
+  return VerifyAvailableSampleHandlers(intExpectedSHCount);
+} 
+
+
+function StepCreateAnAddOnPatientOrder(Assay, SampleID, Analyzer)
+{  
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+  
+  if(!VerifySampleHasWorkorder(SampleID))
+    return false;
+  
+  var Navigation = InvokeWorkflow("PatientOrders_CreatePatientOrders");
+  if (!Navigation)
+    return false;
+  
+  return CreateAnAddOnPatientOrder(Assay, SampleID, Analyzer)
+  
+}
+
+function StepCreateQCOrder(TestName, QCControlID)
+{
+  return CreateQCOrder(TestName, QCControlID);
+}
+
+function StepCreateQCDefinition(TestName)
+{
+  return CreateQCDefinition(TestName);
+}
+
+function StepNotConfirmCalQCStorageContents()
+{
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false;
+  
+  var bValue=NotConfirmCalQCStorageContents();
+  if (!bValue)
+  {
+    Log["Error"]("Unable to not Confirm Cal QC Storage Contents")
+    return false;
+  }
+  else
+  {
+    return true;
+  }
+}
+
+
+function StepVerifyTCSSettingsForSampleLowVolume(Value)
+{
+    
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return VerifyTCSSettingsForSampleLowVolume(Value)
+}
+
+function StepSetTCSSettingsForSampleLowVolume(Value)
+{
+    
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return SetTCSSettingsForSampleLowVolume(Value)
+}
+
+function StepHILConfigurationsNotAvailable()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Patient");
+  if (!Navigation)
+    return false;
+    
+  return !(VerifyHILConfigAvailable());
+}
+
+function StepVolumeConfigurationsNotAvailable()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return !(VerifySampleVolConfigAvailable());
+}
+
+function StepSpinConfigurationsNotAvailable()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return !(VerifySpinConfigAvailable());
+}
+
+function StepVisionErrorConfigurationsNotAvailable(sErrorStatus)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_ErrorSortGroup");
+  if (!Navigation)
+    return false;
+    
+  return VerifyErrorConfigNotAvailable(sErrorStatus);
+} 
+
+
+function StepSetAttributeInSampleProcessingSetting(AttributeName,ExpectedAttributeValue)
+{
+  return SetAttributeInSampleProcessingSetting(AttributeName,ExpectedAttributeValue)
+
+}
+
+function StepVerifySampleProblemsAssociated(sSampleId, sExpectedText)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+    
+  return VerifySampleProblemsAssociated(sSampleId, sExpectedText)
+
+}
+
+function StepSetTCSSettingsForSpecimenMismatch(sValue)
+{
+   var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+   if (!Navigation)
+    return false;
+    
+   return SetTCSSettingsForSpecimenMismatch(sValue)
+} 
+
+
+function StepVerifyTCSSettingsForSpecimenMismatch(sValue)
+{
+   var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+   if (!Navigation)
+    return false;
+    
+   return VerifyTCSSettingsForSpecimenMismatch(sValue)
+}
+
+function StepVerifySystemEventLog(sModuleSerialNumber, sEvent, sEventParam)
+{
+  var Navigation = InvokeWorkflow("System_Logs_SystemMessageLog");
+  if (!Navigation)
+    return false;
+
+  return VerifySystemEventLog(sModuleSerialNumber, sEvent, sEventParam)
+}
+
+function StepVerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent)
+{
+  var Navigation = InvokeWorkflow("System_Logs_OperatorEventLog");
+  if (!Navigation)
+    return false;
+    
+  return VerifyEventLogWithParams(sTime,sModuleSerialNumber,sEvent)
+} 
+
+function StepModifyTCSVersion(intTCSVersion)
+{
+  return ModifyTCSVersion(intTCSVersion);
+} 
+
+function StepPauseAnalyzer(sModuleName)
+{
+  return PauseAnalyzer(sModuleName)
+}
+
+function StepGetAttributeInSampleProcessingSetting(AttributeName)
+{
+  return GetAttributeInSampleProcessingSetting(AttributeName);
+} 
+
+function StepVerifyLoggedInUser(sUser)
+{
+  return VerifyLoggedInUser(sUser);
+} 
+
+function StepLogOutFromAtellica()
+{
+  return Logout();
+} 
+
+function StepLoginToAtellica(PCCUsername,Password)
+{
+  return Login(PCCUsername,Password);
+} 
+
+function stepImportTestDefinition()
+{
+ return ImportTestDefinition("Tdef");
+} 
+
+function StepLoadIAReagents()
+{
+	return LoadIAReagents();
+}
+function StepAddMultipleErrorSortGroups(sErrorStatuses,sErrorGroupNames)
+{
+
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_ErrorSortGroup");
+  if (!Navigation)
+    return false;
+ 
+  return AddMultipleErrorSortGroups(sErrorStatuses,sErrorGroupNames);
+} 
+
+function StepEnableDisableModule(sModuleType,sBool)
+{
+ //Disable IA module in FederationConfig.xml
+    return EnableDisableModule(sModuleType,sBool);
+}
+
+function StepVerifyVisionHILInterferenceSettingsAreUnavailable()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Patient");
+  if (!Navigation)
+    return false;
+  
+  return VerifyVisionHILInterferenceSettingsAreUnavailable();
+}
+
+function StepVerifyVisionBasedInterferenceOptions()
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_GeneralSetup_Patient");
+  if (!Navigation)
+    return false;
+  
+  return VerifyVisionBasedInterferenceOptions();
+}
+
+function StepVerifySystemMessageLog(sModuleSerialNumber,transsEvent)
+{
+  var Navigation = InvokeWorkflow("System_Logs_SystemMessageLog");
+  if (!Navigation)
+    return false;
+
+  return VerifySystemMessageLog(sModuleSerialNumber,transsEvent)
+} 
+
+function StepVerifyWorkOrderHasHILInterferenceTests(strSampleID)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+ 
+  return VerifyWorkOrderHasHILInterferenceTests(strSampleID);
+} 
+
+function StepSetTCSSettingsForVisionSpinError(sValue)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+
+  return SetTCSSettingsForVisionSpinError(sValue);
+}
+
+function StepVerifyTCSSettingsForVisionSpinError(sValue)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+
+  return VerifyTCSSettingsForVisionSpinError(sValue);
+}
+
+function StepVerifyOperatorEventLog(sTime,sModuleSerialNumber,sEvent, sEventParam)
+{
+  var Navigation = InvokeWorkflow("System_Logs_OperatorEventLog");
+  if (!Navigation)
+    return false;
+    
+  return VerifyOperatorEventLog(sTime,sModuleSerialNumber,sEvent, sEventParam)
+} 
+function StepHILOrderedOrNot(SampleID) //Check wither HIL oreders are available in a Sample order
+{  
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+  
+  return (!HILOrderedOrNot(SampleID));
+}
+
+function StepAddCapSortGroup(strCapSortGroupName, strCapColor, strDecapTubes)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_CapSortGroups");
+  if (!Navigation)
+    return false;
+
+    if(!VerifyCapSortGroup(strCapSortGroupName))  
+        return AddCapSortGroup(strCapSortGroupName, strCapColor, strDecapTubes);
+    else
+        return true; 
+}
+
+function StepVerifyTrainedCapcolorGroupAvailable(strTrainedCapColorGroup)
+{
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_CapSortGroups");
+  if (!Navigation)
+    return false;
+    
+  return VerifyTrainedCapcolorGroupAvailable(strTrainedCapColorGroup);
+} 
+function StepEnterDiagnosticsMode()
+{
+  var Navigation = InvokeWorkflow("System_OperatorDiagnostics");
+  if (!Navigation)
+    return false;
+  
+  return EnterDiagnosticsMode();
+}
+
+function StepExitDiagnosticsMode()
+{
+  var Navigation = InvokeWorkflow("System_OperatorDiagnostics");
+  if (!Navigation)
+    return false;
+  
+  return ExitDiagnosticsMode();
+}
+function StepStartCapColorTraining(DrawerNo,DrawerZone)
+{
+  if(!LaunchDVS())
+    return false;
+    
+  if(!PlaceSampleAndSave("Capped"))
+    return false;
+    
+  if(!OpenCloseDrawer())
+     return false;
+     
+  return StartCapColorTraining(DrawerNo,DrawerZone);
+}
+function StepCreateCapColorGroup(DrawerNo,DrawerZone,NewGroupName,SpecTypes, strExistingCapColorGrp)
+{
+  return CreateCapColorGroup(DrawerNo,DrawerZone,NewGroupName,SpecTypes, strExistingCapColorGrp);
+}
+function StepCloseCapColorConfigWindow()
+{
+  return CloseCapColorConfigWindow();
+}
+ 
+function StepUpdateCapColorTrainingFile(arrTubeData,iTubeCount)
+{
+  return UpdateCapColorTrainingFile(arrTubeData,iTubeCount)
+
+} 
+
+function StepUpdateCapColorTrainingConfigFiles(iMinNumberOfTubes)
+{
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  if(!UpdateMinimumNumberOfTubesInSHDiagnosticsConfiguration(iMinNumberOfTubes))
+    return false;
+  
+  if(!ReplaceVMMAlignmentSimulationFile())
+    return false;
+    
+  if(!StepShutdownTrinidad())
+    return false;
+	
+  return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType);
+  
+} 
+
+//update cap color training file with multiple consistant colors at a time(in the same session)
+function StepUpdateCapColorTrainingFileFormultipleColors(TestDataFile,SheetName,Feature)
+{
+  return UpdateCapColorTrainingFileFormultipleColors(TestDataFile,SheetName,Feature)
+}  
+
+function StepDeleteCapColorGroupCurrentSession(DrawerNo,DrawerZone)
+{
+  return DeleteCapColorGroupCurrentSession(DrawerNo,DrawerZone);
+}
+function StepInitializeIA()
+{
+  Log["AppendFolder"]("Initializing IA Module");
+  if(GetModuleState("IA")[0])
+  {
+   if(!StepEnableIA())
+   {
+    Log["PopLogFolder"]();
+    return true;
+    }
+   if(!StepShutdownAllApps())
+   {
+     Log["PopLogFolder"]();
+     return false;
+    } 
+   if(!StepInvokeAllApps())
+    {
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  
+  }
+  else
+  {
+    Log["Message"]("IA is already enabled");
+   // return true;
+   }
+   if(!StepLaunchAnalyzer("IA"))
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+   
+    if(!SetIAAutoDataGeneration())
+    {
+      Log["PopLogFolder"]();
+      return false;
+      }
+    if(!stepImportTestDefinition())
+    {
+      Log["PopLogFolder"]();
+      return false;
+      } 
+    if(!LoadIAReagents())
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+  
+} 
+function StepConfirmArchiveRackIsEmpty()
+{
+
+
+
+
+
+
+  //Push drawer with archive rack tray from SH to make slots appear in PCC
+    
+  return ConfirmArchiveRackIsEmpty();
+
+
+} 
+
+function ConfirmArchiveRackIsFull()
+{
+  //Push drawer with archive rack tray from SH to make slots appear in PCC
+     
+  return ConfirmArchiveRackIsFull();
+} 
+
+
+function StepWaitForSample(SampleId)
+{
+  var Navigation = InvokeWorkflow("Samples_SampleList");
+  if (!Navigation)
+    return false;
+  
+  return WaitForSample(SampleId);
+} 
+function HILTearDown()
+{
+   StepConfigureHILSettings("CH-Based HIL", "manual hil", "", "");
+} 
+function StepSetWaitForResultsWorkflowSettings(TestDataFile, SheetName, Feature)
+{
+   var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+    
+  return SetWaitForResultsWorkflowSettings(TestDataFile, SheetName, Feature);
+}
+
+
+function StepVerifyOrderHasCompletedProcessingInWorklist(SID)
+{
+  var Navigation = InvokeWorkflow("Worklist_WorklistOverview");
+  if (!Navigation)
+    return false;
+    
+  return VerifyOrderHasCompletedProcessingInWorklist(SID)
+}
+
+function StepShutDownSealerSim()
+{
+  
+  var strDepType = GetDeploymentTypeFromFederationConfig();
+  if(aqString["Find"](strDepType, "R") > 0)
+  {
+   return ShutDownSealerSim();   
+  }
+  else
+  {
+    return true;
+  } 
+}
+
+function StepLaunchSealerSim()
+{
+  var strDepType = GetDeploymentTypeFromFederationConfig();
+  if(aqString["Find"](strDepType, "R") > 0)
+  {
+   return LaunchSealerSim();   
+  }
+  else
+  {
+    return true;
+  } 
+} 
+
+function StepEnableDisableSealArchivingSamples(intValue)
+{
+//  InitializeMetaData()
+//  intValue=1
+  var Navigation = InvokeWorkflow("Setup_Settings_SHConfiguration_SampleWorkflow");
+  if (!Navigation)
+    return false;
+  
+  return EnableDisableSealArchivingSamples(intValue);
+} 
+
+
+function StepSetTCS2SWMainConfigFile()
+{
+  return SetTCS2SWMainConfigFile();
+} 

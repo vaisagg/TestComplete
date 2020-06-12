@@ -1,0 +1,97 @@
+﻿//************************************************************************************************************************************************************************************
+//*  FunctionName : ConfigureNetworkSuiteHost
+//*
+//*  Description: Configure remote machines required for distributed test
+//*  
+//*  Input: strHostName,strAddress,strUserName,strPassword
+//*
+//*  Output: Boolean
+//*
+//*  Example: ConfigureNetworkSuiteHost(strHostName,strAddress,strUserName,strPassword)
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function ConfigureNetworkSuiteHost(strHostName,strAddress,strUserName,strPassword)
+{
+  try
+  {
+      var Hosts=NetworkSuite.Hosts;
+      if ((!(Hosts.Count>0))||(Hosts.ItemByName(strHostName)==null))
+      { 
+        Hosts.AddNew();
+        Hosts.ItemByName("Host1").Name=strHostName;
+        Hosts.ItemByName(strHostName).Address= strAddress;
+        Hosts.ItemByName(strHostName).LogonMode =0//"Manual"
+        Hosts.ItemByName(strHostName).UserName=strUserName;
+        Hosts.ItemByName(strHostName).Password=strPassword;
+        Log["Message"]("The Hostname "+strHostName+" added successfully");
+      }
+      else
+      {
+        Log["Message"]("The Hostname " +strHostName+ " already exists");
+      }
+    
+      Hosts.ItemByName(strHostName).Address= strAddress;
+      Hosts.ItemByName(strHostName).LogonMode =0//"Manual"
+      Hosts.ItemByName(strHostName).UserName=strUserName;
+      Hosts.ItemByName(strHostName).Password=strPassword;
+    
+      if(Hosts.ItemByName(strHostName).Verify(30000))
+      {
+        Log["Message"](strHostName+" connection is successfull");
+        return true;
+      }
+      else
+      {
+        Log["Error"](strHostName+" connection is unsuccessfull");
+        return false; 
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+  
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeTaskFromNetworkSuite
+//*
+//*  Description: Invokes tasks created in the Network Suite
+//*  
+//*  Input: strTaskName
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeTaskFromNetworkSuite(strTaskName)
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeTaskFromNetworkSuite(strTaskName)
+{
+  try
+  {
+    var Jobs=NetworkSuite.Jobs
+    var Tasks=Jobs.Items(0).Tasks
+    Tasks.ItemByName(strTaskName).Run(true)
+    var TaskStatus=Tasks.ItemByName(strTaskName).State
+    if (TaskStatus==1)
+    {
+      Log.Message("The task "+strTaskName+" started successfully");
+      return true;
+    }
+    else
+    {
+      Log.Error("Unable to start the task "+strTaskName);
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+  
+}

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Workflows>
+	<!--New Primary Display Controls Starts here-->
+	
+	<Category Name="Orders">
+		<Workflow code="Orders_PatientOrders">
+			<NavigationPath target="pagePatientOrders">
+				<Control name="tileOrders" seqNo="1"/>
+				<Control name="tilePatientOrders" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>
+		</Workflow>
+		<Workflow Code="Orders_BatchOrders">
+			<NavigationPath target="pageBatchOrders">
+				<Control name="tileOrders" seqNo="1"/>
+				<Control name="tileBatchOrders" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>
+		</Workflow>
+		<Workflow Code="Orders_BatchOrders_ViewBatchOrders">
+			<NavigationPath target="pageViewBatchOrders">
+				<Control name="tileOrders" seqNo="1"/>
+				<Control name="tileBatchOrders" seqNo="2"/>
+				<Control name="btnViewBatchOrders" seqNo="3"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>	
+		</Workflow>
+	</Category>
+	<Category Name="Worklist">
+		<Workflow code = "WorkList">
+			<NavigationPath target="grdWorkList">
+				<Control name="tileWorklist" seqNo="1"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+		<Workflow code = "Worklist_MoveToHistoricalBatch">
+			<NavigationPath target="dtgrdWorkList">
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+	</Category>
+	<Category Name="Reagents">
+		<Workflow code = "ReagentNeeds_ReagentOverview">
+			<NavigationPath target="dtgrdReagentOverview">
+				<Control name="tileReagentNeeds" seqNo="1"/>
+				<Control name="btnReagentOverview" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+		<Workflow code = "ReagentNeeds_ReagentLoading">
+			<NavigationPath target="listIMPrimaryReagents">
+				<Control name="tileReagentNeeds" seqNo="1"/>
+				<Control name="btnReagentLoading" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+	</Category>
+	<Category Name="SampleList">
+		<Workflow code = "SampleList">
+			<NavigationPath target="dtgrdSampleList">
+				<Control name="rackExpander" seqNo="1"/>
+				<Control name="btnSampleList" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+	  </Workflow>
+    <Workflow code = "STATsScreen">
+      <NavigationPath target="statInterventionNeedeAccordian">
+        <Control name="tileSTAT" seqNo="1"/>
+      </NavigationPath>
+      <ExitPath></ExitPath>
+      <Description>NA</Description>
+      <Level>0</Level>
+    </Workflow>
+    <Workflow code = "RoutineScreen">
+      <NavigationPath target="patientInterventionNeededAccordian">
+        <Control name="tileRoutineSamples" seqNo="1"/>
+      </NavigationPath>
+      <ExitPath></ExitPath>
+      <Description>NA</Description>
+      <Level>0</Level>
+    </Workflow>
+	</Category>
+	<Category Name="Calibration">
+		<Workflow code = "CalibrationOverview_IMTCalibration">
+			<NavigationPath target="grdIMTCalibration">
+				<Control name="tileCalibrationOverview" seqNo="1"/>
+				<Control name="btnIMTCalibration" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+		<Workflow code = "CalibrationOverview_CalibrationDefinitions">
+			<NavigationPath target="pageCalibrationDefinition">
+				<Control name="tileCalibrationOverview" seqNo="1"/>
+				<Control name="btnCalibratorDefinitions" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+		<Workflow code = "CalibrationOverview_CalibrationDefinitions_AddNew">
+			<NavigationPath target="pageAddCalibrationDefinitionPopup">
+				<Control name="tileCalibrationOverview" seqNo="1"/>
+				<Control name="btnCalibratorDefinitions" seqNo="2"/>
+				<Control name="btnAddNewCalDefinitions" seqNo="3"/>			
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+	</Category>
+	<Category Name="Supplies">
+		<Workflow code = "SupplyNeeds">
+			<NavigationPath target="dtgrdSupplyNeedsDataGrid">
+				<Control name="tileSupplyNeeds" seqNo="1"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+		<Workflow code = "Supplies_ViewAllSupplies">
+			<NavigationPath target="pageViewAllSuppliesListView">
+				<Control name="tileSupplyNeeds" seqNo="1"/>
+				<Control name="btnAllSuppliesButton" seqNo="2"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+	</Category>
+	<Category Name="Troubleshooting">
+		<Workflow code="Troubleshooting">	
+			<NavigationPath target="pageTroubleShootingView">
+				<Control name="btnTroubleShooting" seqNo="1"/>				
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>		
+		</Workflow>
+	</Category>
+	<Category Name="HowDoI">
+		<Workflow code = "HowDoI">
+			<NavigationPath target="dtgrdWorkflowWizard">
+				<Control name="tileHowDoI" seqNo="1"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>			
+		</Workflow>
+	</Category>
+	<Category Name="Maintenance">
+		<Workflow code="Maintenance">        
+			<NavigationPath target="dtgrdMaintenanceOverview">
+				<Control name="tileMaintenance" seqNo="1"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>
+		</Workflow>
+		<Workflow code="Maintenance_AllActivities">        
+			<NavigationPath target="popUpAllActivities">
+				<Control name="tileMaintenance" seqNo="1"/>
+				<Control name="btnAllActivities" seqNo="1"/>
+			</NavigationPath>
+			<ExitPath></ExitPath>
+			<Description>NA</Description>
+			<Level>0</Level>
+		</Workflow>
+	</Category>
+</Workflows>

@@ -1,0 +1,424 @@
+﻿//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispQBUFeatureSteps
+
+
+function QBU_Protocols()
+{
+  try
+  {
+    //----------------------Project file Paths----------------------------------
+    
+    var ProjPath = ProjectSuite["Path"];
+    var arrPath  = ProjPath["split"]("Hydra");
+    var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+    var PS_IAPrimaryRgtFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\QBU_PrimaryBarcodes.ps1";
+    var PS_IAAncillaryRgtFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\QBU_AncillaryBarcodes.ps1";
+    var PS_CHRgtFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\AppConfigFiles\\QBU\\QBU_CHRingBarcodes.ps1";
+    
+    
+    //----------------------Initialize Metadata---------------------------------
+    
+    Log["AppendFolder"]("Initialize datafile and XML's");
+    InitializeMetaDataHYDRA();
+    Log["PopLogFolder"]();
+    
+    
+    //----------------------QBU PROTOCOLS---------------------------------------
+    
+    Log["AppendFolder"]("QBU Protocols");
+    
+    
+    //----------------------Shutdown Hydra Application--------------------------
+    
+    Log["AppendFolder"]("QBU Protocol :: Shutdown Hydra Application");
+    if(!ShutdownHydraApplication_QBU())
+    {
+      Log["Error"]("Failed to shutdown Hydra Application");
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //----------------------Load IM Primary Reagents for QBU--------------------
+    
+    Log["AppendFolder"]("QBU Protocol :: Loading IM Primary Reagents");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Load_IM_Primary_Reagent", "I");
+    
+    if(!LoadReagents_QBU(PS_IAPrimaryRgtFile))
+    {
+        Log["Error"]("Reagent Loading failed for IM Primary");
+        ReportTestStatusToResultXML("QBU_Protocol", "Load_IM_Primary_Reagent", "F");
+        Log["PopLogFolder"]();
+    }
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Load_IM_Primary_Reagent", "P");  
+    }  
+    
+    Log["PopLogFolder"]();
+    
+    
+    //----------------------Load IM Ancillary Reagents for QBU------------------
+    
+    Log["AppendFolder"]("QBU Protocol :: Loading IM Ancillary Reagent for QBU");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Load_IM_Ancillary_Reagent", "I");
+    
+    if(!LoadReagents_QBU(PS_IAAncillaryRgtFile))
+    {
+      Log["Error"]("Reagent Loading failed for IM Ancillary");
+      ReportTestStatusToResultXML("QBU_Protocol", "Load_IM_Ancillary_Reagent", "F");
+      Log["PopLogFolder"]();
+    }
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Load_IM_Ancillary_Reagent", "P"); 
+    }   
+    
+    Log["PopLogFolder"]();
+    
+    
+    //----------------------Load CH Reagents for QBU----------------------------
+    
+    Log["AppendFolder"]("QBU Protocol :: Loading CH Reagent for QBU");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Load_CH_Reagent", "I");
+    
+    if(!LoadReagents_QBU(PS_CHRgtFile))
+    {
+      Log["Error"]("Reagent Loading failed for CH");
+      ReportTestStatusToResultXML("QBU_Protocol", "Load_CH_Reagent", "F");
+      Log["PopLogFolder"]();
+    }
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Load_CH_Reagent", "P");  
+    }  
+    
+    Log["PopLogFolder"]();
+    
+    
+    //-------------------------Start HYDRA Application--------------------------
+  
+    Log["AppendFolder"]("QBU Protocol :: Launch Hydra Application");
+      
+    //Results.xml - Start UDD Layers - InProgress
+    ReportTestStatusToResultXML("QBU_Protocol", "Launch_Hydra", "I");
+
+    //Launch hydra      
+    if(!LaunchHydraApplication_QBU()) 
+    {
+      Log["Error"]("Failed to launch HYDRA")
+      ReportTestStatusToResultXML("QBU_Protocol", "Launch_Hydra", "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    { 
+      //Results xml - pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Launch_Hydra", "P");
+    }
+      
+    Log["PopLogFolder"]();
+    
+    //--------------------Login to Hydra ---------------------------------------
+
+    Log["AppendFolder"]("QBU Protocol :: Login to Hydra as SiemensInternal");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Login_Hydra", "I");
+    
+    //Log in To Hydra as SiemensInternal
+    if(!LoginToHydra_QBU())
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      ReportTestStatusToResultXML("QBU_Protocol", "Login_Hydra", "F"); 
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Login_Hydra", "P");
+    }  
+     
+    Log["PopLogFolder"]();   
+    
+    //-------------------Check HYDRA Ready State in Primary UI------------------
+    
+    Log["AppendFolder"]("QBU protocol :: Check Module State as Ready");
+    
+    ReportTestStatusToResultXML("QBU_Protocol", "ModuleState_Hydra", "I");
+    
+    //check the hydra & dl ready state
+    if(!CheckSystemReadyState_QBU())
+    {
+      Log["Error"]("HYDRA / DL ready state verification failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "ModuleState_Hydra", "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "ModuleState_Hydra", "P");
+    }
+    
+    Log["PopLogFolder"]();
+    
+    
+    //-------------------Move Old Samples to Historical from Primary UI---------
+  
+    Log["AppendFolder"]("QBU Protocol :: Move Old Samples to Historical");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Move_Old_Samples_To_Historical", "I");
+      
+    //Removing old samples
+    if(!MoveAllSamplesToHistorical_QBU())
+    {
+      Log["Error"]("Move to Historical Verification Failed")
+      ReportTestStatusToResultXML("QBU_Protocol", "Move_Old_Samples_To_Historical", "F");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      //Result xml -Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Move_Old_Samples_To_Historical", "P");
+    } 
+    
+    Log["PopLogFolder"](); 
+    
+    
+    //---------------Electro-Mechanical Reliability Protocol--------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: Electro-Mechanical Reliability Protocol");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "EMR_Testing", "I");
+ 
+    if(!EMR_Testing_QBU())
+    {
+      Log["Error"]("EMR Testing failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "EMR_Testing", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "EMR_Testing", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //------------------------------SMT Testing---------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: SMT Testing");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "SMT_Testing", "I");
+ 
+    if(!SMT_Testing_QBU())
+    {
+      Log["Error"]("SMT Testing failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "SMT_Testing", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "SMT_Testing", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //----------------------------TSH3UL Testing--------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: TSH3UL Testing");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "TSH3UL_Testing", "I");
+ 
+    if(!TSH3UL_Testing_QBU())
+    {
+      Log["Error"]("SMT Testing failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "TSH3UL_Testing", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "TSH3UL_Testing", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //----------------------------Basepool Testing------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: Basepool Testing");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Basepool_Testing", "I");
+ 
+    if(!Basepool_Testing_QBU())
+    {
+      Log["Error"]("Basepool Testing failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "Basepool_Testing", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Basepool_Testing", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------------Carryover Testing------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: Carryover Testing");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Carryover_Testing", "I");
+ 
+    if(!Carryover_Testing_QBU())
+    {
+      Log["Error"]("Carryover Testing failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "Carryover_Testing", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Carryover_Testing", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------------Water Carryover--------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: Water carryover");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Water_Carryover", "I");
+ 
+    if(!Water_Carryover_QBU())
+    {
+      Log["Error"]("Water Carryover failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "Water_Carryover", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Water_Carryover", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Repeatability(SVK) Testing---------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: SVK Testing");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "SVK_Testing", "I");
+ 
+    if(!SVK_Testing_QBU())
+    {
+      Log["Error"]("SVK Testing failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "SVK_Testing", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "SVK_Testing", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //-------------------------CH System Check----------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: CH System Check");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "CH_System_Check", "I");
+ 
+    if(!CH_System_Check_QBU())
+    {
+      Log["Error"]("CH system check failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "CH_System_Check", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "CH_System_Check", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //-----------------------IMT Functionality----------------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: IMT Functionality");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "IMT_Functionality", "I");
+ 
+    if(!IMT_Functionality_QBU())
+    {
+      Log["Error"]("IMT functionality failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "IMT_Functionality", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "IMT_Functionality", "P");
+    } 
+    Log["PopLogFolder"]();
+    
+    
+    //---------------------Photometric Functionality----------------------------
+      
+    Log["AppendFolder"]("QBU Protocol :: Photometric Functionality");
+    
+    //Result xml - Inprogress
+    ReportTestStatusToResultXML("QBU_Protocol", "Photometric_Functionality", "I");
+ 
+    if(!Photometric_Functionality_QBU())
+    {
+      Log["Error"]("Photometric Functionality failed");
+      ReportTestStatusToResultXML("QBU_Protocol", "Photometric_Functionality", "F");
+      Log["PopLogFolder"]();
+    } 
+    else
+    {
+      //Result xml - Pass
+      ReportTestStatusToResultXML("QBU_Protocol", "Photometric_Functionality", "P");
+    } 
+    Log["PopLogFolder"]();       
+    
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+

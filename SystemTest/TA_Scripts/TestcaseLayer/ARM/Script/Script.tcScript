@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<folder name="TaskLayer">
+			<folder name="WorkFlows">
+				<child name="StepDefinitionHydra" key="{05197505-F185-446E-844E-4426707F7EB8}" path="..\..\..\TaskLayer\PCC\StepDefinitionHydra.scs" />
+				<child name="StepDefinitionPrimeDisp" key="{57EA591F-ECE0-47D4-A36B-BFE6D7DCAFDB}" path="..\..\..\TaskLayer\PrimaryDisplay\StepDefinitionPrimeDisp.scs" />
+			</folder>
+			<folder name="GUIAccessLibrary">
+				<child name="ControlAccessLibrary" key="{543D926D-0A3F-469F-8ED1-F69E3DD598A2}" path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+				<child name="TCNativeLibraries" key="{529DB9B4-EDC4-4C73-87FF-0C9ECAF24F26}" path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+				<child name="WorkflowNavigator" key="{DE04C1D4-5003-46A7-8F1E-A274E9B001AF}" path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+			</folder>
+			<folder name="Modules">
+				<folder name="PCC">
+					<child name="Authentication" key="{73BA3C62-96C5-4323-998C-DDC76C78ADBE}" path="..\..\..\TaskLayer\PCC\Authentication\Authentication.scs" />
+					<child name="Inventory" key="{8C5F4E8D-D4FA-4027-A292-76A82822CB61}" path="..\..\..\TaskLayer\PCC\Inventory\Inventory.scs" />
+					<child name="Calibration" key="{7F938166-8A9D-4D57-ACFD-6EC00CC09036}" path="..\..\..\TaskLayer\PCC\Calibration\Calibration.scs" />
+					<child name="Maintenance" key="{1FE81CA2-1FC2-46D5-A357-8534C352B1A2}" path="..\..\..\TaskLayer\PCC\Maintenance\Maintenance.scs" />
+					<child name="PatientOrders" key="{2C4E0135-C275-427E-B078-6F047062111E}" path="..\..\..\TaskLayer\PCC\PatientOrders\PatientOrders.scs" />
+					<child name="QC" key="{C7F56098-FA7E-40F7-884D-65841062F58A}" path="..\..\..\TaskLayer\PCC\QC\QC.scs" />
+					<child name="Samples" key="{6C46659F-C226-4767-B37D-4352AD77AF47}" path="..\..\..\TaskLayer\PCC\Samples\Samples.scs" />
+					<child name="Setup" key="{DF5E56E3-0EAA-4370-940C-3CDA0CE78383}" path="..\..\..\TaskLayer\PCC\Setup\Setup.scs" />
+					<child name="System" key="{2B887CFE-196B-4B64-B49F-BD7F9A8533F4}" path="..\..\..\TaskLayer\PCC\System\System.scs" />
+					<child name="Worklist" key="{267813E2-1F41-4FE7-8417-7F5614292924}" path="..\..\..\TaskLayer\PCC\Worklist\Worklist.scs" />
+				</folder>
+				<folder name="Diagnostics">
+					<child name="DiagnosticsLibrary" key="{23044F06-3D23-4A3E-9B31-AB9DC3D763E0}" path="..\..\..\TaskLayer\Diagnostics\DiagnosticsLibrary.scs" />
+				</folder>
+				<folder name="SH">
+					<child name="SHLibrary" key="{61AC1392-2468-4660-BD93-2A76657B1DFA}" path="..\..\..\TaskLayer\SH\SHLibrary.scs" />
+				</folder>
+				<folder name="PrimaryDisplay">
+					<child name="PrimeDispAuthentication" key="{AE0CA6F8-83FF-471F-8BC5-45BEAD99BE9D}" path="..\..\..\TaskLayer\PrimaryDisplay\Authentication\PrimeDispAuthentication.scs" />
+					<child name="PrimeDispCalibration" key="{76CE6329-14FD-429E-BE1C-9826C09E4FA9}" path="..\..\..\TaskLayer\PrimaryDisplay\Calibration\PrimeDispCalibration.scs" />
+					<child name="PrimeDispDashboard" key="{C7868BAB-8045-4B93-A085-4836FE7D06FF}" path="..\..\..\TaskLayer\PrimaryDisplay\Dashboard\PrimeDispDashboard.scs" />
+					<child name="PrimeDispMaintenance" key="{3176BEDB-25F1-4F26-A180-28502B45512A}" path="..\..\..\TaskLayer\PrimaryDisplay\Maintenance\PrimeDispMaintenance.scs" />
+					<child name="PrimeDispPatientOrders" key="{7C92EED2-6810-470E-88EE-2448B25777E8}" path="..\..\..\TaskLayer\PrimaryDisplay\PatientOrders\PrimeDispPatientOrders.scs" />
+					<child name="PrimeDispQC" key="{6691A6B4-3617-4B7E-BFA7-1AD91ADC2827}" path="..\..\..\TaskLayer\PrimaryDisplay\QC\PrimeDispQC.scs" />
+					<child name="PrimeDispReagents" key="{E52D0F28-0B70-4CDB-ADB9-7B4F2C15F48F}" path="..\..\..\TaskLayer\PrimaryDisplay\Reagents\PrimeDispReagents.scs" />
+					<child name="PrimeDispSampleList" key="{3339DEC6-EFF7-46DB-A0FE-413CA85DD0BD}" path="..\..\..\TaskLayer\PrimaryDisplay\SampleList\PrimeDispSampleList.scs" />
+					<child name="PrimeDispSupplies" key="{63EE5DD3-6538-4C28-B078-83E363B63E82}" path="..\..\..\TaskLayer\PrimaryDisplay\Supplies\PrimeDispSupplies.scs" />
+					<child name="PrimeDispTroubleshooting" key="{CF41875E-D062-4499-A89C-C05601978978}" path="..\..\..\TaskLayer\PrimaryDisplay\Troubleshooting\PrimeDispTroubleshooting.scs" />
+					<child name="PrimeDispSystemHealthCheck" key="{41E8D719-FA4B-47A0-AA2D-1203736A79DA}" path="..\..\..\TaskLayer\PrimaryDisplay\SystemHealthCheck\PrimeDispSystemHealthCheck.scs" />
+					<child name="PrimeDispWorklist" key="{E6B30DE4-699E-478F-844F-D86282644CA7}" path="..\..\..\TaskLayer\PrimaryDisplay\Worklist\PrimeDispWorklist.scs" />
+					<child name="PrimeDispAssaySetup" key="{47C85B14-C095-40EA-ABDE-3EDBE5515F08}" path="..\..\..\TaskLayer\PrimaryDisplay\AssaySetup\PrimeDispAssaySetup.scs" />
+					<child name="PrimeDispSystemSettings" key="{AAEBEE3E-BBAF-4370-8E20-12D3870D7F46}" path="..\..\..\TaskLayer\PrimaryDisplay\SystemSettings\PrimeDispSystemSettings.scs" />
+					<child name="PrimeDispUtilities" key="{277D31E7-C5CA-4184-BED3-B0E03AF6ECD5}" path="..\..\..\TaskLayer\PrimaryDisplay\Utilities\PrimeDispUtilities.scs" />
+				</folder>
+				<folder name="HydraDMLSimulator">
+					<child name="HydraDMLSimulator" key="{02D0CE85-829B-4CEF-9676-F5CA1B251D2B}" path="..\..\..\TaskLayer\HydraDMLSimulator\HydraDMLSimulator.scs" />
+				</folder>
+				<folder name="Emulator">
+					<child name="EmulatorLibrary" key="{59256D68-C616-4D03-9B59-99627FDDDA47}" path="..\..\..\TaskLayer\Emulator\EmulatorLibrary.scs" />
+				</folder>
+			</folder>
+			<folder name="CommonLibrary">
+				<child name="CommonUtilities" key="{C0E4E585-F427-4A93-9082-918EDB2BA76E}" path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+				<child name="LocalizationUtilities" key="{62FA1ED5-5DE7-4C33-B724-3C99D6E19405}" path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+				<child name="NetworkSuiteLibrary" key="{02F5580D-C877-4847-8EA9-3665342AE9BA}" path="..\..\..\TaskLayer\CommonLibrary\NetworkSuiteLibrary.scs" />
+				<child name="SQLUtilities" key="{C9653CCD-19D4-4D84-A33B-ACC2831427F2}" path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+				<child name="TCCSConfigLibrary" key="{BAA117FD-EC21-4091-941E-C5819F9FA91E}" path="..\..\..\TaskLayer\PCC\TCCSConfigLibrary.scs" />
+			</folder>
+			<folder name="InstallARM">
+				<child name="InstallARM" key="{46A33F70-DADE-43D8-AF23-5711625BFFD4}" path="..\..\..\TaskLayer\Installation\InstallARM.scs" />
+			</folder>
+		</folder>
+		<folder name="TestCaseLayer">
+			<folder name="Scenarios">
+				<folder name="PrimaryDisplayScenarios">
+					<child name="PrimeDispCalibrationFeature" key="{B96FFAA9-5DB9-4901-AB98-11588105078D}" path="PrimaryDisplayScenarios\PrimeDispCalibrationFeature.scs" />
+					<child name="PrimeDispCalibrationFeatureSteps" key="{2D4842F9-211A-440C-8912-B5F194A799AF}" path="PrimaryDisplayScenarios\PrimeDispCalibrationFeatureSteps.scs" />
+					<child name="DiagnosticsClientFeature" key="{D352684F-09CC-435A-A52C-537200318D49}" path="PrimaryDisplayScenarios\DiagnosticsClientFeature.scs" />
+					<child name="DiagnosticsClientFeatureSteps" key="{830B562C-53E9-4780-882C-8B593C11E163}" path="PrimaryDisplayScenarios\DiagnosticsClientFeatureSteps.scs" />
+					<child name="PrimeDispQBUFeature" key="{64E7D5A7-157E-4E70-A36A-59A8CE82BB55}" path="PrimaryDisplayScenarios\PrimeDispQBUFeature.scs" />
+					<child name="PrimeDispQBUFeatureSteps" key="{035932DF-2322-4C01-B499-D775CD3FC263}" path="PrimaryDisplayScenarios\PrimeDispQBUFeatureSteps.scs" />
+					<child name="PrimeDispReagentsFeature" key="{60ED1CB9-24FD-4B86-95ED-F873AA9AACF9}" path="PrimaryDisplayScenarios\PrimeDispReagentsFeature.scs" />
+					<child name="PrimeDispReagentsFeatureSteps" key="{B1F4F14B-1D7D-4202-B2D9-10A7B16E6F86}" path="PrimaryDisplayScenarios\PrimeDispReagentsFeatureSteps.scs" />
+					<child name="PrimeDispRegressionFeature" key="{F141C9B3-3953-44F6-B1B4-86CA4EECA6A9}" path="PrimaryDisplayScenarios\PrimeDispRegressionFeature.scs" />
+					<child name="PrimeDispRegressionFeatureSteps" key="{7BC7348C-FF73-42CE-BF11-ADED6B1AAD3D}" path="PrimaryDisplayScenarios\PrimeDispRegressionFeatureSteps.scs" />
+					<child name="PrimeDispRoundTripFeature" key="{F0B888DE-28D7-4978-97BE-45B4649831AA}" path="PrimaryDisplayScenarios\PrimeDispRoundTripFeature.scs" />
+					<child name="PrimeDispRoundTripFeatureSteps" key="{CE6479F8-F80B-4246-B01B-FDFEECBC7B12}" path="PrimaryDisplayScenarios\PrimeDispRoundTripFeatureSteps.scs" />
+					<child name="PrimeDispStateManagerFeature" key="{60E39D16-EE54-4AC3-8A51-EDF87B15DBFF}" path="PrimaryDisplayScenarios\PrimeDispStateManagerFeature.scs" />
+					<child name="PrimeDispStateManagerFeatureSteps" key="{88006F98-26C4-44E5-BB50-54A9D160C6E2}" path="PrimaryDisplayScenarios\PrimeDispStateManagerFeatureSteps.scs" />
+					<child name="PrimeDispSuppliesFeature" key="{EFA30942-3E23-4D00-8DFE-4072666F4443}" path="PrimaryDisplayScenarios\PrimeDispSuppliesFeature.scs" />
+					<child name="PrimeDispSuppliesFeatureSteps" key="{F948EA92-6B79-48D9-A35B-8AFF301BCD1A}" path="PrimaryDisplayScenarios\PrimeDispSuppliesFeatureSteps.scs" />
+					<child name="PrimeDispTestDefinitionFeature" key="{D6F7F12C-E46C-4BFB-A21F-E04A262477C8}" path="PrimaryDisplayScenarios\PrimeDispTestDefinitionFeature.scs" />
+					<child name="PrimeDispTestDefinitionFeatureSteps" key="{102619F9-9118-4C76-B2F6-4A4EDA653EDF}" path="PrimaryDisplayScenarios\PrimeDispTestDefinitionFeatureSteps.scs" />
+				</folder>
+				<child name="InventoryFeature" key="{3E51934C-266B-41AD-8D7A-E0A0853596E4}" path="InventoryFeature.scs" />
+				<child name="RoundTripE2E" key="{84D0D273-D0AD-47C5-A80B-8419EE3BD155}" path="RoundTripE2E.scs" />
+				<child name="InventoryFeatureSteps" key="{5E668AAA-E31D-45FD-8A2B-C56EDB96316F}" path="InventoryFeatureSteps.scs" />
+				<child name="DiagnosticsFeature" key="{54B97DC4-9D65-4B6C-905A-FF5F45D7F76A}" path="DiagnosticsFeature.scs" />
+				<child name="DiagnosticsFeatureSteps" key="{D6D9EBF9-2BDC-4069-A38C-76009567DE79}" path="DiagnosticsFeatureSteps.scs" />
+				<child name="SetupFeature" key="{2CBAA823-7564-4E3A-BB94-34458C432596}" path="SetupFeature.scs" />
+				<child name="SetupFeatureSteps" key="{1C1082B0-51BD-42ED-B889-629428857CF7}" path="SetupFeatureSteps.scs" />
+				<child name="StateManagerFeature" key="{7EEB4605-2057-4E55-B93A-214BDDE5E427}" path="StateManagerFeature.scs" />
+				<child name="StateManagerFeatureSteps" key="{0E44682D-6724-4B0D-9C92-691CFCEA150D}" path="StateManagerFeatureSteps.scs" />
+			</folder>
+			<folder name="FeatureLibrary">
+				<child name="CommonFeatureUtils" key="{8BE48C02-6A15-47DF-9992-3EE0B947F4C2}" path="CommonFeatureUtils.scs" />
+			</folder>
+			<folder name="MTM">
+				<child name="MTMSampling" key="{3052620B-EC81-4A2F-8922-60D028820897}" path="..\..\..\TaskLayer\ARM\MTMSampling.scs" />
+			</folder>
+		</folder>
+	</children>
+</Root>

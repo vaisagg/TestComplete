@@ -1,0 +1,1902 @@
+﻿//USEUNIT SQLUtilities
+//*********************************************************************************************************************
+//* Function Name    : ReadConfigFile
+//*
+//* Description      : Get data from Config.XML file (save data into 'Temporary Variables' in Project Suite or Project)
+//*
+//* Input            : FileName      [in] Required Object
+//*                    ImportValueTo [in] Required String    ["Suite", "Project"]
+//*
+//* Output           : None
+//*
+//* Example          : ReadConfigFile("C:\Config.xml, "Project");
+//*                    ReadConfigFile(ProjectSuite["Variables"]["PathToConfigFile"], "Project");
+//*********************************************************************************************************************
+//* Creation By      : Praveen Lingaraju 
+//* Date of Creation : 10th Jan 2012 
+//*********************************************************************************************************************
+function ReadConfigFile(FileName,NodePath)
+{
+    var Doc;
+    var str;
+    var Nodes;
+    var Node;
+    var ChildNodes;
+    var CountNodes;
+    var CountChildNodes;
+    try
+    {
+        // Create COM object 
+        Doc = Sys["OleObject"]("Msxml2.DOMDocument");
+        Doc["async"] = false;
+        // Load data from a file 
+        Doc["load"](FileName);
+        Nodes = Doc["selectNodes"]("//"+NodePath);
+        var ChildNode = "";
+        var AllChildNodes = new Array();
+        // Process the node 
+        for(CountNodes = 0; CountNodes < Nodes["length"]; CountNodes++)
+        {   
+            // Get the node from the collection of found nodes 
+            Node = Nodes["item"](CountNodes);
+            // Get child nodes 
+            ChildNode=""
+            ChildNodes = Node["childNodes"];
+            for(CountChildNodes = 0; CountChildNodes < ChildNodes["length"]; CountChildNodes++)
+            {
+                var tagname = ChildNodes["item"](CountChildNodes)["Tagname"];
+                var nodetext = ChildNodes["item"](CountChildNodes)["text"];
+                if(ChildNode =="")
+                   ChildNode = tagname + ":" + nodetext;
+                else
+                  ChildNode = ChildNode + "," + tagname + ":" + nodetext;
+                
+            }
+            AllChildNodes[CountNodes] = ChildNode;
+            
+        }
+       return AllChildNodes;    
+    }
+    catch (err)
+    {
+        Log["Error"]("Error message is: " + err["description"], "Function ReadConfigFile" + "\r\n" + "Error message is: " + err["description"]);
+    }
+} //ReadConfigFile
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetConfigNode
+//*
+//*  Description: Gives a subnode value from the speciofied ConfigNode
+//*  
+//*  Input: ConfigNode,sNode
+//*
+//*  Output: Nodevalue
+//*  
+//*  Example:GetConfigNode(ConfigNode,"BuildNumber")
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetConfigNode(ConfigNode,sNode)
+{
+    try
+    {
+      var aValues=ConfigNode["split"](",");
+      var Nodevalue=""
+      for (j=0;j<aValues["length"];j++)
+      {
+        if (aqString["Find"](aValues[j],sNode,0)!=-1) 
+        {
+          aNodeValues=aValues[j]["split"](":")
+          Nodevalue=aNodeValues[1];
+          return Nodevalue;
+        }
+      }
+    }
+    catch(exp) 
+    {
+      Log["Error"]("Exception", exception["description"]);
+    } 
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ReportTestStatusToResultXML
+//*
+//*  Description: Updates Result.xml
+//*  
+//*  Input: strTestCategory, strTestID, strResult
+//*
+//*  Output: 
+//*
+//*  Example: ReportTestStatusToResultXML("AppStartup", "AppStartup_ENG" , "P");
+//            "P" stands for Pass
+//            "F" stands for Fail
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+//function ReportTestStatusToResultXML(strTestCategory, strTestID, strResult)
+//{
+//  try
+//  {
+//      var sProjectPath=Project.Path;
+//      var sPath= sProjectPath.split("TA_Scripts");
+//      var strXMLPath=sPath[0]+"TestOutput\\Result.xml";
+//  
+//      var objNode = null;
+//      objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+//      objXMLDoc["async"] = false;
+//      objXMLDoc["load"](strXMLPath);
+//  
+//      //Report in the error log if there is an error in parsing the XML
+//      if(objXMLDoc["parseError"]["errorCode"] != 0)
+//      {
+//        strMsg = "Reason:\t" + objXMLDoc["parseError"]["reason"] + "\n" +
+//            "Line:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["line"]) + "\n" + 
+//            "Pos:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["linePos"]) + "\n" + 
+//            "Source:\t" + objXMLDoc["parseError"]["srcText"];
+//
+//        Log["Error"]("Cannot parse the document. ", strMsg); 
+//        return false;
+//      }
+//  
+//      //General includes the following nodes : Build, DateTime, DeploymentType, DeploymentMode
+//      if ( strTestCategory == "General" )
+//      {
+//        strXPath  = "/TestResults/TestResult/" + strTestID;
+//        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+//        if(objNode != null )
+//        {
+//          //Updating the concerned Result Node value
+//          objNode["text"] = strResult;
+//          //Saving the XML with the updated Node value
+//          objXMLDoc["save"](strXMLPath);
+//        }
+//      }
+//      else
+//      {
+//        //Constructing the XPath to select the concerned result node
+//        strXPath  = "/TestResults/TestResult/" + strTestCategory + "/test[@name='" + strTestID + "']";
+//        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+//        if(objNode != null )
+//        {
+//          //Updating the concerned Result Node value and saving the XML
+//          objNode["setAttribute"]("result", strResult );
+//          objNode["setAttribute"]("datetime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ) );
+//          if( aqString["ToLower"](strResult) == "f")
+//          {
+//            objResultNode = objXMLDoc["selectSingleNode"]("//TestResults/TestResult");
+//            objResultNode["setAttribute"]("result","F");
+//            objResultNode["setAttribute"]("datetime",aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ));
+//          }
+//          objXMLDoc["save"](strXMLPath);
+//        }
+//      }
+//  
+//      //Adding a node that is not in the template
+//      if(objNode == null )
+//      {
+//        objElement = objXMLDoc["createElement"]("test");
+//        objElement["setAttribute"]("category", strTestCategory);
+//        objElement["setAttribute"]("name", strTestID);
+//        objElement["setAttribute"]("result",strResult );
+//        objElement["setAttribute"]("datetime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ));    
+//    
+//        objNode    = objXMLDoc["selectSingleNode"]("/TestResults/TestResult/SystemTest");
+//        objNode["appendChild"](objElement)
+//        objXMLDoc["save"](strXMLPath);
+//      }
+//  
+//      //Validating the updated XML
+//      if(objXMLDoc["parseError"]["errorCode"] == 0)
+//      {
+//        Log["Message"]("Successfully updated the Result XML.")
+//        return true;
+//      }
+//      else
+//      {
+//        Log["Error"]("Error in updating the Result value for : " + strTestID);      
+//        return false;
+//      }
+//      objXMLDoc = null;
+//  }
+//  catch(exp) 
+//  {
+//    Log["Error"]("Exception", exception["description"]);
+//  }
+//}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetRegistryKeyValue
+//*
+//*  Description: Get the registry key value
+//*  
+//*  Input: strKey, strRoot, strAttribute
+//*
+//*  Output: 
+//*
+//*  Example: GetRegistryKeyValue
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetRegistryKeyValue(strKey, strRoot, strAttribute)
+{
+  try
+  {
+    var objKey, strRegValue;
+    objKey = Storages["Registry"](strKey, strRoot, 1, true);
+  
+    if(objKey["OptionExists"](strAttribute) == true)
+    {
+      strRegValue = objKey["GetOption"](strAttribute, "Value does not exist"); 
+    }
+    else
+    {
+      strRegValue = "";
+    }
+    Log["Message"]("Registry Value for " + strKey + " is : " + strRegValue);
+    return strRegValue;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception", exception["description"]);
+  } 
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ReadXML
+//*
+//*  Description: reads xml
+//*  
+//*  Input: strXMLPath
+//*
+//*  Output: 
+//*
+//*  Example: ReadXML 
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function ReadXML(strXMLPath)
+{
+  try
+  {
+    var objXMLDoc;
+    objXMLDoc = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](strXMLPath);
+
+    //Report in the error log if there is an error in parsing the XML
+    if(objXMLDoc["parseError"]["errorCode"] != 0)
+    {
+      strMsg = "Reason:\t" + objXMLDoc["parseError"]["reason"] + "\n" +
+          "Line:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["line"]) + "\n" + 
+          "Pos:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["linePos"]) + "\n" + 
+          "Source:\t" + objXMLDoc["parseError"]["srcText"];
+
+      Log["Warning"]("Cannot parse the document. ", strMsg); 
+      return null;
+    }
+    else
+    {
+      return objXMLDoc;
+    }
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception", exception["description"]);
+  } 
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : FileFinder
+//*
+//*  Description: Check wheher the file exists
+//*  
+//*  Input: strFilePath  [in] Required String i.e the path of the file
+//*         strFilename  [in] Required String i.e the name of the file
+//*
+//*  Output: Boolean
+//*
+//*  Example: FileFinder("D:\Installer\Files\CI_Pipeline","TCCSCongigEditor.xml")
+//*
+//*  Author Name: Praveen Lingaraju
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function FileFinder(strFilePath)
+{
+  try
+  {
+    var strfoundFiles;
+    if (aqFile["Exists"](strFilePath)==true)
+    {
+        Log["Message"]("The file: " +strFilePath+ " found")
+        return true;
+    }  
+    else
+    {
+      Log["Error"]("No files were found.");
+      return true;
+    }
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception", exception["description"]);
+  } 
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : VerifyNumeralsInString
+//*
+//*  Description: Checks whether the string contains the number
+//*  
+//*  Input: string
+//*
+//*  Output: true or false
+//*
+//*  Example: VerifyNumeralsInString("button1234")
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function VerifyNumeralsInString(Str)
+{
+  try
+  {
+    var re;
+    re = /[-+]?\d*\.?:\d+([eE][-+]?\d+)?/gm; //Specify the regular expression
+    return re["test"](Str); //Return the verification result
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception", exception["description"]);
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : CaptureScreenshot
+//*
+//*  Description: captures the workflow screenshots
+//*  
+//*  Input: sScreenshotPath,sScreenshotName
+//*
+//*  Output: ctrlFullName
+//*
+//*  Example: CaptureScreenshot(sScreenshotPath,sScreenshotName)
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function CaptureScreenshot(sScreenshotPath,sScreenshotName)
+{
+     try
+     {
+       var Picture = Sys["Desktop"]["Picture"]();
+       Picture["SaveToFile"](sScreenshotPath +  sScreenshotName + ".png" );
+     }
+    catch(exp)
+    {
+      Log["Error"]("Exception",exp["description"]);
+    } 
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : StartService
+//*
+//*  Description: Starts the given service
+//*  
+//*  Input: computerName,serviceName
+//*
+//*  Output: boolean value
+//*
+//*  Example: StartService(computerName, serviceName)
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+//function StartService(computerName, serviceName)
+//{
+//  try
+//  {
+//    var service = GetService(computerName, serviceName);
+//    if (service == null) 
+//    {
+//      Log.Warning("The " + serviceName + " service on the " + computerName + 
+//                  " computer was not found");
+//      return false;
+//    }
+//    else
+//    {
+//      service.StartService();
+//      return true;
+//    }
+//  }
+//  catch(exp)
+//  {
+//      Log["Error"]("Exception",exp["description"]);
+//  } 
+//}
+function StartService(computerName, serviceName)
+{
+  try
+  {
+    WMI["ComputerName"] = computerName
+    if(WMI["GetServiceState"](serviceName) == "Stopped")
+      WshShell["Run"]("net start " + serviceName)
+
+    intStartTime = aqDateTime.Time();
+    do
+    {
+      intTimeElapsed = aqDateTime.Time() - intStartTime;
+    } while(WMI["GetServiceState"](serviceName) != "Running" && intTimeElapsed < 15000)
+    
+    if(WMI["GetServiceState"](serviceName) == "Running")
+      return true;
+    else
+      return false;
+  }
+  catch(exp)
+  {
+      Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+
+function GetServiceState(ServiceName)
+{
+  var ServiceState="";
+  ServiceState = WMI["GetServiceState"](ServiceName)
+  return ServiceState;
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : StopService
+//*
+//*  Description: Stops the given service
+//*  
+//*  Input: computerName,serviceName
+//*
+//*  Output: boolean value
+//*
+//*  Example: StopService(computerName, serviceName)
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function StopService(computerName, serviceName)
+{
+  try
+  {
+    var service = GetService(computerName, serviceName);
+    if (service == null) 
+    {
+      Log.Warning("The " + serviceName + " service on the " + computerName +
+                  " computer was not found");
+    }
+    else
+      service.StopService();
+  }
+  catch(exp)
+  {
+      Log["Error"]("Exception",exp["description"]);
+  } 
+}
+ 
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetService
+//*
+//*  Description: Gets the service object
+//*  
+//*  Input: computerName,serviceName
+//*
+//*  Output: service object
+//*
+//*  Example: GetService(computerName, serviceName)
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetService(computerName, serviceName)
+{
+  try
+  {
+    var wmiService, objectsList, eObjectsList, item, sysID;
+ 
+    wmiService = GetObject("WinMgmts:{impersonationLevel=impersonate}!\\\\" + 
+                            computerName + "\\root\\cimv2");
+    objectsList = wmiService.InstancesOf("Win32_Service");
+  
+    if (objectsList.Count > 0) 
+    {  
+      eObjectsList = new Enumerator(objectsList);
+      for (; !eObjectsList.atEnd(); eObjectsList.moveNext()) 
+      {
+        item = eObjectsList.item();
+        if (item.Name == serviceName)
+          return item;
+      }
+    }
+    return null;
+  }
+  catch(exp)
+  {
+      Log["Error"]("Exception",exp["description"]);
+  } 
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetRelativePath
+//*
+//*  Description: Get relative path of file
+//*  
+//*  Input: sSeperator,sRelativeFileName
+//*
+//*  Output: sRelativeFilePath
+//*
+//*  Example: GetRelativePath("TA_Scripts","TestOutput\\ResultOverview.xml") - to get the path as F:\Installer\Files\TestOutput\ResultOverview.xml
+//*
+//*  Date of Creating: 13/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetRelativePath(sSeperator,sRelativeFileName)
+{
+  try
+  {
+    var ProjPath = Project["Path"];
+    var FilePath = ProjPath["split"](sSeperator)
+    if(FilePath["length"]>0)
+    {
+      var sRelativeFilePath=FilePath[0] + sRelativeFileName;
+      return sRelativeFilePath;
+    }
+    else
+    {
+      Log["Error"]("Unable to find the sRelativeFileName ");
+      return false;
+    }    
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetInstrumentIP
+//*
+//*  Description: Gets the IP Address from Build Instrument XML
+//*  
+//*  Input: InstrumentsArray,Type
+//*
+//*  Output: IP Address
+//*
+//*  Example: GetInstrumentIP(InstrumentsArray,Type)
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetInstrumentIP(InstrumentsArray,Type)
+{
+  try
+  {
+    for (var i=0;i<InstrumentsArray["length"];i++)
+    {
+      var InstrumentNode=InstrumentsArray[i];
+      var InstrumentNodeValues=InstrumentNode["split"](",");
+    
+      for (var j=0;j<InstrumentNodeValues["length"];j++)
+      {
+        if(aqString["Find"](InstrumentNodeValues[j],"TYPE:"+Type,0)!=-1)
+        {
+          var Instrument=InstrumentNodeValues[j-1]["split"](":");
+          var InstrumentIP=Instrument[1];
+          return InstrumentIP; 
+          break;
+        }
+      }
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : UpdateBuildInfo
+//*
+//*  Description: Update the Build information to results
+//*  
+//*  Input: sPath
+//*
+//*  Output: Build Info
+//*
+//*  Example: UpdateBuildInfo(sPath)
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function UpdateBuildInfo()
+{
+  var sPath="F:\\Installer\\Files\\BuildInstrumentsInfo.xml";
+  try
+  {
+    var BuildInfoarray = ReadConfigFile(sPath,"InstrumentsInfo/BuildInfo")
+    for(var i=0;i<BuildInfoarray["length"];i++)
+    {
+       var aNodeVal = BuildInfoarray[i]["split"](",")
+       var aDepValues=aNodeVal[0]["split"](":");
+      
+        if (aDepValues[0]=="NAME")
+        {
+            BuildInfo=aDepValues[1];
+            var strProductVersion = GetRegistryKeyValue("SOFTWARE\\Siemens Healthcare Diagnostics\\UIWDB\\Setup", HKEY_LOCAL_MACHINE, "ProductVersion")
+            ReportTestStatusToResultXML("EnvDetails","BuildID",BuildInfo)
+            ReportTestStatusToResultXML("EnvDetails","Build",strProductVersion)
+            
+            
+        }
+       var aDepType=aNodeVal[1]["split"](":");
+       if (aDepType[0]=="DEPLOYMENTTYPE")
+       {
+         DeploymentType=aDepType[1];
+         ReportTestStatusToResultXML("EnvDetails","DeploymentType",DeploymentType);
+         return BuildInfo;
+       }
+        
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  } 
+}
+//*********************************************************************************************************************
+//* Function Name    : XMLtoDatabase
+//*
+//* Description      : 
+//*
+//* Input            : Fetching data from multiple XMLs file and inserting them to database
+//*                    
+//*
+//* Output           : 
+//*
+//* Example          :                   
+//*********************************************************************************************************************
+//* Creation By      : Shrutika Tyagi
+//* Date of Creation : 21/03/2017
+//*********************************************************************************************************************
+function ImportTranslationsFromXMLToDatabase()
+{
+
+    var Connstr;
+    var Translationsquery;
+    var MsgCodeNo = 1;
+    var serialno = 1;
+    try
+    {   
+        Connstr = "Provider=SQLOLEDB;Data Source=.;Initial Catalog=Bus_DM;Integrated Security = SSPI;nDataType=True" ;        
+        var objADOConnection = ConnectDB(Connstr);       
+        var RecordSet = Sys["OleObject"]("ADODB.Recordset");
+        
+        var ConfigFilePath = "C:\\Siemens\\Bin\\Localization\\Configuration.xml";
+        var objConfigXML = ReadXML(ConfigFilePath);
+        var objConfigXMLList = objConfigXML["selectnodes"]("//TranslationFiles/FileName");
+
+        for(var i=0;i<objConfigXMLList["length"];i++)
+        {
+          var objConfigXMLListNode = objConfigXMLList["item"](i);
+          var XMLFilePath = objConfigXMLListNode["selectSingleNode"]("Path")["text"];     
+          
+          //XMLNodePath = "DM_Localization_Messages//M";
+          var objXML = ReadXML(XMLFilePath);
+          //var objNodesList = objXML["selectNodes"]("//"+XMLNodePath);
+          var objNodesList = objXML["selectNodes"]("//DM_Localization_Messages//M");
+        
+          // Process the node 
+          for(var CountNodes = 0; CountNodes < objNodesList["length"]; CountNodes++)
+          {            
+            // Get the node from the collection of found nodes 
+            var objNode = objNodesList["item"](CountNodes);
+            msgcode = objNode["attributes"](0)["Value"];
+            
+            // Get child nodes 
+            var objChildNodes = objNode["childNodes"];
+            for(var CountChildNodes = 0; CountChildNodes < objChildNodes["length"]; CountChildNodes++)
+              {
+		            var langNode = objChildNodes["item"](CountChildNodes);
+		            var tagname = langNode["Tagname"];
+                var LangId = langNode["attributes"](0)["Value"];
+                var nodetext = langNode["Text"];
+                nodetext = aqString["Replace"](nodetext, "'", "''");
+  
+                // Execute the query              
+                Translationsquery = "Insert Into dbo.TA_TAB_LOC_Translations(SerialNo,MsgNo,MsgCode,LanguageId,MsgText,SourceFile)VALUES(" +serialno+ "," +MsgCodeNo+ "," + "'" +msgcode+ "'" + "," +"'" +LangId+ "'" + "," + "N'" +nodetext+ "'" + "," + "'" + XMLFilePath + "'" + ")";
+                //ExecSQLQueryFromString(Translationsquery, Connstr);
+                RecordSet["Open"](Translationsquery, objADOConnection,1,1 );
+
+		            serialno = serialno + 1;
+	            }
+	            MsgCodeNo = MsgCodeNo + 1;
+           }   
+        }
+        //SQLUtilities_Finalize();
+        objADOConnection.Close()
+    }
+    catch (err)
+    {
+        Log["Error"]("Error message is: " + err["description"], "Function XMLFiletoDatabase" + "\r\n" + "Error message is: " + err["description"]);
+    }
+}
+
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ReportTestStatusToResultXML
+//*
+//*  Description: Writes test execution status to Result XML
+//*  
+//*  Input: strTestCategory, strTestID, strResult
+//*         
+//*          strResult="I" if test status is Started(means at  start point result will be "I")
+//*          strResult="P" if test status is passed
+//*          strResult="F" if test status is passed
+//*         
+//*  Output: Build Info
+//*
+//*  Example: UpdateBuildInfo(sPath)
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+//function ReportTestStatusToResultXML(strTestCategory, strTestID, strResult)
+//function ReportTestStatusToResultXML()
+//{
+//  try
+//  {
+//      var strTestCategory="", strTestID, strResult
+//      var sProjectPath=Project.Path;
+//      var sPath= sProjectPath.split("TA_Scripts");
+//      var strXMLPath=sPath[0]+"TestOutput\\Result.xml";
+//      var objNode = null;
+//      objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+//      objXMLDoc["async"] = false;
+//      
+//      objXMLDoc["load"](strXMLPath);
+//  
+//      //Report in the error log if there is an error in parsing the XML
+//      if(objXMLDoc["parseError"]["errorCode"] != 0)
+//      {
+//        strMsg = "Reason:\t" + objXMLDoc["parseError"]["reason"] + "\n" +
+//            "Line:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["line"]) + "\n" + 
+//            "Pos:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["linePos"]) + "\n" + 
+//            "Source:\t" + objXMLDoc["parseError"]["srcText"];
+//
+//        Log["Error"]("Cannot parse the document. ", strMsg); 
+//        return false;
+//      }
+//  
+//      //General includes the following nodes : Build, DateTime, DeploymentType, DeploymentMode
+//      if ( strTestCategory == "EnvDetails" )
+//      {
+//        strXPath  = "/TestResults/TestResult/EnvDetails/" + strTestID;
+//        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+//        if(objNode != null )
+//        {
+//          //Updating the concerned Result Node value
+//          objNode["text"] = strResult;
+//          //Saving the XML with the updated Node value
+//          objXMLDoc["save"](strXMLPath);
+//        }
+//      }
+//      else
+//      {
+//        //Constructing the XPath to select the concerned result node
+//        strXPath  = "/TestResults/TestResult/Tests/test[@name='" + strTestID + "']";
+//        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+//        if(objNode != null )
+//        {
+//          //Updating the concerned Result Node value and saving the XML
+//          objNode["setAttribute"]("result", strResult );
+//          if (strResult=="I")
+//          {
+//            objNode["setAttribute"]("starttime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ) );
+//            objNode["setAttribute"]("endtime", "" );
+//          }
+//          else
+//          {
+//             objNode["setAttribute"]("endtime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ));
+//          }
+////          if( aqString["ToLower"](strResult) == "f")
+////          {
+////            objResultNode = objXMLDoc["selectSingleNode"]("//TestResults/TestResult");
+////            objResultNode["setAttribute"]("result","F");
+////            objResultNode["setAttribute"]("datetime",aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ));
+////          }
+//          objXMLDoc["save"](strXMLPath);
+//        }
+//      }
+//  
+//      //Adding a node that is not in the template
+//      if(objNode == null )
+//      {
+//        objElement = objXMLDoc["createElement"]("test");
+//        if (strTestCategory!="")
+//        {
+//          objElement["setAttribute"]("category", strTestCategory);
+//        }
+//        
+//        objElement["setAttribute"]("name", strTestID);
+//        objElement["setAttribute"]("result",strResult );
+//        objElement["setAttribute"]("starttime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M" ));    
+//        objElement["setAttribute"]("endtime", "");
+//        
+//        objNode    = objXMLDoc["selectSingleNode"]("/TestResults/TestResult/Tests");
+//        objNode["appendChild"](objElement)
+//        objXMLDoc["save"](strXMLPath);
+//      }
+//  
+//      //Validating the updated XML
+//      if(objXMLDoc["parseError"]["errorCode"] == 0)
+//      {
+//        Log["Message"]("Successfully updated the Result XML.")
+//        return true;
+//      }
+//      else
+//      {
+//        Log["Error"]("Error in updating the Result value for : " + strTestID);      
+//        return false;
+//      }
+//      objXMLDoc = null;
+//  }
+//  catch(exp) 
+//  {
+//    Log["Error"]("Exception", exception["description"]);
+//  }
+//}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ReportTestStatusToResultXML
+//*
+//*  Description: Updates Result.xml
+//*  
+//*  Input: strTestCategory, strTestID, strResult
+//*
+//*  Output: 
+//*
+//*  Example: ReportTestStatusToResultXML("AppStartup", "AppStartup_ENG" , "P");
+//            "P" stands for Pass
+//            "F" stands for Fail
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function ReportTestStatusToResultXML(strTestCategory, strTestID, strResult)
+{
+  try
+  {
+      var strTestCategory, strTestID, strResult
+      var sProjectPath=Project.Path;
+      var sPath= sProjectPath.split("TA_Scripts");
+      var strXMLPath=sPath[0]+"TestOutput\\Result.xml";
+      var objNode = null;
+      objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+      objXMLDoc["async"] = false;
+      
+      if(strResult == "P"){
+        strResult ="Pass";
+      }else if(strResult =="F"){
+        strResult ="Fail"
+      }else{
+        strResult ="Inprogress"
+      }
+      
+      if (!aqFile["Exists"](strXMLPath))
+      {
+          //aqFile["Create"](strXMLPath);
+         var TestResultsNode=objXMLDoc["createElement"]("TestResults");
+         objXMLDoc["appendChild"](TestResultsNode)
+         var TestResultNode=objXMLDoc["createElement"]("TestResult");         
+         TestResultNode["setAttribute"]("startdatetime",aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ))
+//             newlineNode=objXMLDoc["createTextNode"](VbCrLf);
+//             TestResultNode["appendChild"](newlineNode)
+                   
+          var objNode = objXMLDoc["selectSingleNode"]("/TestResults")
+         objNode["appendChild"](TestResultNode)
+        objNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult")
+          var EnvDetailsNode=objXMLDoc["createElement"]("EnvDetails");
+           objNode["appendChild"](EnvDetailsNode)
+           
+         objNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult/EnvDetails")
+//           var BuildIDNode=objXMLDoc["createElement"]("BuildID");
+//          BuildIDNode["text"]=""
+//           objNode["appendChild"](BuildIDNode) 
+           //var xpath=objXMLDoc["selectSingleNode"]("/TestResults/TestResult/EnvDetails/BuildID")
+           
+          
+             //Env Details : Updated Bhawya
+             var BuildNode=objXMLDoc["createElement"]("Build");
+             BuildNode["text"]=  Project["Variables"]["BuildName"]
+             objNode["appendChild"](BuildNode) 
+             
+             var DeploymentTypeNode=objXMLDoc["createElement"]("DeploymentType"); 
+             DeploymentTypeNode["text"]=Project["Variables"]["DeploymentType"];
+             objNode["appendChild"](DeploymentTypeNode)
+             
+             var DeploymentModeNode=objXMLDoc["createElement"]("DeploymentMode");
+             DeploymentModeNode["text"]= Project["Variables"]["InstallType"];
+             objNode["appendChild"](DeploymentModeNode)
+             
+             objXMLDoc.Save(strXMLPath)
+               
+
+          
+//           var BuildNode=objXMLDoc["createElement"]("Build");
+//           BuildNode["text"]=""
+//           objNode["appendChild"](BuildNode) 
+//           var DeploymentTypeNode=objXMLDoc["createElement"]("DeploymentType"); 
+//           DeploymentTypeNode["text"]=""
+//           objNode["appendChild"](DeploymentTypeNode)
+//           var DeploymentModeNode=objXMLDoc["createElement"]("DeploymentMode");
+//           DeploymentModeNode["text"]=""
+//           objNode["appendChild"](DeploymentModeNode)
+ 
+           
+           
+           var TestsNode=objXMLDoc["createElement"]("Tests");
+           objNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult")
+           TestsNode["text"]=""
+            objNode["appendChild"](TestsNode)
+          //aNode["appendChild"]("TestResult")
+          objXMLDoc["save"](strXMLPath);
+          
+      }
+  
+      
+      objXMLDoc["load"](strXMLPath);
+  
+      //Report in the error log if there is an error in parsing the XML
+      if(objXMLDoc["parseError"]["errorCode"] != 0)
+      {
+        strMsg = "Reason:\t" + objXMLDoc["parseError"]["reason"] + "\n" +
+            "Line:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["line"]) + "\n" + 
+            "Pos:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["linePos"]) + "\n" + 
+            "Source:\t" + objXMLDoc["parseError"]["srcText"];
+
+        Log["Error"]("Cannot parse the document. ", strMsg); 
+        return false;
+      }
+  
+      //General includes the following nodes : Build, DateTime, DeploymentType, DeploymentMode
+      if ( strTestCategory == "EnvDetails" )
+      {
+        var objTestResultNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult");
+        objTestResultNode["setAttribute"]("startdatetime",aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ));
+        
+        strXPath  = "/TestResults/TestResult/EnvDetails/" + strTestID;
+        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+        
+        
+        
+        
+        if(objNode != null )
+        {
+          //Updating the concerned Result Node value
+          objNode["text"] = strResult;
+          //Saving the XML with the updated Node value
+          objXMLDoc["save"](strXMLPath);
+        }
+      }
+      else
+      {
+        //Constructing the XPath to select the concerned result node
+        strXPath  = "/TestResults/TestResult/Tests/test[@name='" + strTestID + "']";
+        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+        if(objNode != null )
+        {
+          //Updating the concerned Result Node value and saving the XML
+          objNode["setAttribute"]("result", strResult );
+          if (strResult=="Inprogress")
+          {
+            objNode["setAttribute"]("starttime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ) );
+            objNode["setAttribute"]("endtime", "" );
+          }
+          else
+          {
+             objNode["setAttribute"]("endtime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ));
+          }
+
+          objXMLDoc["save"](strXMLPath);
+        }
+      }
+  
+      //Adding a node that is not in the template
+      if(objNode == null )
+      {
+        objElement = objXMLDoc["createElement"]("test");
+        if (strTestCategory!="")
+        {
+          objElement["setAttribute"]("category", strTestCategory);
+        }
+        
+        objElement["setAttribute"]("name", strTestID);
+        objElement["setAttribute"]("result",strResult );
+        objElement["setAttribute"]("starttime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ));    
+        objElement["setAttribute"]("endtime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S"));
+        
+        objNode    = objXMLDoc["selectSingleNode"]("/TestResults/TestResult/Tests");
+        objNode["appendChild"](objElement)
+        objXMLDoc["save"](strXMLPath);
+      }
+  
+      //Validating the updated XML
+      if (strResult!="Inprogress")
+      {
+        if(objXMLDoc["parseError"]["errorCode"] == 0)
+        {
+          //Log["Message"]("Successfully updated the Result XML.")
+          return true;
+        }
+        else
+        {
+          Log["Error"]("Error in updating the Result value for : " + strTestID);      
+          return false;
+        }
+      }
+      objXMLDoc = null;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception", exp["description"]);
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetTestitems(Testfile,Query)
+//*  Description: This function opens an Excel file and fetch the data as per the input Query and returns the result items as Recordset object.
+//*  Input: Testfile -> Path of the Excel file
+//*       :Query -> Query to be executed in the Excel to retrieve the data
+//***********************************************************************************************************************************************************************************
+
+//function GetTestItems(Testfile,Query)
+//{
+//  var AConnection,Cmd,TestList;
+//  // Create a new Connection object
+//  AConnection = ADO["CreateConnection"]();
+//  // Specify the connection string
+//  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + Testfile + "';Extended Properties=Excel 8.0;"  
+//  // Activate the connection
+//  AConnection["Open"]();
+//  // Create a new Command object
+//  Cmd = ADO["CreateCommand"]();
+//  // Specify the connection
+//  Cmd["ActiveConnection"] = AConnection;
+//  // Specify command type and text
+//  Cmd["CommandType"] = adCmdText;
+//  Cmd["CommandText"] = Query;
+//  //Cmd["CommandText"] = "SELECT DISTINCT Tdef FROM [Sheet1$]";
+//  TestList = Cmd["Execute"]();
+//  return TestList;
+//}
+
+function GetTestItems(Testfile,Query,Column)
+{
+  var AConnection,Cmd,TestList;
+  // Create a new Connection object
+  //AConnection = ADO["CreateConnection"]();
+  AConnection = Sys.OleObject("ADODB.Connection");
+  // Specify the connection string
+  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + Testfile + "';Extended Properties=Excel 8.0;";  
+  // Activate the connection
+  AConnection["Open"]();
+  // Create a new Command object
+  Cmd = ADO["CreateCommand"]();
+  // Specify the connection
+  Cmd["ActiveConnection"] = AConnection;
+  // Specify command type and text
+  Cmd["CommandType"] = adCmdText;
+  Cmd["CommandText"] = Query;
+  //Cmd["CommandText"] = "SELECT DISTINCT Tdef FROM [Sheet1$]";
+  TestList = Cmd["Execute"]();
+  var Testarr = new Array();
+  TestList.MoveFirst();
+  var test=0;
+  while(!TestList.Eof)
+  {
+    Testarr[test]=TestList["Fields"](Column)["Value"];
+    TestList.MoveNext();
+    test++;
+  }  
+  AConnection["Close"];  
+  return Testarr;
+}
+
+function TestDataSheetColumnName(TestDataFile,SheetName)
+{
+
+  var dictColumns  = new ActiveXObject("Scripting.Dictionary");
+  dictColumns = GetTestColumnMap(TestDataFile, SheetName);
+  return dictColumns
+}
+//This function returns a dictionary object that contains Column index and column name in <SheetName>
+function GetTestColumnMap(Testfile, SheetName)
+{
+  var AConnection,Cmd,TestList,Query;
+  var dictColumnMap = new ActiveXObject("Scripting.Dictionary");
+  Query = "SELECT * FROM [" +SheetName+ "$]"
+  // Create a new Connection object
+  //AConnection = ADO["CreateConnection"]();
+  AConnection = Sys.OleObject("ADODB.Connection");
+  // Specify the connection string
+  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + Testfile + "';Extended Properties=Excel 8.0;";  
+  // Activate the connection
+  AConnection["Open"]();
+  // Create a new Command object
+  Cmd = ADO["CreateCommand"]();
+  // Specify the connection
+  Cmd["ActiveConnection"] = AConnection;
+  // Specify command type and text
+  Cmd["CommandType"] = adCmdText;
+  Cmd["CommandText"] = Query;
+  TestList = Cmd["Execute"]();
+  CoulmnCount = TestList["Fields"]["Count"]
+  for(Count=1; Count<CoulmnCount; Count++)
+  {
+    dictColumnMap["Add"](Count, TestList["Fields"](Count)["Name"]);
+  }  
+  AConnection["Close"];  
+  return dictColumnMap;
+}
+
+
+// ***********************************************************************************************
+// Function Name : GetTestItemsByTestName(TestDataPath, WorkSheetName, TestName)
+// Function Description : This method returns an array of Dictionary particular to a test<TestName> in sheet<WorkSheetName> of Test data file<TestDataPath>
+// Inputs :   <TestDataPath> : Full path of the test data excel sheet
+//            <WorkSheetName> : Sheet name in the test data file
+//            <TestName> : Name of the test case for which data is needed 
+// ***********************************************************************************************
+
+function GetTestItemsByTestName(TestDataPath, WorkSheetName, TestName)
+{
+
+  var AConnection,Cmd,TestList,Query;
+  var ColumnQuery = "SELECT * FROM [" +WorkSheetName+ "$]"
+  //AConnection = ADO["CreateConnection"]();
+  AConnection = Sys.OleObject("ADODB.Connection");
+  
+  //--------------Hydra -Bhawya-------------
+  Log["Enabled"] =false 
+  try{
+	  //Below line TC 12.3 -Hydra
+	  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 8.0;"; 
+	  AConnection["Open"]();
+	  Log["Enabled"] =true
+	  //Log["Message"]("Using TC 12.3 Excel connection string")
+
+ } catch(exp)
+  {
+
+	if(aqString["Find"]( exp["description"], "Provider cannot be found. It may not be properly installed.") != -1)
+	{
+	  //Below line TC 12.6 -Hydra
+	  AConnection["ConnectionString"] = "provider=Microsoft.ACE.OLEDB.12.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 12.0;";  
+	  Log["Enabled"] =true
+	  //Log["Message"]("Using TC 12.6 Excel connection string")
+	  AConnection["Open"]();          
+	}else{
+	  Log["Enabled"] =true;        
+	  Log["Error"]("Exception: "+exp["description"]);
+	  return false; 
+	}
+  }
+    //----------------------------------  
+  
+  //AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 8.0;";  
+  //AConnection["Open"]();
+  Cmd = ADO["CreateCommand"]();
+  Cmd["ActiveConnection"] = AConnection;
+  Cmd["CommandType"] = adCmdText;
+  Cmd["CommandText"] = ColumnQuery;
+  TestList = Cmd["Execute"]();
+  CoulmnCount = TestList["Fields"]["Count"]
+  
+  var intTest = 0;
+  var arrTestData = new Array();
+  
+  for(Count=0; Count<CoulmnCount; Count++)
+  {
+    //if(TestList["Fields"](Count)["Name"] == TestName)
+    if(aqString["Find"](TestList["Fields"](Count)["Name"], TestName) != -1)
+    {
+      TestList.MoveFirst();
+      var dictColumnData = new ActiveXObject("Scripting.Dictionary");
+      dictColumnData["RemoveAll"]();
+      while(!TestList.Eof)
+      {
+        dictColumnData["Add"](TestList["Fields"](0)["Value"], TestList["Fields"](Count)["Value"]);
+        TestList.MoveNext();
+      }
+      arrTestData[intTest++] = dictColumnData;
+    }
+  }  
+  AConnection["Close"];  
+  return arrTestData;
+}
+
+function ReplaceDecimalSeparator(Value,sSeparator)
+{
+  var res = aqString["Find"](Value,".")
+  if(res!= -1)
+  {
+    RegionalValue = aqString["Replace"](Value,".",sSeparator)
+    Log["Message"](RegionalValue)
+    return RegionalValue
+  }
+  else
+  {
+    Log["Message"]("value does not contain any dot NO NEED to apply decimal separator");
+    Log["Message"](Value)
+    return Value;
+  } 
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetInstrumentName
+//*
+//*  Description: Gets the IP Address from Build Instrument XML
+//*  
+//*  Input: InstrumentsArray,Type
+//*
+//*  Output: ModuleName
+//*
+//*  Example: GetInstrumentName(InstrumentsArray,Type)
+//*
+//*  Date of Creating: 08/11/2017
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetInstrumentName(InstrumentsArray,Type)
+{
+  try
+  {
+    for (var i=0;i<InstrumentsArray["length"];i++)
+    {
+      var InstrumentNode=InstrumentsArray[i];
+      var InstrumentNodeValues=InstrumentNode["split"](",");
+    
+      for (var j=0;j<InstrumentNodeValues["length"];j++)
+      {
+        if(aqString["Find"](InstrumentNodeValues[j],"TYPE:"+Type,0)!=-1)
+        {
+          var Instrument=InstrumentNodeValues[i]["split"](":");
+          var InstrumentName=Instrument[1];
+          return InstrumentName; 
+          break;
+        }
+      }
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"](exp["description"])
+  }
+}
+
+
+
+function GetRandomInteger(iMin,iMax)
+{
+ var iVal=Math.round(Math.random()*(iMax-iMin)+iMin)
+ return iVal;
+}
+
+   // Function will update "ENABLED" field in the "Federation.xml" in "InstrumentOutput" folder
+function EnableDisableModule(ModuleName,status)
+{
+  try
+  {
+  Log["AppendFolder"]("CommonUtilities::EnableDisableModule");
+  Log["Message"]("Setting Module " + ModuleName + " status to " + status);
+  docPath="C:\\TrinidadData\\\InstrumentOutput\\FederationConfig.xml";
+  doc = Sys.OleObject("Msxml2.DOMDocument.6.0");
+  doc.async = false;
+  doc.load(docPath);
+
+  xpath1 = ".//FEDERATION/INSTRUMENT[@MODULE_TYPE='" + ModuleName + "']";
+
+  Node = doc.selectSingleNode(xpath1);
+   Attrs = Node["attributes"];
+      for(i = 0; i < Attrs["length"]; i++)
+      {
+        Attr = Attrs["item"](i);
+        if(Attr["nodeName"]=="ENABLED")
+        {
+          Attr["nodeValue"]=status;
+          doc["save"](docPath);
+          break;
+        } 
+      }
+      Log["Message"](ModuleName + " status set to " + status);
+  Log["PopLogFolder"]();
+  return true;
+  }
+  catch(exp)
+  {
+   Log["Warning"]("Exception " + exp["description"]);
+   Log["PopLogFolder"]();
+   return false;
+  } 
+}
+
+function GetModuleState(sModuleType)
+{
+  try
+  {
+    sConfigPath="F:\\InstrumentOutput\\FederationConfig.xml"
+    var objBuildInfo  = ReadXML(sConfigPath);
+    var objInstrumentsInfo=objBuildInfo["SelectNodes"]("FEDERATION/INSTRUMENT")
+    var arrInstrumentsState = new Array();
+    var m=0;
+    for(var i=0; i<objInstrumentsInfo["length"];i++)
+    {
+      if(objInstrumentsInfo["item"](i)["getAttribute"]("MODULE_TYPE")==sModuleType)
+      {
+        arrInstrumentsState[m]=objInstrumentsInfo["item"](i)["getAttribute"]("ENABLED")
+        m=m+1;
+      } 
+    }
+    return arrInstrumentsState;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    return false;
+  }
+}
+
+function GetInstrumentsIP(sModuleType)
+{
+  try
+  {
+    sConfigPath="F:\\InstrumentOutput\\FederationConfig.xml"
+    var objBuildInfo  = ReadXML(sConfigPath);
+    var objInstrumentsInfo=objBuildInfo["SelectNodes"]("FEDERATION/INSTRUMENT")
+    var arrInstrumentsIP = new Array();
+    var m=0;
+    for(var i=0; i<objInstrumentsInfo["length"];i++)
+    {
+      if(objInstrumentsInfo["item"](i)["getAttribute"]("MODULE_TYPE")==sModuleType)
+      {
+        arrInstrumentsIP[m]=objInstrumentsInfo["item"](i)["getAttribute"]("IP")
+        m=m+1;
+      } 
+    }
+    return arrInstrumentsIP;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+  }
+}
+
+function GetTestItemsByTestName_New(TestDataPath, WorkSheetName, TestName)
+{
+  try
+  { 
+  QCDefList=Sys["OleObject"]("ADODB.recordset")
+ // QCDefList["CursorLocation"]=3
+  QCDefList["CursorType"]=3
+  
+    var AConnection,Cmd,TestList,Query;
+    var ColumnQuery = "SELECT * FROM [" +WorkSheetName+ "$] Where TestName='"+ TestName +"'";
+    AConnection = Sys.OleObject("ADODB.Connection");
+    AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 8.0;";
+    AConnection["Open"]();  
+    QCDefList["Open"](ColumnQuery,AConnection);
+    RecCount=QCDefList["RecordCount"];
+
+    if(RecCount>0)
+      {
+        return QCDefList;
+      }
+    else
+      {
+        return null; 
+      }
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return null;
+  } 
+ }
+
+ //Reading Tdef information from the Excel file
+ 
+function GetTDefInfo(TestDataPath, WorkSheetName)
+{
+
+  var AConnection,Cmd,TestList,Query;
+  var ColumnQuery = "SELECT * FROM [" +WorkSheetName+ "$]"
+  //AConnection = ADO["CreateConnection"]();
+  AConnection = Sys.OleObject("ADODB.Connection");
+  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 8.0;";  
+  AConnection["Open"]();
+  Cmd = ADO["CreateCommand"]();
+  Cmd["ActiveConnection"] = AConnection;
+  Cmd["CommandType"] = adCmdText;
+  Cmd["CommandText"] = ColumnQuery;
+  TdefList = Cmd["Execute"]();
+  return TdefList;
+  //CoulmnCount = TdefList["Fields"]["Count"]
+
+}
+
+function GetTDefInfoHydra(TestDataPath, WorkSheetName)
+{
+
+  var AConnection,Cmd,TestList,Query;
+  var ColumnQuery = "SELECT * FROM [" +WorkSheetName+ "$]"
+//  AConnection = ADO["CreateConnection"]();
+  AConnection = Sys.OleObject("ADODB.Connection");
+//  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 8.0;";  
+//  AConnection["Open"]();
+    //--------------Hydra -Bhawya-------------
+  Log["Enabled"] =false 
+  try{
+	  //Below line TC 12.3 -Hydra
+	  AConnection["ConnectionString"] = "provider=Microsoft.Jet.OLEDB.4.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 8.0;"; 
+	  AConnection["Open"]();
+	  Log["Enabled"] =true
+	  Log["Message"]("Using TC 12.3 Excel connection string")
+
+ } catch(exp)
+  {
+
+	if(aqString["Find"]( exp["description"], "Provider cannot be found. It may not be properly installed.") != -1)
+	{
+	  //Below line TC 12.6 -Hydra
+	  AConnection["ConnectionString"] = "provider=Microsoft.ACE.OLEDB.12.0;Data Source='" + TestDataPath + "';Extended Properties=Excel 12.0;";  
+	  Log["Enabled"] =true
+	  Log["Message"]("Using TC 12.6 Excel connection string")
+	  AConnection["Open"]();          
+  }
+  }
+  
+    Cmd = ADO["CreateCommand"]();
+  Cmd["ActiveConnection"] = AConnection;
+  Cmd["CommandType"] = adCmdText;
+  Cmd["CommandText"] = ColumnQuery;
+  TdefList = Cmd["Execute"]();
+  return TdefList;
+  //CoulmnCount = TdefList["Fields"]["Count"]
+
+}
+
+function GetProcessState(strProcessName)
+{
+  try
+  {
+    Log["Enabled"] = false;
+    if(Sys["Process"](strProcessName)["Exists"] == true)      
+    {
+      Log["Enabled"] = true;
+      return true;
+    }
+    else
+    {
+      Log["Enabled"] = true;
+      return false;
+    }
+  } 
+  catch(exp) 
+  {
+    Log["Enabled"] = true;
+    Log["Error"]("Exception - " + exp["description"]);
+    return null;
+  }
+}
+
+function WaitForProcessState(strProcessName, boolDesiredState, intWaitTimeMS)
+{
+  try
+  {
+    objProcess = Sys["WaitProcess"](strProcessName, intWaitTimeMS);
+    if(objProcess["Exists"] == boolDesiredState)  
+    {
+      if(boolDesiredState)
+        Log["Message"]("Process: " + strProcessName + " exists");
+      else
+        Log["Message"]("Process: " + strProcessName + " does not exists now")
+          
+      return true;
+    }
+    else
+      return false;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return null;
+  }
+} 
+
+function WaitToKillProcess(arrProcess, intWaitTimeMS)
+{
+//  strProcessName = "iexplore"
+//  intWaitTimeMS = 10000;
+  
+  try
+  {
+    var boolFlag = false;
+    for(var i =0; i<arrProcess["length"]; i++)
+    {
+      strProcessName = arrProcess[i];
+      if(!WaitForProcessState(strProcessName, false, 5000))
+      {
+        Log["Message"]("Process : "+strProcessName+" still exists. Trying to explicitly kill it.");
+
+        for(var intCount=0; intCount <5; intCount++)
+        {
+          Log["Enabled"] = false;
+          Sys["Process"](strProcessName)["Terminate"]();
+          Log["Enabled"] = true;
+        
+          //Wait for the process to get killed
+          boolFlag = WaitForProcessState(strProcessName, false, intWaitTimeMS);
+          if(boolFlag)
+          {
+            Log["Message"](strProcessName + " was killed.");
+            break;
+            //return true;
+          } 
+        }
+        if(!boolFlag)
+        {
+          Log["Warning"](strProcessName + " did not get killed");
+          //return false;
+        }
+      }
+    }
+  } 
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return null;
+  }
+}
+
+//****************TDef - Reagents XML**************
+
+//***************************************************************************************
+//*   Function Name        : loadTDefFile()
+//*   Function Description : This function is used to parse the TDef xml file and get the parent node 
+//*   Input                : TDef xml file path 
+//*   Output               : return Parentnode, if the given xml is parsed 
+//*                          return false, if the given xml is not parsed
+//*   Created By           : Suresh Kumar
+//*   Created Date         :  -
+//*   Modified By          : Suresh Kumar
+//*****************************************************************************************
+function loadTDefFile(xmlFilePath)
+{
+  try
+  {
+    Log["AppendFolder"]("Loading Tdef file from the path :" + xmlFilePath)
+    
+    var xmlDoc;
+    xmlDoc = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    xmlDoc["async"] = false;
+    xmlDoc["load"](xmlFilePath);
+
+    // Report an error, if, for instance, the markup or file structure is invalid
+    if(xmlDoc["parseError"]["errorCode"] != 0)
+    {
+      s = "Reason:\t" + xmlDoc["parseError"]["reason"] + "\n" +
+          "Line:\t" + aqConvert["VarToStr"](xmlDoc["parseError"]["line"]) + "\n" +
+          "Pos:\t" + aqConvert["VarToStr"](xmlDoc["parseError"]["linePos"]) + "\n" +
+          "Source:\t" + xmlDoc["parseError"]["srcText"];
+      // Post an error to the log and exit
+      Log["Error"]("Cannot parse the document.", s);
+      Log["PopLogFolder"]();
+      return 0;
+    }
+ 
+    Log["Message"]("Parsed Tdef file from the path :"+ xmlFilePath);
+    Log["PopLogFolder"]();
+    return xmlDoc["documentElement"];;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function readTDefFile(parentNode)
+{
+  try
+  {
+    Log["AppendFolder"]("Reading reagents data from Tdef File");
+    //Initialize new array
+    var reagentDataArr = new Array();  
+    //Initialize flag
+    var isArrAdded = false;  
+    // Obtain the collection of child nodes
+    var ChildNodes = parentNode["childNodes"];
+    
+    mainLoop:
+    for(var i=0;i<ChildNodes.length;i++)
+    {
+      var name = ChildNodes["item"](i)["nodeName"]
+      //Verify child node name is IAData
+      if(name == "IAData") 
+      {    
+        //Get childs inside IAData node
+        var iaDataChildNodes = ChildNodes["item"](i)["childNodes"];
+
+        for(var nodeIndex =0; nodeIndex<iaDataChildNodes.length; nodeIndex++)
+        { 
+          //Verify if the node name is ReagentList
+          if(iaDataChildNodes["item"](nodeIndex)["nodeName"] == "ReagentList")
+          {
+            //Get nodes inside reagentlist node
+            var cNode = iaDataChildNodes["item"](nodeIndex);
+            var reagentNodes = cNode["childNodes"];   
+    
+            for(var j=0;j<reagentNodes.length;j++)
+            {
+              //Push the dictionary to 'reagentDataArr' array
+              reagentDataArr.push(readTDefReagents(reagentNodes["item"](j)))  
+            }
+            //Check if all data where readed
+            if(reagentDataArr.length == reagentNodes.length)
+            {
+              isArrAdded = true;
+              break mainLoop;
+            }                      
+          } 
+        }                        
+      }
+    }      
+    //Check if reagents data are added to array
+    if(isArrAdded)
+    {
+      Log["Message"]("Readed "+reagentNodes.length+" reagent data's from TDef file");
+      Log["PopLogFolder"]();
+      return reagentDataArr;
+    }
+    else
+    {
+      Log["Error"]("Failed to read reagents data from Tdef file");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function readTDefReagents(parentNode)
+{
+  try
+  {
+    //Initialize a dictionary object
+    var dict = {};  
+    //Get all the child nodes of current reagent node
+    var ChildNodes = parentNode["childNodes"];  
+    //Loop till number of childnodes
+    for(var i=0;i<ChildNodes["Length"];i++)
+    {
+      //Add current node name as key and 'text' as value to the dictionary
+      dict[ChildNodes["item"](i)["nodeName"]] = ChildNodes["item"](i)["Text"];
+      if(i == ChildNodes["Length"] -1)
+      {
+        return dict;
+      }
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ReadReagentParametersFromXML()
+//*   Function Description : This function is used to load and read the reagent paramters from Tdef xml
+//*   Input                : File/Assay name without .TDef extension (ex: AFP) 
+//*   Output               : returns array of dictionaries with (node name as keys) and (node value as values) of reagents, if loaded and readed
+//*                          return false, if the given xml is not parsed and failed to read
+//*   Created By           : Suresh Kumar
+//*   Created Date         :  -
+//*   Modified By          : Suresh Kumar
+//*****************************************************************************************
+function ReadReagentParametersFromXML(assayName)
+{
+  try
+  {      
+    Log["AppendFolder"]("Reading reagent data from TDef file of assay :"+assayName);
+    
+    var tdefFilePath = "C:\\Siemens\\ARM\\TestDefinition\\Hydra\\"+assayName+".tdef"
+  
+    if(aqFile["Exists"](tdefFilePath))
+    {
+          //Load the Tdef file
+          var parentNode = loadTDefFile(tdefFilePath);   
+        
+          if(typeof parentNode == "boolean")
+          {
+            Log["Error"]("Failed to load Tdef file from :"+tdefFilePath);
+            Log["PopLogFolder"]();
+            return false;
+          }
+
+          //Read the Tdef File
+          var TdefReagentsDataArr = readTDefFile(parentNode);  
+          
+          if(TdefReagentsDataArr == false)
+          {
+            Log["Error"]("Failed to read eagent data from TDef file of assay :"+assayName);
+            Log["PopLogFolder"]();
+            return false;
+          }
+          
+          Log["Message"]("Successfully read  reagent data from TDef file of assay :"+assayName);
+          Log["PopLogFolder"]();
+          return TdefReagentsDataArr;
+    }
+    else
+    {
+      Log["Error"]("The file doesn't exist in the path : "+tdefFilePath);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ReadCalCode(parentNode)
+{
+  try
+  {
+    Log["AppendFolder"]("Reading Cal Code from Tdef File");
+    //Initialize new array
+    var calCode = null;  
+    //Initialize flag
+    var isArrAdded = false;  
+    // Obtain the collection of child nodes
+    var ChildNodes = parentNode["childNodes"];
+    
+    mainLoop:
+    for(var i=0;i<ChildNodes.length;i++)
+    {
+      var name = ChildNodes["item"](i)["nodeName"]
+      //Verify child node name is IAData
+      if(name == "IAData") 
+      {    
+        //Get childs inside IAData node
+        var iaDataChildNodes = ChildNodes["item"](i)["childNodes"];
+
+        for(var nodeIndex =0; nodeIndex<iaDataChildNodes.length; nodeIndex++)
+        { 
+          //Verify if the node name is ReagentList
+          if(iaDataChildNodes["item"](nodeIndex)["nodeName"] == "IACalibration")
+          {
+            //Get nodes inside calibration node
+            var cNode = iaDataChildNodes["item"](nodeIndex);
+            var calNodes = cNode["childNodes"];   
+    
+            for(var j=0;j<calNodes.length;j++)
+            {
+              if(calNodes["item"](j)["nodeName"] == "CalCode")
+              {
+                calCode = calNodes["item"](j)["Text"];
+                break mainLoop;
+              }
+            }                    
+          } 
+        }                        
+      }
+    }      
+    //Check if cal code is readed
+    if(calCode != null)
+    {
+      Log["Message"]("Readed cal code '"+calCode+"' from TDef file");
+      Log["PopLogFolder"]();
+      return calCode;
+    }
+    else
+    {
+      Log["Error"]("Failed to read reagents data from Tdef file");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+//***************************************************************************************
+//*   Function Name        : ReadCalCodeFromXML()
+//*   Function Description : This function is used to load and read the Cal Code from Tdef xml
+//*   Input                : File/Assay name without .TDef extension (ex: AFP) 
+//*   Output               : returns Cal Code of reagent, if xml loaded and readed
+//*                          return false, if the given xml is not parsed and failed to read
+//*   Created By           : Suresh Kumar
+//*   Created Date         :  -
+//*   Modified By          : Suresh Kumar
+//*****************************************************************************************
+function ReadCalCodeFromXML(assayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Reading CalCode from TDef file of assay :"+assayName);
+    
+    var tdefFilePath = "C:\\Siemens\\ARM\\TestDefinition\\Hydra\\"+assayName+".tdef"
+  
+    if(aqFile["Exists"](tdefFilePath))
+    {
+      //Load the Tdef file
+      var parentNode = loadTDefFile(tdefFilePath);   
+        
+      if(typeof parentNode == "boolean")
+      {
+        Log["Error"]("Failed to load Tdef file from :"+tdefFilePath);
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //Read cal code from the file
+      calCode = ReadCalCode(parentNode)
+      
+      if(typeof calCode == "boolean")
+      {
+        Log["Error"]("Failed to read cal code from "+assayName+" Tdef file");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      Log["Message"](calCode+" is the cal code readed from "+assayName+" Tdef file");
+      Log["PopLogFolder"]();
+      return calCode;   
+    }
+    else
+    {
+      Log["Error"]("The file doesn't exist in the path : "+tdefFilePath);
+      Log["PopLogFolder"]();
+      return false;
+    }           
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+

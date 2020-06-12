@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<child name="CommonUtilities" key="{E15BE20F-0288-45CE-9461-ACA16FAB7FE2}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+		</child>
+		<child name="SQLUtilities" key="{4C23A9D8-240D-470A-9945-8CCACEDD1A75}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+		</child>
+		<child name="CCLibrary" key="{73D072D9-372F-457D-83E5-3CADF8A7FB7E}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CC\CCLibrary.scs" />
+		</child>
+		<child name="IALibrary" key="{0DE66A09-EEE9-4D64-9D5A-FEC0788008F1}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\IA\IALibrary.scs" />
+		</child>
+		<child name="SHLibrary" key="{F99838C5-3F16-422A-B1C5-172B8C30966B}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\SH\SHLibrary.scs" />
+		</child>
+		<child name="InvokeCCSim" key="{B103C0D4-4972-4A22-B138-7384DCF2F14F}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeCCSim.scs" />
+		</child>
+		<child name="InvokeIASim" key="{CEFE8B8F-9154-4B42-BE3A-40A6667570B4}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeIASim.scs" />
+		</child>
+		<child name="InvokeSHSim" key="{037D421A-920B-4630-9FEC-4CC78360F06D}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeSHSim.scs" />
+		</child>
+		<child name="ControlAccessLibrary" key="{5AE9AB74-48AF-4D9D-BC50-1DA4B6254F3E}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+		</child>
+		<child name="WorkflowNavigator" key="{F4E3E156-5661-4DDA-AD5D-5B31A0246931}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+		</child>
+		<child name="TCNativeLibraries" key="{07FC9B15-4710-4C45-AC2B-7B6B8DD7955C}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+		</child>
+		<child name="DecapperLibrary" key="{20DA1132-2118-4BCE-B304-7132ADC67232}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Decapper\DecapperLibrary.scs" />
+		</child>
+		<child name="InvokeDCSim" key="{30562AB4-E52C-4BC3-A982-F73866DB76D7}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeDCSim.scs" />
+		</child>
+		<child name="LocalizationUtilities" key="{0BF883B9-1336-48A5-B403-4E6E8C878927}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+		</child>
+		<child name="NetworkSuiteLibrary" key="{EA68FE64-E1B5-4419-9953-4A9F4F23BD8D}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\NetworkSuiteLibrary.scs" />
+		</child>
+		<child name="TCS2Library" key="{A7D343C0-142E-432F-AD06-CBEA39872CC6}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\TCS2\TCS2Library.scs" />
+		</child>
+		<child name="InvokeTCS2App" key="{E51B9CF2-3275-4C13-BD62-3B721E1AB3EB}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeTCS2App.scs" />
+		</child>
+		<child name="SealerLibrary" key="{C1FC6E47-7456-4371-8545-27D00FC91BBF}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Sealer\SealerLibrary.scs" />
+		</child>
+		<child name="InvokeSlrSim" key="{43C15B07-62D9-4E99-962C-C315EDD7A766}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeSlrSim.scs" />
+		</child>
+	</children>
+	<folders>
+		<folder caption="TaskLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="CommonLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{E15BE20F-0288-45CE-9461-ACA16FAB7FE2}" />
+						<ref key="{4C23A9D8-240D-470A-9945-8CCACEDD1A75}" />
+						<ref key="{0BF883B9-1336-48A5-B403-4E6E8C878927}" />
+						<ref key="{EA68FE64-E1B5-4419-9953-4A9F4F23BD8D}" />
+					</references>
+				</folder>
+				<folder caption="GUIAccessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="ControlAccess" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{5AE9AB74-48AF-4D9D-BC50-1DA4B6254F3E}" />
+							</references>
+						</folder>
+						<folder caption="TCNativeLib" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{07FC9B15-4710-4C45-AC2B-7B6B8DD7955C}" />
+							</references>
+						</folder>
+						<folder caption="WorkflowNavigator" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{F4E3E156-5661-4DDA-AD5D-5B31A0246931}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+				<folder caption="Modules" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="CC" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{73D072D9-372F-457D-83E5-3CADF8A7FB7E}" />
+							</references>
+						</folder>
+						<folder caption="IA" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{0DE66A09-EEE9-4D64-9D5A-FEC0788008F1}" />
+							</references>
+						</folder>
+						<folder caption="SH" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{F99838C5-3F16-422A-B1C5-172B8C30966B}" />
+							</references>
+						</folder>
+						<folder caption="DC" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{20DA1132-2118-4BCE-B304-7132ADC67232}" />
+							</references>
+						</folder>
+						<folder caption="TCS2" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{A7D343C0-142E-432F-AD06-CBEA39872CC6}" />
+							</references>
+						</folder>
+						<folder caption="Sealer" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{C1FC6E47-7456-4371-8545-27D00FC91BBF}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+			</folders>
+		</folder>
+		<folder caption="TestCaseLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<references>
+				<ref key="{B103C0D4-4972-4A22-B138-7384DCF2F14F}" />
+				<ref key="{CEFE8B8F-9154-4B42-BE3A-40A6667570B4}" />
+				<ref key="{037D421A-920B-4630-9FEC-4CC78360F06D}" />
+				<ref key="{30562AB4-E52C-4BC3-A982-F73866DB76D7}" />
+				<ref key="{E51B9CF2-3275-4C13-BD62-3B721E1AB3EB}" />
+				<ref key="{43C15B07-62D9-4E99-962C-C315EDD7A766}" />
+			</references>
+		</folder>
+	</folders>
+</Root>

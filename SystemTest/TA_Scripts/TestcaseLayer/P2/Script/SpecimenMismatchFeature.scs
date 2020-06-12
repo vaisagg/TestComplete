@@ -1,0 +1,347 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT SpecimenMismatchFeatureSteps
+
+function SpecimenMismatchRegression()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Feature Setup: Specimen Mismatch");
+  if(!SpecimenMismatchSetup())
+  {
+    ReportTestStatusToResultXML("Specimen Mismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    ReportTestStatusToResultXML("Specimen Mismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    ReportTestStatusToResultXML("Specimen Mismatch", "SpecimenMismatchRegCharter_Sc03", "F");  
+    ReportTestStatusToResultXML("Specimen Mismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  SpecimenMismatchRegCharter_Sc01();
+
+  SpecimenMismatchRegCharter_Sc02();
+
+  SpecimenMismatchRegCharter_Sc03();
+  
+  SpecimenMismatchRegCharter_Sc04();
+}
+
+function SpecimenMismatchRegCharter_Sc01()
+{
+
+  Log["AppendFolder"]("Specimen Mismatch RegCharter 306641 : Scenario 1");
+  NetworkSuite["Variables"]["SHScenario"] = "SpecimenMismatchRegCharter_Sc01";
+    
+  ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "I");
+   
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And processing of sample with specimen mismatch is set to do not process");
+
+  if(!GivenProcessingOfSampleWithSpecimenMismatchIsSetToDoNotProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When capped sample tube of specimen type not matching with the cap color group is loaded");
+  if(!WhenCappedSampleTubeOfSpecimenTypeNotMatchingWithCapColorGroupIsLoaded())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then Sample is marked with specimen mismatch error");
+  if(!ThenSampleIsMarkedWithSpecimemMismatchError())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sample is unloaded to specimen mismatch error sort area");
+  if(!ThenSampleIsUnloadedToSpecimenMismatchErrorSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And Flags and log entries are displayed");
+  if(!ThenFlagsAndLogEntriesAreDisplayed())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And provide an add on order to the sample");
+  if(!ThenProvideAnAddOnOrderToTheSample())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample is not reloaded  from specimen mismatch error sort area");
+  if(!ThenSampleIsNotReloadedFromSpecimenMismatchErrorSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+}
+
+
+function SpecimenMismatchRegCharter_Sc02()
+{  
+  Log["AppendFolder"]("Specimen Mismatch RegCharter 306641 : Scenario 2");
+  NetworkSuite["Variables"]["SHScenario"] = "SpecimenMismatchRegCharter_Sc01";
+    
+  ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "I");
+   
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And processing of sample with specimen mismatch is set to process");
+  if(!GivenProcessingOfSampleWithSpecimenMismatchIsSetToProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When capped sample tube of specimen type not matching with the cap color group is loaded");
+  if(!WhenCappedSampleTubeOfSpecimenTypeNotMatchingWithCapColorGroupIsLoaded_RegSc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is sent to analyzer");
+  if(!ThenSampleIsSentToAnalyzer())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample is unloaded to cap color sort area");
+  if(!ThenSampleIsUnloadedToCapColorSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();  
+  
+}
+
+function SpecimenMismatchRegCharter_Sc03()
+{  
+  Log["AppendFolder"]("Specimen Mismatch RegCharter 306641 : Scenario 3");
+  NetworkSuite["Variables"]["SHScenario"] = "SpecimenMismatchRegCharter_Sc03";
+    
+  ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "I");
+   
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And processing of sample with specimen mismatch is set to do not process");
+  if(!GivenProcessingOfSampleWithSpecimenMismatchIsSetToDoNotProcess_SC03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When capped sample tube of specimen type not matching with the cap color group is loaded");
+  if(!WhenCappedSampleTubeOfSpecimenTypeNotMatchingWithCapColorGroupIsLoaded_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  Log["AppendFolder"]("Then Sample is marked with specimen mismatch error");
+  if(!ThenSampleIsMarkedWithSpecimemMismatchError_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sample is unloaded to Hold Area as no empty slot in Specimen Mismatch sort area");
+  if(!ThenSampleIsUnloadedToHoldArea_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And Flags and log entries are displayed");
+  if(!ThenFlagsAndLogEntriesAreDisplayed_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+  
+  Log["AppendFolder"]("And Sample is relocated to Specimen Mismatch sort area when empty slot is available");
+  if(!ThenSampleIsUnloadedToSpecimenMismatchSortAreaWhenSlotIsAvailable_Sc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+}
+
+
+function SpecimenMismatchRegCharter_Sc04()
+{
+  Log["AppendFolder"]("Specimen Mismatch RegCharter 306641 : Scenario 4");
+
+  NetworkSuite["Variables"]["SHScenario"] = "SpecimenMismatchRegCharter_Sc01";
+  ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "I");
+   
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And processing of sample with specimen mismatch is set to do not process");
+  if(!GivenProcessingOfSampleWithSpecimenMismatchIsSetToDoNotProcess())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When capped sample tube of specimen type matching with the cap color group is loaded");
+  if(!WhenCappedSampleTubeOfSpecimenTypeMatchingWithCapColorGroupIsLoaded())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then Sample is decapped and sent to the analyzer for processing");
+  if(!ThenSampleIsDecappedAndSentToTheAnalyzerForProcessing())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sample is unloaded to matching cap color sort area");
+  if(!ThenSampleIsUnloadedToMatchingCapColorSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-SpecimenMismatch", "SpecimenMismatchRegCharter_Sc04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}

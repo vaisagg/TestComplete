@@ -1,0 +1,54 @@
+
+
+function Searchtext()
+{
+var file = "C:\\Output\\log3.txt"
+  
+   // Open text file
+var Openfile = aqFile["OpenTextFile"](file, aqFile["faRead"], aqFile["ctANSI"]);
+  
+  // Read the contents of file
+  var contents = Openfile["ReadAll"]();
+  
+  var text1 = "request failed";
+  var text2 = "Configuration complete";
+   // Verify thetext in contents of file
+  var Res1 = aqString["Find"](contents, text1);
+  var Res2 = aqString["Find"](contents, text2);
+  
+//   var Res1 = aqString["Find"](contents, text1);
+//   var Res2 = aqString["Find"](contents, text2);
+  if ( Res1 != -1 ) 
+  {
+    //Log["Message"]("text '" + text + "' was found in file '");
+    Log["Message"](" Download configuration is not completed, stopping the script");
+    Runner.Stop();
+  }
+  else
+  if ( Res2 != -1 ) 
+   {
+   Log["Message"]("Download configuration is completed, continuing the script '"); 
+   }
+      
+   //Runner.Stop();
+   
+   Log.Message(" dont run");
+   
+}
+
+function startIoT_updated()
+{
+  var StartIoTBat = "F:\\ReagentPSfiles\\Checkpoint\\Start_IoT_DmL_smart.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](StartIoTBat);
+  aqUtils["Delay"](50000,"Waiting for start_iot window to run")
+  
+  }
+  
+  
+function checkpointtext()
+{
+  startIoT_updated();
+  Searchtext();
+  RunSequence();
+}

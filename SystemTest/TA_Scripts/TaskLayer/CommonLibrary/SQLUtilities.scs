@@ -1,0 +1,192 @@
+﻿var lDatabaseName;
+var lSQLServerName;
+var lConnectionString;
+var lConnectionObject;
+
+function GetDatabaseName()
+{
+    return aqConvert.VarToStr(lDatabaseName);
+}
+
+function GetSQLServerName()
+{
+    return aqConvert.VarToStr(lSQLServerName);
+}
+
+
+function GetConnectionObject()
+{
+    return lConnectionObject;
+}
+
+function SQLUtilities_Initialize()
+{
+if (!Project.Variables.VariableExists("DatabaseName")) 
+        {
+        Project.Variables.AddVariable("DatabaseName", "String")    
+        }
+    if (!Project.Variables.VariableExists("SQLServerName")) 
+        {
+        Project.Variables.AddVariable("SQLServerName", "String")    
+        }
+        
+    lDatabaseName = Project.Variables.DatabaseName;
+    lSQLServerName = Project.Variables.SQLServerName;    
+    lConnectionObject= Sys.OleObject("ADODB.Connection");
+    
+    
+}
+
+function SQLUtilities_Finalize()
+{ 
+try
+    {    
+    if (lConnectionObject.State != 0)
+        {
+            lConnectionObject.Close()
+        }
+    lConnectionObject = null
+    }
+catch (e)
+{
+Log.Warning(e.description)
+}
+}
+
+function RefreshSettings()
+{
+    lDatabaseName = Project.Variables.DatabaseName;
+    lSQLServerName = Project.Variables.SQLServerName; 
+}
+
+function GetConnectionString()
+{
+    RefreshSettings();
+    //Provider=SQLOLEDB;Data Source=.;Initial Catalog=Bus_DM;Integrated Security = SSPI;
+    //lConnectionString = 'Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=';
+    lConnectionString = 'Provider=SQLOLEDB;Integrated Security=SSPI;Initial Catalog=';
+    lConnectionString = lConnectionString + lDatabaseName;
+    lConnectionString = lConnectionString + ';Data Source=' + lSQLServerName;
+    return lConnectionString;
+}
+
+function ExecSQLQueryFile(FileName)
+{
+    try
+    {
+        RefreshSettings();
+        var RowCount;  
+        var ADOConnection = Sys["OleObject"]("ADODB.Connection");  
+        ADOConnection.ConnectionString = GetConnectionString();
+        var SQLQuery = aqFile.ReadWholeTextFile(aqConvert.VarToStr(FileName), aqFile.ctANSI)
+        var SQLQueries=SQLQuery["split"]("Go")
+        ADOConnection.Open() 
+        for(var i=0;i<SQLQueries["length"];i++)
+        {
+           ADOConnection.Execute(SQLQueries[i]);
+        }
+        ADOConnection.Close()
+        return true;
+    }
+    catch (e)
+    {
+        Log.Error("Error executing Query file " + aqConvert.VarToStr(FileName) + ": " + e.description)
+        return false;
+    }
+}
+
+function ExecSQLQueryFromString(QueryString, ConnectionString)
+{
+    try
+    {
+      var ADOConnection = Sys["OleObject"]("ADODB.Connection");
+      var RecordSet = Sys["OleObject"]("ADODB.Recordset");
+      ADOConnection["ConnectionString"] = ConnectionString;
+      ADOConnection["Open"]();
+      RecordSet["Open"](QueryString, ADOConnection,1,1 );
+	  
+	  //Added -Hydra 20 Nov -Bhawya
+      ADOConnection.Close()
+    }    
+    catch (e)
+    {
+	  //Added -Hydra 20 Nov -Bhawya
+      ADOConnection.Close()
+      Log.Error("Error executing QueryString.  See Additional Information for QueryString value: " + e.description, aqConvert.VarToStr(QueryString))
+      return -1
+    }
+}
+
+function ConnectDB(ConnectionString)
+{
+  try
+  {
+    var ADOConnection = Sys["OleObject"]("ADODB.Connection");
+    ADOConnection["ConnectionString"] = ConnectionString;
+    ADOConnection["Open"]();
+    return ADOConnection;
+  }
+  catch (e)
+  {
+    Log.Error("Exception " + e.description);
+  } 
+}
+
+function ReturnQueryRecordSetFromString(QueryString, ConnectionString)
+{
+    try
+    {
+      var ADOConnection = Sys["OleObject"]("ADODB.Connection");
+      var RecordSet = Sys["OleObject"]("ADODB.Recordset");
+      ADOConnection["ConnectionString"] = ConnectionString;
+      ADOConnection["Open"]();
+      // Execute the query
+      RecordSet["Open"](QueryString, ADOConnection,1,1 );
+       if (RecordSet["RecordCount"]>0)
+        RecordSet["MoveFirst"]();
+      return RecordSet;
+    }
+    catch (e)
+    {
+      Log.Error("Error running QueryString.  See Additional Information for QueryString value: " + e.description, aqConvert.VarToStr(QueryString))
+      return aqObject.EmptyVariant;
+    }    
+}
+
+
+function ExecuteStoredProcedure(ProcedureName)
+{
+    try
+    {
+        var RowCount
+        RefreshSettings();
+        lConnectionObject.ConnectionString = GetConnectionString();
+        lConnectionObject.Open()        
+        lConnectionObject.Execute("EXEC " + aqConvert.VarToStr(ProcedureName), RowCount);
+        lConnectionObject.Close()
+        return RowCount
+    }
+    catch (e)
+    {
+        Log.Error("Error running Stored procedure " + aqConvert.VarToStr(ProcedureName) + ": " + e.description)
+        return -1
+    }
+}
+
+
+function FormatDateForSQL(OffsetDays)
+{
+    try
+        {
+        OffsetDays = aqConvert.VarToInt(OffsetDays)
+        }
+    catch (e)
+        {
+        Log.Warning("Value of OffsetDays is non-numeric, using zero (0) instead")
+        OffsetDays = 0                                                    
+        }
+    
+    var DateValue = aqDateTime.Today();
+    DateValue = aqDateTime.AddDays(DateValue, OffsetDays);
+    return aqConvert.DateTimetoFormatStr(DateValue, '%Y-%m-%d');
+}

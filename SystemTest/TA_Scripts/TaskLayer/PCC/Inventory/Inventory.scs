@@ -1,0 +1,5088 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT CommonUtilities
+
+function VerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName)
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::VerifyCalSampleUnloadedToStorage");
+    Log["Message"]("Checking the Cal-QC Sample details grid for Calibrator Sample having Lot Num as : " +LotNumber);
+    
+    var objctrl = GetControl("Inventory_CalQCStorageInventory", "dataGridCalQCSampleDetails");
+    var boolFlag = false;
+    for(intCount=0; intCount<45; intCount++)
+    {
+      var TotalRowCount = GetGridRowCount(objctrl);
+      for(intRowCount=1; intRowCount<=TotalRowCount; intRowCount++)
+      {
+        strCellText = aqString["Trim"](GetGridCellText(objctrl,intRowCount, "Material"));
+        if(aqString["Find"](strCellText, CalMaterialName) >= 0)
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Material Name: "+ CalMaterialName + " found on the Sample list");
+          Log["PopLogFolder"]();
+          return true;          
+        }
+      }
+      aqUtils["Delay"](2000, "Waiting for Sample to show up on the Cal-QC Sample details grid ");
+    }
+    
+    if(boolFlag)
+    {
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Material Name: "+ CalMaterialName + " is not showing up on the Sample list");
+      Log["PopLogFolder"]();  
+      return false; 
+    }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();  
+    return false; 
+  }
+}
+
+function GetAvailableSlotsNumberInCalQCStorageArea()
+{
+  Log["AppendFolder"]("Inventory::GetAvailableSlotsNumberInCalQCStorageArea");
+  var objctrl = GetControl("Inventory_CalQCStorageInventory", "txtBlockAvailableSlotsNumber");
+  var SlotsNumber=GetPropertyValue(objctrl,"WPFControlText")
+  Log["Message"]("Available slots in Cal-QC storage area is : " + SlotsNumber);
+  Log["PopLogFolder"]();
+  return SlotsNumber;
+}
+
+function ConfirmCalQCStorageContents()
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::ConfirmCalQCStorageContents");
+  
+    if(!SelectAnalyzer("SH"))
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+    var objctrl = GetControl("Inventory_CalQCStorageInventory", "btnConfirmCalQcStorageContents");
+    ClickControl(objctrl);
+  
+    var objctrl = GetControl("Inventory_CalQCStorageInventory", "radioBtnOperatorRemovedallContentsToDegfault");
+    ClickControl(objctrl);
+  
+    var objctrl = GetControl("Inventory_CalQCStorageInventory", "btnConfirmCalQCStorageOK");
+    ClickControl(objctrl);
+  
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+	{
+  	Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+	}
+}
+
+function LoadCCReagents(Assay)
+{
+try
+  {
+  Log["AppendFolder"]("Inventory::LoadCCReagents");
+  
+  var objctrl = GetControl("Inventory_ReagentCatridgeEntry", "cmbboxAssay");
+  SelectComboValue(objctrl, Assay)
+  Log["Message"]("Assay "+Assay+" is selected to load reagent");
+  
+  var iSequencenumber=GetRandomInteger(100000,999999)
+  Log["Message"](iSequencenumber)
+  var objctrl = GetControl("Inventory_ReagentCatridgeEntry", "txtBoxSequenceNumber");
+  SetText(objctrl,iSequencenumber)
+ 
+  var objctrl = GetControl("Inventory_ReagentCatridgeEntry", "btnLoadDatabase");
+  ClickControl(objctrl)
+  
+  Log["PopLogFolder"]();
+  return true;
+  }
+	catch(exp)
+	{
+	Log["Error"]("Exception",exp["description"]);
+  Log["PopLogFolder"]();
+  return false;
+	}
+}
+
+
+
+//Verifies that reagents loaded on specific analyzer sectionsunder reagents overview (CC or IA)
+function VerifyReagentLoaded(Assay,Analyzer)
+{
+  try
+  {
+  Log["AppendFolder"]("Inventory::VerifyReagentLoaded");
+   
+  var objctrl = GetControl("Inventory_ReagentOverview","winReagent");
+  var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+  var vararr=["Image","ModuleImage",Analyzer];
+  var objModule = Getchild(objctrl, proparr, vararr);
+  if (VerifyObjectExistance(objModule))//["Exist"])
+  {
+    ClickControl(objModule)//["Click"]();
+    Log["Message"]("Selected analyzer "+Analyzer)
+  }
+    
+  var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+  if (CheckTextonGrid(objctrl,"ReagentName", Assay))
+  {
+    Log["Message"]("Reagent "+Assay+" loaded successfully" )
+    Log["PopLogFolder"]();
+    return true;
+  }
+  else
+  {
+    Log["Message"]("Reagent "+Assay+"loading is unsuccessfull" )
+    Log["PopLogFolder"]();
+    return false;
+  }
+     
+  Log["PopLogFolder"]();
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyReagentAvailable(Reagent)
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::VerifyReagentLoaded");
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    var iRows=eval("objctrl.Items.Count")
+    var iMatch=0;
+    var iFlag;
+  
+    for(i=0;i<iRows;i++)
+    {
+      strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+      strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+      if((strCellValue == Reagent)&& (strEnabledValue))
+      {
+         iMatch=iMatch+1;
+      
+        //if(eval("objctrl.Items.Item("+i+").PairedPackSequenceNumber")!=null)
+        if(eval("objctrl.Items.Item("+i+").DisplaySequenceNumber")!=null)
+        {
+          //PairedPackSequenceNumber=eval("objctrl.Items.Item("+i+").PairedPackSequenceNumber.OleValue");
+          DisplaySequenceNumber=eval("objctrl.Items.Item("+i+").DisplaySequenceNumber.OleValue");
+           iFlag=1;
+          
+        //if (PairedPackSequenceNumber>0)
+        var result = aqString["Find"](DisplaySequenceNumber,"/")
+        if(result!=-1)
+        {
+          sequence = DisplaySequenceNumber["split"]("/");
+          if ((sequence[0]>0)&&(sequence[1]>0))
+          {
+            Log["Message"]("Reagent "+Reagent+" is available in the inventory");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+           iFlag=0;
+          }
+        }
+        else 
+        {
+          if (DisplaySequenceNumber>0)
+          {
+            Log["Message"]("Reagent "+Reagent+" is available in the inventory");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+           iFlag=0;
+          }
+        }// end of result if 
+        
+       } // end of displaysequencenumber if
+      }
+      else
+      {
+        iMatch=0;
+      }
+      if((iMatch==0)&(iFlag==0))
+      {
+        Log["Message"]("Reagent "+Reagent+" is not available in the inventory")
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+//Verifies that reagents are unloaded on specific analyzer sectionsunder reagents overview (CC or IA)
+function UnloadReagent(Assay,Analyzer)
+//function UnloadReagent()
+{
+  try
+  {
+      Log["AppendFolder"]("Inventory::UnloadReagent");
+  
+//      var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+//      var strControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+//      InitializeWorkflowXML(strWorkflowXMLPath);
+//      InitializeControlXML(strControlXMLPath);
+//      AddNameMappingObjects();
+//       var Assay ="Theo"
+//       var Analyzer = "CC"
+   
+      var objctrl = GetControl("Inventory_ReagentOverview","winReagent");
+      var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+      var vararr=["Image","ModuleImage",Analyzer];
+      var objModule = Getchild(objctrl, proparr, vararr);
+      if (VerifyObjectExistance(objModule))//["Exist"])
+      {
+        ClickControl(objModule)//["Click"]();
+        Log["Message"]("Selected analyzer "+Analyzer)
+      }
+      
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Chemistry Reagents overview screen before unloading reagent "+Assay);
+      var objReagentsGrid = GetControl("Inventory_ReagentOverview","grdReagents");
+     
+      //var iReagentcount=objctrl["Items"]["Count"]
+      var iReagentcount= GetGridRowCount(objReagentsGrid)
+      var checkcount = 0;
+      var reagentcount = 0;
+      
+      for (var i=0;i<iReagentcount;i++)
+      {
+        //if (objctrl["Items"]["Item"](i)["ReagentName"]["OleValue"]==Assay)
+        if (CheckTextonGridRow(objReagentsGrid,"ReagentName",i, Assay))
+        {
+          reagentcount = reagentcount+1;
+        }
+      }
+      
+      for (var row=0;row<iReagentcount;row++)
+      {
+          //if (objctrl["Items"]["Item"](row)["ReagentName"]["OleValue"]==Assay)
+          if (CheckTextonGridRow(objReagentsGrid,"ReagentName",row,Assay))
+          {
+              
+              SelectGridRow(objReagentsGrid, row);
+              checkcount = checkcount+1;
+              
+              var shellObj=Sys["WaitProcess"]("Shell");
+              var objbtnUnload = Getchild(shellObj, "WPFControlName", "RetrieveReagentPackButton");
+              if(GetPropertyValue(objbtnUnload, "Enabled") == false)
+              {
+                Log["Warning"]("Unable to unload the reagent "+Assay+ " : Unload button is disabled after selecting the reagent");
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unload button is disabled");
+                var proparr=["ClrClassName","WPFControlOrdinalNo"];
+                var vararr=["DataGridRow",row+1];
+                var objReagentRow = Getchild(objReagentsGrid, proparr, vararr);
+                ClickControl(objReagentRow);
+              }
+              else if(GetPropertyValue(objbtnUnload, "Enabled") == true)
+              {
+                  ClickControl(objbtnUnload);
+                  if(GetPropertyValue(objbtnUnload, "Enabled") == false)
+                  {
+                      intStartTime = aqDateTime["Time"]();
+                      var boolFlag = false;
+                      intTimeElapsed = 0;
+                      while((boolFlag!=true)&& (intTimeElapsed < 70000) )
+                      {
+                          var objbtnSubmit = GetControl("Inventory_ReagentOverview","btnSubmit")     
+                          if (VerifyObjectExists(objbtnSubmit))
+                          {                    
+                            intTimeElapsed = aqDateTime["Time"]() - intStartTime;
+                            aqUtils["Delay"](2000, "Waiting for CC Reagent "+Assay+" to get unloaded and Submit button to become disappear");
+                          }
+                          else
+                          {
+                            boolFlag = true;
+                            row = row -1;
+                            iReagentcount = iReagentcount-1;
+                          }
+                      }// end of while loop  
+                  }
+                  else if(GetPropertyValue(objbtnUnload, "Enabled") == true)
+                  {
+                      Log["Warning"]("Reagent "+Assay+" not getting unloaded: Unload button is still enabled after clicking on it");
+                      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "verify Reagent "+Assay+" status in screenshot which is not started getting unloaded");
+                      var proparr=["ClrClassName","WPFControlOrdinalNo"];
+                      var vararr=["DataGridRow",row+1];
+                      var objReagentRow = Getchild(objReagentsGrid, proparr, vararr);
+                      ClickControl(objReagentRow);
+                  } // end of inner if  
+              }// end of outer if  
+            }// end of outermost if 
+            if(checkcount==reagentcount)
+            {
+              Log["PopLogFolder"]();
+              return true;
+            } 
+            
+                  
+      }// end of for loop
+      if (checkcount=0)
+      {
+          Log["Warning"]("Reagent "+Assay+" not found in reagents grid : can not unload Reagent");
+          return true;
+      }
+      
+      /*
+      var intRows = GetGridRowNos(objctrl, "Reagent", Assay);
+      if(intRows["length"]>0)
+      {
+          for (var row=1;row<=intRows["length"];row++)
+          {
+              var intRowNum = GetGridRowNo(objctrl, "Reagent", Assay);
+              SelectGridRow(objctrl, intRowNum);
+              
+              var shellObj=Sys["WaitProcess"]("Shell");
+              var objbtnUnload = Getchild(shellObj, "WPFControlName", "RetrieveReagentPackButton");
+              if(GetPropertyValue(objbtnUnload, "Enabled") == false)
+              {
+                Log["Warning"]("Unable to unload the reagent "+Assay+ " : Unload button is disabled after selecting the reagent");
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unload button is disabled");
+                var proparr=["ClrClassName","WPFControlOrdinalNo"];
+                var vararr=["DataGridRow",intRowNum];
+                var objctrl = Getchild(objctrl, proparr, vararr);
+                ClickControl(objctrl);
+              }
+              else 
+              {
+                  ClickControl(objbtnUnload);
+                  intStartTime = aqDateTime["Time"]();
+                  var boolFlag = false;
+                  intTimeElapsed = 0;
+                  while((boolFlag!=true)&& (intTimeElapsed < 60000) )
+                  {
+                      var objbtnSubmit = GetControl("Inventory_ReagentOverview","btnSubmit")     
+                      if (VerifyObjectExists(objbtnSubmit))
+                      {                    
+                        intTimeElapsed = aqDateTime["Time"]() - intStartTime;
+                        aqUtils["Delay"](2000, "Waiting for CC Reagent "+Assay+" to get unloaded and Submit button to become disappear");
+                      }
+                      else
+                      {
+                        boolFlag = true;
+                      }
+                  }// end of while loop   
+                }// end of else
+
+          }// end of for loop
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Chemistry Reagents overview screen after unloading "+Assay);
+      }
+      else
+      {
+          Log["Message"]("Reagent not found:can not unload Reagent");
+      }  
+      */
+  Log["PopLogFolder"]();
+  
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+  
+}
+//Verifies that reagents loaded on specific analyzer sectionsunder reagents overview (CC or IA)
+function VerifyReagentUnloaded(Assay,Analyzer)
+//function VerifyReagentUnloaded()
+{
+  try
+  {
+  Log["AppendFolder"]("Inventory::VerifyReagentUnloaded");
+   
+//  var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+//      var strControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+//      InitializeWorkflowXML(strWorkflowXMLPath);
+//      InitializeControlXML(strControlXMLPath);
+//      AddNameMappingObjects();
+//       var Assay ="Chol_2"
+//       var Analyzer = "CC"
+  
+  var objctrl = GetControl("Inventory_ReagentOverview","winReagent");
+  var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+  var vararr=["Image","ModuleImage",Analyzer];
+  var objModule = Getchild(objctrl, proparr, vararr);
+  if (VerifyObjectExistance(objModule))//["Exist"])
+  {
+    ClickControl(objModule)//["Click"]();
+    Log["Message"]("Selected analyzer "+Analyzer)
+  }
+    
+  var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+  if (CheckTextonGrid(objctrl,"ReagentName", Assay))
+    {
+      Log["Warning"]("CC Reagent "+Assay+" is not unloaded successfully")
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Chemistry Reagents overview screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("CC Reagent "+Assay+" is unloaded successfully" )
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Chemistry Reagents overview screen");
+      Log["PopLogFolder"]();
+      return true;
+    }
+     
+  Log["PopLogFolder"]();
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+function VerifySystemFluidsStatus()
+{
+  
+  Log["AppendFolder"]("Inventory::VerifySystemFluidsStatus");
+  aqUtils["Delay"](8000, "Loading supplies");
+  //var objctrl = GetControl("Inventory_ReagentOverview","winSuppliesControl");
+  var objctrl = GetControl("Inventory_ReagentOverview","tabSuppliesOverview");
+  var intSupplyOkCount = 0;
+  for(var intCount=0; intCount<4; intCount++)
+  {
+    var proparr=["ClrClassName", "WPFControlOrdinalNo"];
+    var vararr=["Border", intCount+1];
+    var objBorder = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objBorder))
+    {
+      proparr = ["ClrClassName", "WPFControlName"];
+      vararr = ["ProgressBar", "SupplyProgressBar"];
+      var objSupplyProgress = Getchild(objBorder, proparr, vararr);
+      if (VerifyObjectExistance(objSupplyProgress))
+      {
+        var strSupplyValue = aqString["Trim"](objSupplyProgress["Value"]);
+        if(strSupplyValue == "100")
+        {
+          intSupplyOkCount++;
+        }
+        else
+        {
+          break;
+        }
+      }
+    }
+  }
+  if(intSupplyOkCount == 4)
+  {
+    Log["Message"]("System fluids were replaced properly");
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  else
+  {
+    Log["Warning"]("System fluids not replaced properly");
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyPretreatmentFluidStatus()
+{
+  Log["AppendFolder"]("Inventory::VerifyPretreatmentFluidStatus");
+  aqUtils["Delay"](4000, "Loading Pretreatment Fluid");
+  var objctrl = GetControl("Inventory_ReagentOverview","tabSuppliesOverview");
+  var intSupplyOkCount = 0;
+  var proparr=["ClrClassName", "WPFControlOrdinalNo"];
+  var vararr=["Border", 5];
+  var objBorder = Getchild(objctrl, proparr, vararr);
+  if (VerifyObjectExistance(objBorder))
+  {
+    proparr = ["ClrClassName", "WPFControlName"];
+    vararr = ["ProgressBar", "SupplyProgressBar"];
+    var objSupplyProgress = Getchild(objBorder, proparr, vararr);
+    if (VerifyObjectExistance(objSupplyProgress))
+    {
+      var strSupplyValue = aqString["Trim"](objSupplyProgress["Value"]);
+      Log["Message"]("Pretreatment fluid level is: " + strSupplyValue);
+      if(strSupplyValue == "100")
+      {
+        Log["Message"]("Pretreatment fluid is replaced");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Pretreatment fluid is not replaced");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+}
+
+function VerifyIMTFluidsStatus()
+{
+  Log["AppendFolder"]("Inventory::VerifyIMTFluidsStatus");
+  aqUtils["Delay"](5000, "Loading IMT Fluids");
+  var objctrl = GetControl("Inventory_ReagentOverview","tabSuppliesOverview");
+  var intSupplyOkCount = 0;
+  for(var intCount=0; intCount<4; intCount++)
+  {
+    var proparr=["ClrClassName", "WPFControlOrdinalNo"];
+    var vararr=["Border", intCount+6];
+    var objBorder = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objBorder))
+    {
+      proparr = ["ClrClassName", "WPFControlName"];
+      vararr = ["ProgressBar", "SupplyProgressBar"];
+      var objSupplyProgress = Getchild(objBorder, proparr, vararr);
+      if (VerifyObjectExistance(objSupplyProgress))
+      {
+        var strSupplyValue = aqString["Trim"](objSupplyProgress["Value"]);
+        intSupplyValue = aqConvert["StrToInt"](strSupplyValue)
+        if(intSupplyValue > 10)
+        {
+          intSupplyOkCount++;
+        }
+        else
+        {
+          break;
+        }
+      }
+    }
+  }
+  if(intSupplyOkCount == 4)
+  {
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "IMT fluids replaced successfully");
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  else
+  {
+    Log["Warning"]("Unable to replace IMT fluids");
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "IMT fluids level");
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function ReplaceCCSupplies(sLot,sSequence, sIMTSensorLot)
+{
+ 
+  Log["AppendFolder"]("Inventory::ReplaceCCSupplies");
+
+  var objctrl = GetControl("Inventory_ReagentOverview","winSuppliesOverviewControl");
+  var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+  var vararr=["Image","ModuleImage","CC"];
+  var objModule = Getchild(objctrl, proparr, vararr);
+  if (VerifyObjectExistance(objModule))//["Exist"])
+  {
+    ClickControl(objModule)//["Click"]();
+    Log["Message"]("Selected analyzer: CC")
+  }
+  else
+  {
+    Log["Warning"]("Unable to select the analyzer section "+Analyzer);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+
+  if(!ReplaceSystemFluids(sLot,sSequence))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  if(!VerifySystemFluidsStatus())
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+  if(!ReplaceIMT(sLot,sSequence,sIMTSensorLot))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+  if(!VerifyIMTFluidsStatus())
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  if(!StopAnalyzer("CC"))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+  if (!Navigation)
+  {
+    Log["PopLogFolder"]();
+    StartAnalyzer("CC");  //Teardown : Start CC if this step fails
+    return false;
+  }
+  var objctrl = GetControl("Inventory_ReagentOverview","winSuppliesOverviewControl");
+  var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+  var vararr=["Image","ModuleImage","CC"];
+  var objModule = Getchild(objctrl, proparr, vararr);
+  if (VerifyObjectExistance(objModule))//["Exist"])
+  {
+    ClickControl(objModule)//["Click"]();
+    Log["Message"]("Selected analyzer: CC")
+  }
+  else
+  {
+    Log["Warning"]("Unable to select the analyzer section "+Analyzer); 
+    Log["PopLogFolder"]();
+    StartAnalyzer("CC");  //Teardown : Start CC if this step fails
+    return false;
+  }
+  
+  if(!ReplacePretreatment(sLot,sSequence))
+  {
+    //Start CC
+    Log["PopLogFolder"]();
+    StartAnalyzer("CC");  //Teardown : Start CC if this step fails
+    return false;
+  }
+  if(!VerifyPretreatmentFluidStatus())
+   {
+    Log["PopLogFolder"]();
+    StartAnalyzer("CC");  //Teardown : Start CC if this step fails
+    return false;
+  }
+  
+  if(!StartAnalyzer("CC"))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+  Log["PopLogFolder"]();
+  return true;
+}
+
+
+
+function ReplaceSystemFluids(sLot,sSequence)
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::ReplaceSystemFluids");
+    var lotexpirydate;
+    systemDate = aqDateTime["Today"]();
+    lotexpirydate = aqDateTime["AddMonths"](systemDate,6);
+    
+    var objctrl = GetControl("Inventory_SuppliesOverview","btnReplaceSystemFluids");//Inventory_SuppliesOverview->System Fluids
+
+    ClickControl(objctrl);
+    
+    var shellObj=Sys["WaitProcess"]("Shell");
+    var objSystemFluids = GetControl("Inventory_SuppliesOverview","hwndSystemFluids")
+    
+    if(VerifyObjectExistance(objSystemFluids))
+    {
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","1"]
+      var objContentPresenter1 = Getchild(objSystemFluids, proparr, vararr);
+    
+      var proparrLot = ["ClrClassName","WPFControlName"]
+      var vararrLot = ["TextBox","LotIDTextBox"]
+      var objtxtbxSystemFluidsLotID1 = Getchild(objContentPresenter1, proparrLot, vararrLot);
+      SetText(objtxtbxSystemFluidsLotID1,sLot);
+    
+      var proparrSequence = ["ClrClassName","WPFControlName"]
+      var vararrSequence = ["TextBox","SequenceNumberTextBox"]
+      var objtxtbxSystemFluidsSequence1 = Getchild(objContentPresenter1, proparrSequence, vararrSequence);
+      SetText(objtxtbxSystemFluidsSequence1,sSequence);
+    
+      var dpSystemFluidsExpiration1 = Getchild(objContentPresenter1, "ClrClassName", "DatePicker");
+      SetDatePickerValue(dpSystemFluidsExpiration1,lotexpirydate)
+    
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","2"]
+      var objContentPresenter2 = Getchild(objSystemFluids, proparr, vararr);
+  
+      var objtxtbxSystemFluidsLotID2 = Getchild(objContentPresenter2, proparrLot, vararrLot);
+      SetText(objtxtbxSystemFluidsLotID2,sLot);
+    
+      var objtxtbxSystemFluidsSequence2 = Getchild(objContentPresenter2, proparrSequence, vararrSequence);
+      SetText(objtxtbxSystemFluidsSequence2,sSequence);
+    
+      var dpSystemFluidsExpiration2 = Getchild(objContentPresenter2, "ClrClassName", "DatePicker");
+      SetDatePickerValue(dpSystemFluidsExpiration2,lotexpirydate)
+    
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","3"]
+      var objContentPresenter3 = Getchild(objSystemFluids, proparr, vararr);
+  
+      var objtxtbxSystemFluidsLotID3 = Getchild(objContentPresenter3, proparrLot, vararrLot);
+      SetText(objtxtbxSystemFluidsLotID3,sLot);
+        
+      var objtxtbxSystemFluidsSequence3 = Getchild(objContentPresenter3, proparrSequence, vararrSequence);
+      SetText(objtxtbxSystemFluidsSequence3,sSequence);
+    
+      var dpSystemFluidsExpiration3 = Getchild(objContentPresenter3, "ClrClassName", "DatePicker");
+      SetDatePickerValue(dpSystemFluidsExpiration3,lotexpirydate)
+    
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","4"]
+      var objContentPresenter4 = Getchild(objSystemFluids, proparr, vararr);
+  
+      var objtxtbxSystemFluidsLotID4 = Getchild(objContentPresenter4, proparrLot, vararrLot);
+      SetText(objtxtbxSystemFluidsLotID4,sLot);
+    
+      var objtxtbxSystemFluidsSequence4 = Getchild(objContentPresenter4, proparrSequence, vararrSequence);
+      SetText(objtxtbxSystemFluidsSequence4,sSequence);
+    
+      var dpSystemFluidsExpiration4 = Getchild(objContentPresenter4, "ClrClassName", "DatePicker");
+      SetDatePickerValue(dpSystemFluidsExpiration4,lotexpirydate)
+   
+      var transSave = GetTranslatedString("Save","")
+      var proparr = ["ClrClassName","WPFControlText"]
+      var vararr = ["Button",transSave]
+      var objSave = Getchild(objSystemFluids, proparr, vararr);
+      ClickControl(objSave);
+    }
+
+  
+    var objctrl = GetControl("Inventory_SuppliesOverview","btnSuppliesOverviewOK"); // if pop up comes saying already same supplies values are filled
+    if(VerifyObjectExistance(objctrl))
+    ClickControl(objctrl);
+      
+    if(VerifyObjectExists(objSystemFluids))
+    {
+      intStartTime = aqDateTime["Time"]();
+      intTimeElapsed = 0;
+      var transCancel = GetTranslatedString("Cancel","")
+      var proparr = ["ClrClassName","WPFControlText"]
+      var vararr = ["Button",transCancel]
+      var objCancel = Getchild(objSystemFluids, proparr, vararr);
+      ClickControl(objCancel);
+      if(VerifyObjectExists(objSystemFluids))
+      {
+        if(VerifyObjectEnabled(objCancel)==false)
+        {
+          var proparr = ["ClrClassName","WPFControlText"]
+          var vararr = ["TextBlock","Restarting the IMT"]
+          var objRestartIMT = Getchild(shellObj, proparr, vararr);
+          if(VerifyObjectExists(objRestartIMT))
+          {
+            while((VerifyObjectExistance(objRestartIMT)==False)&& (intTimeElapsed < 50000))
+            {
+              aqUtils["Delay"](1000, "Waiting for IMT system to get restarted")
+              intTimeElapsed = aqDateTime["Time"]() - intStartTime;
+            }// end of while
+          }// end of if objRestartIMT
+          else if (VerifyObjectExists(objRestartIMT)==true)
+            {
+              Log["Error"]("IMT system did not get start after filling IMT supplies and wait for 50 seconds");
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to start IMT")
+            }
+        }// end of if objCancel
+      }// end of inside if objSystemFluids
+    }// end of if objSystemFluids
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+
+   catch(exp)
+  {
+
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+ 
+}
+
+
+
+function ReplacePretreatment(sLot,sSequence)
+{
+try
+  {
+    Log["AppendFolder"]("Inventory::ReplacePretreatment");
+    
+    var lotexpirydate;
+    systemDate = aqDateTime["Today"]();
+    lotexpirydate = aqDateTime["AddMonths"](systemDate,5);
+    
+    var objctrl = GetControl("Inventory_SuppliesOverview","btnReplacePretreatment");//Inventory_SuppliesOverview
+    ClickControl(objctrl);
+    
+    var objReplacePretreatment = GetControl("Inventory_SuppliesOverview","hwndPretreatment")
+    
+	var transCancel = GetTranslatedString("Cancel","")
+	var proparr = ["ClrClassName","WPFControlText"]
+	var vararr = ["Button",transCancel]
+	var objCancel = Getchild(objReplacePretreatment, proparr, vararr);
+    if(VerifyObjectExists(objReplacePretreatment))
+    {
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","1"]
+      var objContentPresenter1 = Getchild(objReplacePretreatment, proparr, vararr);
+    
+      var proparrLot = ["ClrClassName","WPFControlName"]
+      var vararrLot = ["TextBox","LotIDTextBox"]
+      var objtxtbxPretreatmentLot = Getchild(objContentPresenter1, proparrLot, vararrLot);
+      SetText(objtxtbxPretreatmentLot,sLot);
+    
+      var proparrSequence = ["ClrClassName","WPFControlName"]
+      var vararrSequence = ["TextBox","SequenceNumberTextBox"]
+      var objtxtbxPretreatmentSequence = Getchild(objContentPresenter1, proparrSequence, vararrSequence);
+      SetText(objtxtbxPretreatmentSequence,sSequence);
+    
+      var dpPretreatmentExpiration = Getchild(objContentPresenter1, "ClrClassName", "DatePicker");
+      SetDatePickerValue(dpPretreatmentExpiration,lotexpirydate)
+
+      var transSave = GetTranslatedString("Save","")
+      var proparr = ["ClrClassName","WPFControlText"]
+      var vararr = ["Button",transSave]
+      var objSave = Getchild(objReplacePretreatment, proparr, vararr);
+      ClickControl(objSave);
+	  
+	  if(VerifyObjectExists(objReplacePretreatment))
+	  {
+      var objWndError = GetControl("Inventory_SuppliesOverview","wndPreTreatmentSavedError");
+      if(VerifyObjectEnabled(objWndError))
+      {
+        objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPreTreatmentSaveErrorOK");
+        ClickControl(objctrl);
+        
+        
+        if(VerifyObjectEnabled(objCancel)==true)
+          ClickControl(objCancel);
+      }
+	  }	  
+    }
+
+
+    
+    if(VerifyObjectExists(objReplacePretreatment))
+      {
+        intStartTime = aqDateTime["Time"]();
+        intTimeElapsed = 0;
+          
+        ClickControl(objCancel);
+        if(VerifyObjectExists(objReplacePretreatment))
+        {
+          if(VerifyObjectEnabled(objCancel)==false)
+          {
+            var proparr = ["ClrClassName","WPFControlText"]
+            var vararr = ["TextBlock","Restarting the IMT"]
+            var objRestartIMT = Getchild(shellObj, proparr, vararr);
+            if(VerifyObjectExists(objRestartIMT)==true)
+            {
+              while((VerifyObjectExists(objRestartIMT)==true)&& (intTimeElapsed < 50000))
+              {
+                aqUtils["Delay"](1000, "Waiting for IMT system to get restarted")
+                intTimeElapsed = aqDateTime["Time"]() - intStartTime;
+              }// end of while
+            }// end of if objRestartIMT
+            else if (VerifyObjectExists(objRestartIMT)==true)
+            {
+              Log["Error"]("IMT system did not get start after filling IMT supplies and wait for 50 seconds");
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to start IMT")
+            }
+          }// end of if objCancel
+        }// end of inside if objReplacePretreatment
+      }// end of if objReplacePretreatment
+
+
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ReplaceIMT(sLot,sSequence,sIMTSensorLot)
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::ReplaceIMT");
+    var boolflag = true;
+    
+    var lotexpirydate;
+    systemDate = aqDateTime["Today"]();
+    lotexpirydate = aqDateTime["AddMonths"](systemDate,6);
+    
+    var objctrl = GetControl("Inventory_SuppliesOverview","btnReplaceIMT");//Inventory_SuppliesOverview
+    ClickControl(objctrl);
+    
+    var shellObj=Sys["WaitProcess"]("Shell");
+    var objReplaceIMT = GetControl("Inventory_SuppliesOverview","hwndReplaceIMT")//Inventory_SuppliesOverview
+    
+    var transCancel = GetTranslatedString("Cancel","")
+
+    var proparr = ["ClrClassName","WPFControlText"]
+    var vararr = ["Button",transCancel]
+    var objCancel = Getchild(objReplaceIMT, proparr, vararr);
+          
+
+    if (VerifyObjectEnabled(objCancel)==false)
+    {
+      var proparr = ["ClrClassName","WPFControlText"]
+      var vararr = ["TextBlock","IMT System Pausing"]
+      var objIMTPause = Getchild(shellObj, proparr, vararr);
+      if(VerifyObjectExists(objIMTPause))
+        {
+          intStartTime = aqDateTime["Time"]();
+          intTimeElapsed = 0;
+          while((VerifyObjectExists(objIMTPause)==true)&& (intTimeElapsed < 40000))
+          {
+            aqUtils["Delay"](1000, "Waiting for IMT system to get paused");
+            intTimeElapsed = aqDateTime["Time"]() - intStartTime;
+          }
+          var proparr = ["ClrClassName","WPFControlText"];
+          var vararr = ["TextBlock","Unable to Pause the IMT System"];
+          var objUnableToPause = Getchild(shellObj, proparr, vararr);
+          if(VerifyObjectExists(objUnableToPause))
+          {
+            Log["Warning"]("Unable to pause IMT system");
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to pause IMT system")
+            boolflag = false;
+            Log["PopLogFolder"]();
+            return boolflag;
+            
+          }
+         }
+      }
+  
+    if (boolflag==true)
+    {
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","1"]
+      var objContentPresenter1 = Getchild(objReplaceIMT, proparr, vararr);
+
+    
+      var proparrLot = ["ClrClassName","WPFControlName"]
+      var vararrLot = ["TextBox","LotIDTextBox"]
+      var objtxtbxIMTLotID1 = Getchild(objContentPresenter1, proparrLot, vararrLot);
+
+      SetText(objtxtbxIMTLotID1,sLot);
+        
+      var proparrSequence = ["ClrClassName","WPFControlName"]
+      var vararrSequence = ["TextBox","SequenceNumberTextBox"]
+      var objtxtbxIMTSequence1 = Getchild(objContentPresenter1, proparrSequence, vararrSequence);
+      SetText(objtxtbxIMTSequence1,sSequence);
+    
+      var objdpIMTExpiration1 = Getchild(objContentPresenter1, "ClrClassName", "DatePicker");
+      SetDatePickerValue(objdpIMTExpiration1,lotexpirydate)
+        
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","2"]
+      var objContentPresenter2 = Getchild(objReplaceIMT, proparr, vararr);
+        
+      var objtxtbxIMTLotID1 = Getchild(objContentPresenter2, proparrLot, vararrLot);
+      SetText(objtxtbxIMTLotID1,sLot);
+
+      var objtxtbxIMTSequence2 = Getchild(objContentPresenter2, proparrSequence, vararrSequence);
+      SetText(objtxtbxIMTSequence2,sSequence);
+
+      var objdpIMTExpiration2 = Getchild(objContentPresenter2, "ClrClassName", "DatePicker");
+      SetDatePickerValue(objdpIMTExpiration2,lotexpirydate)
+    
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","3"]
+      var objContentPresenter3 = Getchild(objReplaceIMT, proparr, vararr);
+        
+      var objtxtbxIMTLotID3 = Getchild(objContentPresenter3, proparrLot, vararrLot);
+      SetText(objtxtbxIMTLotID3,sLot);
+
+      var objtxtbxIMTSequence3 = Getchild(objContentPresenter3, proparrSequence, vararrSequence);
+      SetText(objtxtbxIMTSequence3,sSequence);
+    
+      var objdpIMTExpiration3 = Getchild(objContentPresenter3, "ClrClassName", "DatePicker");
+      SetDatePickerValue(objdpIMTExpiration3,lotexpirydate)
+    
+      var proparr = ["ClrClassName","WPFControlOrdinalNo"]
+      var vararr = ["ContentPresenter","4"]
+      var objContentPresenter4 = Getchild(objReplaceIMT, proparr, vararr);
+        
+      var objtxtbxIMTLotID4 = Getchild(objContentPresenter4, proparrLot, vararrLot);
+      SetText(objtxtbxIMTLotID4,sIMTSensorLot);
+    
+      var objtxtbxIMTSequence4 = Getchild(objContentPresenter4, proparrSequence, vararrSequence);
+      SetText(objtxtbxIMTSequence4,sSequence);
+
+      var objdpIMTExpiration4 = Getchild(objContentPresenter4, "ClrClassName", "DatePicker");    
+
+      SetDatePickerValue(objdpIMTExpiration4,lotexpirydate)
+    
+      var transSave = GetTranslatedString("Save","")
+      var proparr = ["ClrClassName","WPFControlText"]
+      var vararr = ["Button",transSave]
+      var objSave = Getchild(objReplaceIMT, proparr, vararr);
+      ClickControl(objSave);
+    
+	  var objctrl = GetControl("Inventory_SuppliesOverview","btnAdvanceCleanNo"); // To handle IMT advanced clean pop-up
+      if(VerifyObjectExistance(objctrl))
+        ClickControl(objctrl);
+		
+      var objctrl = GetControl("Inventory_SuppliesOverview","btnSuppliesOverviewOK"); // if pop up comes saying already same IMT values are filled
+      if(VerifyObjectExistance(objctrl))
+      ClickControl(objctrl);
+      
+      if(VerifyObjectExists(objReplaceIMT))
+      {
+        intStartTime = aqDateTime["Time"]();
+        intTimeElapsed = 0;
+          
+        ClickControl(objCancel);
+        if(VerifyObjectExists(objReplaceIMT))
+        {
+          if(VerifyObjectEnabled(objCancel)==false)
+          {
+            var proparr = ["ClrClassName","WPFControlText"]
+            var vararr = ["TextBlock","Restarting the IMT"]
+            var objRestartIMT = Getchild(shellObj, proparr, vararr);
+            if(VerifyObjectExists(objRestartIMT)==true)
+            {
+              while((VerifyObjectExists(objRestartIMT)==true)&& (intTimeElapsed < 50000))
+              {
+                aqUtils["Delay"](1000, "Waiting for IMT system to get restarted")
+                intTimeElapsed = aqDateTime["Time"]() - intStartTime;
+              }// end of while
+            }// end of if objRestartIMT
+            else if (VerifyObjectExists(objRestartIMT)==true)
+            {
+              Log["Warning"]("IMT system did not get start after filling IMT supplies and wait for 50 seconds");
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unable to start IMT")
+              Log["PopLogFolder"]();
+              return false;
+            }
+          }// end of if objCancel
+        }// end of inside if objReplaceIMT
+      }// end of if objReplaceIMT
+      
+      
+    }// end of boolflag
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function GetWasteBinStatus()
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::GetWasteBinStatus");
+    var objctrl = GetControl("Inventory_ReagentOverview","winSuppliesOverviewControl");
+    var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+    var vararr=["Image","ModuleImage","DECAPPER"];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objModule))//["Exist"])
+    {
+      ClickControl(objModule)//["Click"]();
+      Log["Message"]("Selected analyzer section: DECAPPER")
+    }
+    else
+    {
+      Log["Warning"]("Unable to select the analyzer section "+Analyzer);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+    var objctrl = GetControl("Inventory_SuppliesOverview","grdWasteDetails");
+    
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StatusTextBlock"];
+    var objCapStatus = Getchild(objctrl, proparr, vararr);
+    sStatus=GetPropertyValue(objCapStatus,"WPFControlText");
+    //sCapWaste=objctrl["DataContext"]["Consumable"]["Location"]["OleValue"];
+  
+//    if (sCapWaste=="CapWaste")
+//    {
+//      sStatus=objctrl["DataContext"]["Consumable"]["Status"]["OleValue"];
+//    }
+//    else
+//    {
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+  
+    Log["PopLogFolder"]();
+    return sStatus;
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+
+/*-------------------------------------- HYDRA Functions -------------------------------------*/
+
+/*-------
+ BHAWYA 
+ -------*/
+ 
+//*************************************************************************
+//*  FunctionName : VerifyReagentInventory
+//*  Description: Verifies the reagent inventory for reagent type
+//*  Input: strRgntName,strRgntType
+//*  Output: Boolean
+//*  Example: VerifyReagentInventory ("AFP","IA Primary","Test Count")
+//*  Date of Creating: 10 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnVerifyReagentInventory(RgntName,RgntType,InvUnit)
+{
+  try
+    {
+        //Open Log
+        Log["AppendFolder"]("Scenario: "+RgntType)
+                    
+        //Verify Reagent Available in UI
+        var bnFlag =false;
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Reagents available in Reagents overview screen")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+            if((aqString["ToLower"](strCellValue) == aqString["ToLower"](RgntName))&& (strEnabledValue))
+            {
+              Log["Message"](RgntName+" is available/loaded in Reagent Overview table")
+              
+              //Fetch Inventory Details from GRID
+              strInv = eval("objctrl.Items.Item("+i+").TotalRemainingString.OleValue"); 
+              if(aqString["Compare"](InvUnit,"mL",false)==0){
+                if(aqString["Find"](strInv,InvUnit,0,false)!= -1){
+                  Log["Checkpoint"]("Reagent inventory for "+RgntName+" is updated with unit "+InvUnit+" -"+strInv)
+                }else{
+                  Log["Error"]("Reagent inventory for "+RgntName+" is updated with wrong unit "+InvUnit)
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+              }else if(aqString["Compare"](InvUnit,"Test Count",false)==0){
+                if(aqString["Find"](strInv,"mL",0,false)== -1){
+                  Log["Checkpoint"]("Reagent inventory for "+RgntName+" is updated with unit "+InvUnit)
+                }else{
+                  Log["Error"]("Reagent inventory for "+RgntName+" is updated with wrong unit "+InvUnit)
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+              }
+              bnFlag = true; 
+              break;
+            }
+        }
+        
+        //Reagent not available? Fail
+        if(!bnFlag){
+          Log["Error"](RgntName+" is not available/not loaded");
+          Log["PopLogFolder"]();
+          return false;
+        }    
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+
+//*************************************************************************
+//*  FunctionName : fnVerifyReagentPackIsEnabled
+//*  Description: VerifyReagentPackIsEnabled
+//*  Input: strRgntName,strRgntType
+//*  Output: Boolean
+//*  Example: fnVerifyReagentPackIsEnabled ("AFP")
+//*  Date of Creating: 23 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnVerifyReagentPackIsEnabled(RgntName)
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Verify "+RgntName +" Reagent is enabled")
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+                    
+        //Verify Reagent Available and Enabled in UI
+        var bnFlag =false;
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Reagents available in Reagents overview screen")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+            if(aqString["ToLower"](strCellValue) == aqString["ToLower"](RgntName))
+            {
+              Log["Message"](RgntName+" is loaded and enabled in Reagent Overview table")
+              bnFlag =true;
+              
+              //Select Row
+              var rowCounter = i+1;
+              Log["Message"]("Select "+RgntName+" in Row "+rowCounter);
+              objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+              var currRow = objctrl["WPFObject"]("DataGridRow", "", rowCounter)
+              currRow["RaiseSelectionChangedEvent"](true)
+              aqUtils["Delay"](500)
+              //currRow["Click"]();
+              aqUtils["Delay"](1000)
+              
+              //Verify Disable Reagent Pack button
+              var btnEnableDisablePack = GetControl("Inventory_ReagentOverview","btnEnableDisableReagentPack");
+              if(btnEnableDisablePack.IsEnabled && (btnEnableDisablePack["GetPlainText"]() == "Disable Reagent Pack")){
+                  Log["Checkpoint"](RgntName+" is Enabled ")
+                  Log["PopLogFolder"]()
+                  return true;
+              }
+              else{
+                  Log["Message"]("Pack is Disabled")
+                  Log["PopLogFolder"]()
+                  return false;
+              }   
+            }  
+          } 
+         
+        //Reagent not available? Fail
+        if(!bnFlag){
+          Log["Error"](RgntName+" is not available/not loaded");
+          return false;
+        }  
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : fnDisableReagentPack
+//*  Description: DisableReagentPack
+//*  Input: strRgntName,strRgntType
+//*  Output: Boolean
+//*  Example: fnDisableReagentPack ("AFP","IA Primary")
+//*  Date of Creating: 23 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnDisableReagentPack(RgntName,RgntType)
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Scenario: Disable "+RgntType +" Reagent")
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+                         
+        //Verify and Click on Disable Reagent Pack button
+        var btnEnableDisablePack = GetControl("Inventory_ReagentOverview","btnEnableDisableReagentPack");
+        if(btnEnableDisablePack.IsEnabled && (btnEnableDisablePack["GetPlainText"]() == "Disable Reagent Pack")){
+            btnEnableDisablePack.Click();
+            Log["Message"]("Clicked on Disable Reagent Pack")
+            aqUtils["Delay"](1000)
+        }
+        else{
+            Log["Error"]("Pack is already Disabled")
+            Log["PopLogFolder"]()
+            return false;
+        }    
+                  
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : fnEnableReagentPack
+//*  Description: EnableReagentPack
+//*  Input: strRgntName,strRgntType
+//*  Output: Boolean
+//*  Example: fnEnableReagentPack ("AFP","IA Primary")
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnEnableReagentPack(RgntName,RgntType)
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Scenario: Enable "+RgntType +" Reagent")
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+                            
+        //Click on Enable Reagent Pack button
+        var btnEnableDisablePack = GetControl("Inventory_ReagentOverview","btnEnableDisableReagentPack");
+        if(btnEnableDisablePack.IsEnabled && (btnEnableDisablePack["GetPlainText"]() == "Enable Reagent Pack")){
+            btnEnableDisablePack.Click();
+            Log["Checkpoint"]("Clicked on Enable Reagent Pack")
+            aqUtils["Delay"](2000)
+        }
+        else{
+            Log["Error"]("Pack is already Enabled")
+            Log["PopLogFolder"]()
+            return false;
+        }  
+        
+        //Deselect Reagent
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+            if(aqString["ToLower"](strCellValue) == aqString["ToLower"](RgntName))
+            {
+              //Deselect Row
+              var rowCounter = i+1;
+              Log["Message"]("Deselect "+RgntName+" in Row "+rowCounter);
+              objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+              var currRow = objctrl["WPFObject"]("DataGridRow", "", rowCounter)
+              currRow["Click"]();
+              aqUtils["Delay"](1000)
+              break;
+            }
+        }
+      
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+//*************************************************************************
+//*  FunctionName : fnVerifyReagentPackIsDisabled
+//*  Description: VerifyReagentPackIsDisabled
+//*  Input: strRgntName,strRgntType
+//*  Output: Boolean
+//*  Example: fnVerifyReagentPackIsDisabled ("AFP")
+//*  Date of Creating: 8 Oct 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnVerifyReagentPackIsDisabled(RgntName)
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Verify "+RgntName +" Reagent is Disabled")
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+                    
+        //Verify Reagent Available 
+        var blnReturn = "null"
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Reagents available in Reagents overview screen")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+            if(aqString["ToLower"](strCellValue) == aqString["ToLower"](RgntName))
+            {
+  
+              //Verify Enable Reagent Pack button
+              var btnEnableDisablePack = GetControl("Inventory_ReagentOverview","btnEnableDisableReagentPack");
+              var btnEnabled = btnEnableDisablePack.IsEnabled 
+              var btnGetText = btnEnableDisablePack["GetPlainText"]()
+
+              //Verify Reagent Disabled
+              if(btnEnabled && (btnGetText == "Enable Reagent Pack")){
+                  Log["Checkpoint"](RgntName+" is disabled")
+                  Log["PopLogFolder"]();
+                  blnReturn = true;
+              }
+              else{
+                Log["Error"](RgntName+" is not disabled")
+                Log["PopLogFolder"]()
+                blnReturn = false }
+            } 
+            //Deselect Row
+            if(blnReturn != "null"){
+                var rowCounter = i+1;
+                Log["Message"]("Deselect "+RgntName+" in Row "+rowCounter);
+                objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+                var currRow = objctrl["WPFObject"]("DataGridRow", "", rowCounter)
+                currRow["Click"]();
+                aqUtils["Delay"](1000) 
+                break;
+            }
+          } 
+          
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return blnReturn;
+}
+
+//*************************************************************************
+//*  FunctionName : fnNavigateToRgntOvw
+//*  Description: NavigateToRgntOvw
+//*  Input: na
+//*  Output: Boolean
+//*  Example: fnNavigateToRgntOvw ()
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnNavigateToRgntOvw()
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Navigate to Reagent Overview")
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](2000)
+                             
+        //Click on Inventory
+        var btnInv = GetControl("","btnInventory");
+        ClickControl(btnInv);
+        
+        //Click on Overview
+        var btnOvw = GetControl("","tbbtnReagentOverview");
+        ClickControl(btnOvw);
+               
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : fnNavigateToSuppliesOvw
+//*  Description: NavigateToSuppliesOvw
+//*  Input: na
+//*  Output: Boolean
+//*  Example: fnNavigateToSuppliesOvw ()
+//*  Date of Creating: 10 Oct 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnNavigateToSuppliesOvw()
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Navigate to Supplies Overview")
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](500)
+                             
+        //Click on Inventory
+        var btnInv = GetControl("","btnInventory");
+        ClickControl(btnInv);
+        
+        //Click on Overview
+        var tbbtnSuppliesOverview = GetControl("","tbbtnSuppliesOverview");
+        ClickControl(tbbtnSuppliesOverview);
+        
+              
+        
+        
+        //Click ViewAll
+        Log["AppendFolder"]("Click on View All");
+        Log["Enabled"] =false
+        //check Prime Liquid Waste button exist  - if True then click view all
+        var btnPrimeLiquidWaste = Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("Reagent")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("SuppliesOverviewTab")["WinFormsObject"]("ContentFrame_SuppliesOverview")["WinFormsObject"]("SuppliesOverviewControl")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("SuppliesOverviewLayoutView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("SuppliesGrid")["WPFObject"]("SuppliesControl")["WPFObject"]("HydraSullpies")["WPFObject"]("Grid", "", 1)["WPFObject"]("SuppliesOverviewAlertsGrid")["WPFObject"]("Grid", "", 2)["WPFObject"]("Button", "Prime Liquid Waste", 3);
+        if (btnPrimeLiquidWaste["Visible"])
+        {
+          var btnViewAll = GetControl("","btnSuppliesViewAll");
+          if(btnViewAll["Visible"])
+          ClickControl(btnViewAll)
+          Log["Enabled"] =true
+          Log["PopLogFolder"]();
+        }
+        else{
+          Log["Enabled"] =true                  
+          Log["Message"]("User already in Supplies overview screen")
+          Log["PopLogFolder"]();}
+        
+
+          
+        //Log close
+
+               
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      Log["Enabled"] =true
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : fnCaptureSampleTipInventory
+//*  Description: CaptureSampleTipInventory for Tray 1 and Tray 2
+//*  Input: Tray1Inv,Tray5Inv
+//*  Output: Boolean
+//*  Example: fnCaptureSampleTipInventory("Empty","120")
+//*  Date of Creating: 25 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnCaptureSampleTipInventory(Tray1Inv,Tray2Inv)
+    {    
+    try
+    {  
+        //Open Log
+        Log["AppendFolder"]("Tray 1 : "+Tray1Inv +" AND Tray2 : "+Tray2Inv);
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](500)
+        
+         //Get Tray Status -Tips Remaining
+        var Tray1 = GetControl("Inventory_SuppliesOverview","txtBlockTipReamainingTray1");
+        var Tray1Status = Tray1["get_Text"]();
+        var Tray2 = GetControl("Inventory_SuppliesOverview","txtBlockTipReamainingTray2");
+        var Tray2Status = Tray2["get_Text"]();
+        
+        //Get Tray Status -Empty
+        var Tray1Emp = GetControl("Inventory_SuppliesOverview","txtBlockTipTray1");
+        var Tray1StatusEmp = Tray1Emp["get_Text"]();
+        var Tray2Emp = GetControl("Inventory_SuppliesOverview","txtBlockTipTray1");
+        var Tray2StatusEmp = Tray2Emp["get_Text"]();
+        
+                  
+        //****** Verify Tray 1 & 2 Inventory - EMPTY ******//
+        
+        //verify Tray 1
+        if(aqString["ToLower"](Tray1Inv) == "empty" || Tray1Inv == "0"){    
+            if(aqString["ToLower"](aqString["Replace"](Tray1StatusEmp["OleValue"],"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](Tray1Inv))){
+              Log["Checkpoint"]("Tray 1 Inventory/Status is "+Tray1StatusEmp["OleValue"])
+            }else{
+              Log["Error"]("Tray 1 Inventory/Status is "+Tray1StatusEmp["OleValue"])
+              Log["PopLogFolder"]()
+              return false;
+            }
+            
+             //verify Tray 1 Color [Red if Empty] 
+            if(GetRGBColorCode(Tray1Emp) == "255,0,0"){
+              Log["Checkpoint"]("Tray 1 Inventory Higlighted in Red ")
+            }else{
+              Log["Error"]("Tray 1 Inventory Not Higlighted in Red ")
+              Log["PopLogFolder"]()
+              return false;
+            }
+        }
+        
+        //verify Tray 2
+        if(aqString["ToLower"](Tray2Inv) == "empty" || Tray2Inv == "0"){
+            if(aqString["ToLower"](aqString["Replace"](Tray2StatusEmp["OleValue"],"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](Tray2Inv))){
+              Log["Checkpoint"]("Tray 2 Inventory/Status is "+Tray2StatusEmp["OleValue"])
+            }else{
+              Log["Error"]("Tray 2 Inventory/Status is "+Tray2StatusEmp["OleValue"])
+              Log["PopLogFolder"]()
+              return false;
+            }
+            
+             //verify Tray 2 Color [Red if Empty] 
+            if(GetRGBColorCode(Tray2Emp) == "255,0,0"){
+              Log["Checkpoint"]("Tray 2 Inventory Higlighted in Red ")
+            }else{
+              Log["Error"]("Tray 2 Inventory Not Higlighted in Red ")
+              Log["PopLogFolder"]()
+              return false;
+            }
+        }
+        /****** Verify Tray 1 & 2 Inventory - REMAINING ******/
+        
+        //verify Tray 1
+        if(aqString["ToLower"](Tray1Inv) != "empty" && Tray1Inv != "0"){       
+            if(aqString["ToLower"](aqString["Replace"](Tray1Status["OleValue"],"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](Tray1Inv))){
+              Log["Checkpoint"]("Tray 1 Inventory is "+Tray1Status["OleValue"])
+            }else{
+              Log["Error"]("Tray 1 Inventory is "+Tray1Status["OleValue"])
+              Log["PopLogFolder"]()
+              return false;
+            }
+         }
+         
+         //verify Tray 2
+         if(aqString["ToLower"](Tray2Inv) != "empty" && Tray2Inv != "0"){       
+            
+            if(aqString["ToLower"](aqString["Replace"](Tray2Status["OleValue"],"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](Tray2Inv))){
+              Log["Checkpoint"]("Tray 2 Inventory is "+Tray2Status["OleValue"])
+            }else{
+              Log["Error"]("Tray 2 Inventory is "+Tray2Status["OleValue"])
+              Log["PopLogFolder"]()
+              return false;
+            }
+        }      
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+              
+//*************************************************************************
+//*  FunctionName : ReturnRGBColorCode
+//*  Description: ReturnRGBColorCode
+//*  Input: Object
+//*  Output: R,G,B [eg:255,0,0]
+//*  Example: ReturnRGBColorCode(Tray1Obj)
+//*  Date of Creating: 25 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************              
+
+function GetRGBColorCode(obj){
+    try{
+        var RGB ="null"
+        var R = obj["Foreground"]["Color"]["R"]();
+        var G = obj["Foreground"]["Color"]["G"]();
+        var B = obj["Foreground"]["Color"]["B"]();
+        RGB = R+","+G+","+B;
+        
+    }catch(e){
+        Log["Error"]("Exception :"+e["Description"]);
+        return "null";
+    }  
+    //Log["PopLogFolder"]();
+    return RGB;
+}
+
+//*************************************************************************
+//*  FunctionName : LoadIMandCHReagents
+//*  Description: LoadIMandCHReagents DML simulator
+//*  Input: NA
+//*  Output: NA
+//*  Example: LoadIMandCHReagents()
+//*  Date of Creating: Dec 9 2018
+//*  Created By: Bhawya V J
+//************************************************************************* 
+function LoadIMandCHReagents()
+{
+      var directUIHWND;
+      var directUIHWND2;
+      var form1;
+      var richTextBox;
+      var comboBox;
+      var textBox;
+      var tvNamespaceTreeControl;
+      var UIProperty;
+      var textBox2;
+      var button;
+  
+      Log["AppendFolder"]("Load IM and CH Reagents -DML Simulator")
+        
+      //Check DML Simulator exists
+      if(!aqFile["Exists"]("F:\\DMLSIMULATOR\\DMLSimulator.exe")){
+        Log["Warning"]("To Load Reagents please copy DML Simulator to : F:\DMLSIMULATOR\DMLSimulator.exe")
+        return false;
+      }
+      
+      //Start Trinidad [Run RAMP.exe]
+      var obj = new ActiveXObject("WScript.shell")
+      obj["Run"]("F:\\DMLSIMULATOR\\DMLSimulator.exe")
+      aqUtils["Delay"](10000)
+      DMLSimulator =Sys["WaitProcess"]("DMLSimulator",240000)
+        
+      //Load CG
+      form1 = Aliases["DMLSimulator"]["Form1"];
+      comboBox = form1["reagentLocation"];
+      comboBox["ClickItem"]("CHReagentCompartment");
+      aqUtils["Delay"](1000)
+      textBox = form1["packPosition"];
+      textBox["SetText"]("1");
+      aqUtils["Delay"](1000)
+  
+      textBox2 = form1["reagentPackBarcode"];
+      textBox2["SetText"]("14010110010624042800005");
+      aqUtils["Delay"](1000)
+  
+      button = form1["sendReagentPackBarcode"];
+      button["ClickButton"]();
+      aqUtils["Delay"](1000)
+  
+      comboBox["ClickItem"]("CHReagentCompartment");
+      textBox["SetText"]("2");
+      aqUtils["Delay"](1000)
+      textBox2["SetText"]("14010110010624042800005");
+      aqUtils["Delay"](1000)
+  
+      button["ClickButton"]();
+      aqUtils["Delay"](1000)
+  
+      comboBox["ClickItem"]("IMPrimaryReagentCompartment");
+      textBox["SetText"]("1");
+      aqUtils["Delay"](1000)
+      textBox2["SetText"]("P04199915123420");
+      aqUtils["Delay"](1000)
+      button["ClickButton"]();
+      aqUtils["Delay"](1000)
+  
+      comboBox["ClickItem"]("IMPrimaryReagentCompartment");
+      textBox["SetText"]("2");
+      aqUtils["Delay"](1000)
+      textBox2["SetText"]("P04199915123420");
+      aqUtils["Delay"](1000)
+      button["ClickButton"]();
+      aqUtils["Delay"](1000)
+  
+      DMLSimulator["Close"]();
+      aqUtils["Delay"](1000)
+  
+      Log["Enabled"] = true;
+      Log["PopLogFolder"]()
+}
+
+
+/*-------
+ AMAR 
+ -------*/
+ 
+ function fnCaptureSampleTipInventoryThreshold(Tray1Inv,Tray2Inv)
+  {    
+    try
+    {  
+        //Open Log
+        Log["AppendFolder"]("Tray 1 : "+Tray1Inv +" AND Tray2 : "+Tray2Inv);
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](500)
+        
+         //Get Tray Status -Tips Remaining
+         
+        var Tray1 = GetControl("Inventory_SuppliesOverview","txtBlockTipReamainingTray1");
+        var Tray1Status = Tray1["get_Text"]();
+        var Tray2 = GetControl("Inventory_SuppliesOverview","txtBlockTipReamainingTray2");
+        var Tray2Status = Tray2["get_Text"]();
+      
+       //verify Tray 1 Color [Red if Threshold] 
+            if(GetRGBColorCode(Tray1) == "255,0,0"){
+              Log["Checkpoint"]("Tray 1 Threshold is displayed in Red color ")
+            }else{
+              Log["Error"]("Tray 1 Threshold is Not displayed in Red color ")
+              Log["PopLogFolder"]()
+              return false;
+            }
+          //verify Tray 1 Tip Remaininig
+        if(aqString["ToLower"](Tray1Inv) != "empty" && Tray1Inv != "0"){       
+            if(aqString["ToLower"](aqString["Replace"](Tray1Status["OleValue"],"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](Tray1Inv))){
+              Log["Checkpoint"]("Tray 1 is "+Tray1Status["OleValue"])
+            }else{
+              Log["Error"]("Tray 1 is "+Tray1Status["OleValue"])
+              Log["PopLogFolder"]()
+              return false;
+            }
+         }
+            
+        //Verify Tray 2 Color [Red if Threshold] 
+            if(GetRGBColorCode(Tray2) == "255,0,0"){
+              Log["Checkpoint"]("Tray 2 Threshold is displayed in Red color ")
+            }else{
+              Log["Error"]("Tray 2 Threshold is Not displayed in Red color ")
+              Log["PopLogFolder"]()
+              return false;
+            }
+          
+            //verify Tray2 Tip Remaininig
+            if(aqString["ToLower"](Tray2Inv) != "empty" && Tray2Inv != "0"){       
+            if(aqString["ToLower"](aqString["Replace"](Tray2Status["OleValue"],"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](Tray2Inv))){
+              Log["Checkpoint"]("Tray 2 is "+Tray2Status["OleValue"])
+            }else{
+              Log["Error"]("Tray 2 is "+Tray2Status["OleValue"])
+              Log["PopLogFolder"]()
+              return false;
+            }
+         }  
+                                       
+       
+ }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+
+/*-------
+ SHAHANA 
+ -------*/
+//*************************************************************************
+//*  FunctionName : fnGetCuvetteStatus
+//*  Description: Fetches the Cuvette Status from Supplies Overview screen
+//*  Input:
+//*  Output: String
+//*  Example: fnGetCuvetteStatus()
+//*  Date of Creating: 10 Sep 2018
+//*  Created By: Shahana Tahreen
+//*************************************************************************
+function fnGetCuvetteStatus()
+{
+  try
+  {
+    var objctrl = GetControl("Inventory_SuppliesOverview","CntCuvettesPresenter");
+    var proparr=["ClrClassName","WPFControlName"];
+    var vararr=["TextBlock","StatusTextBlock"];
+    var objCuvetteStatus = Getchild(objctrl, proparr, vararr);
+    
+    var sStatus=GetPropertyValue(objCuvetteStatus,"WPFControlText");
+    Log["Message"]("Current Cuvette Status : "+sStatus);
+    return sStatus;
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);  
+  } 
+} 
+
+//*************************************************************************
+//*  FunctionName : GetReagentCountValue
+//*  Description: Verifies if reagent available and returns the Inventory Count from Reagent Overview screen
+//*  Input: Assay
+//*  Output: ReagentCount
+//*  Example: GetReagentCountValue(Assay)
+//*  Created By: Shahana Tahreen
+//*************************************************************************
+
+function GetReagentCountValue(Assay)
+{
+  try
+  { 
+    //Open Log
+    Log["AppendFolder"]("Checking Reagent and its inventory count value")
+  
+    //Initialize variables
+    var ColName1="ReagentName";
+    var ColName2="TotalRemainingString";
+    var status=0;
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      strValue = eval("objctrl.Items.Item("+Row+")."+ ColName1 + ".OleValue");
+      strEnabledValue = eval("objctrl.Items.Item("+Row+").IsEnabled");
+    
+      //searching if Assay is available and enabled
+      if((strValue == Assay) && (strEnabledValue))
+      { 
+        status++;
+        Log["Message"]("Reagent: "+Assay+" is available under Column: " + ColName1 + ", Row number: " + Row +", Assay Number : "+status);  
+    
+        //Fetching the Inventory Count value for that assay
+        var ReagentCount = eval("objctrl.Items.Item("+Row+")."+ ColName2 + ".OleValue");
+        
+        //Displaying the Inventory Count value
+        Log["Message"]("Inventory Count value for "+Assay+": "+ReagentCount);
+        
+      }//end of if statement
+    }//end for loop
+    
+    if(status==0)
+    {
+      Log["Error"]("Reagent "+Assay+" is unavailable" );
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return ReagentCount;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();  
+    return false; 
+  }
+} 
+
+
+//*************************************************************************
+//*  FunctionName : GetReagentOBSValue
+//*  Description: Fetches the OBS from Reagent Overview screen
+//*  Input: Assay
+//*  Output: Boolean
+//*  Example: GetReagentOBSValue(Assay)
+//*  Created By: Shahana Tahreen
+//*************************************************************************
+function GetReagentOBSValue(Assay)
+{
+  try
+  {
+    //Open Log
+    Log["AppendFolder"]("OBS value for : "+Assay);
+    
+    //Initialize variables
+    var ColName1="ReagentName";
+    var ColName2="OnboardStabilityTimeSpan";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      strValue = eval("objctrl.Items.Item("+Row+")."+ ColName1 + ".OleValue");
+    
+      //searching if Assay is available
+      if(strValue == Assay)
+      { 
+        Log["Message"]("The Item: "+Assay+" is available in Column: " + ColName1 + ", Row number: " + Row);  
+    
+        //Fetching the OBS value for that assay
+        var DayValue = eval("objctrl.Items.Item("+Row+")."+ ColName2 + ".Days");
+        var HourValue = eval("objctrl.Items.Item("+Row+")."+ ColName2 + ".Hours");
+        
+        if(DayValue<0 && HourValue<0)
+          Log["Message"]("OBS value:---");
+        else
+          Log["Message"]("OBS value: "+DayValue+" d "+HourValue+" h");
+        
+        // added below line to get OnBoard Stability minutes from reagents grid-- Shrutika
+       // var TotalMinutesValue = eval("objctrl.Items.Item("+Row+")."+ ColName2 + ".TotalMinutes");
+		// added line to get OnBoard Stability minutes from reagents grid-- Shrutika
+      
+//		// added below lines-- Shrutika
+//        Log["Message"]("OBS minutes value: "+TotalMinutesValue);
+//        OBSMinutes = TotalMinutesValue["split"](".")[0]
+//        OBSDays = DayValue
+        // added lines-- Shrutika
+		
+        Log["PopLogFolder"]();
+        return true;
+      }//end of if statement
+    }//end for loop
+    
+    Log["Error"]("Reagent "+Assay+" is unavailable" );
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception :"+exp["Description"]);
+    Log["PopLogFolder"]();  
+    return false; 
+  }
+} 
+
+/*-------
+ RAMITHA 
+ -------*/
+ 
+ 
+//**************************************************************************************************
+//*  FunctionName : fnCaptureSuppliesData
+//*  Description: Capture Volume %,Expiration  and OBS for IMT and Pretreatment
+//*  Input:"IMT Standard A",IMTStAObj,"OBS","11 d 17 h"
+//*  Output: Boolean
+//*  Example: fnCaptureSuppliesData("IMT Standard A",IMTStAObj,"OBS","11 d 17 h")
+//*  Date of Creating: 16 Nov 2018
+//*  Created By: Bhawya V J
+//*  Date of Modification: 10 Dec 2018, 25 March 2019
+//*  Modified By: Ramitha K, Shahana(changed function name)
+//*************************************************************************************************
+function fnCaptureSuppliesData(SuppliesType,CurrObj,PropertyName,ExpectedVal)
+{
+  try
+    {    
+  
+        //Open Log
+        Log["AppendFolder"](SuppliesType+" : "+PropertyName);
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](10)
+        
+        //get Supplies Grid
+        var currObj = GetControl("",CurrObj);
+        var tempVal = currObj["get_Text"]()
+        var ActualValue = aqString["Replace"](tempVal,"%","");
+                  
+        //Verify Actual Value == Expected Value
+        if(aqString["Trim"](aqString["ToLower"](ExpectedVal)) == aqString["Trim"](aqString["ToLower"](ActualValue))){
+            Log["Checkpoint"](PropertyName +" "+ActualValue+" is as expected")
+        }else{
+            Log["Error"](PropertyName +" "+ActualValue+" is not matching with expected result "+ExpectedVal)
+            Log["PopLogFolder"]()
+            return false;
+        }
+          
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+
+//*************************************************************************
+//*  FunctionName : fnCheckVisualIndicationForLotVolumeAndOBS
+//*  Description: To check visual indication for Lot, Volume and OBS
+//*  Input: SuppliesType,currObj,PropertyName,VisualIndication
+//*  Output: Boolean
+//*  Example: fnCheckVisualIndicationForLotVolumeAndOBS(ArrSuppliesType[i],ArrOBSControlNames[i],"OBSRemainingDate","No")
+//*  Date of Creating: 5th Dec 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnCheckVisualIndicationForLotVolumeAndOBS(SuppliesType,CurrObj,PropertyName,VisualIndication)
+{    
+    try
+    {  
+         //Open Log
+        Log["AppendFolder"](SuppliesType+" : "+PropertyName);
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](10)
+        
+        //Get obj from Supplies Grid
+        var currObj = GetControl("",CurrObj);
+        
+        switch(VisualIndication)
+        {
+          case true:
+                      //verify visual Indication (Red color) 
+                      if(GetRGBColorCode(currObj) == "255,0,0"){
+                          Log["Checkpoint"](PropertyName + " for "+SuppliesType+" is Higlighted in Red")
+                      }else if(GetRGBColorCode(currObj)=="0,0,0")
+                      {
+                          Log["Error"](PropertyName + " for "+SuppliesType+" is not Higlighted in Red ")
+                          Log["PopLogFolder"]()
+                          return false;
+                      }
+                break;
+          case false:
+                        //verify No visual Indication (Black color) 
+                        if(GetRGBColorCode(currObj) == "0,0,0"){
+                            Log["Checkpoint"](PropertyName + " for "+SuppliesType+" is not Higlighted in Red ")
+                        }else if(GetRGBColorCode(currObj)=="255,0,0")
+                        {
+                            Log["Error"](PropertyName + " for "+SuppliesType+" is Higlighted in Red ")
+                            Log["PopLogFolder"]()
+                            return false;
+                        }
+                  break;                 
+          default:
+              break;
+       }   
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ } 
+   
+//*************************************************************************
+//*  FunctionName : fnFluidLevelAboveBelowThresolhdDB
+//*  Description: To check threshold value for Volume
+//*  Input: SuppliesType,resultDB,ExpectedVal
+//*  Output: Boolean
+//*  Example: fnFluidLevelAboveBelowThresolhdDB(SuppliesType,resultDB,ExpectedVal)
+//*  Date of Creating: 18th Dec 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnFluidLevelAboveBelowThresolhdDB(SuppliesType,resultDB,ExpectedVal)
+{    
+    try
+    {  
+         //Open Log
+        Log["AppendFolder"](SuppliesType+" : Volume Threshold");
+        
+        switch(ExpectedVal)
+              {
+              case "Above Threshold":   
+                    if(resultDB == "Above Threshold"){
+                        Log["Checkpoint"]("Volume Threshold has not met for "+SuppliesType)
+                        Returnval = true;
+                    }else
+                        Returnval = false;
+                    if(!Returnval)
+                      break;
+        
+              break;
+              case "Below Threshold":   
+                   if(resultDB == "Below Threshold"){
+                        Log["Checkpoint"]("Volume Threshold has met for "+SuppliesType)
+                        Returnval = true;
+                    }else
+                        Returnval = false;
+                    if(!Returnval)
+                      break;
+                      
+              break;                 
+              default: Log["Error"]("Error in DB return value - Volume Threshold for "+SuppliesType)
+              break;
+              }
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ }  
+
+//*************************************************************************
+//*  FunctionName : fnSettingupThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType)
+//*  Description: To set up OBS Threshold Value for IMT and Pretreatment supplies
+//*  Input: SuppliesType,resultDB,ExpectedVal
+//*  Output: Boolean
+//*  Example: fnSettingupThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType)
+//*  Date of Creating: 16th Jan 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnSettingupOBSThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType,OBSThresholdValue,thresholdIndicator)
+{   
+  
+    try
+    {  
+        //Open Log
+        Log["AppendFolder"]("OBS below Threshold and Operator event log");
+        
+        //Setting up threshold value for OBS controls in supplies screen
+        var IMTThresholdBtnCtrl = GetControl("","btnIMTSuppliesThreshold");
+        ClickControl(IMTThresholdBtnCtrl)
+        
+        var IMTSuppliesOBSThresholdCtrl = GetControl("","dblUpDownIMTSuppliesOBSThreshold");
+        IMTSuppliesOBSThresholdCtrl["set_Text"](OBSThresholdValue)
+        
+        var SaveThresholdCtrl = GetControl("","btnSaveThreshold");
+        ClickControl(SaveThresholdCtrl)
+        
+        var PreTreatmentThresholdBtnCtrl = GetControl("","btnPreTreatmentSuppliesThreshold");
+        ClickControl(PreTreatmentThresholdBtnCtrl)
+        
+        var PreTreatmentOBSThresholdCtrl = GetControl("","dblUpDownPretreatmentOBSThreshold");
+        PreTreatmentOBSThresholdCtrl["set_Text"](OBSThresholdValue)
+        
+        var IMTSensorOBSThresholdCtrl = GetControl("","dblUpDownIMTSensorOBSThreshold");
+        IMTSensorOBSThresholdCtrl["set_Text"](OBSThresholdValue)
+        
+        var SaveThresholdCtrl = GetControl("","btnSaveThreshold");
+        ClickControl(SaveThresholdCtrl)
+        
+        //Navigate to OperatorEventLog screen
+        if(!InvokeWorkflow("System_Logs_OperatorEventLog")){
+            Log["PopLogFolder"]();
+            return false
+        }
+        
+		//Verifing operator event log entry
+        var count=0;
+        sTime = "15 Minutes";
+        var sModuleSerialNumber = "All";
+         if(thresholdIndicator=="Not Expired")
+        {
+          logText= " is almost expired";
+        }
+        else
+        logText= " expired";
+        
+        objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+        SetComboText(objctrl,sTime)
+    
+        objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+        if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+        {
+          Log["Message"]("Selected module "+sModuleSerialNumber)
+        } 
+        else
+        {
+          Log["Error"]("Unable to select module as "+sModuleSerialNumber)
+        }
+        aqUtils["Delay"](5000,"Waiting for events to load");
+        
+        Gridobjctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+        Rowcount = GetGridRowCount(Gridobjctrl);
+    
+        if(Rowcount==0)
+        {
+          Log["Error"]("OperatorEventLog Grid is empty")
+          return false
+        }
+        else{
+           for(i =0 ;i< SuppliesTypeCount ; i++)
+              {
+              var sEvent = "OBS for " +ArrSuppliesType[i]+ logText;
+              if(!VerifyOperatorEventLogForSupplies(ArrSuppliesType[i],sEvent,Rowcount,Gridobjctrl))
+                    count++;      
+              }
+         }          
+           if(count>0)
+           return false;
+                     
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ } 
+
+//*************************************************************************
+//*  FunctionName : fnReadAndStoreFluidDataForIMTPretreatment(controlVal,SuppliesTypeCount)
+//*  Description: To read and store Volume,OBS & Lot Values for IMT & Pretreatment supplies
+//*  Input: controlVal,SuppliesTypeCount
+//*  Output: Array
+//*  Example: fnReadAndStoreFluidDataForIMTPretreatment(controlVal,SuppliesTypeCount)
+//*  Date of Creating: 17th Jan 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnReadAndStoreFluidDataForIMTPretreatment(controlVal,SuppliesTypeCount)
+{     
+    try
+    {  
+       var index=0;
+       var arrFluidData = new Array();
+        for(k=0;k<controlVal["length"];k++)
+        {
+              for (j=0;j<SuppliesTypeCount;j++)
+              {   
+                var SuppliesControl=controlVal[k][j]
+                var currObj = GetControl("",SuppliesControl);
+       
+                var tempVal = currObj["get_Text"]()
+                var ActualValue = aqString["Replace"](tempVal,"%","");
+                arrFluidData[index]= ActualValue
+                index++
+              }     
+        }
+        return arrFluidData;
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      return "null";
+    }  
+
+ }
+//*************************************************************************
+//*  FunctionName : fnSettingupThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType)
+//*  Description: To set up OBS Threshold Value for IMT and Pretreatment supplies
+//*  Input: SuppliesType,resultDB,ExpectedVal
+//*  Output: Boolean
+//*  Example: fnSettingupThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType)
+//*  Date of Creating: 16th Jan 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnSettingupVolumeThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType,ArrVolumeThresholdValues,VolumeThresholdMultisensor,thresholdIndicator)
+{   
+  
+    try
+    {  
+        //Open Log
+        Log["AppendFolder"]("OBS below Threshold and Operator event log");
+        
+        for(val=0;val<ArrVolumeThresholdValues["length"];val++)
+        {
+              //Setting up threshold value for Volume controls in supplies screen
+              var IMTThresholdBtnCtrl = GetControl("","btnIMTSuppliesThreshold");
+              ClickControl(IMTThresholdBtnCtrl)
+        
+              var IMTSuppliesVolumeThresholdCtrl = GetControl("","dblUpDownFluidVolumeThreshold");
+              IMTSuppliesVolumeThresholdCtrl["set_Text"](ArrVolumeThresholdValues[val])
+        
+              var SaveThresholdCtrl = GetControl("","btnSaveThreshold");
+              ClickControl(SaveThresholdCtrl)
+        
+              aqUtils["Delay"]("500");
+        
+              var PreTreatmentThresholdBtnCtrl = GetControl("","btnPreTreatmentSuppliesThreshold");
+              ClickControl(PreTreatmentThresholdBtnCtrl)
+        
+              var PreTreatmentVolumeThresholdCtrl = GetControl("","dblUpDownPretreatmentVolumeThreshold");
+              PreTreatmentVolumeThresholdCtrl["set_Text"](ArrVolumeThresholdValues[val])
+        
+              var IMTSensorVolumeThresholdCtrl = GetControl("","dblUpDownIMTSensorVolumeThreshold");
+              IMTSensorVolumeThresholdCtrl["set_Text"]((ArrVolumeThresholdValues[val]))
+        
+              var SaveThresholdCtrl = GetControl("","btnSaveThreshold");
+              ClickControl(SaveThresholdCtrl)
+        
+              aqUtils["Delay"]("500");
+        }
+              //Setting multisensor threshold
+               var PreTreatmentThresholdBtnCtrl = GetControl("","btnPreTreatmentSuppliesThreshold");
+              ClickControl(PreTreatmentThresholdBtnCtrl)
+        
+              var IMTSensorVolumeThresholdCtrl = GetControl("","dblUpDownIMTSensorVolumeThreshold");
+              IMTSensorVolumeThresholdCtrl["set_Text"]((VolumeThresholdMultisensor))
+        
+              var SaveThresholdCtrl = GetControl("","btnSaveThreshold");
+              ClickControl(SaveThresholdCtrl)
+        
+        //Navigate to OperatorEventLog screen
+        if(!InvokeWorkflow("System_Logs_OperatorEventLog")){
+            Log["PopLogFolder"]();
+            return false
+        }
+        
+        //Verifing operator event log entry
+        var count=0;
+        sTime = "4 Hours";  //"15 Minutes";
+        var sModuleSerialNumber = "All";
+        if(thresholdIndicator=="Not Depleted")
+        {
+          logText= " is almost empty";
+        }
+        else
+        logText= " is empty";
+        
+        objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxTime");
+        SetComboText(objctrl,sTime)
+    
+        objctrl = GetControl("System_Logs_OperatorEventLog","cmbBoxModule");
+        if(SelectModuleInEventLog(objctrl,sModuleSerialNumber))
+        {
+          Log["Message"]("Selected module "+sModuleSerialNumber)
+        } 
+        else
+        {
+          Log["Error"]("Unable to select module as "+sModuleSerialNumber)
+        }
+        aqUtils["Delay"](5000,"Waiting for events to load");
+        
+        Gridobjctrl = GetControl("System_Logs_OperatorEventLog","grdOperatorEventsLog");
+        Rowcount = GetGridRowCount(Gridobjctrl);
+    
+        if(Rowcount==0)
+        {
+          Log["Error"]("OperatorEventLog Grid is empty")
+          return false
+        }
+        else{
+           for(i =0 ;i< SuppliesTypeCount ; i++)
+              {
+              var sEvent = ArrSuppliesType[i]+ logText
+              if(!VerifyOperatorEventLogForSupplies(ArrSuppliesType[i],sEvent,Rowcount,Gridobjctrl))
+                    count++;      
+              }
+         }          
+           if(count>0)
+           return false;
+                     
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ }      
+//**************************************************************************
+//*  FunctionName : GetOBSFromReagentDetailsAssay()
+//*  Description: Fetch the OBS value of a specific reagent displayed on right side of reagent details in reagent overview screen
+//*  Input: Assay
+//*  Output: NA
+//*  Example: GetOBSFromReagentDetails(Assay)
+//*  Date of Creating: 02/13/2019
+//*  Created By: Shrutika
+//'************************************************************************  
+function GetOBSFromReagentDetails(Assay)
+{
+  try
+  {    
+    Log["AppendFolder"]("Inventory::GetOBSFromReagentDetails");
+    //Focus on Reagent Grid
+    var objReagentsGrid = GetControl("Inventory_ReagentOverview","grdReagents");
+    var iReagentcount= GetGridRowCount(objReagentsGrid)
+    var checkcount = 0;
+    
+    for (var row=0;row<iReagentcount;row++)
+    {
+        if (CheckTextonGridRow(objReagentsGrid,"ReagentName",row,Assay))
+        { 
+          checkcount = checkcount+1;
+          SelectGridRow(objReagentsGrid, row);
+  
+          //Fetching the OBS value for that assay from reagent details grid right side on screen
+            
+  //            var objctrl = GetControl("Inventory_ReagentOverview","grpBoxReagentDetails")
+  //            var objReagentDetailsGrid = GetFindchild(objctrl,Array("ClrClassName","WPFControlOrdinalNo"),Array("Grid","1"),10)
+  //            OBSvalueInReagentDetails = GetGridAttribute(objReagentDetailsGrid, 0, "UserEntered_PackExpiration");
+            
+          var objctrl = GetControl("Inventory_ReagentOverview","txtBlockOBS")
+          var objOBSvalueInReagentDetails = GetPropertyValue(objctrl,"Text")  // 4/13/2019 8:26 AM
+          OBSvalueInReagentDetails = objOBSvalueInReagentDetails["OleValue"]
+        
+          //OBSvalueInReagentDetails["split"](" ");
+          Log["PopLogFolder"]();
+          return true;
+        }
+        
+      }
+  
+    if (checkcount=0)
+    {
+        Log["Warning"]("Reagent "+Assay+" not found in reagents grid : can not unload Reagent");
+        Log["PopLogFolder"]();
+        return false;
+    }
+       
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();  
+    return false; 
+  }
+}
+
+//**************************************************************************
+//*  FunctionName : UpdatePiercedOrFirstLoadedDateForReagentOBSExpired()
+//*  Description: Update the PiercedDateTime or FirstLoadedDateTime to simulate OBS expiration of a reagent barcode
+//*  Input: DateTimeValue,ReagentType
+//*  Output: NA
+//*  Example: UpdatePiercedOrFirstLoadedDateForReagentOBSExpired()
+//*  Date of Creating: 02/13/2019
+//*  Created By: Shrutika
+//'************************************************************************  
+function UpdatePiercedOrFirstLoadedDateForReagentOBSExpired(DateTimeValue,ReagentType)
+//function UpdatePiercedOrFirstLoadedDateForReagentOBSExpired()
+{
+  try
+  {
+    Log["AppendFolder"]("Inventory::UpdatePiercedOrFirstLoadedDateForReagentOBSExpired");
+    //Initialize Variables
+    var Returnval = true;
+    var res,arrTestData,dictColumn,strQuery,strConString;
+    var strConString = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"
+    
+    //Initialize XMLs
+    InitializeMetaDataHYDRA();
+    //Read data for DB
+    
+    var arrTestData = GetTestItemsByTestName(DBDataFile,"Inventory_Hydra","OBSExpired");
+    var dictColumn=arrTestData[0];
+    
+    switch(ReagentType)
+    {
+      case "IAPrimary":
+                    var strQuery1 = dictColumn["Item"]("Query")
+                    var strQuery2 = dictColumn["Item"]("Query2")
+        
+                    var strQuery = strQuery1 + " '" +DateTimeValue+ "' " + strQuery2
+                    if(ExecSQLQueryFromString(strQuery,strConString)!=-1)   
+                    {
+                      Log["Checkpoint"]("FirstLOadedDateTime is changed in [Reagent_Pack_Well] table in MM database for IA Primary reagent")
+                      Log["PopLogFolder"]();
+                      return true;
+                    }
+                    break;
+          
+      
+      case "CC":
+      case "IAAncillary" :
+                    var strSelectQuery = dictColumn["Item"]("Query3")
+                    RecordSet =ReturnQueryRecordSetFromString(strSelectQuery,strConString);
+                    
+                    if(RecordSet["RecordCount"]>0)  
+                    {
+                      var ReagentPackID = RecordSet.Fields(0).Value
+                      Log["Checkpoint"]("Reagent Barcode is already present in MM database [ReagentPackID] table")
+                      var strQuery4 = dictColumn["Item"]("Query4")
+                      var strQuery5 = dictColumn["Item"]("Query5")
+                      var strQuery = strQuery4 + " '" +DateTimeValue+ "' " + strQuery5 + " '" + ReagentPackID +"'"
+                      //var strQuery = "Update [Reagent_Pack_Well] Set Pierced ='1' ,PiercedDateTime= "+ "'" + PiercedDateTimeValue +"'"+" where ReagentPackID =" + "'"+ReagentPackID+"'" ;
+    
+    
+                      if(ExecSQLQueryFromString(strQuery,strConString)!=-1)
+                      {
+                        Log["Checkpoint"]("PiercedDateTime is changed in [Reagent_Pack_Well] table in MM database")
+                        Log["PopLogFolder"]();
+                        return true;
+                      }
+                    
+                    }
+                    else
+                    {
+                      Log["Checkpoint"]("Reagent Barcode is not present in MM database [ReagentPackID] table cannot change PiercedDateTime value");
+                      Log["PopLogFolder"]();
+                      return false;
+                    }
+                    break;
+    }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+//**************************************************************************
+//*  FunctionName : UnloadReagentHydra()
+//*  Description: Unload IA reagent
+//*  Input: Assay,Analyzer
+//*  Output: NA
+//*  Example: UnloadReagentHydra()
+//*  Date of Creating: 02/13/2019
+//*  Created By: Shrutika
+//'************************************************************************
+function UnloadReagentHydra(Assay,Analyzer)
+{
+  try
+  {
+      Log["AppendFolder"]("Inventory::UnloadReagentHydra");
+   
+      var objctrl = GetControl("Inventory_ReagentOverview","winReagent");
+      var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+      var vararr=["Image","ModuleImage",Analyzer];
+      var objModule = Getchild(objctrl, proparr, vararr);
+      if (VerifyObjectExistance(objModule))//["Exist"])
+      {
+        ClickControl(objModule)//["Click"]();
+        Log["Message"]("Selected analyzer "+Analyzer)
+      }
+      
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Chemistry Reagents overview screen before unloading reagent "+Assay);
+      var objReagentsGrid = GetControl("Inventory_ReagentOverview","grdReagents");
+     
+      //var iReagentcount=objctrl["Items"]["Count"]
+      var iReagentcount= GetGridRowCount(objReagentsGrid)
+      var checkcount = 0;
+      var reagentcount = 0;
+      
+      for (var i=0;i<iReagentcount;i++)
+      {
+        if (CheckTextonGridRow(objReagentsGrid,"ReagentName",i, Assay))
+        {
+          reagentcount = reagentcount+1;
+        }
+      }
+      
+      for (var row=0;row<iReagentcount;row++)
+      {
+          if (CheckTextonGridRow(objReagentsGrid,"ReagentName",row,Assay))
+          {
+              SelectGridRow(objReagentsGrid, row);
+              checkcount = checkcount+1;
+              
+              var shellObj=Sys["WaitProcess"]("Shell");
+              var objbtnUnload = Getchild(shellObj, "WPFControlName", "RetrieveReagentPackButton");
+              if(GetPropertyValue(objbtnUnload, "Enabled") == false)
+              {
+                Log["Warning"]("Unable to unload the reagent "+Assay+ " : Unload button is disabled after selecting the reagent");
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Unload button is disabled");
+                var proparr=["ClrClassName","WPFControlOrdinalNo"];
+                var vararr=["DataGridRow",row+1];
+                var objReagentRow = Getchild(objReagentsGrid, proparr, vararr);
+                ClickControl(objReagentRow);
+              }
+              else if(GetPropertyValue(objbtnUnload, "Enabled") == true)
+              {
+                  ClickControl(objbtnUnload);
+                  var objUnloadReagentPopup = GetControl("Inventory_ReagentOverview","wndUnloadReagentConfirmation");
+                  if (objUnloadReagentPopup["Exists"]==true)
+                  {
+                    var objbtnUnloadReagentYes = GetControl("Inventory_ReagentOverview","btnUnloadReagentYes");
+                    ClickControl(objbtnUnloadReagentYes);
+                  }
+                  
+              }// end of outer if  
+            }// end of outermost if 
+            if(checkcount==reagentcount)
+            {
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Reagent "+Assay+" unloaded successfully");
+              Log["PopLogFolder"]();
+              return true;
+            } 
+                         
+      }// end of for loop
+      if (checkcount=0)
+      {
+          Log["Warning"]("Reagent "+Assay+" not found in reagents grid : can not unload Reagent");
+          Log["PopLogFolder"]();
+          return true;
+      }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+ 
+}
+
+//**************************************************************************
+//*  FunctionName : EditOBSInReagentDetails()
+//*  Description: Edit OBS of a reagent barcode in reagent details
+//*  Input: Assay,OBSDaysToModify
+//*  Output: NA
+//*  Example: EditOBSInReagentDetails()
+//*  Date of Creating: 02/13/2019
+//*  Created By: Shrutika
+//'************************************************************************
+function EditOBSInReagentDetails(Assay,OBSDaysToModify)
+{
+    try
+    {
+    Log["AppendFolder"]("Inventory::EditOBSInReagentDetails");
+   
+    var objctrl = GetControl("Inventory_ReagentOverview","winReagent");
+    var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+    var vararr=["Image","ModuleImage",Analyzer];
+    var objModule = Getchild(objctrl, proparr, vararr);
+    if (VerifyObjectExistance(objModule))
+    {
+      ClickControl(objModule)
+      Log["Message"]("Selected analyzer "+Analyzer)
+    }
+      
+    var objReagentsGrid = GetControl("Inventory_ReagentOverview","grdReagents");
+     
+    var iReagentcount= GetGridRowCount(objReagentsGrid)
+//    var checkcount = 0;
+//    var reagentcount = 0;
+      
+    for (var i=0;i<iReagentcount;i++)
+    {
+      if (CheckTextonGridRow(objReagentsGrid,"ReagentName",i, Assay))
+      {
+        reagentcount = reagentcount+1;
+      }
+    }
+    
+    if (reagentcount=0)
+    {
+      Log["Warning"]("Reagent "+Assay+" not found in reagents grid : can not edit OBS in reagent details");
+      Log["PopLogFolder"](); 
+      return false;
+    }
+    else
+    {
+      for (var row=0;row<iReagentcount;row++)
+      {
+        //if (objctrl["Items"]["Item"](row)["ReagentName"]["OleValue"]==Assay)
+        if (CheckTextonGridRow(objReagentsGrid,"ReagentName",row,Assay))
+        {   
+          SelectGridRow(objReagentsGrid, row); // TO DO- If row is already selected (by the method ran before this method) then add verification 
+          var objctrl = GetControl("Inventory_ReagentOverview","btnReagentDetailsEdit");
+          ClickControl(objctrl);
+          
+          
+          OBSNewDate = aqDateTime["AddDays"](OBSDateInReagentDetails,(-OBSDaysToModify));
+          Log["Message"](aqConvert["DateTimeToStr"](OBSNewDate));
+        
+          Log["Message"]("User edits OBS date with : "+OBSNewDate);
+          //change OBS date // no automation id for the date picker field so code is pending for this  -TO DO
+          // var objctrl = GetControl("Inventory_ReagentOverview","datepicker"); -TO DO
+          //Set(objctrl,OBSNewDate);  - TO DO 
+          
+          var objctrl = GetControl("Inventory_ReagentOverview","btnReagentDetailsSave");
+          ClickControl(objctrl);
+          
+          // TO DO - Add verification to handle pop up where user cannot increase OBS date
+          
+          Log["PopLogFolder"]();
+          return true;
+        }
+      }
+    }
+  
+  
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+
+//**************************************************************************
+//*  FunctionName : SystemTrackingOBSOnAdjustingManualData()
+//*  Description: Verifying the system tracks OBS accordingly after editing OBS of a reagent barcode by a user 
+//*  Input: OBSDaysToModify
+//*  Output: NA
+//*  Example: SystemTrackingOBSOnAdjustingManualData()
+//*  Date of Creating: 02/13/2019
+//*  Created By: Shrutika
+//'************************************************************************  
+function SystemTrackingOBSOnAdjustingManualData(OBSDaysToModify)
+{
+  
+  try
+  {
+      Log["AppendFolder"]("Inventory::SystemTrackingOBSOnAdjustingManualData");
+      //var OBSDateInReagentDetails = OBSvalueInReagentDetails["split"](" ")[0];
+      //var Difference = aqDateTime.TimeInterval(OBSDateInReagentDetails, sUpdatedDate);
+      //var DaysDiff = aqConvert.TimeIntervalToStr(Difference).split(":")[0]
+      //Log.Message("The interval in Days:" + aqConvert.TimeIntervalToStr(Difference).split(":")[0]);
+  
+      var OBSDaysBeforeEdit = OBSDays
+      //Log["Message"]("");
+      var OBSDaysExpectedValue = OBSDaysBeforeEdit- OBSDaysToModify
+      //Log["Message"]("");
+  
+      GetReagentOBSValue(Assay)
+      var OBSDaysAfterEdit = OBSDays
+      //Log["Message"]("");
+  
+      if(OBSDaysAfterEdit==OBSDaysExpectedValue)
+      {
+        //Log["Message"](""); // TO DO
+        Log["Message"]("System stores and resumes tracking OBS for that pack using the adjusted data manually entered by the user");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("System does not stores and resume tracking OBS for that pack using the adjusted data manually entered by the user");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+
+
+
+
+//*************************************************************************
+//*  FunctionName : fnClickOnReagent
+//*  Description: Select/Deselects Regeant Row
+//*  Input: strRgntName
+//*  Output: Boolean
+//*  Example: fnClickOnReagent ("AFP")
+//*  Date of Creating: 27 Feb 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function fnClickOnReagent(RgntName)
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Click on Reagent Row "+RgntName)
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+                    
+        //Verify Reagent Available 
+        var bnFlag =false;
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Reagents available in Reagents overview screen")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            if(aqString["ToLower"](strCellValue) == aqString["ToLower"](RgntName))
+            {
+              //Select/Deselect Row
+              bnFlag =true;
+              var rowCounter = i+1;
+              Log["Message"]("Select "+RgntName+" in Row "+rowCounter);
+              objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+              var currRow = objctrl["WPFObject"]("DataGridRow", "", rowCounter)
+              //currRow["RaiseSelectionChangedEvent"](true)
+              aqUtils["Delay"](500)
+              currRow["Click"]();
+              aqUtils["Delay"](1000)
+              Log["Message"]("Clicked on Reagent Row for "+RgntName);
+              break;
+            }  
+          } 
+         
+        //Reagent not available? Fail
+        if(!bnFlag){
+          Log["Error"](RgntName+" is not available/not loaded");
+          return false;
+        }  
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************************************
+//*  FunctionName : GetCHReagentPackStatus(ReagentName,LotNo)
+//*  Description: Fetches the Pack status from Reagent Details screen and returns the Status
+//*  Input: ReagentName,LotNo
+//*  Output: Status
+//*  Example: GetCHReagentPackStatus("ALB","140101")
+//*  Created By: Shahana Tahreen
+//*  Modified By: Ramitha
+//*  Date of creation: 26 Feb 2019
+//*************************************************************************************************
+function GetCHReagentPackStatus(ReagentName,LotNo)
+{
+  try
+  {
+    Log["AppendFolder"]("Checking CH Reagent Pack Status for : "+ReagentName+" with Lot Number "+LotNo);
+    
+    //Initialize variables
+    var AssayColName = "ReagentName";
+    var LotColName = "LotID";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      ActRgtName = eval("objctrl.Items.Item("+Row+")."+ AssayColName + ".OleValue");
+      ActLotNo = eval("objctrl.Items.Item("+Row+")."+ LotColName + ".OleValue");
+    
+      //searching if Assay is available
+      if((ActRgtName == ReagentName) &&( ActLotNo == LotNo))
+      { 
+        Log["Checkpoint"](ReagentName+" with Lot Number "+LotNo+" is available in Reagents Grid under Column: " + AssayColName + ", Row number: " + Row);    
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Get Pack status
+        var objctrl2 = GetControl("Inventory_ReagentOverview","txtBlockStatus");
+        var Status=objctrl2.WPFControlText;
+        
+        Log["Checkpoint"]("Pack status for reagent "+ReagentName+" with Lot Number "+LotNo+" is :: "+Status);
+        Log["PopLogFolder"]();
+        return Status;
+      }
+    }
+    
+    Log["Error"]("Reagent "+ReagentName+" with Lot Number "+LotNo+" is unavailable");
+    Log["PopLogFolder"]();
+    return false;
+        
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+//*************************************************************************************************
+//*  FunctionName : GetIMReagentPackStatus(ReagentName,LotNo)
+//*  Description: Fetches the Pack status from Reagent Details screen and returns the Status
+//*  Input: ReagentName,LotNo
+//*  Output: Status
+//*  Example: GetIMReagentPackStatus("AFP","999")
+//*  Created By: Shahana Tahreen
+//*  Modified By: Ramitha
+//*  Date of creation: 26 Feb 2019
+//*************************************************************************************************
+function GetIMReagentPackStatus(ReagentName,LotNo)
+{
+  try
+  {
+    Log["AppendFolder"]("Checking IM Reagent Pack Status for : "+ReagentName+" with Lot Number "+LotNo);
+    
+    //Initialize variables
+    var AssayColName = "ReagentName";
+    var LotColName = "LotID";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      ActRgtName = eval("objctrl.Items.Item("+Row+")."+ AssayColName + ".OleValue");
+      ActLotNo = eval("objctrl.Items.Item("+Row+")."+ LotColName + ".OleValue");
+    
+      //searching if Assay is available
+      if((ActRgtName == ReagentName) &&( ActLotNo == LotNo))
+      { 
+        Log["Checkpoint"](ReagentName+" with Lot Number "+LotNo+" is available in Reagents Grid under Column: " + AssayColName + ", Row number: " + Row);  
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Get Pack status
+        var objctrl2 = GetControl("Inventory_ReagentOverview","txtBlockIMPackStatus");
+        var Status=objctrl2.WPFControlText;
+        
+        Log["Checkpoint"]("Pack status for reagent "+ReagentName+" with Lot Number "+LotNo+" is :: "+Status);
+        Log["PopLogFolder"]();
+        return Status;
+      }
+    }
+    
+    Log["Error"]("Reagent "+ReagentName+" with Lot Number "+LotNo+" is unavailable");
+    Log["PopLogFolder"]();
+    return false;
+        
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+//*************************************************************************
+//*  FunctionName : fnCheckReagentPackLoadedIntoCompartment(Assay,Barcode)
+//*  Description: To verify CH reagent pack is loaded into compartment
+//*  Input: Assay,Barcode
+//*  Output: Boolean
+//*  Example: fnCheckReagentPackLoadedIntoCompartment("Alb","14010210805324042800001")
+//*  Date of Creating: 22nd Feb 2019
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnCheckReagentPackLoadedIntoCompartment(Assay,Barcode)
+{     
+   try
+    {
+        var proparr=["ClrClassName","DataContext.ReagentPack.PackBarcode.BarcodeStr.OleValue"];
+        var vararr=["ContentPresenter",Barcode];
+        var ObjReagentInCompartment= Sys["Find"](proparr,vararr,200);
+        
+        if (VerifyObjectExistance(ObjReagentInCompartment))
+        {
+          Log["Checkpoint"](Assay+" is loaded into CH compartment")
+          return true;  
+        }else{
+          Log["Error"](Assay+" is not loaded into CH compartment")
+          return false;
+        }
+        
+    }catch(e){
+      Log["Error"]("Exception",exp["description"]);
+      return false;
+    }  
+
+ }
+ 
+//*************************************************************************
+//*  FunctionName : fnVerifyReagentPackNotInUse(Assay)
+//*  Description: To verify CH reagent pack is not in use
+//*  Input: Assay
+//*  Output: Boolean
+//*  Example: fnVerifyReagentPackNotInUse("Alb") 
+//*  Date of Creating: 25th Feb 2019
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnVerifyReagentPackNotInUse(Assay) 
+{     
+   try
+    {   
+      var objReagentsGrid = GetControl("Inventory_ReagentOverview","grdReagents");
+      var iReagentcount= GetGridRowCount(objReagentsGrid);
+      
+      if(iReagentcount>0)
+      {
+          for (var row=0;row<iReagentcount;row++)
+          {
+              if (CheckTextonGridRow(objReagentsGrid,"ReagentName",row,Assay))
+              {
+                  SelectGridRow(objReagentsGrid, row);
+                  var objStatus = GetControl("","txtBlockStatus"); 
+                  if(objStatus.WPFControlText != "In Use")
+                  {
+                      Log["Checkpoint"](Assay+" reagent pack is not in use"); 
+                      return true;                  
+                  }else
+                      return false;
+              }else
+                  Log["Error"](" Reagent "+Assay+" not found in reagents grid : can not unload Reagent"); 
+                  return false;
+          }
+      }   
+      else{
+      Log["Error"]("No reagents available in Reagent Grid")  
+      return false;
+      }
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      return false;
+    }  
+
+ }
+ 
+//*************************************************************************
+//*  FunctionName : fnVerifyCHDrawerCapacityNotFull()
+//*  Description: To verify CH drawer capacity is not full
+//*  Input: NA
+//*  Output: Boolean
+//*  Example: fnVerifyCHDrawerCapacityNotFull()
+//*  Date of Creating: 26th Feb 2019
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnVerifyCHDrawerCapacityNotFull() 
+{     
+   try
+    {   
+      var objCHDrawer1 = GetControl("","txtBlockCHReagentDrawer1");
+      var objCHDrawer2 = GetControl("","txtBlockCHReagentDrawer2");
+      var objCHDrawer3 = GetControl("","txtBlockCHReagentDrawer3");
+      var objCHDrawer4 = GetControl("","txtBlockCHReagentDrawer4");
+      var DrawersCount=4;
+      var CHDrawers = new Array(objCHDrawer1,objCHDrawer2,objCHDrawer3,objCHDrawer4);
+      
+      for (var index=0;index<CHDrawers["length"];index++)
+          {
+              if (CHDrawers[index]["DataContext"]["ReagentName"]["OleValue"]=="")
+              {
+                Log["Checkpoint"]("Drawer capacity is not full"); 
+                return true;              
+              }
+          }
+          
+      if(index==DrawersCount)
+      {
+        Log["Message"]("Drawer capacity is full, so restarting Hydra application");
+        InitializeHydra()
+        InvokeWorkflow("Inventory_ReagentLoader");
+        
+        for (var index=0;index<CHDrawers["length"];index++)
+            {
+              if (CHDrawers[index]["DataContext"]["ReagentName"]["OleValue"]=="")
+              {
+                Log["Checkpoint"]("Drawer capacity is not full"); 
+                return true;              
+              }
+            }
+       } 
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      return false;
+    }  
+
+ }
+ 
+//*************************************************************************
+//*  FunctionName : fnUnloadCHReagentToDrawer(Assay,Barcode)
+//*  Description: To verify CH reagent is unloaded from compartment to drawer
+//*  Input: Assay,Barcode
+//*  Output: Boolean
+//*  Example: fnUnloadCHReagentToDrawer("Alb","14010210805324042800001")
+//*  Date of Creating: 26th Feb 2019
+//*  Created By: Ramitha K
+//*************************************************************************
+function fnUnloadCHReagentToDrawer(Assay,Barcode) 
+{     
+   try
+    {
+      InitializeMetaDataHYDRA();    
+      var objCHDrawer1 = GetControl("","txtBlockCHReagentDrawer1");
+      var objCHDrawer2 = GetControl("","txtBlockCHReagentDrawer2");
+      var objCHDrawer3 = GetControl("","txtBlockCHReagentDrawer3");
+      var objCHDrawer4 = GetControl("","txtBlockCHReagentDrawer4");
+      var DrawersCount=4;
+      var ReagentInDrawer= false;
+      var CompartmentEmpty= false;     
+      var CHDrawers = new Array(objCHDrawer1,objCHDrawer2,objCHDrawer3,objCHDrawer4);
+      var proparr=["ClrClassName","DataContext.ReagentPack.PackBarcode.BarcodeStr.OleValue"];
+      var vararr=["ContentPresenter",Barcode];  
+      var ObjReagentInCompartment= Sys["Find"](proparr,vararr,200);
+      
+      for (var index=0;index<CHDrawers["length"];index++)
+          {
+              if (CHDrawers[index]["DataContext"]["ReagentName"]["OleValue"]!="")
+              {
+                if (CHDrawers[index]["DataContext"]["ReagentPack"]["PackBarcode"]["BarcodeStr"]["OleValue"] == Barcode)
+                {
+                   ReagentInDrawer= true;           
+                }
+              }
+          }
+      if(index==DrawersCount)
+      {
+        Log["Error"](Assay+" reagent is not available in the Drawer");
+        return false;
+      }
+      if(!VerifyObjectExistance(ObjReagentInCompartment))
+        CompartmentEmpty = true;
+        else
+        {
+        Log["Error"](Assay+" reagent is available in the Compartment"); 
+        return false;
+        }
+      if (ReagentInDrawer == true && CompartmentEmpty == true)    
+          {
+            return true;
+          }
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      return false;
+    }  
+
+ }
+ 
+ //*************************************************************************************************
+//*  FunctionName : GetWellCountValueFromCHReagentDetails(ReagentName)
+//*  Description: Fetches the Well count from Reagent Details screen and returns the array Count
+//*  Input: ReagentName
+//*  Output: TotalCount
+//*  Example: GetWellCountValueFromCHReagentDetails(ReagentName)
+//*  Created By: Shahana Tahreen
+//*  Date of creation: 26 Feb 2019
+//*************************************************************************************************
+function GetWellCountValueFromCHReagentDetails(ReagentName)
+{
+  try
+  {
+    Log["AppendFolder"]("Get Well Count value for Reagent : "+ReagentName);
+    
+    //Initialize variables
+    var ColName1="ReagentName";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      strValue = eval("objctrl.Items.Item("+Row+")."+ ColName1 + ".OleValue");
+    
+      //searching if Assay is available
+      if(strValue == ReagentName)
+      { 
+        Log["Message"]("The Item: "+ReagentName+" is available in Column: " + ColName1 + ", Row number: " + Row);  
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Get Well 2 count value
+        var Well2=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("Reagent")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("ReagentsByModuleTab")["WinFormsObject"]("ContentFrame_ReagentsByModule")["WinFormsObject"]("ReagentsByModuleViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("ReagentsByModuleLayoutView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Border", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("GroupBox", "Reagent Details", 1)["WPFObject"]("ReagentDetailsControl")["WPFObject"]("ReagentDetailsView", "", 1)["WPFObject"]("TabControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("WellsItemsControl")["WPFObject"]("ContentPresenter", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("AvailableTestsCountTextBox");
+        var Well2Count=aqConvert["StrToInt"](Well2["Text"]["OleValue"]);
+        
+        //Get Well 3 count value
+        var Well3=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("Reagent")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("ReagentsByModuleTab")["WinFormsObject"]("ContentFrame_ReagentsByModule")["WinFormsObject"]("ReagentsByModuleViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("ReagentsByModuleLayoutView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Border", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("GroupBox", "Reagent Details", 1)["WPFObject"]("ReagentDetailsControl")["WPFObject"]("ReagentDetailsView", "", 1)["WPFObject"]("TabControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("WellsItemsControl")["WPFObject"]("ContentPresenter", "", 2)["WPFObject"]("Grid", "", 1)["WPFObject"]("AvailableTestsCountTextBox");
+        var Well3Count=aqConvert["StrToInt"]( Well3["Text"]["OleValue"]);
+        
+        //printing the well counts
+        Log["Message"]("Well count 2 for "+ReagentName+" is : "+  Well2Count);
+        Log["Message"]("Well count 3 for "+ReagentName+" is : " + Well3Count);
+        
+        //returning array of well count
+        ArrWellCount= new Array(Well2Count,Well3Count);
+        Log["PopLogFolder"]();
+        return ArrWellCount;
+      }
+    }
+    
+    Log["Error"]("Reagent "+Assay+" is unavailable" );
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//*************************************************************************************************
+//*  FunctionName : GetCountValueFromIMReagentDetails(ReagentName)
+//*  Description: Fetches the count from Reagent Details screen and returns the Count value
+//*  Input: ReagentName
+//*  Output: Count
+//*  Example: GetCountValueFromIMReagentDetails(ReagentName)
+//*  Created By: Shahana Tahreen
+//*  Date of creation: 26 Feb 2019
+//*************************************************************************************************
+function GetCountValueFromIMReagentDetails(ReagentName)
+{
+  try
+  {
+      Log["AppendFolder"]("Get Count value for Reagent : "+ReagentName);
+    
+    //Initialize variables
+    var ColName1="ReagentName";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      strValue = eval("objctrl.Items.Item("+Row+")."+ ColName1 + ".OleValue");
+    
+      //searching if Assay is available
+      if(strValue == ReagentName)
+      { 
+        Log["Message"]("The Item: "+ReagentName+" is available in Column: " + ColName1 + ", Row number: " + Row);  
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Get Count for IM from Reagent Details
+        var objctrl2 = GetControl("Inventory_ReagentOverview","txtBlockIMCount");
+        var Count=objctrl2.WPFControlText;
+        
+        Log["Message"](ReagentName+" Pack Status is : "+Count);
+        Log["PopLogFolder"]();
+        return Count;
+      }
+    }
+    
+    Log["Error"]("Reagent "+ReagentName+" is unavailable" );
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+ 
+//'***************************************************************************************************************************
+//*  FunctionName : CheckReagentsAvailability
+//*  Description: Checks if reagent available or not
+//*  Input: arrTestData2,TypeOfReagent
+//*  Output: Boolean
+//*  Example: CheckReagentsAvailability(arrTestData2,TypeOfReagent)
+//*  Date of Creating: 6 Feb 2019
+//*  Created By: Shahana
+//'***************************************************************************************************************************
+function CheckReagentsAvailability(arrTestData2,TypeOfReagent)
+{
+  try
+  {
+    var Result=0;
+    var IMReagentCount=0;
+    var CHReagentCount=0;
+    var blnResult=false;
+  
+    //Navigate to Reagent overview screen 
+    var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+      Runner["Stop"]();
+  
+    //Count reagents
+    for(i=0;i<arrTestData2["length"];i++)
+    {
+      
+      //Initialize variables
+      dictColumn2=arrTestData2[i];
+      var Assay = dictColumn2["Item"]("Assay")
+      var ReagentType = dictColumn2["Item"]("ReagentType")
+      
+      //Counting IM reagents
+      if(ReagentType=="IM")
+      {
+        IMReagentCount=IMReagentCount+1;
+      }
+      
+      //Counting CH reagents
+      if(ReagentType=="CH")
+      {
+        CHReagentCount=CHReagentCount+1;
+      }    
+    }
+    
+    //check if reagents available or not
+    for(i=0;i<arrTestData2["length"];i++)
+    {
+      //Initialize variables
+      dictColumn2=arrTestData2[i];
+      var Assay = dictColumn2["Item"]("Assay")
+      var ReagentType = dictColumn2["Item"]("ReagentType")
+      
+      //Verify IM reagent availability
+      if(TypeOfReagent=="IM"&&ReagentType=="IM")
+      {
+        if(VerifyReagentLoaded(Assay,ReagentType))
+            Result = Result+1;         
+      }
+      
+      //Verify CH reagent availability
+      if(TypeOfReagent=="CH"&&ReagentType=="CH")
+      {
+        if(VerifyReagentLoaded(Assay,ReagentType))
+          Result = Result+1; 
+      }
+    }
+    
+    if(TypeOfReagent=="IM")
+    {
+      if(IMReagentCount==Result)
+      {
+        blnResult=true;
+        Log["Message"]("Expected IM Reagents to be available : "+IMReagentCount+ ",Actual count is : "+Result)
+      }
+      else
+      {
+        blnResult=false;
+        Log["Message"]("Expected IM Reagents to be available : "+IMReagentCount+ ",Actual count is : "+Result)
+      }
+    }
+    
+    if(TypeOfReagent=="CH")
+    {
+      if(CHReagentCount==Result)
+      {
+        blnResult=true;
+        Log["Message"]("Expected CH Reagents to be available : "+CHReagentCount+ ",Actual count is : "+Result)
+      }
+      else
+      {
+        blnResult=false;
+        Log["Message"]("Expected CH Reagents to be available : "+CHReagentCount+ ",Actual count is : "+Result)
+      }
+    }
+    
+    return blnResult;
+  } 
+  catch(e)
+  {
+      Log["Error"]("Exception", e["Description"]);
+      return false;
+  }
+}
+
+
+//********************************************************************************
+//*  FunctionName : VerifyReagentPackErrorIconMessage(Assay,Analyzer,strExpectedError,SequenceNo,LotNo)
+//*  Description: Verifies glyph icon error text of a reagent entry in reagent grid
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyReagentPackErrorIconMessage()
+//*  Date of Creating: Feb 20 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyReagentPackErrorIconMessage(Assay,Analyzer,strExpectedError,SequenceNo,LotNo)
+{
+  try
+  {
+      Log["AppendFolder"]("Inventory::VerifyReagentPackErrorIconMessage");
+   
+      var objctrl = GetControl("Inventory_ReagentOverview","winReagent");
+      var proparr=["ClrClassName","WPFControlName","DataContext.ModuleType.OleValue"];
+      var vararr=["Image","ModuleImage",Analyzer];
+      var objModule = Getchild(objctrl, proparr, vararr);
+      if (VerifyObjectExistance(objModule))
+      {
+        ClickControl(objModule);
+        Log["Message"]("Selected analyzer "+Analyzer)
+      }
+      
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagents overview screen before unloading reagent "+Assay);
+      var objReagentsGrid = GetControl("Inventory_ReagentOverview","grdReagents");
+
+      var iReagentcount= GetGridRowCount(objReagentsGrid)
+  
+      for (var row=0;row<iReagentcount;row++)
+      {
+          //if (CheckTextonGridRow(objReagentsGrid,"ReagentName",row,Assay))
+          if (CheckTextonGridRow(objReagentsGrid,"SequenceNumber",row,SequenceNo)&&(CheckTextonGridRow(objReagentsGrid,"LotID",row,LotNo)))
+          {
+              SelectGridRow(objReagentsGrid, row);               
+              
+              var strImageIconError = GetGridCellImageTextByColumnIndex(objReagentsGrid,row+1,3,"PackStatusIconList")
+              
+              var arrstrImageIconError = strImageIconError["split"](";");
+              var found = 0;
+              
+              for (var i= 0 ;i <arrstrImageIconError["length"];i++)
+              {
+                  if( aqString["ToLower"](arrstrImageIconError[i]) == aqString["ToLower"](strExpectedError))
+                  {
+                    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Expected error image text: "+ strExpectedError +" matches with error image text: " + arrstrImageIconError[i]);
+                    found = 1;
+                    Log["PopLogFolder"]();
+                    return true;
+                    //break;
+                  }
+              }
+                
+              if(found ==0)
+              {
+                
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Expected error image text: "+ strExpectedError +" does not match with error image text: " + strImageIconError);
+                Log["PopLogFolder"]();
+                return false;
+              }
+              //break;
+              }
+      }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+
+}
+
+
+//*************************************************************************************************
+//*  FunctionName : GetReagentPackStatus(ReagentType, ReagentName,Sequence)
+//*  Description: Fetches the Pack status from Reagent Details screen and returns the Status based on Rgt Name and Sequence
+//*  Input: ReagentName
+//*  Output: Status
+//*  Example: GGetReagentPackStatus(ReagentType,ReagentName,Sequence)
+//*  Created By: Muru
+//*  Date of creation: 08 March 2019
+//*************************************************************************************************
+function GetReagentPackStatus(ReagentType,ReagentName,Sequence)
+{
+  try
+  {
+    Log["AppendFolder"]("Checking  Reagent Pack Status for : "+ReagentName);
+    
+    //Initialize variables
+    var ColName1="ReagentName";
+    var ColName2 = "SequenceNumber";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+  //  Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      ActRgtName = eval("objctrl.Items.Item("+Row+")."+ ColName1 + ".OleValue");
+      ActSequenceNo = eval("objctrl.Items.Item("+Row+")."+ ColName2 + ".OleValue");
+    
+      //searching if Assay is available
+      if((ActRgtName == ReagentName)&&( ActSequenceNo ==Sequence))
+      { 
+     //   Log["Message"]("The Item: "+ReagentName+" is available in Column: " + ColName1 + ", Row number: " + Row);  
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Get Pack status for CH
+        if (ReagentType=="CH")
+        {
+        var objctrl2 = GetControl("Inventory_ReagentOverview","txtBlockStatus");
+        var Status=objctrl2["Text"]["OleValue"];
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagents Pack Status");
+        Log["Message"]("The Pack status of Reagent "+ReagentName+" with Sequence "+Sequence+" is : "+Status);
+        Log["PopLogFolder"]();
+        return Status;}
+        
+        //Get Pack Status for IM
+        else
+        {var objctrl2 = GetControl("Inventory_ReagentOverview","txtBlockIMPackStatus");
+        var Status=objctrl2["Text"]["OleValue"];
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Pack Status");
+        Log["Message"]("The Pack status of Reagent "+ReagentName+" with Sequence "+Sequence+" is : "+Status);
+        Log["PopLogFolder"]();
+        return Status;}
+        
+        
+        
+      }
+    }
+    
+    Log["Error"]("Reagent "+Assay+" with Sequence "+Sequence+"is unavailable" );
+    Log["PopLogFolder"]();
+    return false;
+        
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+function IsRgtDoorClosed(RgtType)
+{
+  try
+  {
+  //InitializeMetaDataHYDRA() //Get the Project Variables
+
+
+   Log["Message"]("Verifying  Reagent Door Status for "+RgtType) 
+   var objIMPDrawerStatus = GetControl("Inventory_ReagentLoader", "IMPrimaryDoorStatus");
+   var objIMADrawerStatus = GetControl("Inventory_ReagentLoader", "IMAncillaryDoorStatus");
+   var objCHDrawerStatus = GetControl("Inventory_ReagentLoader", "CHReagentDrawerStatus");
+   Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+   switch(RgtType)
+   {
+    case "IMPrimary":
+          return (objIMPDrawerStatus["DataContext"]["IsIMPrimaryDoorClosed"]);        
+          break;
+    case "IMAncillary":
+          return (objIMADrawerStatus["DataContext"]["IsIMAncillaryDoorClosed"]); 
+          break;
+    case "CH":
+          return(objCHDrawerStatus["DataContext"]["IsCHDoorClosed"])
+          break;         
+   
+   }
+   
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Runner["Stop"]();
+    //return false;
+  }
+
+}
+
+
+
+function GetDoorTimeOutStatus(RgtType) //Return Values - Started,None,Warning,Timeout
+{
+    try
+  {
+   Log["Message"]("Fetching the  Door Timer Status for "+RgtType) 
+   var objIMPDrawerStatus = GetControl("Inventory_ReagentLoader", "IMPrimaryDoorStatus");
+   var objIMADrawerStatus = GetControl("Inventory_ReagentLoader", "IMAncillaryDoorStatus");
+   var objCHDrawerStatus = GetControl("Inventory_ReagentLoader", "CHReagentDrawerStatus");
+   
+   switch(RgtType)
+   {
+    case "IMPrimary":
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+          return (objIMPDrawerStatus["DataContext"]["IAPrimaryDoorTimeoutStatus"]["OleValue"]);        
+          break;
+    case "IMAncillary":
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+          return (objIMADrawerStatus["DataContext"]["IAPrimaryDoorTimeoutStatus"]["OleValue"]); //Same Propertyy name for all 3 Doors
+          break;
+    case "CH":
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+          return(objCHDrawerStatus["DataContext"]["IAPrimaryDoorTimeoutStatus"]["OleValue"])
+          break;         
+   
+   }
+   
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    //Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+
+function GetRgtDrawerStatusText(RgtType)
+{
+    try
+  {
+   Log["Message"]("Fetching the Reagent Door Status Text for "+RgtType) 
+   var objIMPDrawerStatus = GetControl("Inventory_ReagentLoader", "IMPrimaryDoorStatus");
+   var objIMADrawerStatus = GetControl("Inventory_ReagentLoader", "IMPrimaryDoorStatus");
+   var objCHDrawerStatus = GetControl("Inventory_ReagentLoader", "CHReagentDrawerStatus");
+   
+   switch(RgtType)
+   {
+    case "IMPrimary":
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+          return (objIMPDrawerStatus["DataContext"]["IMPrimaryDoorStatus"]["OleValue"]);        
+          break;
+    case "IMAncillary":
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+          return (objIMADrawerStatus["DataContext"]["IMAncDoorStatus"]["OleValue"]); 
+          break;
+    case "CH":
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");
+          return(objCHDrawerStatus["DataContext"]["CHDrawerStatus"]["OleValue"])
+          break;         
+   
+   }
+   
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    //Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+
+
+function VerifyAlertOnInventory(AlertText,Severity)
+{
+
+try{
+  Log["Message"]("Verifying Alert is Displayed on UI-Inventory Tab");
+  
+  
+   var objInventory = GetControl("Inventory_CalQCStorageInventory","btnInventory");
+ // var objInventory = Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("FrameContainer", "", 3)["WinFormsObject"]("TopButtons")["WinFormsObject"]("InventoryBttn");
+  
+ 
+  if(objInventory["get_Tag"]()!=null)
+ // if (objInventory["Tag"]!= null)
+  {  
+    var InventoryAlert = objInventory["Tag"]["MessageCode"]["OleValue"];
+    var SeverityLevel =  objInventory["Tag"]["Severity"]["OleValue"];
+  
+    if ((InventoryAlert==AlertText) && (SeverityLevel==Severity))
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");  
+      Log["Message"]("Alert Displayed on Inventory for "+InventoryAlert+ " with Severity "+SeverityLevel);
+      return true;
+    }
+  
+      else
+    {
+      
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");  
+     Log["Message"]("Alert Not Displayed") ;
+     return false;
+    }
+    
+  }
+  else
+  {
+    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Reagent Door Status");    
+   Log["Message"]("Alert Not Displayed") ;
+   return false;
+  }
+  
+  } 
+
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    //Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+//*************************************************************************************************
+//*  FunctionName : DisableReagentLotForUnusableRecoverable(ReagentName)
+//*  Description: Select specific reagent and click on DisableReagentLot Button
+//*  Input: ReagentName
+//*  Output: Bool
+//*  Example: ReagentLotForUnusableRecoverable("Alb")
+//*  Created By: Ramitha
+//*  Date of creation: 15 March 2019
+//*************************************************************************************************
+function DisableReagentLotForUnusableRecoverable(ReagentName)
+{
+  try
+  {
+    Log["AppendFolder"]("Selecting DisableReagentLot Button for : "+ReagentName);
+    
+    //Initialize variables
+    var ColName1="ReagentName";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      strValue = eval("objctrl.Items.Item("+Row+")."+ ColName1 + ".OleValue");
+    
+      //searching if Assay is available
+      if(strValue == ReagentName)
+      { 
+        Log["Message"]("The Item: "+ReagentName+" is available in Column: " + ColName1 + ", Row number: " + Row);  
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Click on DisableReagentLot Button
+        var objctrl2 = GetControl("Inventory_ReagentOverview","btnDisableReagentLot");
+        ClickControl(objctrl2);
+        
+        //Todo: verify Grayed out row
+        Log["Checkpoint"]("Disabled reagent lot for "+ReagentName);
+        Log["PopLogFolder"]();
+        return true;
+      }
+    }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+//*************************************************************************************************
+//*  FunctionName : UncheckAllTheCheckedReagentFromReagentGrid()
+//*  Description: Unchecks all reagent from reagent grid screen
+//*  Input: na
+//*  Output: boolean
+//*  Example:UncheckAllTheCheckedReagentFromReagentGrid()
+//*  Created By: Shahana Tahreen
+//*  Date of creation: 12 Mar 2019
+//*************************************************************************************************
+function UncheckAllTheCheckedReagentFromReagentGrid()
+{
+  try
+  {
+    Log["AppendFolder"]("Uncheck the selected reagent in Reagent grid ");
+    
+    //Initialize variables
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        
+    //Selecting the reagent
+    if(!UnselectGridRow(objctrl))
+    {
+        Log["Error"]("Failed to uncheck all the checked reagent from reagent grid");
+        Log["PopLogFolder"]();
+        return false;
+    }
+    
+    Log["Checkpoint"]("Successfully unchecked all the checked reagent from reagent grid");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*************************************************************************************************
+//*  FunctionName : fnClickIMReagentinGrid()
+//*  Description: Click on badbarode reagent from reagent grid screen
+//*  Input: na
+//*  Output: boolean
+//*  Example:fnClickIMReagentinGrid()
+//*  Created By: Amar Kumar
+//*  Date of creation: 30 Mar 2019
+//*************************************************************************************************
+
+function fnClickIMReagentinGrid(Assay,Barcode,Changebarcode) 
+{     
+   try
+    {     
+      var objIMDrawer1 = GetControl("","txtBlockIMPRIReagent1");
+      var objIMDrawer2 = GetControl("","txtBlockIMPRIReagent2");
+      var objIMDrawer3 = GetControl("","txtBlockIMPRIReagent3");
+      var objIMDrawer4 = GetControl("","txtBlockIMPRIReagent4");
+      var indexvalue = 0    
+      var IMDrawers = new Array(objIMDrawer1,objIMDrawer2,objIMDrawer3,objIMDrawer4);
+      
+      for ( index=0; index<IMDrawers["length"];index++)
+          {
+              if (IMDrawers[index]["DataContext"]["ReagentName"]["OleValue"]== "Barcode Error")
+              {
+                  IMDrawers[index]["Click"]();
+                  ReagentInDrawer= true;
+                  indexvalue = index
+                  break;         
+             
+              }else{
+              if(index==IMDrawers["length"])
+                  {
+                    Log["Error"](Assay+" unknown reagent is not available in the Drawer");
+                    return false;
+                  }
+                    }              
+          }
+
+var objManualentywindow = GetControl("","PopupManualPackDetailsEntryDialog");
+var ObjPacklabelentry = GetControl("","txtboxTextBarcode");
+var Objvalidatebutton = GetControl("","btnValidate");
+var savebutton = GetControl("","btnSaveManentry");                    
+//      var objManualentywindow = Sys["Process"]("Shell")["WPFObject"]("HwndSource: ManualPackDetailsEntryView", "Barcode read error at position: 4.")["WPFObject"]("ManualPackDetailsEntryView", "Barcode read error at position: 4.", 1)
+      
+//      var proparr1=["ClrClassName","WPFControlName"];
+//      var vararr1=["TextBox","EditBarCode"];  
+//      var ObjPacklabelentry = Getchild(objManualentywindow, proparr1, vararr1);
+      
+//      var proparr2=["ClrClassName","WPFControlName"];
+//      var vararr2=["Button","BtnVerify"];  
+//      var Objvalidatebutton = Getchild(objManualentywindow, proparr2, vararr2);
+////      var savebutton = GetControl("","btnOK");                      
+                  if(objManualentywindow["Exists"])
+                  {
+                  ObjPacklabelentry["set_Text"]("04199915456859");
+                    //ObjPacklabelentry["set_Text"](Changebarcode);
+                    Objvalidatebutton["Click"]();   
+                    savebutton["Click"]()
+                    }
+      if (IMDrawers[indexvalue]["DataContext"]["ReagentName"]["OleValue"]== "AFP")   
+      //if (ReagentInDrawer == "AFP")    
+          {
+            Log["Message"]("Reagent is replaced by the manual entry")
+            return true;
+          }
+ 
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      return false;
+    }  
+
+ }
+ 
+ //*************************************************************************************************
+//*  FunctionName : fnClickCHReagentinGrid()
+//*  Description: Click on badbarode reagent from reagent grid screen
+//*  Input: na
+//*  Output: boolean
+//*  Example:fnClickCHReagentinGrid()
+//*  Created By: Amar Kumar
+//*  Date of creation: 30 Mar 2019
+//*************************************************************************************************
+ 
+ function fnClickCHReagentinGrid(Assay,Barcode,Lot,Sequence,Year,Month,Day,CHassay) 
+{     
+   try
+    {     
+     // InitializeMetaDataHYDRA();    
+      var objCHDrawer1 = GetControl("","txtBlockCHReagentDrawer1");
+      var objCHDrawer2 = GetControl("","txtBlockCHReagentDrawer2");
+      var objCHDrawer3 = GetControl("","txtBlockCHReagentDrawer3");
+      var objCHDrawer4 = GetControl("","txtBlockCHReagentDrawer4");
+      var DrawersCount=4;
+      var CompartmentEmpty= false;     
+      var CHDrawers = new Array(objCHDrawer1,objCHDrawer2,objCHDrawer3,objCHDrawer4);
+      var proparr=["ClrClassName","DataContext.ReagentPack.PackBarcode.BarcodeStr.OleValue"];
+      var vararr=["ContentPresenter",Barcode];  
+      var ObjReagentInCompartment= Sys["Find"](proparr,vararr,200);
+        
+      for ( index=0; index<CHDrawers["length"];index++)
+          {
+              if (CHDrawers[index]["DataContext"]["ReagentName"]["OleValue"]== "UnknownPack")
+              {
+                //if (IMDrawers[index]["DataContext"]["ReagentPack"]["PackBarcode"]["BarcodeStr"]["OleValue"] == Barcode)
+               // {
+                  CHDrawers[index]["Click"]();
+                  ReagentInDrawer= true;
+                  indexvalue = index
+                  break;         
+             
+              }else{
+              if(index==CHDrawers["length"])
+                  {
+                    Log["Error"](Assay+" unknown reagent is not available in the Drawer");
+                    return false;
+                  }
+                    }              
+          }
+          
+        var objManualentywindow = Sys["Process"]("Shell")["WPFObject"]("HwndSource: CCManualPackDetailsEntryView", "Barcode read error at position: 3.")["WPFObject"]("CCManualPackDetailsEntryView", "Barcode read error at position: 3.", 1)
+        var Lottextbox = GetControl("","txtBoxCHLotID");                      
+        var BoxSequenceTextbox = GetControl("","txtBoxSequenceNo");    
+        var YearTextbox = GetControl("","txtBoxYear");    
+        var MonthTextbox = GetControl("","txtBoxMonth");    
+        var DayTextbox = GetControl("","txtBoxDay");    
+        var savebutton = GetControl("","BtnSave");
+        var Assaycombo = GetControl("","cmbAssaybox")
+        //var Assaycombo = Sys["Process"]("Shell")["WPFObject"]("HwndSource: CCManualPackDetailsEntryView", "Barcode read error at position: 3.")["WPFObject"]("CCManualPackDetailsEntryView", "Barcode read error at position: 3.", 1)["WPFObject"]("UIWDesktopDialogLayoutUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("CHPackDetailsEntry")["WPFObject"]("ComboBox", "", 1);
+                            
+                  if(objManualentywindow["Exists"])
+                  {
+                    Lottextbox["SetText"]("140101");
+                    BoxSequenceTextbox["SetText"]("00001");
+                    YearTextbox["SetText"]("2024");
+                    MonthTextbox["SetText"]("04");
+                    DayTextbox["SetText"]("28");
+                    SelectComboValue(Assaycombo, "Alb")
+                    Assaycombo["SelectNext"](); // currently dropdown values are not displaying
+                    //Objvalidatebutton["Click"]();   
+                    savebutton["Click"]()
+                    }
+                    
+//      if(!VerifyObjectExistance(ObjReagentInCompartment))
+//        CompartmentEmpty = true;
+//        else
+//        {
+//        Log["Error"](Assay+" reagent is available in the Compartment"); 
+//        return false;
+//        }
+                      
+      if (CHDrawers[indexvalue]["DataContext"]["ReagentName"]["OleValue"]== "Albumin")   
+      //if (ReagentInDrawer == "ALB")    
+          {
+            Log["Message"]("Reagent is replaced by the manual entry")
+            return true;
+          }
+
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      return false;
+    }  
+
+ }
+
+
+ //********************************************************************************
+//*  FunctionName : SetIMSuppliesAlertThresholdTipsRemaining(sTipsValue)
+//*  Description: Set tipa threshold in supplies overview screen 
+//*  Input: NA
+//*  Output: boolean
+//*  Example: VerifyReagentPackErrorIconMessage()
+//*  Date of Creating: March 12 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function SetIMSuppliesAlertThresholdTipsRemaining(sTipsValue)
+{
+  try
+  {    
+    Log["AppendFolder"]("Inventory::SetIMSuppliesAlertThresholdTipsRemaining");
+    
+    Log["Enabled"]=false    
+    var objViewAllSupplies=GetControl("Inventory_SuppliesOverview","btnViewAll");
+    ClickControl(objViewAllSupplies);
+    Log["Enabled"]=true
+    
+    var objctrl = GetControl("Inventory_SuppliesOverview","btnIMSuppliesAlertConfiguration");
+    ClickControl(objctrl);
+  
+    var objctrl = GetControl("Inventory_SuppliesOverview","dblUpDownTipsRemainingThresholdValue");
+    //var sTipsValue = "5"
+    SetTextValue(objctrl,sTipsValue)
+    var SaveThresholdCtrl = GetControl("","btnSaveThreshold");
+    ClickControl(SaveThresholdCtrl)
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//********************************************************************************
+//*  FunctionName : VerifyTipTrayStatus(sTipTrayStatus,sColorHighlighted)
+//*  Description: Verifies Tip Tray status and its color highlighted in supplies overview screen
+//*  Input: sTipTrayStatus, sColorHighlighted
+//*  Output: boolean
+//*  Example: VerifyTipTrayStatus()
+//*  Date of Creating: March 13 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyTipTrayStatus(sTray,sTipTrayStatus,sColorHighlighted)
+{
+    Log["AppendFolder"]("Inventory::VerifyTipTrayStatus"); 
+    
+    Log["Enabled"]=false    
+    var objViewAllSupplies=GetControl("Inventory_SuppliesOverview","btnViewAll");
+    ClickControl(objViewAllSupplies);
+    Log["Enabled"]=true
+    
+  switch(sTray)
+  {
+    case "Tray1":
+          var objctrl = GetControl("Inventory_SuppliesOverview","txtBlockTipTray1");
+          break;
+    case "Tray2":
+          var objctrl = GetControl("Inventory_SuppliesOverview","txtBlockTipTray2");
+          break;
+  }
+     
+    var actualTrayStatus = GetPropertyValue(objctrl,"Text")
+    
+    //verify Tray 1
+    if(aqString["ToLower"](sTipTrayStatus)!= "" || sTipTrayStatus != "null")
+    {    
+        if (aqString["Trim"](aqString["ToLower"](actualTrayStatus)) == aqString["Trim"](aqString["ToLower"](sTipTrayStatus)))
+        {
+          Log["Message"]("Tip Tray  Status is "+actualTrayStatus)
+          //var passcount = passcount+1;
+          if(sColorHighlighted == "") // verifying only status without color highlight so return from here only
+          {
+            Log["PopLogFolder"]();
+            return true;
+          }
+        }
+        else
+        {
+          Log["Error"]("Tip Tray  Status is "+actualTrayStatus)
+          if(sColorHighlighted == "") // verifying only status without color highlight so return from here only
+          {
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+        
+    }
+  
+    
+  if(sColorHighlighted == "Red")
+  {
+   //verify Tray 1 Color [Red if Empty] 
+    if(GetRGBColorCode(objctrl) == "255,0,0")
+    {
+      Log["Message"]("Tip Tray Status Inventory Higlighted in Red ")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Tip Tray Status Inventory Not Higlighted in Red ")
+      Log["PopLogFolder"]()
+      return false;
+    }
+  }
+        
+      
+}
+
+//********************************************************************************
+//*  FunctionName : VerifyTipTrayCountRemaining(sTray,sTipTrayTipsCount,sColorHighlighted)
+//*  Description: Verifies a Tip Tray count and its color highlighted in supplies overview screen
+//*  Input: sTray,sTipTrayTipsCount, sColorHighlighted
+//*  Output: boolean
+//*  Example: VerifyTipTrayCountRemaining()
+//*  Date of Creating: March 13 2019
+//*  Created By: Shrutika
+//********************************************************************************
+function VerifyTipTrayCountRemaining(sTray,sTipTrayTipsCount,sColorHighlighted)
+{
+  Log["AppendFolder"]("Inventory::VerifyTipTrayCountRemaining");
+  //Get Tip Tray 2  -Tips Remaining
+  switch(sTray)
+  {
+    case "Tray1":
+          var objctrl = GetControl("Inventory_SuppliesOverview","txtBlockTipReamainingTray1");
+          break;
+    case "Tray2":
+          var objctrl = GetControl("Inventory_SuppliesOverview","txtBlockTipReamainingTray2");
+          break;
+  }
+  
+  var TipTrayStatus = GetPropertyValue(objctrl,"Text");
+  if(aqString["ToLower"](sTipTrayTipsCount)!= "" || sTipTrayTipsCount != "null")
+  {       
+      if(aqString["ToLower"](aqString["Replace"](TipTrayStatus,"Tips Remaining: ","")) == aqString["Trim"](aqString["ToLower"](sTipTrayTipsCount)))
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"");
+        Log["Message"]("Tip Tray Status is "+TipTrayStatus)
+        if(sColorHighlighted == "") // verifying only status without color highlight so return from here only
+          {
+            Log["PopLogFolder"]();
+            return true;
+          }
+      }
+      else
+      {
+        Log["Error"]("Tip Tray Count is not correct: "+TipTrayStatus)
+        return false
+
+      }
+   }
+   
+  
+  if(sColorHighlighted == "Red")
+  {
+     //verify Tray 2 Color is Red
+    if(GetRGBColorCode(objctrl) == "255,0,0")
+    {
+      Log["Message"]("Tip Tray Status Inventory Higlighted in Red ")
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Tip Tray Status Inventory Not Higlighted in Red ")
+      Log["PopLogFolder"]()
+      return false;
+    }
+  }
+
+}
+
+
+/*-------
+ BHAWYA 
+ -------*/
+//*************************************************************************
+//*  FunctionName : VerifyReagentDetails
+//*  Description: Verifies the reagent inventory for reagent type
+//*  Input: strRgntName,strRgntType
+//*  Output: Boolean
+//*  Example: VerifyReagentInventory ("AFP","IA Primary","Test Count")
+//*  Date of Creating: 10 Sep 2018
+//*  Created By: Bhawya V J
+//*************************************************************************
+function VerifyReagentLoadingScreen(RgntName)
+{
+  try
+    {
+        //Open Log
+        Log["AppendFolder"]("Scenario: "+RgntType)
+                    
+        //Verify Reagent Available in UI
+        var bnFlag =false;
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Reagents available in Reagents overview screen")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            strCellValue = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+            if((aqString["ToLower"](strCellValue) == aqString["ToLower"](RgntName))&& (strEnabledValue))
+            {
+              Log["Message"](RgntName+" is available/loaded in Reagent Overview table")
+              
+              //Fetch Inventory Details from GRID
+              strInv = eval("objctrl.Items.Item("+i+").TotalRemainingString.OleValue"); 
+              if(aqString["Compare"](InvUnit,"mL",false)==0){
+                if(aqString["Find"](strInv,InvUnit,0,false)!= -1){
+                  Log["Checkpoint"]("Reagent inventory for "+RgntName+" is updated with unit "+InvUnit+" -"+strInv)
+                }else{
+                  Log["Error"]("Reagent inventory for "+RgntName+" is updated with wrong unit "+InvUnit)
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+              }else if(aqString["Compare"](InvUnit,"Test Count",false)==0){
+                if(aqString["Find"](strInv,"mL",0,false)== -1){
+                  Log["Checkpoint"]("Reagent inventory for "+RgntName+" is updated with unit "+InvUnit)
+                }else{
+                  Log["Error"]("Reagent inventory for "+RgntName+" is updated with wrong unit "+InvUnit)
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+              }
+              bnFlag = true; 
+              break;
+            }
+        }
+        
+        //Reagent not available? Fail
+        if(!bnFlag){
+          Log["Error"](RgntName+" is not available/not loaded");
+          Log["PopLogFolder"]();
+          return false;
+        }    
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************************************
+//*  FunctionName : fnCaptureWasteStatus()
+//*  Description: Capture Waste Status in Supplies screen
+//*  Input: na
+//*  Output: boolean
+//*  Example:fnCaptureWasteStatus()
+//*  Created By: Ramitha
+//*  Date of creation: 12 Apr 2019
+//*************************************************************************************************
+function fnCaptureWasteStatus(WasteObjControl,ExpectedVal,WasteType)
+{
+  try
+    {    
+  
+        //Open Log
+        Log["AppendFolder"]("Verifying " +WasteType+" waste status displayed in supplies screen");
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](10)
+        
+        //get Supplies Waste Grid
+        var currObj = GetControl("",WasteObjControl);
+        var ActualValue = currObj["get_Text"]()
+                  
+        //Verify Actual Value == Expected Value
+        if(aqString["ToLower"](ExpectedVal) == aqString["ToLower"](ActualValue)){
+            Log["Checkpoint"]("Waste status is ' "+ActualValue+" ' as expected")
+        }else{
+            Log["Error"]("Waste status '"+ActualValue+"' is not matching with expected result '"+ExpectedVal+"'")
+            Log["PopLogFolder"]()
+            return false;
+        }
+          
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************************************
+//*  FunctionName : fnCaptureSuppliesDataforall()
+//*  Description: Capture supplies Data 
+//*  Input: na
+//*  Output: boolean
+//*  Example:fnCaptureSuppliesDataforall()
+//*  Created By: Amar
+//*  Date of creation: 27 Apr 2019
+//*************************************************************************************************
+
+
+function fnCaptureSuppliesDataforall(SuppliesType,CurrObj,PropertyName,ExpectedVal)
+{
+  try
+    {    
+  
+        //Open Log
+        Log["AppendFolder"](SuppliesType+" : "+PropertyName);
+        
+        //Activate
+        Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["Activate"]();
+        aqUtils["Delay"](10)
+        
+        //get Supplies Grid
+        var currObj = GetControl("",CurrObj);
+        var tempVal = currObj["get_Text"]()
+        var ActualValue = aqString["Replace"](tempVal,"%","");
+        if(ActualValue)
+        {
+          Log["Message"]("value is displayed as " +ActualValue)
+        }else
+        {
+          Log["Error"]("value is not displayed " +ActualValue)
+          Log["PopLogFolder"]()
+          return false;
+        }              
+//        //Verify Actual Value == Expected Value
+//        if(aqString["Trim"](aqString["ToLower"](ExpectedVal)) == aqString["Trim"](aqString["ToLower"](ActualValue))){
+//            Log["Checkpoint"](PropertyName +" "+ActualValue+" is as expected")
+//        }else{
+//            Log["Error"](PropertyName +" "+ActualValue+" is not matching with expected result "+ExpectedVal)
+//            Log["PopLogFolder"]()
+//            return false;
+//        }
+
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+
+//*************************************************************************
+//*  FunctionName : ToggleLiquidWasteSensor
+//*  Description:
+//*  Input: PrimaryWasteFullSensorWet,ON/OFF
+//*  Output: Boolean
+//*  Date of Creating: 30 Apr 2019
+//*  Created By: Bhawya
+//*************************************************************************
+function ToggleLiquidWasteSensor(SensorName,Action)
+{
+
+  try
+  {
+      //Open Log
+      Log["AppendFolder"](Action+ " "+SensorName)   
+      
+      //Project file Paths
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var IoTPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\IoT";
+      var SimulationPath = "C:\\Siemens\\ARM\\Emulator\\";
+
+      //Create Simulation Folder  
+      if(!aqFileSystem["Exists"](SimulationPath))
+      {
+        if(aqFileSystem["CreateFolder"](SimulationPath) !=0)
+        {
+            Log["Error"]("Unable to create folder "+SimulationPath)
+            Log["PopLogFolder"]();
+            return false;
+        }
+        else
+            Log["Message"]("Created Simulation folder") 
+      } 
+  
+      //Create a new SupplySensorStates.txt in simulation folder
+      Log["Message"]("Creating a new Analytical Door status File ");
+      if (aqFile["Exists"](SimulationPath+"\\SupplySensorStates.txt")) 
+       { aqFile["Delete"](SimulationPath+"\\SupplySensorStates.txt");}
+      aqFile["Create"](SimulationPath+"\\SupplySensorStates.txt");      
+      
+      //Create a new SensorStateChange.txt in simulation folder
+      Log["Message"]("Creating a new Sensor status File ");
+      if (aqFile["Exists"](SimulationPath+"\\SensorStateChange.txt")) 
+       { aqFile["Delete"](SimulationPath+"\\SensorStateChange.txt");}
+      aqFile["Create"](SimulationPath+"\\SensorStateChange.txt");       
+      
+
+      if (Action == "ON")
+      {//1 -ON /0 - OFF
+        aqFile["WriteToTextFile"](SimulationPath+"\\SupplySensorStates.txt", "1 "+SensorName, aqFile["ctANSI"], true); 
+        aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 "+SensorName, aqFile["ctANSI"], true);    //Send Sensor state file to DML                
+      }
+          
+      else if(Action == "OFF")
+      {//1 -ON /0 - OFF
+        aqFile["WriteToTextFile"](SimulationPath+"\\SupplySensorStates.txt", "0 "+SensorName, aqFile["ctANSI"], true); 
+        aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 "+SensorName, aqFile["ctANSI"], true);    //Send Sensor state file to DML                
+      }
+          
+      // Send SendSupplySensorStates file to IOT
+      SendSupplySensorStatestxt();
+      aqUtils["Delay"](15000);
+      
+      // Send Sensor state file to IOT
+      SendSensorStatetxt();
+      aqUtils["Delay"](15000);
+           
+      Log["Checkpoint"]("Success- "+Action+ " "+SensorName);
+      Log["PopLogFolder"]();
+      return true;      
+      
+  }
+  catch (exp)
+  {   
+      Log["Error"]("Exception :"+exp["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  
+  }
+}
+
+//Bhawya
+function SendSupplySensorStatestxt() 
+{
+  var ProjPath = ProjectSuite["Path"];
+  var arrPath  = ProjPath["split"]("Hydra")
+  var Doorbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\LiquidWaste\\CopySupplySensorState_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](Doorbat,1,true);
+}
+//Muru
+function SendSensorStatetxt() 
+{
+  var ProjPath = ProjectSuite["Path"];
+  var arrPath  = ProjPath["split"]("Hydra")
+  var Doorbat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\CopySensorFile_IOT.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](Doorbat,1,true);
+}
+
+//*************************************************************************
+//*  FunctionName : AlertAcknowledgementByUser(arrAlertMessage)
+//*  Description: verifying alerts for acknowledging -IMT and Pretreatment supplies
+//*  Input: arrAlertMessage
+//*  Output: Boolean
+//*  Example: AlertAcknowledgementByUser(arrAlertMessage)
+//*  Date of Creating: 22 Apr 2019
+//*  Created By: Ramitha K
+//*************************************************************************
+function AlertAcknowledgementByUser(arrAlertMessage)
+{    
+    try
+    {  
+        //Open Log
+        Log["AppendFolder"]("User acknowledges Alert");
+        var count=0;
+        var AlertMessageCount=arrAlertMessage["length"];
+         //Clicking on ViewAllAlerts button
+        var ViewAllAlertsBtnCtrl = GetControl("System_Status_System","btnViewAllAlerts");
+        ClickControl(ViewAllAlertsBtnCtrl)
+        aqUtils["Delay"]("500");
+              
+        AlertsGridObjCtrl = GetControl("System_Status_System","grdAlerts");
+        Rowcount = GetGridRowCount(AlertsGridObjCtrl);
+    
+        if(Rowcount==0)
+        {
+          Log["Error"]("Alerts Grid is empty")
+          Log["PopLogFolder"]();
+          return false
+        }
+        else{
+           for(i =0 ;i< AlertMessageCount ; i++)
+              {
+                if(!AcknowledgeAlertPresent(arrAlertMessage[i],Rowcount,AlertsGridObjCtrl))
+                    count++;                   
+              }
+            }          
+        var CloseBtnCtrl = GetControl("System_Status_System","btnClose");
+        ClickControl(CloseBtnCtrl)
+          
+        if(count>0)
+        Log["PopLogFolder"]();
+        return false;             
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ } 
+
+//'*******************************************************************************
+//*  FunctionName : AcknowledgeAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+//*  Description: To acknowledge alert for IMT and pretreatment supplies
+//*  Input: sAlert,Rowcount,AlertGridObjCtrl
+//*  Output: Boolean
+//*  Example: AcknowledgeAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+//*  Date of Creating: 25 Apr 2019
+//*  Created By: Ramitha K
+//'*****************************************************************************
+function AcknowledgeAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+{
+  try
+  { 
+    Log.AppendFolder("Verify Alerts in Alerts Grid"); 
+
+    var AcknowledgeAlertsBtnCtrl = GetControl("System_Status_System","btnAcknowledgeAlerts");
+    
+    for(row = 0; row < Rowcount; row++)
+    {
+      strCellText = GetGridCellTextForHydra(AlertGridObjCtrl, row, "Message")
+      if(aqString["Find"](strCellText, sAlert)!= -1)
+      {
+        Log["Checkpoint"]("The Alert: "+"' "+sAlert+" '"+ " is displayed in Alerts Grid under Column Name: Alert, Row number: " + row)
+        if(GetPropertyValue(AcknowledgeAlertsBtnCtrl, "Enabled") == true)
+              {               
+                ClickControl(AcknowledgeAlertsBtnCtrl)
+              }
+        }
+    }
+ 
+    Log["Error"]("The Alert: "+"' "+sAlert+" '"+ " is not displayed in Alerts Grid under Column Name: Alert")
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+//'*******************************************************************************
+//*  FunctionName : NoAlertPresent(arrAlertMessage)
+//*  Description: To verify no alert present for Supplies
+//*  Input: ArrSuppliesType
+//*  Output: Boolean
+//*  Example: NoAlertPresent(arrAlertMessage)
+//*  Date of Creating: 23 Apr 2019
+//*  Created By: Ramitha K
+//'***************************************************************************** 
+function NoAlertPresent(arrAlertMessage)
+{    
+    try
+    {  
+     // InitializeMetaDataHYDRA();      
+    
+        //Open Log
+        Log["AppendFolder"]("Verify no Alert present");
+        var count=0;
+        var AlertMessageCount=arrAlertMessage["length"];
+         //Clicking on ViewAllAlerts button
+        var ViewAllAlertsBtnCtrl = GetControl("System_Status_System","btnViewAllAlerts");
+        ClickControl(ViewAllAlertsBtnCtrl)
+        aqUtils["Delay"]("500");
+              
+        AlertsGridObjCtrl = GetControl("System_Status_System","grdAlerts");
+        var AlertsGridObjCtrl = Sys["Process"]("Shell")["WPFObject"]("HwndSource: Window")["WPFObject"]("Window")["WPFObject"]("UIWDesktopDialogLayoutUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("AlertsUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("AlertsDataGrid");
+        Rowcount = GetGridRowCount(AlertsGridObjCtrl);
+    
+        if(Rowcount==0)
+        {
+          Log["Checkpoint"]("Alerts Grid is empty and no alerts present")
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else{
+           for(i =0 ;i< AlertMessageCount ; i++)
+              {
+                if(!VerifyNoAlertPresent(arrAlertMessage[i],Rowcount,AlertsGridObjCtrl))
+                    count++;                   
+              }
+            }          
+        var CloseBtnCtrl = GetControl("System_Status_System","btnCloseGrid");
+        ClickControl(CloseBtnCtrl)
+          
+        if(count>0){
+        Log["PopLogFolder"]();
+        return false;}             
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ } 
+
+//'*******************************************************************************
+//*  FunctionName : VerifyNoAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+//*  Description: checking alert message prsent or not
+//*  Input: sAlert,Rowcount,AlertGridObjCtrl
+//*  Output: Boolean
+//*  Example: VerifyNoAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+//*  Date of Creating: 23 Apr 2019
+//*  Created By: Ramitha K
+//'*****************************************************************************
+function VerifyNoAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+{
+  try
+  { 
+    Log.AppendFolder("Verify no Alerts in Alerts Grid"); 
+
+    var AcknowledgeAlertsBtnCtrl = GetControl("System_Status_System","btnAcknowledgeAlerts");
+    //ClickControl(AcknowledgeAlertsBtnCtrl)
+    
+    for(row = 0; row < Rowcount; row++)
+    {
+      strCellText = GetGridCellTextForHydra(AlertGridObjCtrl, row, "Message")
+      if(aqString["Find"](strCellText, sAlert)!= -1)
+      {
+        Log["Error"]("The Alert: "+"' "+sAlert+" '"+ " is displayed in Alerts Grid under Column Name: Alert, Row number: " + row)
+        return false;
+      }
+    }
+ 
+    Log["Checkpoint"]("The Alert: "+"' "+sAlert+" '"+ " is not displayed in Alerts Grid under Column Name: Alert")
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+} 
+
+//'*******************************************************************************
+//*  FunctionName : AlertPresentForSupplies(arrAlertMessage)
+//*  Description: To verify alert present for Supplies
+//*  Input: ArrSuppliesType
+//*  Output: Boolean
+//*  Example: AlertPresentForSupplies(arrAlertMessage)
+//*  Date of Creating: 23 Apr 2019
+//*  Created By: Ramitha K
+//'***************************************************************************** 
+function AlertPresentForSupplies(arrAlertMessage)
+{    
+    try
+    {  
+        //Open Log
+        Log["AppendFolder"]("Verify Alert present for supplies");
+        var count=0;
+        var AlertMessageCount=arrAlertMessage["length"];
+         //Clicking on ViewAllAlerts button
+        var ViewAllAlertsBtnCtrl = GetControl("System_Status_System","btnViewAllAlerts");
+        ClickControl(ViewAllAlertsBtnCtrl)
+        aqUtils["Delay"]("500");
+              
+        AlertsGridObjCtrl = GetControl("System_Status_System","grdAlerts");
+        var AlertsGridObjCtrl = Sys["Process"]("Shell")["WPFObject"]("HwndSource: Window")["WPFObject"]("Window")["WPFObject"]("UIWDesktopDialogLayoutUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("AlertsUserControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("AlertsDataGrid");
+        Rowcount = GetGridRowCount(AlertsGridObjCtrl);
+    
+        if(Rowcount==0)
+        {
+          Log["Checkpoint"]("Alerts Grid is empty and no alerts present")
+          Log["PopLogFolder"]();
+          return false;
+        }
+        else{
+           for(i =0 ;i< AlertMessageCount ; i++)
+              {
+                if(!VerifyAlertPresent(arrAlertMessage[i],Rowcount,AlertsGridObjCtrl))
+                    count++;                   
+              }
+            }          
+        var CloseBtnCtrl = GetControl("System_Status_System","btnCloseGrid");
+        ClickControl(CloseBtnCtrl)
+          
+        if(count>0){
+        Log["PopLogFolder"]();
+        return false;}
+        
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+ } 
+
+
+
+//'*******************************************************************************
+//*  FunctionName : VerifyAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+//*  Description: checking alert message present 
+//*  Input: sAlert,Rowcount,AlertGridObjCtrl
+//*  Output: Boolean
+//*  Example: VerifyAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+//*  Date of Creating: 23 Apr 2019
+//*  Created By: Ramitha K
+//'*****************************************************************************
+function VerifyAlertPresent(sAlert,Rowcount,AlertGridObjCtrl)
+{
+  try
+  { 
+    Log.AppendFolder("Verify Alerts present in Alerts Grid"); 
+
+    var AcknowledgeAlertsBtnCtrl = GetControl("System_Status_System","btnAcknowledgeAlerts");
+    //ClickControl(AcknowledgeAlertsBtnCtrl)
+    
+    for(row = 0; row < Rowcount; row++)
+    {
+      strCellText = GetGridCellTextForHydra(AlertGridObjCtrl, row, "Message")
+      if(aqString["Find"](strCellText, sAlert)!= -1)
+      {
+        Log["Checkpoint"]("The Alert: "+"' "+sAlert+" '"+ " is displayed in Alerts Grid under Column Name: Alert, Row number: " + row);
+        Log["PopLogFolder"]();
+        return true;
+      }
+      
+      
+    }
+ 
+    Log["Message"]("The Alert: "+"' "+sAlert+" '"+ " is not displayed in Alerts Grid under Column Name: Alert")
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+} 
+
+//*************************************************************************************************
+//*  FunctionName : VerifyHydraReagentLoaded(ReagentName,LotNo)
+//*  Description: Verifying reagents are loaded in Reagent overview screen based on Rgt Name and Lot number
+//*  Input: ReagentName, LotNo
+//*  Output: Boolean
+//*  Example: VerifyHydraReagentLoaded("AFP","999")
+//*  Created By: Ramitha
+//*  Date of creation: 09 May 2019
+//*************************************************************************************************
+function VerifyHydraReagentIsLoadedAndEnabled(ReagentName,LotNo)
+{ 
+try
+  {
+    Log["AppendFolder"]("Inventory::VerifyHydraReagentLoaded");
+    
+    //Initialize variables
+    var AssayColName = "ReagentName";
+    var LotColName = "LotID";
+    
+    //Reagents Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      ActRgtName = eval("objctrl.Items.Item("+Row+")."+ AssayColName + ".OleValue");
+      ActLotNo = eval("objctrl.Items.Item("+Row+")."+ LotColName + ".OleValue");
+      strEnabledValue = eval("objctrl.Items.Item("+Row+").IsEnabled");
+          //searching if Assay is available
+          if((ActRgtName == ReagentName)&&( ActLotNo == LotNo))
+          { 
+              Log["Checkpoint"](ReagentName+" with Lot Number "+LotNo+" is available in Reagents Grid under Column: " + AssayColName + ", Row number: " + Row);       
+              if(strEnabledValue)
+              {
+                    Log["Checkpoint"](ReagentName+" with Lot Number "+LotNo+" is enabled");               
+                    Log["PopLogFolder"]();
+                    return true;
+              }else{
+                    Log["Checkpoint"](ReagentName+" with Lot Number "+LotNo+" is disabled");               
+                    Log["PopLogFolder"]();
+                    return false;
+              }
+          }
+    }   
+    Log["Error"](ReagentName+" with Lot Number "+LotNo+" is not available in Reagents Grid" );
+    Log["PopLogFolder"]();
+    return false;        
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//*************************************************************************************************
+//*  FunctionName : CreateMasterCurveForNewLot(RgtName,LotNo)
+//*  Description: To create mastercurve file for new Lot number
+//*  Input: ReagentName, LotNo
+//*  Output: Boolean
+//*  Example: CreateMasterCurveForNewLot("AFP","888")
+//*  Created By: Ramitha
+//*  Date of creation: 14 May 2019
+//*************************************************************************************************
+function CreateMasterCurveForNewLot(RgtName,LotNo)
+ {
+  try
+  {
+      Log["AppendFolder"]("Inventory::CreateMasterCurveForNewLot");
+      
+      var foundFiles, existingMasterCurveFile, newMasterCurveFilePath;
+      var TagName="PrimaryReagentLotNumber";
+      var MasterCurveFolderPath="C:\\Siemens\\ARM\\TestDefinition\\Mastercurves\\";
+      
+      //Searching for existing mastercurve file as per reagent name
+      foundFiles = aqFileSystem["FindFiles"](MasterCurveFolderPath, "*"+RgtName+"*.xml");
+      if (foundFiles != null)
+      {
+              //Copying existing mastercurve file and creating new file
+              existingMasterCurveFile = foundFiles["Next"]();
+              newMasterCurveFilePath= MasterCurveFolderPath+"mc_"+RgtName+"_"+LotNo+".xml";
+              if (aqFile["Exists"](newMasterCurveFilePath)) 
+              {
+               aqFile["Delete"](newMasterCurveFilePath);
+              }
+              aqFile["Copy"](existingMasterCurveFile["Path"], newMasterCurveFilePath);
+              
+              //Adding Lotnumber in the newly created mastercurve file
+              if(aqFile["Exists"](newMasterCurveFilePath))
+                {                    
+                    fnReplaceXMLNodeValue(newMasterCurveFilePath,TagName,LotNo);
+                    Log["Checkpoint"]("Created new mastercurve file "+"mc_"+RgtName+"_"+LotNo+".xml"+" for "+RgtName+" with Lot number "+LotNo);
+                    Log["PopLogFolder"]();
+                    return true;
+                    
+                }else
+                {
+                    Log["Error"]("No mastercurve file created for "+RgtName+" with Lot number "+LotNo);
+                    Log["PopLogFolder"]();
+                    return false;
+                }   
+      }else
+      {
+        Log["Error"]("No existing mastercurve file found for "+RgtName);
+        Log["PopLogFolder"]();
+        return false;
+      }
+     
+  }catch(e)
+     {
+        Log.Error(e.description) ; 
+        Log["PopLogFolder"]();
+        return false;
+     }
+     Log["PopLogFolder"]();
+ } 
+ 
+//**************************************************************************************************************************
+//*  FunctionName : CopyMasterCurvesFromTestDataFolder()
+//*  Description: Copying mastercurve file from testdata folder to mastercurve folder
+//*  Input: NA
+//*  Output: Bool
+//*  Example: CopyMasterCurvesFromTestDataFolder()
+//*  Created By: Ramitha
+//*************************************************************************************************************************
+function CopyMasterCurvesFromTestDataFolder()
+ {
+ try
+  {
+       Log["AppendFolder"]("Inventory::Copy MasterCurve files from TestData folder to MasterCurve folder");
+      
+       var TestDataMasterCurvePath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\Mastercurves";    
+       var MasterCurveFolderPath= "C:\\Siemens\\ARM\\TestDefinition\\Mastercurves\\";
+    
+        //Searching for mastercurve files under Testdata folder
+       foundFiles = aqFileSystem["FindFiles"](TestDataMasterCurvePath, "mc_"+"*.xml");
+       if (foundFiles != null)
+          {
+              while (foundFiles["HasNext"]())
+              {
+                  //Copying mastercurve file from testdata folder to mastercurve folder
+                  TestDataMasterCurveFile = foundFiles["Next"]();
+                  if (aqFile["Exists"](MasterCurveFolderPath+TestDataMasterCurveFile["Name"])) 
+                  {
+                   aqFile["Delete"](MasterCurveFolderPath+TestDataMasterCurveFile["Name"]);               
+                  } 
+                  aqFileSystem["CopyFile"](TestDataMasterCurveFile["Path"], MasterCurveFolderPath);                           
+              }
+              Log["Checkpoint"]("Mastercurve files copied from Testdata to MasterCurves path.");
+          }else
+      
+          Log["Message"]("No mastercurve files were found under TestData\MasterCurves path.");
+  
+  }catch(e)
+     {
+        Log.Error(e.description) ; 
+        Log["PopLogFolder"]();
+        return false;
+     }
+     Log["PopLogFolder"]();
+ }
+
+//*************************************************************************
+//*  FunctionName : VerifyReagentInventoryUnit
+//*  Description: Verifies the reagent inventory unit for reagent type
+//*  Input: RgntName,LotNo,InvUnit
+//*  Output: Boolean
+//*  Example: VerifyReagentInventoryUnit ("AFP","999","Test Count")
+//*  Date of Creating: 29/05/2019
+//*  Created By: Ramitha
+//*************************************************************************
+function VerifyReagentInventoryUnit(RgntName,LotNo,InvUnit)
+{
+  try
+    {
+        //Open Log
+        Log["AppendFolder"]("Verifying reagent inventory unit for "+RgntName+" with Lot no "+LotNo)
+                    
+        //Verify Reagent Available in UI
+        var bnFlag =false;
+        var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+        var iRows=eval("objctrl.Items.Count")
+        if(iRows ==0){
+            Log["Error"]("No Reagents available in Reagents overview screen")
+            Log["PopLogFolder"]();
+            return false;
+        }
+        for(i=0;i<iRows;i++)
+        {
+            ActRgtName = eval("objctrl.Items.Item("+i+").ReagentName.OleValue");
+            ActLotNo = eval("objctrl.Items.Item("+i+").LotID.OleValue");
+            strEnabledValue = eval("objctrl.Items.Item("+i+").IsEnabled");
+            if((aqString["ToLower"](ActRgtName) == aqString["ToLower"](RgntName))&&( ActLotNo == LotNo) && (strEnabledValue))
+            {
+              Log["Message"](RgntName+" with Lot no "+LotNo+" is available/loaded in Reagent Overview Grid")
+              
+              //Fetch Inventory Details from GRID
+              strInv = eval("objctrl.Items.Item("+i+").TotalRemainingString.OleValue"); 
+              if(aqString["Compare"](InvUnit,"mL",false)==0){
+                if(aqString["Find"](strInv,InvUnit,0,false)!= -1){
+                  Log["Checkpoint"]("Reagent inventory for "+RgntName+" is updated with unit "+InvUnit+" -"+strInv)
+                }else{
+                  Log["Error"]("Reagent inventory for "+RgntName+" is updated with wrong unit "+InvUnit)
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+              }else if(aqString["Compare"](InvUnit,"Test Count",false)==0){
+                if(aqString["Find"](strInv,"mL",0,false)== -1){
+                  Log["Checkpoint"]("Reagent inventory for "+RgntName+" is updated with unit "+InvUnit)
+                }else{
+                  Log["Error"]("Reagent inventory for "+RgntName+" is updated with wrong unit "+InvUnit)
+                  Log["PopLogFolder"]();
+                  return false;
+                }
+              }
+              bnFlag = true; 
+              break;
+            }
+        }
+        
+        //Reagent not available? Fail
+        if(!bnFlag){
+          Log["Error"](RgntName+" is not available/not loaded");
+          Log["PopLogFolder"]();
+          return false;
+        }    
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************************************
+//*  FunctionName : GetWellCountValueFromCHReagentDetailsAsPerLot(ReagentName,LotNo)
+//*  Description: Fetches the Well count from Reagent Details screen and returns the array Count
+//*  Input: ReagentName,LotNo
+//*  Output: TotalCount
+//*  Example: GetWellCountValueFromCHReagentDetailsAsPerLot("AFP","999")
+//*  Created By: Ramitha
+//*  Date of creation: 26 May 2019
+//*************************************************************************************************
+function GetWellCountValueFromCHReagentDetailsAsPerLot(ReagentName,LotNo)
+{
+  try
+  {
+    Log["AppendFolder"]("Get Well Count value for CH Reagent : "+ReagentName+" with lotno "+LotNo);
+    
+    //Initialize variables
+    var AssayColName = "ReagentName";
+    var LotColName = "LotID";
+    
+    //Focus on Reagent Grid
+    var objctrl = GetControl("Inventory_ReagentOverview","grdReagents");
+    Class = objctrl["ClrClassName"]
+    Rowcount = objctrl  ["Items"]["Count"];
+      
+    //Search Assay in each row
+    for(Row=0; Row<Rowcount; Row++)
+    {
+      ActRgtName = eval("objctrl.Items.Item("+Row+")."+ AssayColName + ".OleValue");
+      ActLotNo = eval("objctrl.Items.Item("+Row+")."+ LotColName + ".OleValue");
+    
+      //searching if Assay is available
+      if(ActRgtName == ReagentName &&( ActLotNo == LotNo))
+      { 
+        Log["Checkpoint"](ReagentName+" with Lot Number "+LotNo+" is available in Reagents Grid under Column: " + AssayColName + ", Row number: " + Row);
+        
+        //Selecting the reagent
+        SelectGridRow(objctrl, Row);
+        
+        //Get Well 2 count value
+        var Well2=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("Reagent")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("ReagentsByModuleTab")["WinFormsObject"]("ContentFrame_ReagentsByModule")["WinFormsObject"]("ReagentsByModuleViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("ReagentsByModuleLayoutView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Border", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("GroupBox", "Reagent Details", 1)["WPFObject"]("ReagentDetailsControl")["WPFObject"]("ReagentDetailsView", "", 1)["WPFObject"]("TabControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("WellsItemsControl")["WPFObject"]("ContentPresenter", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("AvailableTestsCountTextBox");
+        var Well2Count=aqConvert["StrToInt"](Well2["Text"]["OleValue"]);
+        
+        //Get Well 3 count value
+        var Well3=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("Reagent")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("ReagentsByModuleTab")["WinFormsObject"]("ContentFrame_ReagentsByModule")["WinFormsObject"]("ReagentsByModuleViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("ReagentsByModuleLayoutView", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("Border", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("GroupBox", "Reagent Details", 1)["WPFObject"]("ReagentDetailsControl")["WPFObject"]("ReagentDetailsView", "", 1)["WPFObject"]("TabControl", "", 1)["WPFObject"]("Grid", "", 1)["WPFObject"]("WellsItemsControl")["WPFObject"]("ContentPresenter", "", 2)["WPFObject"]("Grid", "", 1)["WPFObject"]("AvailableTestsCountTextBox");
+        var Well3Count=aqConvert["StrToInt"]( Well3["Text"]["OleValue"]);
+        
+        //printing the well counts
+        Log["Message"]("Well count 2 for "+ReagentName+" is : "+  Well2Count);
+        Log["Message"]("Well count 3 for "+ReagentName+" is : " + Well3Count);
+        
+        //returning array of well count
+        ArrWellCount= new Array(Well2Count,Well3Count);
+        Log["PopLogFolder"]();
+        return ArrWellCount;
+      }
+    }
+    
+    Log["Error"]("Reagent "+Assay+" is unavailable" );
+    Log["PopLogFolder"]();
+    return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

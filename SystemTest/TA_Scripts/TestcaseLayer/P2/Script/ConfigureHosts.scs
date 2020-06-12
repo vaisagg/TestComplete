@@ -1,0 +1,129 @@
+﻿
+//USEUNIT NetworkSuiteLibrary
+//USEUNIT CommonUtilities
+
+function ConfigureInstruments(arrInstrumentsIP,sModuleType)
+{
+  
+  try
+  {
+    
+    
+    var UserName =Project.Variables.UserName;
+    var Password = Project.Variables.Password;
+    var res;
+    for(var i=0;i<arrInstrumentsIP["length"];i++)
+    {
+      if(i>0)
+      { 
+        var m=i+1;
+        sHostname=sModuleType+m;
+      } 
+      else
+      {
+        sHostname=sModuleType;
+      }
+      res = ConfigureNetworkSuiteHost(sHostname,arrInstrumentsIP[i],UserName,Password);
+      if(res==false)
+      {
+        //ReportTestStatusToResultXML("Initialize", "Startup_"+sModuleType, "F");
+        return false;
+      }
+      else
+      {
+        //ReportTestStatusToResultXML("Initialize", "Startup_"+sModuleType, "P");
+        Log["Message"]("Network suite host "+sHostname+" for the instrument configured successfully")
+      } 
+    } 
+    if(i==arrInstrumentsIP["length"])
+    {
+      return true;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+  }
+} 
+
+
+
+
+
+function ConfigureNetworkSuite()
+{
+try
+  {
+  Projpath=Project["Path"]; 
+  length=(aqString["Find"](Projpath,"\\TestcaseLayer",0,false))
+  path=(aqString["SubString"](Projpath,0,length))
+    for(i=0;i<NetworkSuite["Hosts"]["Count"];i++)
+      {
+        NetworkSuite["Hosts"]["Items"](i)["BasePath"]=path;    //Setting Basepth to make relative project file name in Network Tasks
+      } 
+
+    
+    blnRes = false;
+  
+    //Configure SH hosts
+    var arrSHInstrumentsIP=GetInstrumentsIP("SH")
+    if(arrSHInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrSHInstrumentsIP,"SH"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+   
+    //Configure IA hosts
+    var arrIAInstrumentsIP=GetInstrumentsIP("IA")
+    if(arrIAInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrIAInstrumentsIP,"IA"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+   
+    //Configure CC hosts
+    var arrCCInstrumentsIP=GetInstrumentsIP("CC")
+    if(arrCCInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrCCInstrumentsIP,"CC"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+        
+    //Configure Decapper hosts
+     var arrDCInstrumentsIP=GetInstrumentsIP("DECAPPER")
+    if(arrDCInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrDCInstrumentsIP,"DCap"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+
+	//Configure Sealer hosts
+    var arrSlrInstrumentsIP=GetInstrumentsIP("SEALER")
+    if(arrSlrInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrSlrInstrumentsIP,"Slr"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    }   
+  }
+    
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);    
+  }  
+    
+}

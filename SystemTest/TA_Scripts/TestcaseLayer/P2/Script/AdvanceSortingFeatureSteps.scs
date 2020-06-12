@@ -1,0 +1,5111 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT TCCSConfigLibrary
+//USEUNIT CommonFeatureUtils
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+//This is for Archiving test case
+function IsCalSampleLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","NotArchiveStorableCalSample")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename=dictColumn["Item"]("FakeBarcodeFileName");
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");    
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+   
+  if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+    return false;
+  
+//  StepShutdownTrinidad()
+//  StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+        
+//  var Query = "SELECT Nodes FROM [Initialization$]";
+//  var arrNodeInfo = new Array();
+//  arrNodeInfo = GetTestItems(TestDataFile, Query, "Nodes");
+//  if(AssayType == "CC")
+//  {
+//    Analyzer = arrNodeInfo[4]
+//  }
+//  else if(AssayType == "IA")
+//  {
+//    Analyzer =  arrNodeInfo[5] 
+//  }
+  
+//  ProjPath = ProjectSuite["Path"];
+//  arrPath  = ProjPath["split"]("Atellica")
+//  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  
+  var sConfigPath = "F:\\Installer\\Files\\BuildInstrumentsInfo.xml";
+  var BuildInfoarray = ReadConfigFile(sConfigPath,"InstrumentsInfo/Instruments/Instrument")
+  
+  //GetInstrumentName(InstrumentsArray,Type)
+  var Analyzer = GetInstrumentName(BuildInfoarray,"CH")
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+	  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+}
+
+function IsCalQCStorageHasAvailableSpot()
+{
+  bValue=StepCalQCStorageAreaHasAvailableSlots();
+  if (!bValue)
+  {
+    bConfirmValue=StepConfirmCalQCStorageContents()
+    if (bConfirmValue)
+    {
+      if(!StepCalQCStorageAreaHasAvailableSlots())
+      {
+        Log["Error"]("Cal QC storage has available spots 0")
+        return false;
+      }
+      else
+      {
+        return true;
+      }
+    }
+    else
+    {
+      Log["Error"]("Unable to confirm Cal QC storage contents")
+      return false;
+    }
+  }
+}
+
+function IsCalSampleUnloadedToStorage()
+{
+  IsInputTrayEmpty("NotArchiveStorableCalSample");
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","NotArchiveStorableCalSample")
+  var dictColumn=arrTestData[0];
+  LotNumber = dictColumn["Item"]("Lot");
+  CalMaterialName =dictColumn["Item"]("Material"); 
+  
+  var boolValue = StepVerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "P");
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");  
+  }
+  return boolValue;
+  
+}
+
+
+function IsFalseBottomSampleLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchiveFalseBottomTubes")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+	
+ if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+
+ // if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+ //   return false;
+
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+	
+  if(!StepPlaceOutputTray())
+    return false;
+
+  if(!StepPlaceSample("Plain"))
+    return false;
+  
+  return StepLoadSample()
+
+}
+
+function IsFalseBottomSampleUnloaded()
+{
+  IsInputTrayEmpty("NotArchiveFalseBottomTubes");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchiveFalseBottomTubes")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchiveFalseBottomTubes")
+  var dictColumn=arrTestData[0];
+  var SampleAttributes = dictColumn["Item"]("SampleAttributes");
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  
+  if(!StepVerifySampleAttribute(SampleID, SampleAttributes))
+    return false;
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "P");
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "F");  
+  }
+  return boolValue;
+}
+
+
+function IsSTATSampleLoaded()
+{
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchiveSTATSample")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+ 
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+  if(!StepPlaceOutputTray())
+    return false;
+  if(!StepPlaceSample("Plain"))
+    return false;
+  
+  return StepLoadSample();
+
+}
+
+function IsSTATSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchiveSTATSample")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+}
+
+function IsSTATSampleUnloaded()
+{
+  if(!IsInputTrayEmpty("NotArchiveSTATSample"))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchiveSTATSample")
+  var dictColumn=arrTestData[0];
+  
+  var Priority            = dictColumn["Item"]("Priority");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchiveSTATSample")
+  var dictColumn=arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  
+  if(!StepVerifySampleProperty(SampleIDs, "Priority", Priority))
+    return false;
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "P");
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");  
+  }
+  return boolValue;
+}
+
+
+function IsTTSCSampleLoaded()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchiveTTSCSample")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;  
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("TTSC"))
+    return false;
+  
+  return StepLoadSample();
+
+}
+
+function IsTTSCOutputTrayHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchiveTTSCSample")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+}
+
+function IsTTSCSampleUnloaded()
+{
+  if(!IsInputTrayEmpty("NotArchiveTTSCSample"))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchiveTTSCSample")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchiveTTSCSample")
+  var dictColumn=arrTestData[0];
+  var SampleAttributes = dictColumn["Item"]("SampleAttributes");
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  
+  if(!StepVerifySampleAttribute(SampleID, SampleAttributes))
+    return false;
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "P");
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");  
+  }
+  return boolValue;
+}
+
+function ConfigureTTSCSampleSortArea()
+{
+  StepStopAnalyzer("SH");
+
+  StepPerformSortConfiguration(TestDataFile, "SortConfig", "NotArchiveTTSCSample")
+  
+  StepShutdownAnalyzer("SH");
+  
+  StepLaunchAnalyzer("SH");
+  
+  StepStartAnalyzer("SH");
+}
+
+function IsSHConfiguredForNotArchiveSamples()           // added after feature set up came into picture
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "NotArchivedSampleSort");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  if(!StepActivateSortPanel(PanelName))
+    return false;
+    
+	return StepIsArchiveAreaConfigured();
+}
+
+function ConfigureNoArchivingSortArea()
+{
+
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "NotArchivedSampleSort");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+     return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;        // added after feature set up came into picture
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "NotArchivedSampleSort"))
+    return false
+  
+  //add setting of archival timeout here
+  if(!StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig", "NotArchivedSampleSort"))
+    return false;
+  
+  return StepStartAnalyzer("SH");
+}
+
+function SampleParkingSetup()
+{
+
+ if(!StepConfigureHILSettings("CH-Based HIL", "manual hil", "", ""))
+    return false;
+  
+ if (StepVerifySortPanelActive("Default"))
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("Default"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+    return false;
+  
+  return StepStartAnalyzer("SH");
+}
+
+function IsCCStoppedSampleLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+	
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+}
+function IsAssayNotCalibratedSampleLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+ 
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample() 
+  
+}
+
+function IsSampleLoadedForNoReagent()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[2];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+    
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+}
+
+
+function IsSHConfigured()
+{
+  //StepActivateSortPanel("Default");
+  
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  if(!StepConfigureHILSettings("CH-Based HIL", "manual hil", "", ""))
+    return false;
+  if (StepVerifySortPanelActive("Default"))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("Default"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+    return false;
+  
+  return StepStartAnalyzer("SH");
+
+}
+
+function IsTestHasImpedimentCCStopped()
+{
+  
+  Log["AppendFolder"]("Introduce an impediment: Stop CC module");
+  if(!StepStopAnalyzer("CC"))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  else
+  {
+    Log["PopLogFolder"]();
+    return true;
+  }
+}
+
+function IsTestHasImpedimentAssayNotCalibrated()
+{
+  
+  Log["AppendFolder"]("Introduce an impediment: Assay not calibrated");
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[1];
+  var Assay= dictColumn["Item"]("Assay");
+
+  if(!StepLoadCCReagents(Assay))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  if(!StepVerifyReagentsLoaded(Assay,"CC"))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  
+  if(!StepSetCalibrationRequiredForCCAssays())
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  if(!StepVerifyAssayNotCalibrated(Assay))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  else
+  {
+    Log["PopLogFolder"]();
+    return true;  
+  }
+  
+  Log["PopLogFolder"]();
+}
+
+function IsTestHasImpedimentReagentsNotLoaded()
+{
+  
+  Log["AppendFolder"]("Introduce an impediment: Test Reagents not loaded");
+  
+  if(!GivenAtellicaInitialized())
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents","SampleParking")
+  var dictColumn=arrTestData[0];
+  var Assays   = dictColumn["Item"]("Assays");
+  var Analyzer = dictColumn["Item"]("Analyzer");
+  
+  if(!StepVerifyReagentNotLoaded(Assays,Analyzer))
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  else
+  {
+    Log["PopLogFolder"]();
+    return true;
+  }
+}
+
+
+function SampleParkingTeardownForCCStopped()
+{
+  //Clear the impediment created- start CC module
+  return StepStartAnalyzer("CC")
+
+}
+function SampleParkingTeardownForAssayNotCalibrated()
+{
+  //Clear the impediment created- Uncheck Calibration Required For CCAssays In module configuration
+	return StepUncheckCalibrationRequiredForCCAssays()
+
+}
+
+function SampleParkingNoReagentTeardown()
+{
+/*
+//Commented loading of Theo reagent as it is not needed
+  //Clear the impediment created- Load reagent
+  if(!GivenAtellicaInitialized())
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents","SampleParking")
+  var dictColumn=arrTestData[0];
+  var Assays   = dictColumn["Item"]("Assays");
+  var Analyzer = dictColumn["Item"]("Analyzer");
+  
+  if(!StepLoadCCReagents(Assays))
+    return false;
+    
+  if(!StepVerifyReagentsLoaded(Assays,Analyzer))
+    return false; 
+*/
+  //Clear all data
+  return ClearApplicationData()
+}
+
+
+function SampleParkingTeardown()
+{
+ //Clear all data
+  return ClearApplicationData();  
+}
+
+function NotArchiveSamplesTeardown()
+{
+   //Clear all data
+  return ClearApplicationData();  
+
+}
+function IsCCStoppedSampleParked()
+{
+  IsInputTrayEmpty("SampleParking");
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[0];
+  
+  var SampleID             = dictColumn["Item"]("SampleId");
+  //var Priority             = dictColumn["Item"]("Priority");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  if(!StepVerifySampleProperty(SampleID, "Status", "Assay error"))
+  {
+    if(!StepVerifySampleProperty(SampleID, "Status", SampleStatus))
+      return false;
+  }
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SampleParking")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+    return false;
+  }
+    
+}
+
+function IsAssayNotCalibratedSampleParked()
+{
+  IsInputTrayEmpty("SampleParking");
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[1];
+  
+  var SampleId             = dictColumn["Item"]("SampleId");
+  //var Priority             = dictColumn["Item"]("Priority");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");
+  
+  if(!StepVerifySampleLocationOnTrack(SampleId, SampleLocation))
+    return false;
+  //StepVerifySampleProperty(SampleId, "Status", "Intervention required")
+
+  
+  if(!StepVerifySampleStatus(SampleId, SampleStatus,SampleProblem))
+    return false; 
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SampleParking")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "F");
+    return false;
+  }
+}
+
+function IsSampleParkedWithoutReagents()
+{
+  IsInputTrayEmpty("SampleParking");
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SampleParking")
+  var dictColumn=arrTestData[2];
+  
+  var SampleID             = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");
+    
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  if(!StepVerifySampleStatus(SampleID, SampleStatus,SampleProblem))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SampleParking")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+    return false;
+  } 
+}
+
+function  IsInputTrayEmpty(ScenarioName)
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHInputTraysEmpty",ScenarioName)
+  var dictColumn = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleCount           = dictColumn["Item"]("SampleCount");
+  
+  return StepVerifyInputTrayEmpty(SampleCount,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  //StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+
+function ConfigureArchivingArea()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "ArchivingWithoutHolding");
+  var PanelName = arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout = arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+      
+  if(!StepAddPanel(PanelName))        // added after feature set up came into picture
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "ArchivingWithoutHolding"))
+    return false;
+    
+  if(!StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig", "ArchivingWithoutHolding"))
+    return false;
+  
+  return StepStartAnalyzer("SH");
+}
+
+function ConfigureHoldingAndArchiving()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+      
+  if(!StepAddPanel(PanelName))        // added after feature set up came into picture
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+    return false;
+
+  if(!StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+    return false;
+    
+  return StepStartAnalyzer("SH");
+}
+
+function ConfigureArchivalTimeout()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "ArchivingWithoutHolding");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout"); 
+ 
+  return StepConfigureArchivalTimeout(sArchivalTimeout)
+}
+
+function HoldingAreaIsNotConfigured()
+{  
+  return StepIsHoldingAreaConfigured()
+}
+
+
+function VerifyConfiguredTimerExpires()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "ArchivingWithoutHolding");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+ 
+  if(!StepVerifyConfiguredTimerExpires(sArchivalTimeout))
+	return false;
+}
+
+
+function IsArchivableSampleLoaded()
+{
+  StepIsArchiveAreaConfigured();
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","ArchivingWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+   
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+	
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample() 
+}
+
+function IsHoldAndArchivableSampleLoaded()
+{
+  StepIsArchiveAreaConfigured();
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","HoldingAndArchiving")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+	
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+}
+
+function HoldingAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","HoldingAndArchiving")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function IsArchiveAreaHasEmptySlots()
+
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","ArchivingWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+}
+
+function IsArchivableSampleUnloadedToInput()
+{
+//  if(!IsInputTrayEmpty("ArchivingWithoutHolding"))
+//    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","ArchivingWithoutHolding")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","ArchivingWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+
+    return false;
+  
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+  
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function IsArchivableSampleUnloadedToArchiveZone()
+{
+  // put timer expires code here
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "ArchivingWithoutHolding");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","ArchivingWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","ArchivingWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+    
+//  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[1]))
+//    return false;
+  if(!StepVerifyOrderHasCompletedProcessingInWorklist(SampleID))
+    return false;
+    
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+  
+  boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "P");  
+    return false;
+  }
+}
+
+function IsHoldSampleUnloadedToArchiveZone()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","HoldingAndArchiving")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","HoldingAndArchiving")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+
+//  Wait for sample to come in COMPLETE status
+//  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[1]))
+//    return false;
+  if(!StepVerifyOrderHasCompletedProcessingInWorklist(SampleID))
+    return false;
+
+//  Once sample comes to complete status then wait for the configured timer to expire 
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+
+//  Verify sample is unloaded to Archive zone
+  boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+    return false;
+  }
+}
+
+function IsArchivableSampleUnloadedToHolding()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","HoldingAndArchiving")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","HoldingAndArchiving")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+//  Wait for sample to come in ASPIRATED status  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+  
+//  for(var count=0;count<aSampleStatus["length"];count++)
+//  {
+//    StepWaitForSampleStatus(SampleID, aSampleStatus[count])
+//  }
+
+//  Verify whether sample comes in Holding zone
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+}
+
+function ConfigureArchivingAndSortArea()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "NotArchivedSortSamples");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout"); 
+  
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+
+  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+    return false;
+      
+  if(!StepAddPanel(PanelName))        // added after feature set up came into picture
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "NotArchivedSortSamples"))
+    return false;
+  
+  return StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig", "NotArchivedSortSamples")
+}
+
+function ConfigureSTATsNotToBeArchived()
+{
+  if(!StepIsSTATsArchived("No"))
+    return false;
+  
+  return StepStartAnalyzer("SH")    
+}
+
+function STATMeetsSortCriteria()
+{
+ 
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortedSTATNotArchived")
+  var dictColumn=arrTestData[0];
+
+
+  //var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+
+  //sFakeBarCodefilepath=Project["Path"]+"TestData";
+
+  //if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+  //  return false;
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function STATSortAreaHasEmptySlots()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortedSTATNotArchived")
+  var dictColumn  = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function IsSTATSampleSorted()
+{
+  IsInputTrayEmpty("SortedSTATNotArchived");
+  
+  var arrTestData   = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortedSTATNotArchived")
+  var dictColumn    = arrTestData[0];
+  var SampleID      = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus  = dictColumn["Item"]("SampleStatus");
+  var SampleLocation= dictColumn["Item"]("SampleLocation")
+
+  var Priority      = dictColumn["Item"]("Priority");
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortedSTATNotArchived")
+  var dictColumn=arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+//  Wait for sample to come in Ready to remove status  
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+
+//  Verify the sample priority is STAT in Sample>Sample List
+  if(!StepVerifySampleProperty(SampleIDs, "Priority", Priority))
+    return false;
+
+// Verify the sample location
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function IsSampleInSortAreaAfterArchivalTimeout()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortedSTATNotArchived")
+  var dictColumn=arrTestData[0];
+
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  
+//  Wait for sample to complete processing
+  if(!StepVerifyOrderHasCompletedProcessingInWorklist(SampleID))
+    return false;
+    
+//  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[1]))
+//    return false;
+
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "NotArchivedSortSamples");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+   aTimeOut=sArchivalTimeout["split"](" ");
+   intArchiveTimeout=aTimeOut[0];
+  
+//  Wait for the configured timer to expire
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortedSTATNotArchived")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+// Verify sample location is Sort zone after the timeout expires
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+    return false;
+  }
+}
+
+function IsSampleNotForArchivingLoaded()
+{
+  StepIsArchiveAreaConfigured();
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchivedSortSamples")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+	
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+
+}
+
+function IsSortAreaNotAvailable()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchivedSortSamples")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return (!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+
+}
+
+function IsSortSampleUnloadedToInput()
+{
+  //IsInputTrayEmpty("NotArchivedSortSamples"); 
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchivedSortSamples")
+  var dictColumn=arrTestData[1];
+
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchivedSortSamples")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var Priority            = dictColumn["Item"]("Priority");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+//  var aSampleStatus=SampleStatus["split"](";");
+//  for(var count=0;count<aSampleStatus["length"];count++)
+//  {
+//    if(!StepWaitForSampleStatus(SampleID, aSampleStatus[count]))
+//      return false;
+//  }
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+
+  if(!StepVerifySampleProperty(SampleID, "Priority", Priority))
+    return false;
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F"); 
+    return false;
+  }
+}
+
+function NotArchivedSortSamplesTeardown()
+{  
+  StepActivateSortPanel("Default"); 
+}
+
+
+function IsSampleMeetsSortCriteriaLoaded()
+{  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchivedSortSamples")
+  var dictColumn=arrTestData[1];
+  
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+
+//Modified by TANMAY on 12-apr-19. Once the sample gets unloaded to Output Normal, remove the Input tray, create a workorder and reload the sample to re-create this scenario  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","NotArchivedSortSamples")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  if(!StepWaitForSampleStatus(SampleId, "No Orders"))
+    return false;
+  
+  return StepVerifySampleLocation(SampleId,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+}
+
+
+function IsInputAreaNotEmpty()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchivedSortSamples")
+  var dictColumn=arrTestData[1];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+  if(!StepRemoveTray())
+    return false;
+
+  if(!StepLoadSample())
+    return false;
+    
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHInputTraysEmpty","NotArchivedSortSamples")
+  var dictColumn = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  
+  return StepVerifyTrayNotPresent(TrayType,DrawerNumber,DrawerZone,DrawerPanels)
+}
+
+function IsSortSampleStaysOnTrack()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","NotArchivedSortSamples")
+  var dictColumn=arrTestData[1];
+   
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", Priority))
+    return false;
+    
+  var blnfirstcheck = StepVerifySampleLocationInSampleList(SampleID, SampleLocation)
+  
+  if (blnfirstcheck == true)
+  {
+    Delay(180000,"Wait for 3 minutes to verify sample remains on track");
+	  Log["Message"]("Waited for 3 minutes and verify again sample location in sample list");
+    var blnsecondrcheck = StepVerifySampleLocationInSampleList(SampleID, SampleLocation)
+    if(blnsecondrcheck == true)
+    {
+      attr["FontColor"] = clGreen
+      Log["Message"]("Test Passed",null,pmNormal,attr);
+		  ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "P");
+      return true;
+    }
+    else
+    {
+      attr["FontColor"] = clRed
+      Log["Error"]("Test Failed",null,pmNormal,attr);  
+		  ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      return false;
+    }
+  }
+  if (blnfirstcheck == false)
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+	  ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+    return false;
+  }
+
+}
+
+function SampleHoldingandArchivingTeardown()
+{
+  //Clear all data
+  if(!ClearApplicationData())
+    return false;
+  
+  if(!StepActivateSortPanel("Default"))
+    return false;
+    
+  return StepStartAnalyzer("SH");
+}
+
+function GivenSHDrawerIsConfiguredSc16()
+{
+//Configure SH
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SortingScenario16");
+  var sTestType       = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup   = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepIsSTATsArchived("Yes"))
+      return false;
+    
+    if(!StepAddPanel("SortingScenario16"))
+      return false;
+    
+    if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario16"))
+      return false;
+
+    if(!StepShutdownAnalyzer("SH"))
+      return false;
+  
+    if(!StepShutdownTrinidad())
+      return false;
+  
+    if(!StepLaunchAnalyzer("SH"))
+      return false;
+  
+    return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+  }
+  else
+  {
+    //If panel is already active then need to verify STAT archival setting here
+    //  if(!StepIsSTATsArchived("Yes"))
+    //    return false;
+    return true;
+  } 
+}
+
+
+function GivenSpotAvailableInCalQCStorageInventory()
+{
+  if(!StepCalQCStorageAreaHasAvailableSlots())
+  {
+    if(!StepConfirmCalQCStorageContents())
+      return false;
+      
+    return StepCalQCStorageAreaHasAvailableSlots();
+  }
+  else
+    return true;
+}
+
+function GivenReagentForTestBasedSortingNotLoadedSc16()
+{
+  var arrPatientOrders  = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario16");
+  var Assays   = arrPatientOrders[1]["Item"]("Assay");
+  var Analyzer = arrPatientOrders[1]["Item"]("Analyzer");
+  
+  return StepVerifyReagentNotLoaded(Assays,Analyzer)
+}
+
+function WhenSTATRoutineControlSamplesAreLoadedSc16()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario16");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for STAT sample
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  //Get the data and create workorder for Routine sample
+  var dictColumn           = arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var RoutineSampleId      = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, RoutineSampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Create a QC order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+    
+  var arrSampleId = [STATSampleId, RoutineSampleId, QCSampleID];
+  
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleId))
+    return false;
+
+  //Load tubes in Sample Handler
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function ThenSTATUnloadedToCombinedInputOutputAreaSc16()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario16");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "STAT"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario16")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  return StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+}
+
+function ThenRoutineUnloadedToCombinedInputOutputAreaSc16()
+{
+  //Verify routine sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario16")
+  var dictColumn=arrTestData[1];
+  var SampleID             = dictColumn["Item"]("SampleIDs");
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+ 
+  if(!StepWaitForSampleProperty(SampleID, "Status", "Intervention Needed", 60000))
+    return false;
+   
+  return StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+} 
+
+function ThenControlSampleUnloadedToCalQCStorageAreaSc16()
+{
+// Verify Control sample gets unloaded to Cal-QC Storage Inventory and the status is Assay error
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","ControlLot");
+  var dictColumn=arrTestData[0];
+  var LotNumber = dictColumn["Item"]("Chol_2");
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","ControlName");
+  var dictColumn=arrTestData[0];
+  var QCMaterialName = dictColumn["Item"]("Chol_2");
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","QCSampleID");
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("Chol_2");
+ 
+  if(!StepWaitForSampleProperty(SampleID, "Status", "Intervention Needed", 60000))
+    return false;
+     
+  var boolValue = StepVerifyCalSampleUnloadedToStorage(LotNumber, QCMaterialName);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+	  ReportTestStatusToResultXML("AdvanceSorting", "Scenario16", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+	  ReportTestStatusToResultXML("AdvanceSorting", "Scenario16", "F");
+    return false;
+  }
+}
+
+function AdvanceSortingTeardownSc16()
+{
+  var arrPatientOrders  = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario16");
+  var Assays   = arrPatientOrders[1]["Item"]("Assay");
+  var Analyzer = arrPatientOrders[1]["Item"]("Analyzer");
+  
+  if(!StepLoadCCReagents(Assays))
+    return false;
+    
+  if(!StepVerifyReagentsLoaded(Assays,Analyzer))
+    return false; 
+
+  //Clear all data
+  return ClearApplicationData()
+} 
+function GivenOneSampleHandlerAvailable()
+{
+  return StepVerifyAvailableSampleHandlers(1);
+} 
+
+function GivenSHConfiguredWithNonAtellicaSortAreaSc02()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SortingScenario02");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sSortCode=arrDrawers[0]["Item"]("SortCode")
+ 
+  if(StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  //Add non atellica test(sort code)  
+  if(!StepAddOperatordefinedSortTestCode(sSortCode))
+    return false;
+  
+  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName,"Always"))
+     return false;
+    
+  var sTestSortGroupName = arrDrawers[1]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[1]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[1]["Item"]("TestsInGroup");
+  
+   
+  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName,""))
+     return false;
+    
+  if(!StepAddPanel(PanelName))
+    return false;        
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario02"))
+    return false;
+  
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  //STATs are not configured to be archived
+  if(!StepIsSTATsArchived("No"))
+    return false;
+   
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType) 
+  
+}
+
+function GivenSHConfiguredWithTestBasedSortAreaAndSortingDisabled()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SortingScenario05");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sSortCode=arrDrawers[0]["Item"]("SortCode")
+  if(StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+  
+  //Add non atellica test(sort code)  
+  if(!StepAddOperatordefinedSortTestCode(sSortCode))
+    return false;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  var sTestSortGroupName = arrDrawers[1]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[1]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[1]["Item"]("TestsInGroup");
+    
+  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName,"Always"))
+     return false;
+     
+  if(!StepAddPanel(PanelName))
+    return false;        // added after feature set up came into picture
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario05"))
+    return false;  
+  
+  var DeploymentType = GetDeploymentTypeFromFederationConfig()
+  
+  //STATs are not configured to be archived
+  if(!StepIsSTATsArchived("Yes"))
+    return false;
+   
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType) 
+ 
+} 
+
+function GivenCHAnalyzerNotAvailable()
+{
+  return StepStopAnalyzer("CC");
+} 
+
+
+ 
+
+function GivenCalQCStorageAreaNotAvailable()
+{
+  if(!StepCalQCStorageAreaHasAvailableSlots())
+    return true;
+  else
+    return false;
+} 
+
+
+
+function WhenSTATRoutineAndControlSamplesLoadedSc02()
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile, "PatientOrder", "SortingScenario02");
+  //Create a routine patient order with non atellica sort test
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId1            = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+	
+  if(!StepCreatePatientOrder(Assay, SampleId1, Specimen, Analyzer, Priority))
+    return false;
+
+  //Create a STAT patient order with test based sort test
+  var dictColumn=arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId2            = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId2, Specimen, Analyzer, Priority))
+    return false;
+  
+  //create QC definition and order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  var SampleIDs=[SampleId1,SampleId2,QCSampleID]
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleIDs))
+    return false;
+  
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenRoutineSampleUnloadedToNonAtellicaSortAreaSc02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario02")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) ;
+  return boolValue;
+} 
+
+function ThenSTATSampleUnloadedToInputAreaSc02()
+{
+   var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario02")
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario02")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+  return boolValue;
+} 
+
+function ThenControlSampleUnloadedtoInputAreaSc02()
+{
+    
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+ // var SampleStatus=dictColumn["Item"]("SampleStatus");
+ /// var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation="SH";
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario02")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+//  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+//    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(QCSampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+  return boolValue;
+} 
+
+function ThenSTATAndControlSamplesReloadedAndRoutedToTheAnalyzerSc02()
+{
+   if(!StepLaunchAnalyzer("CC"))
+    return false;
+   
+      
+    //Verify STAT and COntrol Samples are unloaded to output area
+    
+   
+    
+} 
+
+function ThenSTATAndCalibratorSamplesReloadedAndRoutedToTheAnalyzerSc05()
+{
+  //Resume CH analyzer
+  
+  if(!StepStartAnalyzer("CC"))
+    return false;
+  
+  //Verify STAT and Calibrator Samples are unloaded to output area
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario05")
+  var dictColumn=arrTestData[1];
+  var SampleID1 = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation="VMM"
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","NotArchiveStorableCalSample")
+  var SampleID2 = arrTestData[0]["Item"]("SampleID");
+  
+  // Verify sample 2 and 3 are reloaded to track(VMM)
+  if(!StepVerifySampleLocationOnTrack(SampleID1, SampleLocation))
+    return false;
+    
+  if(!StepVerifySampleLocationOnTrack(SampleID2, SampleLocation))
+    return false;
+  
+  //verify sample2 is relocated to archive area after archival timeout expired
+  
+  //verify sample3 is unloaded to ouput area
+  
+
+  
+   
+} 
+
+function WhenSTATRoutineAndCalibratorSamplesLoadedSc05()
+{
+  arrTestData = GetTestItemsByTestName(TestDataFile, "PatientOrder", "SortingScenario05");
+  //Create a routine patient order with non atellica sort test
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId1            = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId1, Specimen, Analyzer, Priority))
+    return false;
+
+  //Create a STAT patient order with test based sort test
+  var dictColumn=arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId2            = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId2, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Create calibrator  definition and order
+ var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","NotArchiveStorableCalSample")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename=dictColumn["Item"]("FakeBarcodeFileName");
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");    
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  var CalSampleID=dictColumn["Item"]("SampleID");
+  var SampleIDs=[SampleId1,SampleId2,CalSampleID];
+  
+  
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+	
+  var SampleId=dictColumn["Item"]("SampleID");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleIDs))
+    return false;
+  
+  var Nodepath = "Instruments//Instrument";
+  var InstrumentsArray = ReadConfigFile(sConfigPath,Nodepath)
+  var Analyzer = GetInstrumentName(InstrumentsArray,"CH")
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  var ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+     return false;
+  if(!StepPlaceOutputTray())
+     return false;
+  if(!StepPlaceSample("Plain"))
+     return false;
+  
+  return StepLoadSample()
+ 
+} 
+
+function ThenRoutineSampleUnloadedToOutputAreaSc05()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario05")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario05")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) ;
+  return boolValue;
+} 
+
+function ThenSTATSampleUnloadedToInputAreaSc05()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario05")
+  var dictColumn=arrTestData[1];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario05")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+  return boolValue; 
+} 
+
+function ThenCalibratorSampleUnloadedtoInputAreaSc05()
+{
+  InitializeMetaData();
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","NotArchiveStorableCalSample")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleID");
+ // var SampleStatus=dictColumn["Item"]("SampleStatus");
+ // var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation="SH";
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario05")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+//  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+//    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+  return boolValue;
+}
+
+function GivenSHDrawerIsConfiguredSc11()
+{
+//Configure SH
+
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SortingScenario11");
+  var sTestType       = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup   = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sSortCode       = arrDrawers[1]["Item"]("SortCode");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  
+  var sNonAtellicaTestType       = arrDrawers[1]["Item"]("TestType");
+  var sTestsInNonAtellicaGroup   = arrDrawers[1]["Item"]("TestsInGroup");
+  var sNonAtellicaTestSortGroupName = arrDrawers[1]["Item"]("TestSortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepIsSTATsArchived("No"))
+      return false;
+    
+    if(!StepAddOperatordefinedSortTestCode(sSortCode))
+      return false;
+    
+    if(!StepAddPanel("SortingScenario11"))
+      return false;
+    
+    //This is to create a test Sort group for Atellica tests
+    if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName))
+      return false;
+    
+    //This is to create Non-Atellica Sort group
+    if(!StepAddTestSortGroup(sNonAtellicaTestType,sTestsInNonAtellicaGroup, sNonAtellicaTestSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario11"))
+      return false;
+
+    if(!StepShutdownAnalyzer("SH"))
+      return false;
+  
+    if(!StepShutdownTrinidad())
+      return false;
+  
+    if(!StepLaunchAnalyzer("SH"))
+      return false;
+  
+    return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+      
+  }
+  else
+  {
+    //If panel is already active then need to verify STAT archival setting here
+    //  if(!StepIsSTATsArchived("Yes"))
+    //    return false;
+    return true;
+  } 
+}
+
+function WhenSTATRoutineControlSamplesAreLoadedSc11()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario11");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for STAT sample
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  //Get the data and create workorder for Routine sample
+  var dictColumn           = arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var RoutineSampleId      = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, RoutineSampleId, Specimen, Analyzer, Priority))
+    return false;
+ 
+  /* 
+  //Create Calibrator Def and order
+   var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","NotArchiveStorableCalSample")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename=dictColumn["Item"]("FakeBarcodeFileName");
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");    
+  sFakeBarCodefilepath=Project["Path"]+"TestData";
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  var CalSampleID=dictColumn["Item"]("SampleID");
+  
+  var Nodepath = "Instruments//Instrument";
+  var InstrumentsArray = ReadConfigFile(sConfigPath,Nodepath)
+  var Analyzer = GetInstrumentName(InstrumentsArray,"CH")
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  var ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+  */
+
+  //Create a QC order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+    
+  var arrSampleId = [STATSampleId, RoutineSampleId, QCSampleID];
+  
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleId))
+    return false;
+
+  //Load tubes in Sample Handler
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+}
+
+function ThenSTATUnloadedToCombinedInputOutputAreaSc11()
+{
+//  Execute the scenario and check whether sample gets aspirated or not
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario11");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "STAT"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario11")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  return StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+}
+
+function ThenRoutineUnloadedToCombinedInputOutputAreaSc11()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario11");
+  var dictColumn           = arrTestData[1];
+  var SampleID             = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "Routine"))
+    return false;
+  
+  if(!StepWaitForSampleStatus(SampleID, "Complete"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario11")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  return StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+} 
+
+function ThenControlSampleUnloadedToCalQCStorageAreaSc11()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","ControlLot");
+  var dictColumn=arrTestData[0];
+  var LotNumber = dictColumn["Item"]("Chol_2");
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","ControlName");
+  var dictColumn=arrTestData[0];
+  var QCMaterialName = dictColumn["Item"]("Chol_2");
+  
+  return StepVerifyCalSampleUnloadedToStorage(LotNumber, QCMaterialName)
+}
+
+function ThenSTATNotRelocatedToArchiveTraySc11()
+{
+
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SortingScenario11");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario11")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario11")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+//  Wait for STAT sample to come in COMPLETE status
+  if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+
+//  Once sample comes to complete status then wait for the configured timer to expire 
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+
+//  Verify sample is unloaded to Archive zone
+  boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+	  ReportTestStatusToResultXML("AdvanceSorting", "Scenario11", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+	  ReportTestStatusToResultXML("AdvanceSorting", "Scenario11", "F");
+    return false;
+  }
+}
+
+function GivenSHDrawerIsConfiguredSc06()
+{
+
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SortingScenario06");
+  var sTestType       = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup   = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sSortCode       = arrDrawers[1]["Item"]("SortCode");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  
+  var sNonAtellicaTestType       = arrDrawers[1]["Item"]("TestType");
+  var sTestsInNonAtellicaGroup   = arrDrawers[1]["Item"]("TestsInGroup");
+  var sNonAtellicaTestSortGroupName = arrDrawers[1]["Item"]("TestSortGroupName");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepIsSTATsArchived("Yes"))
+      return false;
+    
+    if(!StepAddOperatordefinedSortTestCode(sSortCode))
+      return false;
+    
+    if(!StepAddPanel("SortingScenario06"))
+      return false;
+    
+    //This is to create a test Sort group for Atellica tests
+    if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName))
+      return false;
+    
+    //This is to create Non-Atellica Sort group
+    if(!StepAddTestSortGroup(sNonAtellicaTestType,sTestsInNonAtellicaGroup, sNonAtellicaTestSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario06"))
+      return false;
+
+    if(!StepShutdownAnalyzer("SH"))
+      return false;
+  
+    if(!StepShutdownTrinidad())
+      return false;
+  
+    if(!StepLaunchAnalyzer("SH"))
+      return false;
+  
+    return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+      
+  }
+  else
+  {
+    return true;
+  } 
+}
+
+function WhenSTATRoutineControlSamplesAreLoadedSc06()
+{
+InitializeMetaData();
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario06");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for STAT sample
+  var Assay                = dictColumn["Item"]("Assay");
+  var STATSampleId         = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, STATSampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  //Get the data and create workorder for Routine sample
+  var dictColumn           = arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var RoutineSampleId      = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, RoutineSampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Create a QC order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Crea_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepCreateQCDefinition("Crea_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Crea_2", QCControlID))
+    return false;
+    
+  var arrSampleId = [STATSampleId, RoutineSampleId, QCSampleID];
+  
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleId))
+    return false;
+
+  //Load tubes in Sample Handler
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+}
+
+function ThenNonAtellicaOrderUnloadedToOutputAreaSc06()
+{
+//  Execute the scenario and check whether sample gets aspirated or not
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario06");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "Routine"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario06")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  return StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+}
+
+function ThenSTATUnloadedToOutputAreaSc06()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario06");
+  var dictColumn           = arrTestData[1];
+  var SampleID             = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "STAT"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario06")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  return StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+} 
+
+function ThenControlSampleUnloadedToCalQCStorageAreaSc06()
+{
+  InitializeMetaData();
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","ControlLot");
+  var dictColumn=arrTestData[0];
+  var LotNumber = dictColumn["Item"]("Chrea_2");
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"QCDefinition","ControlName");
+  var dictColumn=arrTestData[0];
+  var QCMaterialName = dictColumn["Item"]("Crea_2");
+  
+  var boolValue = StepVerifyCalSampleUnloadedToStorage(LotNumber, QCMaterialName)
+  
+   var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+	  ReportTestStatusToResultXML("AdvanceSorting", "Scenario06", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+	  ReportTestStatusToResultXML("AdvanceSorting", "Scenario06", "F");
+    return false;
+  }
+}
+
+function GivenSHIsConfiguredForSortingScenario01()
+{
+  //InitializeMetaData();
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SortingScenario01");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  var sSortCode=arrDrawers[0]["Item"]("SortCode");
+  
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+    
+  if(!StepAddOperatordefinedSortTestCode(sSortCode))
+    return false;
+    
+  var arrTestSortGroupName = new Array();
+  arrTestSortGroupName  = sTestSortGroupName["split"](";");
+    
+  var arrTestType = new Array();
+  arrTestType = sTestType["split"](";");
+    
+  var arrTestsInGroup = new Array();
+  arrTestsInGroup = sTestsInGroup["split"](";");
+     
+  for (var i = 0; i<=1;i++)
+  {
+    if(!StepAddTestSortGroup(arrTestType[i], arrTestsInGroup[i], arrTestSortGroupName[i],"Always"))
+      return false;
+  }
+  
+  if(!StepAddPanel(PanelName))
+    return false;        // added after feature set up came into picture
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario01"))
+    return false
+  
+  //add setting of archival timeout here
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+  
+  if(!StepIsSTATsArchived("Yes"))
+    return false;
+  
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+
+}
+
+function WhenPatientAndCalibratorSamplesForSortingScenario01AreLoaded()
+{
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId1             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttributes1     = dictColumn["Item"]("SampleAttributes");
+
+  if(!StepCreatePatientOrder(Assay, SampleId1, Specimen, Analyzer, Priority))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario01")
+  var dictColumn=arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId2             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttributes2     = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId2, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material"); 
+
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+    
+  var arrModuleNames=StepGetModuleNames("CC")
+  var CCAnalyzer = new Array();
+  CCAnalyzer = arrModuleNames[0]["split"]("-CH");
+  Analyzer = CCAnalyzer[0]
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  SampleId3 = dictColumn["Item"]("OutputSampleID");
+    
+  
+  var arrSampleIDs = new Array(SampleId1,SampleId2,SampleId3)
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+//  if(!StepVerifySampleAttribute(SampleId1, SampleAttributes1))
+//    return false;
+//    
+//  if(!StepVerifySampleAttribute(SampleId2, SampleAttributes2))
+//    return false;
+//    
+} 
+
+
+function WhenAllSortAreaForSortingScenario01AreAvailable()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  
+  return StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+
+}
+
+function WhenPatientAndCalibratorSamplesForSortingScenario01AreCompleted()
+{
+//  InitializeMetaData();
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  var SampleId1           = dictColumn["Item"]("SampleId");
+  var SampleStatus1       =dictColumn["Item"]("SampleStatus");
+  
+  if(!StepWaitForSampleStatus(SampleId1, SampleStatus1))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario01")
+  var dictColumn=arrTestData[1];
+  var SampleId2          = dictColumn["Item"]("SampleId");
+  var SampleStatus2       =dictColumn["Item"]("SampleStatus");
+  var aSampleStatus2      =SampleStatus2["split"](";");
+  
+//  for(var i =0;i<=1;i++)
+//  {
+//  if(!StepWaitForSampleStatus(SampleId, aSampleStatus[i]))
+//    return false;
+//  }
+  if(!StepWaitForSampleStatus(SampleId2, aSampleStatus2[0]))
+    return false;  
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario01") 
+  var dictColumn=arrTestData[0];
+  var SampleId3           = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus3       =dictColumn["Item"]("SampleStatus");
+  var aSampleStatus3      =SampleStatus3["split"](";");
+  
+//  for(var i =0;i<=1;i++)
+//  {
+//  if(!StepWaitForSampleStatus(SampleId, aSampleStatus[i]))
+//    return false;
+//  }
+
+  if(!StepWaitForSampleStatus(SampleId3, aSampleStatus3[0]))
+    return false;  
+    
+  if(!StepWaitForSampleStatus(SampleId2, aSampleStatus2[1]))
+    return false;
+    
+  return StepWaitForSampleStatus(SampleId3, aSampleStatus3[1])
+} 
+
+
+function ThenPatientAndCalibratorSamplesForSortingScenario01AreUnloaded()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario01")
+  var dictColumn=arrTestData[0];
+  LotNumber = dictColumn["Item"]("Lot");
+  CalMaterialName =dictColumn["Item"]("Material"); 
+  
+  var boolValue = StepVerifyCalSampleUnloadedToStorage(LotNumber, CalMaterialName) 
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario01", "F"); 
+    return false;
+  }
+ 
+  
+} 
+
+function ThenAfterAddOnOrderSamplesAreNotGoingToArchiveAreaButUnloadedToRespectiveSortArea()
+{
+  
+  
+//  InitializeMetaData();
+  // add code to place an add on order for calibrator sample
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario01")
+  var dictColumn   = arrTestData[0];
+  var SampleId3     = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation3 = dictColumn["Item"]("SampleLocation");
+  
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material"); 
+
+  var arrModuleNames=StepGetModuleNames("CC")
+  var CCAnalyzer = new Array();
+  CCAnalyzer = arrModuleNames[0]["split"]("-CH");
+  Analyzer = CCAnalyzer[0]
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+    
+  // check samples reloaded to track 
+  if(!StepVerifySampleLocationInSampleList(SampleId3, SampleLocation3)) 
+  //if(!StepVerifySampleLocationOnTrack(SampleId3, SampleLocation3))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  // add code to place an add on order for Routine Patient sample  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario01")
+  var dictColumn=arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId2             = dictColumn["Item"]("SampleId");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation2        = dictColumn["Item"]("SampleLocation"); 
+  
+  if(!StepCreateAnAddOnPatientOrder(Assay, SampleId2, Analyzer))
+    return false;
+  
+  // check samples reloaded to track
+  if(!StepVerifySampleLocationInSampleList(SampleId2, SampleLocation2))
+//  if(!StepVerifySampleLocationOnTrack(SampleId2, SampleLocation2))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario01")
+  var dictColumn=arrTestData[3];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolvalue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario01", "F"); 
+    return false;
+  }
+  
+}
+
+
+function GivenSHIsConfiguredForSortingScenario15()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SortingScenario15");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  var sSortCode=arrDrawers[0]["Item"]("SortCode");
+  
+  var DeploymentType = GetDeploymentTypeFromFederationConfig();
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+    
+  if(!StepAddOperatordefinedSortTestCode(sSortCode))
+    return false;
+     
+  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+     return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingScenario15"))
+    return false
+  
+  //add setting of archival timeout here
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+  
+  if(!StepIsSTATsArchived("No"))
+    return false;
+  
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+  
+  return StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType)
+
+}
+
+
+
+function WhenPatientAndCalibratorSamplesForSortingScenario15AreLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario15")
+  var dictColumn=arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId1             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttributes1     = dictColumn["Item"]("SampleAttributes");
+
+  if(!StepCreatePatientOrder(Assay, SampleId1, Specimen, Analyzer, Priority))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario15")
+  var dictColumn=arrTestData[1];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId2             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttributes2     = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId2, Specimen, Analyzer, Priority))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario15")
+  var dictColumn=arrTestData[2];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId3             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttributes3    = dictColumn["Item"]("SampleAttributes");
+
+  if(!StepCreatePatientOrder(Assay, SampleId3, Specimen, Analyzer, Priority))
+    return false;
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario15")
+  var dictColumn=arrTestData[0];
+  
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material"); 
+
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+    
+  var arrModuleNames=StepGetModuleNames("CC")
+  var CCAnalyzer = new Array();
+  CCAnalyzer = arrModuleNames[0]["split"]("-CH");
+  Analyzer = CCAnalyzer[0]
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered"
+  ItemHeader= "Assay"  
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario15")
+  var dictColumn=arrTestData[0];
+  SampleId4 = dictColumn["Item"]("OutputSampleID");
+    
+  
+  var arrSampleIDs = new Array(SampleId1,SampleId2,SampleId3,SampleId4)
+ 
+  if(!StepUpdateFakebarcodeReadingsFile(arrSampleIDs))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+  
+//  if(!StepVerifySampleAttribute(SampleId1, SampleAttributes1))
+//    return false;
+
+}
+
+
+function WhenCalQCSpotIsNotAvailable()
+{
+ 
+  bValue=StepCalQCStorageAreaHasAvailableSlots();
+  if(bValue)
+  {
+    bConfirmValue=StepNotConfirmCalQCStorageContents()
+    if (bConfirmValue)
+    {
+      if(!StepCalQCStorageAreaHasAvailableSlots())
+      {
+        Log["Error"]("Cal QC storage has available spots 0")
+        return false;
+      }
+      else
+      {
+        return true;
+      }
+    }
+    else
+    {
+      Log["Error"]("Unable to confirm Cal QC storage contents")
+      return false;
+    }
+  }
+}
+
+
+
+function WhenPatientAndCalibratorSamplesForSortingScenario15AreNotSentToAnalyzer()
+{
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario15")
+  var dictColumn=arrTestData[0];
+  var SampleId           = dictColumn["Item"]("SampleId");
+  var SampleStatus       = dictColumn["Item"]("SampleStatus");
+  
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario15")
+  var dictColumn=arrTestData[1];
+  var SampleId          = dictColumn["Item"]("SampleId");
+  var SampleStatus       =dictColumn["Item"]("SampleStatus");  
+
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;  
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario15")
+  var dictColumn=arrTestData[2];
+  var SampleId          = dictColumn["Item"]("SampleId");
+  var SampleStatus       =dictColumn["Item"]("SampleStatus");  
+
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","SortingScenario15") 
+  var dictColumn=arrTestData[0];
+  var SampleId           = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus        =dictColumn["Item"]("SampleStatus");
+  
+  return StepWaitForSampleStatus(SampleId, SampleStatus)
+
+}
+
+
+function ThenPatientAndCalibratorSampleForSortingScenario15AreUnloaded()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario15")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario15")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario15")
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario15")
+  var dictColumn=arrTestData[3];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolvalue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario15", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario15", "F"); 
+    return false;
+  }
+}
+
+///////// advanced sorting TCS2 ///////////////////////////////////
+
+function GivenSortingIsconfiguredwithArchiveZoneAndHoldAreaAvailable()
+{
+  
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+        
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+        
+  if(!StepAddPanel(PanelName))
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+    return false
+  
+  //add setting of archival timeout here
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+  
+  if(!StepIsSTATsArchived("Yes"))
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))  
+  {
+    if(!StepShutdownAllApps())
+    return false;
+  
+    return StepInvokeAllApps()
+  }
+  else
+  {
+    return GivenAtellicaInitialized();
+    
+  }
+} 
+
+function WhenArchiveRackIsLoadedToarchiveZone()
+{
+    //Verify sample attributes property
+  if(!StepIsSTATsArchived("Yes"))
+  {
+      
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+    if(!StepIsSTATsArchived("Yes"))
+      return false;
+    
+      StepStartAnalyzer("SH"); 
+  }
+    
+    
+  if(!GivenAtellicaInitialized())
+    return false;
+    
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SortingScenario_01"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+     
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+
+function WhenArchiveRackIsEmpty()
+{
+  return StepConfirmArchiveRackIsEmpty();
+} 
+
+function WhenSTATSampleLoadedThroughInputTray()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var SampleId             = dictColumn["Item"]("SampleId");
+  
+  return StepWaitForSample(SampleId);
+    
+} 
+
+function ThenSampleGetsAspirated()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleStatus          = dictColumn["Item"]("SampleStatus");
+
+  return (StepWaitForSampleStatus(SampleId, SampleStatus))
+    
+} 
+
+function ThenSampleGetsUnlodedToHoldareaUntillArchivalTimeout()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+ 
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SortConfig_1","HoldTenMinsAndArchive")
+  var dictColumn=arrTestData[0];
+  var sArchivalTimeout=dictColumn["Item"]("ArchivalTimeout"); 
+  var aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+  
+//  Once sample comes to complete status then wait for the configured timer to expire 
+  return StepVerifyConfiguredTimerExpires(intArchiveTimeout)
+  
+} 
+
+function ThenSampleIsUnloadedToArchivalRack()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","SortingScenario_01")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  //  Verify sample is unloaded to Archive zone
+  boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_01", "F"); 
+    return false;
+  }
+  }
+  
+
+
+function ConfigureArchivingAndSortArea_Scenario05()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig_1", "AdvSortSc05");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout"); 
+  
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+
+//  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+//    return false;
+      
+  if(!StepAddPanel(PanelName))       
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "AdvSortSc05"))
+    return false;
+  
+   if(!StepIsSTATsArchived("Yes"))
+    return false;
+  
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+    
+     if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+
+}
+
+function STATSampleIsLoaded()
+{
+ // StepIsArchiveAreaConfigured();
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc05")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc05"))
+    return false;
+    
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+
+}
+
+function ThenSTATUnloadedToCombinedIOThenToArchive()
+{
+//  Execute the scenario and check whether sample gets aspirated or not
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc05");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "STAT"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc05")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+    if(!StepVerifyConfiguredTimerExpires(6))
+    return false;
+  
+ // var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","ArchinveRackSc05")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+    
+  boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc05", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc05", "P");  
+    return false;
+  }
+}
+
+function ConfigureArchivingAndSortArea_Scenario06()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig_1", "AdvSortSc05");   //using scenario 05 sort config
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout"); 
+  
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+
+//  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+//    return false;
+      
+  if(!StepAddPanel(PanelName))       
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "AdvSortSc06"))
+    return false;
+  
+   if(!StepIsSTATsArchived("No"))
+    return false;
+  
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))
+      return false;
+    
+  return GivenAtellicaInitialized();
+
+}
+
+function RoutineSampleIsLoaded()
+{
+  StepIsArchiveAreaConfigured();
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc06")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+    if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc06"))
+    return false;
+	
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+
+}
+
+function WhenRecievesAnAddonWorkOrderWhileWaitingToBeArchived()
+{
+//  Execute the scenario and check whether sample gets aspirated or not
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc06");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+  
+  if(!StepConfirmArchiveRackIsEmpty())
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc06")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+// if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+//    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc06")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  return StepCreateAnAddOnPatientOrder(Assay, SampleId, Analyzer);
+
+}
+
+function ThenSTATUnloadedToCombinedIOThenToArchiveRack()
+{
+InitializeMetaData();
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc06");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc06")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+//  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+//    return false;
+  
+  if(!StepVerifyConfiguredTimerExpires(6))
+    return false;
+  
+ // var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","ArchinveRackSc06")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+    
+  boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc06", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc06", "P");  
+    return false;
+  }
+}
+
+function GivenSHIsConfiguredSc03()
+{
+  //Configure SH
+  
+  var arrDrawers        = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var PanelName         = arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout  = arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepAddPanel(PanelName))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+      return false;
+    
+    if(!StepIsSTATsArchived("Yes"))
+      return false;
+    
+    if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function WhenArchiveRackIsLoadedSc03()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc03");
+  var dictColumn           = arrTestData[0];
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc03"))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+}
+
+function WhenRoutineSampleIsLoadedSc03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc03");
+  var dictColumn  = arrTestData[0];
+  var SampleId    = dictColumn["Item"]("SampleId");
+    
+  if(!StepWaitForSampleStatus(SampleId, "Aspirated"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleId, "Waiting to Archive"))
+    return false;
+  
+  var arrTestData   = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots_1", "AdvSortSc03")
+  var dictColumn    = arrTestData[0];
+  var TrayType      = dictColumn["Item"]("TrayType");
+  var DrawerNumber  = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone    = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels  = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers    = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs     = dictColumn["Item"]("SampleIDs");
+  
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+
+}
+
+function WhenSampleReceivesAddOnOrderSc03()
+{
+  var arrTestData    = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc03");
+  var dictColumn     = arrTestData[0];
+
+  var SampleId       = dictColumn["Item"]("SampleId");
+  var Analyzer       = dictColumn["Item"]("Analyzer");
+  
+  return StepCreateAnAddOnPatientOrder("Chol_2", SampleId, Analyzer);
+
+}
+
+function ThenSampleIsAspiratedAgainSc03()
+{
+  var arrTestData    = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc03");
+  var dictColumn     = arrTestData[0];
+
+  var SampleId       = dictColumn["Item"]("SampleId");
+
+  return StepWaitForSampleStatus(SampleId, "Started");
+}
+
+function ThenSampleIsRelocatedToArchiveRackSc03()
+{
+  //After add-on order, sample gets unloaded to Input area
+  var arrTestData     = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc03")
+  var dictColumn      = arrTestData[0];
+  var TrayType        = dictColumn["Item"]("TrayType");
+  var DrawerNumber    = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone      = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels    = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers      = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs       = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  if(!StepWaitForSampleStatus(SampleIDs, "Waiting to Archive"))
+    return false;
+  
+  //After archival timeout has elapsed, sample should goto archival rack
+  var arrDrawers        = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var sArchivalTimeout  = arrDrawers[0]["Item"]("ArchivalTimeout");  
+  var intArchiveTimeout = sArchivalTimeout["split"](" ")[0];
+  
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc03")
+  var dictColumn        = arrTestData[1];
+  
+  var TrayType          = dictColumn["Item"]("TrayType");
+  var DrawerNumber      = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone        = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels      = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers        = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs         = dictColumn["Item"]("SampleIDs");
+
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Advance Sorting", "ArchiveScenario03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Advance Sorting", "ArchiveScenario03", "F"); 
+    return false;
+  }
+}
+
+function GivenSHIsConfiguredSc04()
+{
+  //Configure SH
+  
+  var arrDrawers        = GetTestItemsByTestName(TestDataFile,"SortConfig", "ArchivingWithoutHolding");
+  var PanelName         = arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout  = arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepAddPanel(PanelName))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "ArchivingWithoutHolding"))
+      return false;
+    
+    if(!StepIsSTATsArchived("Yes"))
+      return false;
+    
+    if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function WhenArchiveRackIsLoadedSc04()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc04");
+  var dictColumn           = arrTestData[0];
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc04"))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+}
+
+function ThenSampleGetsAspiratedAndUnloadedToInputAreaSc04()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc04");
+  var dictColumn  = arrTestData[0];
+  var SampleId    = dictColumn["Item"]("SampleId");
+    
+  if(!StepWaitForSampleStatus(SampleId, "Aspirated"))
+    return false;
+    
+  var arrTestData   = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc04")
+  var dictColumn    = arrTestData[0];
+  var TrayType      = dictColumn["Item"]("TrayType");
+  var DrawerNumber  = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone    = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels  = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers    = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs     = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+  return StepWaitForSampleStatus(SampleId, "Complete");
+}
+
+
+function ThenSampleWaitsInInputAreaSc04()
+{
+  //After archival timeout has elapsed, sample should remain in Input area
+  var arrDrawers        = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving");
+  var sArchivalTimeout  = arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  var intArchiveTimeout = sArchivalTimeout["split"](" ")[0];
+  
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+    
+  var arrTestData   = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc04")
+  var dictColumn    = arrTestData[0];
+  var TrayType      = dictColumn["Item"]("TrayType");
+  var DrawerNumber  = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone    = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels  = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers    = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs     = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Advance Sorting", "ArchiveScenario04", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Advance Sorting", "ArchiveScenario04", "F"); 
+    return false;
+  }
+} 
+
+
+function GivenSHIsConfiguredSc07()
+{
+  //Configure SH
+  var arrDrawers        = GetTestItemsByTestName(TestDataFile,"SortConfig", "HoldingAndArchiving");
+  var PanelName         = arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout  = "0 minutes";
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepAddPanel(PanelName))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+      return false;
+    
+    if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function WhenSamplesAreLoadedSc07()
+{
+  //Load Cal, Control and TTSC
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "CalibrationDefinition", "AdvSortSc07")
+  var dictColumn  = arrTestData[0];
+  var Assay       = dictColumn["Item"]("Assay");
+  var AssayType   = dictColumn["Item"]("AssayType");
+  var CalMaterialName = dictColumn["Item"]("Material");    
+
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+
+  var arrCCAnalyzer = GetModuleNames("CC");
+  var Analyzer = arrCCAnalyzer[0];
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+
+  var Status = "Ordered";
+  var ItemHeader = "Assay";
+  
+  if(!StepVerfiyCalibrationOrder(ItemHeader ,Assay, Status))
+    return false;
+
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+    
+  //Create a QC order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc07");
+  var dictColumn           = arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc07"))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+  
+}
+
+function ThenAllSamplesAreAspiratedSc07()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "AnalysisData", "AdvSortSc07"); 
+ 
+//  Verify sample type as Cal
+  var SampleId = arrTestData[0]["Item"]("TubeBarcode");
+  if(!StepVerifySampleProperty(SampleId, "SampleType", "CALIBRATION"))
+    return false;
+ 
+//  Verify sample type as control
+  var SampleId = arrTestData[1]["Item"]("TubeBarcode");
+  if(!StepVerifySampleProperty(SampleId, "SampleType", "QC"))
+    return false;
+
+//  Verify sample type as Patient
+  var SampleId = arrTestData[2]["Item"]("TubeBarcode");
+  if(!StepVerifySampleProperty(SampleId, "SampleType", "PATIENT"))
+    return false;
+  
+//  Verify cal sample gets aspirated
+  var SampleId = arrTestData[0]["Item"]("TubeBarcode");
+  if(!StepWaitForSampleStatus(SampleId, "Aspirated"))
+    return false;
+  
+//  Verify control sample gets aspirated
+  var SampleId = arrTestData[1]["Item"]("TubeBarcode");
+  if(!StepWaitForSampleStatus(SampleId, "Aspirated"))
+    return false;
+
+//  Verify TTC sample gets aspirated
+  var SampleId = arrTestData[2]["Item"]("TubeBarcode");
+  return StepWaitForSampleStatus(SampleId, "Aspirated");
+
+}
+
+function ThenSamplesAreNotArchivedSc07()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots_1", "AdvSortSc07")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+    
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var dictColumn = arrTestData[1];
+  var SampleIDs = dictColumn["Item"]("SampleIDs");
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+  var dictColumn = arrTestData[2];
+  var SampleIDs = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Advance Sorting", "ArchiveScenario07", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Advance Sorting", "ArchiveScenario07", "F"); 
+    return false;
+  }
+}
+
+function GivenSortingIsconfiguredwithArchiveZoneAndHoldAreaNotAvailable()
+{
+
+  var arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+        
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;
+  
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+    return false
+  
+  //add setting of archival timeout here
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+
+  if(!StepIsSTATsArchived("Yes"))
+    return false;
+
+  if(!StepStartAnalyzer("SH"))  
+  {
+    if(!StepShutdownAllApps())
+    return false;
+
+    return StepInvokeAllApps()
+  }
+  else
+  {
+    return GivenAtellicaInitialized();
+    
+  }
+} 
+  
+function WhenArchiveRackIsLoadedToNonArchiveZone()
+{
+   //Verify sample attributes property
+  if(!StepIsSTATsArchived("Yes"))
+  {
+      
+
+
+
+
+
+
+
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+
+    if(!StepIsSTATsArchived("Yes"))
+      return false;
+    
+      StepStartAnalyzer("SH"); 
+  }
+       
+  if(!GivenAtellicaInitialized())
+    return false;
+    
+
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SortingScenario_02"))
+    return false;
+    
+
+
+
+
+
+
+
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_02");  
+  var dictColumn = arrTestData[0];
+
+
+
+
+
+
+ 
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+
+
+
+
+   
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+
+
+  
+  //To simulate vision sort area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+
+        
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+    return false;
+ 
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample(); 
+
+} 
+
+
+function WhenSTATSampleLoadedThroughInputTray_02()
+{
+
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_02");  
+  var dictColumn = arrTestData[0];
+ 
+  var SampleId             = dictColumn["Item"]("SampleId");
+  
+
+  return StepWaitForSample(SampleId);
+} 
+
+function ThenSampleGetsResultedAndWaitingToBeArchiveInInputArea()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_02");  
+  var dictColumn = arrTestData[0];
+ 
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleStatus          = dictColumn["Item"]("SampleStatus");
+
+   if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+
+
+   
+   var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SortingScenario_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+
+
+
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+
+
+  //  Verify sample is unloaded to input area
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+
+
+
+
+    
+//  return StepWaitForSampleStatus(SampleId, "Waiting to archive")
+} 
+
+function AndSampleReceivesAnAddOnOrder()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_02");
+  var dictColumn           = arrTestData[1];
+  //add on order
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+
+  
+  return StepCreateAnAddOnPatientOrder(Assay, SampleId, Analyzer)
+
+} 
+
+
+function ThenSampleIsAspiratedAndUnloadedToInputarea()
+{
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_02");  
+
+  var dictColumn = arrTestData[1];
+ 
+  var SampleId             = dictColumn["Item"]("SampleId");
+
+
+  var SampleStatus          = dictColumn["Item"]("SampleStatus");
+
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SortingScenario_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+
+
+
+
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+
+  //  Verify sample is unloaded to input area
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleId, "Complete"))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SortConfig","HoldingAndArchiving")
+  var dictColumn=arrTestData[0];
+  var sArchivalTimeout=dictColumn["Item"]("ArchivalTimeout"); 
+  var aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+  
+//  Once sample comes to complete status then wait for the configured timer to expire 
+  return StepVerifyConfiguredTimerExpires(intArchiveTimeout)
+} 
+
+function ThenSampleIsRelocatedToArchivalRack()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SortingScenario_02")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+
+
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  //  Verify sample is unloaded to Archive zone
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_02", "F"); 
+    return false;
+  }
+
+} 
+
+
+
+
+
+function GivenSortingIsconfiguredwithArchiveZoneAndexceptionsortArea()
+{
+  
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "SQCVolume");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+
+  //Configure SH
+
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false;
+  
+    if(!StepAddPanel(PanelName))
+      return false;
+    
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SQCVolume"))
+      return false;
+    
+    //add setting of archival timeout here
+    if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+      return false;
+      
+    //Set Configured processing option to Do not process
+    if(!StepSetTCSSettingsForSampleLowVolume("No"))
+      return false;   
+      
+    if(!StepStartAnalyzer("SH"))  
+    {
+      if(!StepShutdownAllApps())
+      return false;
+
+      return StepInvokeAllApps()
+    }
+    else
+    {
+      return GivenAtellicaInitialized();
+    }                             
+  }
+  else
+  {
+    if(!StepVerifyTCSSettingsForSampleLowVolume("No"))
+    {
+      if(!StepStopAnalyzer("SH"))
+        return false;
+        
+      //add setting of archival timeout here
+      if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+        return false;
+
+        
+      //Set Configured processing option to Do not process 
+      if(!StepSetTCSSettingsForSampleLowVolume("No"))
+        return false;   
+      
+      if(!StepStartAnalyzer("SH"))  
+      {
+        if(!StepShutdownAllApps())
+        return false;
+  
+        return StepInvokeAllApps()
+      }
+      else
+      {
+        return GivenAtellicaInitialized();
+      }                               
+   
+    }
+    else
+    {
+      return true;
+
+
+    } 
+  } 
+}
+
+
+function WhenArchiveRackIsLoadedToArchiveZone_Sc08()
+{
+
+ if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SortingScenario_08"))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_08");  
+  var dictColumn = arrTestData[0];
+ 
+ var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+   return false;
+
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+
+  if(!StepPlaceOutputTray("PlaceOutputTray"))
+   return false;
+
+
+  if(!StepPlaceSample("Plain"))
+    return false;
+   
+
+  return StepLoadSample(); 
+} 
+
+
+
+
+
+function WhenRoutineSampleLoadedThroughInputTray_08()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_08");  
+  var dictColumn = arrTestData[0];
+ 
+  var SampleId             = dictColumn["Item"]("SampleId");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  return StepWaitForSample(SampleId);
+} 
+
+
+function ThenSampleIsMarkedWithRespectiveException()
+{
+    //Verify sample is aspirated
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SortingScenario_08");  
+  var dictColumn = arrTestData[0];
+ 
+
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+
+
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //  Wait for sample to come in Vision volume error status  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+
+} 
+
+
+function ThenSampleIsUnloadedToExceptionSortArea()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SortingScenario_08")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+
+
+
+  
+
+  //  Verify sample is unloaded to vision volume sort area
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+} 
+
+function AndSampleIsNotArchivedAfterArchivalTimeOut()
+{
+   var arrTestData = GetTestItemsByTestName(TestDataFile,"SortConfig","SQCVolume")
+  var dictColumn=arrTestData[0];
+  var sArchivalTimeout=dictColumn["Item"]("ArchivalTimeout"); 
+  var aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+  
+
+//  wait for the configured timer to expire 
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","SortingScenario_08")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  //  Verify sample remains in vision volume sort area
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_08", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_08", "F"); 
+    return false;
+  }
+} 
+
+function ConfigureArchivingAndFalseBottomTray_Scenario09()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig_1", "AdvSortSc05");   //using scenario 05 sort config
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout"); 
+  
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+
+//  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+//    return false;
+
+  if(!StepAddPanel(PanelName))       
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "AdvSortSc05"))
+    return false;
+  
+//   if(!StepIsSTATsArchived("No"))
+//    return false;
+  
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))
+      return false;
+    
+  return GivenAtellicaInitialized();
+
+}
+
+function RoutineSampleIsLoaded_Sc09()
+{
+  StepIsArchiveAreaConfigured();
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc09")
+  var dictColumn=arrTestData[0];  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+    if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc09"))
+    return false;
+	
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+
+}
+
+function ThenSampleUnloadedToFalseBottomTrayThenNOTToArchiveRack()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc09");
+  var dictColumn  = arrTestData[0];
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleID     = dictColumn["Item"]("SampleId");
+  
+  //  Wait for sample to come in ASPIRATED status  
+ if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc09")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  if(!StepVerifyConfiguredTimerExpires(6))                  //1 Min buffer
+    return false;
+  
+ // var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","ArchinveRackSc09")
+//  var dictColumn=arrTestData[0];
+//  var TrayType             = dictColumn["Item"]("TrayType");
+//  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+//  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+//  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+//  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+    
+  boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc09", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc09", "P");  
+    return false;
+  }
+}
+
+function ConfigureArchivingAndSortArea_Scenario10()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig_1", "AdvSortSc05");
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout"); 
+  
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+   {    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+
+//  if(!StepAddTestSortGroup(sTestType, sTestsInGroup, sTestSortGroupName))
+//    return false;
+      
+  if(!StepAddPanel(PanelName))       
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "AdvSortSc05"))
+    return false;
+    }
+    else if(!StepStopAnalyzer("SH"))
+    return false;
+  
+   if(!StepIsSTATsArchived("No"))
+    return false;
+  
+  if(!StepConfigureArchivalTimeout(sArchivalTimeout))
+    return false;
+    
+   if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+
+}
+
+function STATSampleIsLoaded_Sc10()
+{
+ // StepIsArchiveAreaConfigured();
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc10")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+    if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "AdvSortSc10"))
+    return false;
+    
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample()
+
+}
+
+function ThenSTATUnloadedToCombinedIOAndNotArchived()
+{
+InitializeMetaData();
+//  Execute the scenario and check whether sample gets aspirated or not
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","AdvSortSc10");
+  var dictColumn  = arrTestData[0];
+  var SampleID    = dictColumn["Item"]("SampleId");
+  
+  if(!StepVerifySampleProperty(SampleID, "Priority", "STAT"))
+    return false;
+    
+  //Verify sample gets unloaded to Combined zone
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots_1","AdvSortSc10")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+    if(!StepVerifyConfiguredTimerExpires(6))
+    return false;
+  
+  boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc10", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("ArchivingRack", "AdvSortSc10", "P");  
+    return false;
+  }
+}

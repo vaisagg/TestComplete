@@ -1,0 +1,304 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT NetworkSuiteLibrary
+//USEUNIT CommonUtilities
+//USEUNIT IALibrary
+//USEUNIT System
+
+
+function ConfigureInstruments(arrInstrumentsIP,sModuleType)
+{
+  
+  try
+  {
+    var UserName = Project.Variables.UserName;
+    var Password = Project.Variables.Password;
+    var res;
+    for(var i=0;i<arrInstrumentsIP["length"];i++)
+    {
+      if(i>0)
+      { 
+        var m=i+1;
+        sHostname=sModuleType+m;
+      } 
+      else
+      {
+        sHostname=sModuleType;
+      }
+      res = ConfigureNetworkSuiteHost(sHostname,arrInstrumentsIP[i],UserName,Password);
+      if(res==false)
+      {
+        //ReportTestStatusToResultXML("Initialize", "Startup_"+sModuleType, "F");
+        return false;
+      }
+      else
+      {
+        //ReportTestStatusToResultXML("Initialize", "Startup_"+sModuleType, "P");
+        Log["Message"]("Network suite host "+sHostname+" for the instrument configured successfully")
+      } 
+    } 
+    if(i==arrInstrumentsIP["length"])
+    {
+      return true;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+  }
+} 
+
+function InvokeSimulatorApps(sModuleType,sHostname)
+{
+  try
+  {
+    var arrInstruments=GetInstrumentsIP(sModuleType)
+    var arrModuleStates=GetModuleState(sModuleType)
+    for(var i=0;i<arrInstruments["length"];i++)
+    {
+      if(i!=0)
+      {
+        var m=i+1;
+        sHost=sHostname+m;
+      } 
+      else
+      {
+        sHost=sHostname;
+      }
+      sTaskname="Start"+sHost
+      
+      //invoke simulator apps only when intrument is enabled in federation config XML
+      if(arrModuleStates[i]=="True")
+      {   
+        ReportTestStatusToResultXML("Initialize", "Start_"+sModuleType, "I");
+        if(InvokeTaskFromNetworkSuite(sTaskname))//InvokeTaskOnHost(sHost,sTask)
+        {
+          ReportTestStatusToResultXML("Initialize", "Start_"+sModuleType, "P");
+        }
+        else
+        {
+          ReportTestStatusToResultXML("Initialize", "Start_"+sModuleType, "F");
+        }
+      }
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+  }
+ 
+}
+
+function InvokeTaskOnHost(sHost,sTask)
+{
+  try
+  { 
+//    sHost="SH2";
+//    sTask="StartSH";    
+    
+    var iTaskCount=NetworkSuite["Jobs"]["ItemByName"]("InvokeApps")["Tasks"]["Count"]
+    var sTasks=NetworkSuite["Jobs"]["ItemByName"]("InvokeApps")["Tasks"]
+        
+    for(var i=0;i<iTaskCount;i++)
+    {
+      if(sTasks["Items"](i)["Name"]==sTask)
+      {
+        sTasks["Items"](i)["Host"]["Name"]=sHost;
+        blnRes=InvokeTaskFromNetworkSuite(sTask);
+        if(blnRes==true)
+        {
+         // ReportTestStatusToResultXML("Initialize", sTask+"_"+sHostname, "P");
+        }
+        else
+        {
+          //ReportTestStatusToResultXML("Initialize", sTask+"_"+sHostname, "F");
+        }
+      }      
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception"+exp["description"]);
+  }
+}
+
+
+function  TCRemoting()
+{
+  try
+  {
+    ReportTestStatusToResultXML("Initialize", "TC_Remoting", "I");
+	  blnRes = false;
+  
+    //Configure SH hosts
+    var arrSHInstrumentsIP=GetInstrumentsIP("SH")
+    if(arrSHInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrSHInstrumentsIP,"SH"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+   
+    //Configure IA hosts
+    var arrIAInstrumentsIP=GetInstrumentsIP("IA")
+    if(arrIAInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrIAInstrumentsIP,"IA"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+   
+    //Configure CC hosts
+    var arrCCInstrumentsIP=GetInstrumentsIP("CC")
+    if(arrCCInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrCCInstrumentsIP,"CC"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+        
+    //Configure Decapper hosts
+     var arrDCInstrumentsIP=GetInstrumentsIP("DECAPPER")
+    if(arrDCInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrDCInstrumentsIP,"DCap"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    } 
+	 //Configure Sealer hosts
+    var arrSlrInstrumentsIP=GetInstrumentsIP("SEALER")
+    if(arrSlrInstrumentsIP["length"]!=0)
+    {
+      if(!ConfigureInstruments(arrSlrInstrumentsIP,"Slr"))
+      {
+        ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+        return false;
+      } 
+    }   
+    
+    ReportTestStatusToResultXML("Initialize", "TC_Remoting", "P");  
+  }  
+  catch(exp)
+  {
+    Log["Error"]("Exception"+exp["description"]);
+    ReportTestStatusToResultXML("Initialize", "TC_Remoting", "F");
+    return false;
+  }
+} 
+function SynchDcapDateTime()
+{
+ NetworkSuite["Variables"]["SystemTime"]=aqDateTime["Now"](); 
+ InvokeTaskFromNetworkSuite("SyncDecapDateTime");
+} 
+
+
+function InvokeDecapperSimulator()
+{
+    Projpath=Project["Path"]; 
+    length=(aqString["Find"](Projpath,"\\TestcaseLayer",0,false))
+    path=(aqString["SubString"](Projpath,0,length))
+    for(i=0;i<NetworkSuite["Hosts"]["Count"];i++)
+    {
+    NetworkSuite["Hosts"]["Items"](i)["BasePath"]=path;    //Setting Basepth to make relative project file name in Network Tasks
+    } 
+   
+    
+   TCRemoting();
+   InvokeSimulatorApps("DECAPPER","DCap")//,"LaunchDecapper")
+     
+}
+
+function InvokeSealerSimulator()
+{
+
+  TCRemoting();
+  CopyVMMTrackFiles();
+  InvokeSimulatorApps("SEALER","Slr")
+
+} 
+
+function InvokeAllSimulators()
+{
+   try
+  {      
+	var sTCSVersion=GetTCSVersionInPCC()
+    if(sTCSVersion==2)
+    {
+       ModifyTCSVersion(sTCSVersion);
+    }
+    //Run the configured SH task
+    InvokeSimulatorApps("SH","SH")
+      
+    //Run the configured Decap task
+    InvokeSimulatorApps("DECAPPER","DCap")//,"LaunchDecapper")
+    //InvokeSimulatorApps("DECAPPER") ;
+	//Run the configured Sealer task
+    InvokeSimulatorApps("SEALER","Slr")
+   
+    //Run the configured IA task
+    InvokeSimulatorApps("IA","IA")//"IA") ;
+    
+    //Run the configured CC task
+    InvokeSimulatorApps("CC","CC")//"CC");   
+     
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception"+exp["description"]);
+  }
+}
+function GetTCSVersionInPCC()
+{
+  try
+  {
+    var sTriProcessXMLPath="F:\\InstrumentOutput\\TriProcesses.xml"
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sTriProcessXMLPath);
+    var arrobjNodes   = objXMLDoc["selectNodes"]("//TrinidadProcess");
+    for(var i=0;i<arrobjNodes["length"];i++)
+    {
+      if(arrobjNodes["item"](i)["getAttribute"]("Name")=="TCS2Emulator.PresentationLayer.Implement.exe")
+      {
+        Log.Message("TCS version is 2")
+        return 2;
+      } 
+    } 
+    if(i==arrobjNodes["length"])
+    {
+      Log.Message("TCS version is 1")
+      return 1;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;  
+  }
+  
+  
+} 
+
+function SynchDecapperDateTime()
+{
+  try
+  {
+    if(NetworkSuite["Variables"]["SystemTime"]!="")
+    {
+      aqDateTime["SetSystemDateTime"](aqConvert.StrToDateTime(NetworkSuite.Variables.SystemTime));  //System Time syncing with PCC
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Decapper system Date and Time successfully updated");
+    }
+  }
+  catch(exp)
+  {
+    Log["Message"]("Decapper Date Time sync failed");
+  } 
+  
+} 

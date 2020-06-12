@@ -1,0 +1,1586 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Node_configuration>
+  <Configuration_name>SH-A-A-SEALERA</Configuration_name>
+  <Version>4</Version>
+  <PuckVersion>2</PuckVersion>
+  <Acceleration_limit>2.0</Acceleration_limit>
+  <!-- in m/s^2 -->
+  <Velocity_limit>2.0</Velocity_limit>
+  <!-- in m/s -->
+  <Vehicle_ID_min>1</Vehicle_ID_min>
+  <!-- minimum vehicle ID assigned during startup -->
+  <Vehicle_ID_max>65535</Vehicle_ID_max>
+  <!-- maximum vehicle ID assigned during startup -->
+  <Acceleration>1.0</Acceleration>
+  <!-- in m/s^2 - for terminus -->
+  <Velocity>0.5</Velocity>
+  <!-- in m/s - for terminus -->
+  <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+  <!-- in meters -->
+  <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+  <!-- in m/s -->
+  <Node_look_ahead_count>0</Node_look_ahead_count>
+  <!-- number of nodes ahead to preset -->
+  <Suspend_on_host_disconnect>True</Suspend_on_host_disconnect>
+  <!-- Suspend all paths when Host Connection is Lost -->
+  <Obstructed_status_notification>True</Obstructed_status_notification>
+  <!-- Send Vehicle Status when obstructed status changes -->
+  <Send_node_status_to_host_asynchronously>False</Send_node_status_to_host_asynchronously>
+  <Stop_moving_suspect_vehicles>False</Stop_moving_suspect_vehicles>
+  <!-- Stop moving vehicles that have been manually moved out of position -->
+  <Enable_motor_level_digital_io>True</Enable_motor_level_digital_io>
+  <!-- Set to true if motor master boards have DIO -->
+  <Shuttle_auto_return>False</Shuttle_auto_return>
+  <!-- move them to first position on vehicle exit -->
+  <Turntable_auto_return>False</Turntable_auto_return>
+  <!-- move them to first position on vehicle exit -->
+  <Automatic_path_recovery>False</Automatic_path_recovery>
+  <Paths>
+    <Path>
+      <ID>100</ID>
+      <Motor_downstream_port>58</Motor_downstream_port>
+      <Motor_upstream_port>57</Motor_upstream_port>
+      <Name>Single SH Path</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.077</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM3_DIVERGE_SWITCH_900_LEFT</Type>
+        </Master>
+        <Master>
+          <Comm_ID>2</Comm_ID>
+          <Type>ML_G4_CM4_MERGE_SWITCH_CURVE_900_LEFT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>1</ID>
+      <Motor_downstream_port>60</Motor_downstream_port>
+      <Motor_upstream_port>59</Motor_upstream_port>
+      <Name>Daytona_1</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM8_CURVE_LEFT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>2</ID>
+      <Motor_downstream_port>62</Motor_downstream_port>
+      <Motor_upstream_port>61</Motor_upstream_port>
+      <Name>Daytona_2</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM3_DIVERGE_SWITCH_CURVE_LEFT</Type>
+        </Master>
+        <Master>
+          <Comm_ID>2</Comm_ID>
+          <Type>ML_G4_CM4_MERGE_SWITCH_LEFT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>3</ID>
+      <Motor_downstream_port>64</Motor_downstream_port>
+      <Motor_upstream_port>63</Motor_upstream_port>
+      <Name>Daytona_3</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM11_750_CURVE</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>501</ID>
+      <Motor_downstream_port>66</Motor_downstream_port>
+      <Motor_upstream_port>65</Motor_upstream_port>
+      <Name>First_IPQ_Rear</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM1_MERGE_SWITCH_CURVE_1200_LEFT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>401</ID>
+      <Motor_downstream_port>68</Motor_downstream_port>
+      <Motor_upstream_port>67</Motor_upstream_port>
+      <Name>First_IPQ_Front</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM2_DIVERGE_SWITCH_1200_LEFT</Type>
+        </Master>
+      </Masters>
+      <Vehicle>
+        <Location>0.25</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.4182</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.5864</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.7546</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.9228</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>1.091</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>1.2592</Location>
+      </Vehicle>
+    </Path>
+    <Path>
+      <ID>1001</ID>
+      <Motor_downstream_port>70</Motor_downstream_port>
+      <Motor_upstream_port>69</Motor_upstream_port>
+      <Name>First_IPQ_1001</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.0665</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM2_DIVERGE_SWITCH_CURVE_250_LEFT</Type>
+        </Master>
+        <Master>
+          <Comm_ID>2</Comm_ID>
+          <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>402</ID>
+      <Motor_downstream_port>72</Motor_downstream_port>
+      <Motor_upstream_port>71</Motor_upstream_port>
+      <Name>Module:3|FrontPath:402</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM2_DIVERGE_SWITCH_1200_LEFT</Type>
+        </Master>
+      </Masters>
+      <Vehicle>
+        <Location>0.25</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.4182</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.5864</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.7546</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>0.9228</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>1.091</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>1.2592</Location>
+      </Vehicle>
+      <Vehicle>
+        <Location>1.4274</Location>
+      </Vehicle>
+    </Path>
+    <Path>
+      <ID>502</ID>
+      <Motor_downstream_port>74</Motor_downstream_port>
+      <Motor_upstream_port>73</Motor_upstream_port>
+      <Name>Module:3|RearPath:502</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM6_MERGE_SWITCH_1200_RIGHT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>1002</ID>
+      <Motor_downstream_port>76</Motor_downstream_port>
+      <Motor_upstream_port>75</Motor_upstream_port>
+      <Name>Module:3|LeftPath:1002</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.0665</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM2_DIVERGE_SWITCH_CURVE_250_LEFT</Type>
+        </Master>
+        <Master>
+          <Comm_ID>2</Comm_ID>
+          <Type>ML_G4_CM6_MERGE_SWITCH_CURVE_500_RIGHT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>600</ID>
+      <Motor_downstream_port>78</Motor_downstream_port>
+      <Motor_upstream_port>77</Motor_upstream_port>
+      <Name>Default waiting Queue</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.14</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0001</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM19_DIVERGE_SWITCH_LEFT</Type>
+        </Master>
+        <Master>
+          <Comm_ID>2</Comm_ID>
+          <Type>ML_G4_CM5_CURVE_750_CURVE</Type>
+        </Master>
+        <Master>
+          <Comm_ID>3</Comm_ID>
+          <Type>ML_G4_CM21_MERGE_SWITCH_RIGHT</Type>
+        </Master>
+      </Masters>
+    </Path>
+    <Path>
+      <ID>1053</ID>
+      <Motor_downstream_port>80</Motor_downstream_port>
+      <Motor_upstream_port>79</Motor_upstream_port>
+      <Name>Module:4|LeftPath:1053</Name>
+      <Defaults>
+        <!-- defaults are overridden if an element is specified in a master tag -->
+        <!-- Motor Parameters -->
+        <Type>ML_G4_CM1_MERGE_SWITCH_500_LEFT</Type>
+        <Amax>2.0</Amax>
+        <!-- in m/s^2 -->
+        <Vmax>1.0</Vmax>
+        <!-- in m/s -->
+        <Arrival_position_tolerance>0.0005</Arrival_position_tolerance>
+        <!-- in meters -->
+        <Arrival_velocity_tolerance>0.001</Arrival_velocity_tolerance>
+        <!-- in m/s -->
+        <Constant_thrust>0</Constant_thrust>
+        <!-- in Newtons -->
+        <Drag_compensation_thrust>0.0</Drag_compensation_thrust>
+        <!-- in Newtons -->
+        <!-- Control Loop Parameters -->
+        <PID_control_loop_sets>
+          <PID_control_loop_set>
+            <PID_set_index>0</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>1</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>1370</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>36</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>14</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+          <PID_control_loop_set>
+            <PID_set_index>2</PID_set_index>
+            <!-- PID set index for this set -->
+            <Vehicle_mass>0.45</Vehicle_mass>
+            <!-- in kg -->
+            <Control_loop_Kp>0</Control_loop_Kp>
+            <!-- in N/m/kg -->
+            <Control_loop_Ki>0</Control_loop_Ki>
+            <!-- in N/(m-s)/kg -->
+            <Control_loop_Kd>0</Control_loop_Kd>
+            <!-- in N/(m/s)/kg -->
+            <Control_loop_Kff_scale_factor>100</Control_loop_Kff_scale_factor>
+            <!-- in % -->
+          </PID_control_loop_set>
+        </PID_control_loop_sets>
+        <Magnet_array_name>ML_Halbach</Magnet_array_name>
+        <!-- magnet array type -->
+        <Vehicle_length>0.07405</Vehicle_length>
+        <!-- in meters -->
+        <Position_sense_array_length>3</Position_sense_array_length>
+        <!-- number of poles per bogie -->
+        <Propulsion_array_length>3</Propulsion_array_length>
+        <!-- number of poles per bogie -->
+        <Position_sense_array_offset>0.024700</Position_sense_array_offset>
+        <!-- in meters -->
+        <Propulsion_array_offset>0.0247</Propulsion_array_offset>
+        <!-- in meters -->
+        <Number_of_bogies>1</Number_of_bogies>
+        <!-- number of articulated vehicle sections -->
+        <!-- Advanced Parameters -->
+        <Gap_downstream>0.003000</Gap_downstream>
+        <!-- in meters - includes adjustment for internal gap -->
+        <Motor_thrust_constant_per_cycle>8.0</Motor_thrust_constant_per_cycle>
+        <!-- in Volts / (m/s) / cycle (line to line) -->
+        <Control_loop_integrator_max_velocity>0.1</Control_loop_integrator_max_velocity>
+        <!-- PID Integrator disabled above this velocity -->
+        <Control_loop_integrator_min_distance>0.005</Control_loop_integrator_min_distance>
+        <!-- PID Integrator enabled if closer to target (-1 integrator always enabled)  -->
+        <Control_loop_control_off_distance>0.0</Control_loop_control_off_distance>
+        <!-- Position tolerance to disable control thrust -->
+        <Thrust_limit>100</Thrust_limit>
+        <!-- Thrust limit - lower to achieve smoother motion -->
+        <Forward_drive_phase_percentage>0</Forward_drive_phase_percentage>
+        <!-- Increase % to add downward force for forward moves -->
+        <Backward_drive_phase_percentage>0</Backward_drive_phase_percentage>
+        <!-- Increase % to add downward force for backward moves -->
+        <!-- Keepout Areas -->
+        <Grant_no_pseudotargets_before>0.0</Grant_no_pseudotargets_before>
+        <!-- in meters -->
+        <Grant_no_pseudotargets_after>5.0</Grant_no_pseudotargets_after>
+        <!-- in meters -->
+      </Defaults>
+      <Masters>
+        <Master>
+          <Comm_ID>1</Comm_ID>
+          <Type>ML_G4_CM19_DIVERGE_SWITCH_CURVE_750_LEFT</Type>
+        </Master>
+        <Master>
+          <Comm_ID>2</Comm_ID>
+          <Type>ML_G4_CM21_MERGE_SWITCH_CURVE_RIGHT</Type>
+        </Master>
+      </Masters>
+    </Path>
+  </Paths>
+  <Nodes>
+    <Node>
+      <ID>1</ID>
+      <Name>D_0001_0000_0002_0100</Name>
+      <Type>Diverge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <ID>1</ID>
+      </Entry_path>
+      <Exit_path>
+        <Direction>Straight</Direction>
+        <ID>100</ID>
+      </Exit_path>
+      <Exit_path>
+        <Direction>Curve</Direction>
+        <ID>2</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>3</ID>
+      <Name>M_0100_0002_0003_0000</Name>
+      <Type>Merge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <Direction>Straight</Direction>
+        <ID>2</ID>
+      </Entry_path>
+      <Entry_path>
+        <Direction>Curve</Direction>
+        <ID>100</ID>
+      </Entry_path>
+      <Exit_path>
+        <ID>3</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>6</ID>
+      <Name>D_0003_0000_1001_0401</Name>
+      <Type>Diverge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <ID>3</ID>
+      </Entry_path>
+      <Exit_path>
+        <Direction>Straight</Direction>
+        <ID>401</ID>
+      </Exit_path>
+      <Exit_path>
+        <Direction>Curve</Direction>
+        <ID>1001</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>8</ID>
+      <Name>M_0501_1001_0001_0000</Name>
+      <Type>Merge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <Direction>Straight</Direction>
+        <ID>1001</ID>
+      </Entry_path>
+      <Entry_path>
+        <Direction>Curve</Direction>
+        <ID>501</ID>
+      </Entry_path>
+      <Exit_path>
+        <ID>1</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>502</ID>
+      <Name>D_0401_0000_1002_0402</Name>
+      <Type>Diverge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <ID>401</ID>
+      </Entry_path>
+      <Exit_path>
+        <Direction>Straight</Direction>
+        <ID>402</ID>
+      </Exit_path>
+      <Exit_path>
+        <Direction>Curve</Direction>
+        <ID>1002</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>802</ID>
+      <Name>M_1002_0502_0501_0000</Name>
+      <Type>Merge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <Direction>Straight</Direction>
+        <ID>502</ID>
+      </Entry_path>
+      <Entry_path>
+        <Direction>Curve</Direction>
+        <ID>1002</ID>
+      </Entry_path>
+      <Exit_path>
+        <ID>501</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>3203</ID>
+      <Name>D_0402_0000_1053_0600</Name>
+      <Type>Diverge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <ID>402</ID>
+      </Entry_path>
+      <Exit_path>
+        <Direction>Straight</Direction>
+        <ID>600</ID>
+      </Exit_path>
+      <Exit_path>
+        <Direction>Curve</Direction>
+        <ID>1053</ID>
+      </Exit_path>
+    </Node>
+    <Node>
+      <ID>3253</ID>
+      <Name>M_1053_0600_0502_0000</Name>
+      <Type>Merge</Type>
+      <MM_Lite_switch>true</MM_Lite_switch>
+      <Entry_path>
+        <Direction>Straight</Direction>
+        <ID>600</ID>
+      </Entry_path>
+      <Entry_path>
+        <Direction>Curve</Direction>
+        <ID>1053</ID>
+      </Entry_path>
+      <Exit_path>
+        <ID>502</ID>
+      </Exit_path>
+    </Node>
+  </Nodes>
+  <Node_controllers>
+    <Node_controller>
+      <ID>1</ID>
+      <Name>HLC</Name>
+      <IP_address>192.168.110.101</IP_address>
+      <Owns_node_ID>1</Owns_node_ID>
+      <Owns_node_ID>3</Owns_node_ID>
+      <Owns_node_ID>6</Owns_node_ID>
+      <Owns_node_ID>8</Owns_node_ID>
+      <Owns_node_ID>502</Owns_node_ID>
+      <Owns_node_ID>802</Owns_node_ID>
+      <Owns_node_ID>3203</Owns_node_ID>
+      <Owns_node_ID>3253</Owns_node_ID>
+    </Node_controller>
+  </Node_controllers>
+</Node_configuration>

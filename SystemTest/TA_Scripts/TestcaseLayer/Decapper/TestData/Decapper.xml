@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<InstrumentDetails>
+<DeviceName>Decapper</DeviceName>
+<Nodes>1</Nodes>  
+<Component Name = "Spinner On" BitNumber = "5" Channel = "OutputBit0_7" Type = "OutputBit" State="ResetBit" InitializationValue="0" NodeID = "1"/>
+<Component Name = "Tube Gripper Close" BitNumber = "1" Channel = "OutputBit0_7" Type = "OutputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Cap Gripper Close" BitNumber = "2" Channel = "OutputBit0_7" Type = "OutputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Head Rotation To Track" BitNumber = "0" Channel = "OutputBit0_7" Type = "OutputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Head Rotation To Bin" BitNumber = "3" Channel = "OutputBit0_7" Type = "OutputBit" State="SetBit" NodeID = "1"/>
+<Component Name = "Head Vertical" BitNumber = "4" Channel = "OutputBit0_7" Type = "OutputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Cover Open Sensor" BitNumber = "7" Channel = "InputBit0_7" Type = "InputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Chute Sensor" BitNumber = "4" Channel = "InputBit0_7" Type = "InputBit" State="SetBit" NodeID = "1"/>
+<Component Name = "Waste Bin Present" BitNumber = "3" Channel = "InputBit0_7" Type = "InputBit" State="SetBit" NodeID = "1"/>
+<Component Name = "Waste Bin Full" BitNumber = "6" Channel = "InputBit0_7" Type = "InputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Tube Gripper Open Sensor" BitNumber = "5" Channel = "InputBit0_7" Type = "InputBit" State="SetBit" NodeID = "1"/>
+<Component Name = "Cap Gripper Open Sensor" BitNumber = "2" Channel = "InputBit0_7" Type = "InputBit" State="SetBit" NodeID = "1"/>
+<Component Name = "Head Rotation At Bin" BitNumber = "1" Channel = "InputBit0_7" Type = "InputBit" State="SetBit" NodeID = "1"/>
+<Component Name = "Head Rotation At Track" BitNumber = "0" Channel = "InputBit0_7" Type = "InputBit" State="ResetBit" NodeID = "1"/>
+<Component Name = "Encoder 1" BitNumber = "0" Channel = "EncoderInput" Type = 	"EncoderInput" State="ResetBit" NodeID = "1"/>
+
+<!-- Tube Gripper is On -> Disable the Tube Gripper Sensor -->
+<Event Component = "Tube Gripper Close" Event = "SetBit" >
+	<scenario>
+		<Response Component = "Tube Gripper Open Sensor" State = "ResetBit" Delay = "400" Default="Yes"/> 
+	</scenario>
+</Event>
+
+<!-- Tube Gripper is Off -> Enable the Tube Gripper Sensor -->
+<Event Component = "Tube Gripper Close" Event = "ResetBit" >
+	<scenario>
+		<Response Component = "Tube Gripper Open Sensor" State = "SetBit" Delay = "400" Default="Yes"/> 
+	</scenario>
+</Event>
+
+<!-- Cap Gripper Close is On -> Disable the Cap Gripper Open Sensor -->
+<Event Component = "Cap Gripper Close" Event = "SetBit" >
+	<scenario>
+		<Response Component = "Cap Gripper Open Sensor" State = "ResetBit" Delay = "200" Default="Yes"/> 
+	</scenario>
+</Event>
+
+<!-- Cap Gripper Close is Off -> Enable the Cap Gripper Open Sensor ->  -->
+<Event Component = "Cap Gripper Close" Event = "ResetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation At Bin" State = "SetBit" />
+		<Response Component = "Cap Gripper Open Sensor" State = "SetBit" Delay = "50" Default="Yes"/> 
+		<Response Component = "Chute Sensor" State = "ResetBit" Delay = "1" Default="Yes"/> 
+		<Response Component = "Chute Sensor" State = "SetBit" Delay = "2" Default="Yes"/> 
+	</scenario>
+</Event>
+
+<!-- Cap Gripper Close is Off -> Enable the Cap Gripper Open Sensor ->  -->
+<Event Component = "Cap Gripper Close" Event = "ResetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation At Bin" State = "ResetBit" />
+		<Response Component = "Cap Gripper Open Sensor" State = "SetBit" Delay = "50" Default="Yes"/> 
+	</scenario>
+</Event>
+<!-- Head Rotation To Track is On -> Enable TrackSensor Disable Bin Sensor -->
+<Event Component = "Head Rotation To Track" Event = "SetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation To Bin" State = "ResetBit" />		
+		<Response Component = "Head Rotation At Bin" State = "ResetBit" Delay = "200" Default="Yes"/> 
+		<Response Component = "Head Rotation At Track" State = "SetBit" Delay = "0" Default="Yes"/> 
+
+	</scenario>
+</Event>
+
+<Event Component = "Head Rotation To Track" Event = "ResetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation To Bin" State = "SetBit" />
+		<Response Component = "Head Rotation At Track" State = "ResetBit" Delay = "200" Default="Yes"/> 
+		<Response Component = "Head Rotation At Bin" State = "SetBit" Delay = "0" Default="Yes"/> 
+	</scenario>
+</Event>
+
+
+<Event Component = "Head Rotation To Bin" Event = "SetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation To Track" State = "ResetBit" />
+		<Response Component = "Head Rotation At Track" State = "ResetBit" Delay = "200" Default="Yes"/> 
+		<Response Component = "Head Rotation At Bin" State = "SetBit" Delay = "0" Default="Yes"/> 
+		
+	</scenario>
+</Event>
+
+<Event Component = "Head Rotation To Bin" Event = "ResetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation To Track" State = "SetBit"/>
+
+		<Response Component = "Head Rotation At Track" State = "SetBit" Delay = "200" Default="Yes"/> 
+		<Response Component = "Head Rotation At Bin" State = "ResetBit" Delay = "0" Default="Yes"/> 
+	</scenario>
+</Event>
+
+<Event Component = "Head Vertical" Event = "SetBit" >
+	<scenario>
+	<!--	<Response Component = "Encoder 1" EncoderData = "661"  EncoderDuration = "500" Delay = "0" Default="Yes"/>  original --> 
+		<Response Component = "Encoder 1" EncoderData = "661"  EncoderDuration = "500" Delay = "0" Default="Yes"/> 
+	</scenario>
+</Event>
+
+<Event Component = "Head Vertical" Event = "ResetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation At Track" State = "SetBit"/>
+		<Condition Component = "Head Rotation At Bin" State = "ResetBit"/>
+		<Response Component = "Encoder 1" EncoderData = "60"  EncoderDuration = "500" Delay = "0" Default="Yes"/> 
+	</scenario>
+</Event>
+<Event Component = "Head Vertical" Event = "ResetBit" >
+	<scenario>
+		<Condition Component = "Head Rotation At Track" State = "ResetBit"/>
+		<Condition Component = "Head Rotation At Bin" State = "SetBit"/>
+		<Response Component = "Encoder 1" EncoderData = "0"  EncoderDuration = "500" Delay = "0" Default="Yes"/> 
+	</scenario>
+</Event>
+</InstrumentDetails>

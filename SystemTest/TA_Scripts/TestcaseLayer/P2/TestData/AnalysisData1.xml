@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+
+<!--Note: If this file is editted and saved then emulator will re-read the file 
+and for the subsequent analysis requests; emulator sends the response reading the records 
+from the beginning of the file-->
+
+<!--HighLevelModuleID values :
+		GENERAL_IAPM_MODULE
+        ANALYTICS_MODULE
+        CALIBRATION_MODULE
+        DIAGNOSTIC_MODULE
+        FLASH_FIRMWARE_MODULE
+        FILE_TRANSFER_MODULE
+        LOW_LEVEL_MESSAGE_HANDLER_MODULE
+        CAP_COLOR_TRAINING_MODULE -->
+		
+<!--HighLevelErrorID values :
+        /// General error codes
+		NoError
+        NO_CLIENT_SUBSCRIPTION
+        LOGIN_FAILED
+        INSUFFICIENT_ACCESS_RIGHTS
+        IAPM_ERROR_STATE
+        FAILED_TO_GET_IMAGES
+        INCORRECT_DATA_IN_REQUEST
+        FILE_NOT_FOUND
+        EXCEPTION_IN_ALGORITHM
+
+        /// Analysis error codes
+        ANALYSIS_FEATURE_NOT_SUPPORTED
+        ANALYSIS_CANCELLED
+        INVALID_ANALYSIS_ID
+        SYSTEM_NOT_CALIBRATED
+
+        /// Calibration error codes
+        INVALID_CALIBRATION_FEATURE
+        CALIBRATION_FEATURE_NOT_AVAILABLE
+        ERROR_IN_CALIBRATION
+
+        /// Diagnostic error codes
+        INVALID_DIAGNOSTIC_FEATURE_ID
+
+        /// Flash Firmware error codes
+        FIRMWARE_UPLOAD_FAILED
+        FIRMWARE_DOWNLOAD_FAILED
+        SYSTEM_CONFIG_UPLOAD_FAILED
+        SYSTEM_CONFIG_DOWNLOAD_FAILED
+
+        /// File transfer error codes
+        INVALID_FILE
+        INVALID_FILE_USAGE_PAIR
+        FILE_OPERATION_FAILED
+
+        /// Low level message error code
+        FAILED_TO_HANDLE_LOW_LEVEL_MESSAGE
+        TAKE_SNAPSHOT_WITH_SETTINGS_FAILED
+       
+        /// Cap color training error codes
+        CCT_DATABASE_CORRUPT
+        CCT_NO_TUBE_IN_PUCK_SLOT
+        CCT_TUBE_WITHOUT_CAP
+        DummyError -->
+
+
+<AnalysisDatas>
+
+  <AnalysisData>
+
+    <!--TransmitThisResponse values:Yes,No,FirmwareFailure-->
+    <ImagesAcquired TransmitThisResponse = "Yes">
+      <!--ImageAcquisitionStatus values:Success,Error-->
+      <ImageAcquisitionStatus Value="Success"/>
+	  <!--HighLevelModuleID values are defined at the top of this file-->
+	  <HighLevelModuleID Value = "ANALYTICS_MODULE"/>
+      <!--HighLevelErrorID values are defined at the top of this file-->
+      <HighLevelErrorID Value = "NoError"/>
+      <ResultDescription Value = "Not in error state"/>
+    </ImagesAcquired>
+
+    <!--TransmitThisResponse values:Yes,No,FirmwareFailure-->
+    <PuckBarcodeAndSlotOccupancy TransmitThisResponse = "Yes">
+      <!--Puck Barcode and SlotOccupancy will be queried from VMM-->
+
+      <!--PuckBarcodeValidness values:NotValid,Valid-->
+      <PuckBarcodeValidness  Value="Valid"/>
+	  <!--HighLevelModuleID values are defined at the top of this file-->
+	  <HighLevelModuleID Value = "ANALYTICS_MODULE"/>
+      <!--HighLevelErrorID values are defined at the top of this file-->
+      <HighLevelErrorID Value = "NoError"/>
+      <ResultDescription Value = "Not in error state"/>
+      <!--LastAnalysisResponse values:NotLastResponse,LastResponse-->
+      <LastAnalysisResponse Value = "NotLastResponse"/>
+
+    </PuckBarcodeAndSlotOccupancy>
+
+    <!--TransmitThisResponse values:Yes,No,FirmwareFailure-->
+    <TubeBarcode TransmitThisResponse = "Yes">
+      <TubeBarcode Value = "1111100"/>
+      <!--TubeBarcodeValidness values:NotValid,Valid-->
+      <TubeBarcodeValidness Value = "Valid"/>
+	  <!--HighLevelModuleID values are defined at the top of this file-->
+	  <HighLevelModuleID Value = "ANALYTICS_MODULE"/>
+      <!--HighLevelErrorID values are defined at the top of this file-->
+      <HighLevelErrorID Value = "NoError"/>
+      <ResultDescription Value = "Not in error state"/>
+      <!--LastAnalysisResponse values:NotLastResponse,LastResponse-->
+      <LastAnalysisResponse Value = "NotLastResponse"/>
+    </TubeBarcode>
+
+    <!--TransmitThisResponse values:Yes,No,FirmwareFailure-->
+    <TubeCharacteristics TransmitThisResponse = "Yes">
+
+      <TubeHeight Value = "90" />
+      <!--MinValue = "75" MaxValue = "110" Tolerance = "1.11"-->
+      <TubeDiameter  Value = "14" />
+      <!--MinValue = "12" MaxValue = "17.5" Tolerance = "0.33"-->
+      <TubeOffset Value = "0.1" />
+      <!--MinValue = "0" MaxValue = "4"-->
+      <TubeTilt Value = "0.2" />
+      <!--MinValue = "0" MaxValue = "4"-->
+      <!--TubeType values:  Unknown, NoTube, PlainTube, CappedTube, CuppedTube, QCBioradTube, CapillaryTube, Invalid-->
+      <TubeType Value = "PlainTube"/>
+      <!--FalseBottomIndication values:  Unknown, NotFalseBottom, FalseBottom, Invalid/AnalysisFail-->
+      <FalseBottomIndication Value = "NotFalseBottom"/>
+      <CapColorPrimary>
+        <R Value = "10"/>
+        <!--MinValue = "0" MaxValue = "255"-->
+        <G Value = "11"/>
+        <!--MinValue = "0" MaxValue = "255"-->
+        <B Value = "12"/>
+        <!--MinValue = "0" MaxValue = "255"-->
+      </CapColorPrimary>
+      <CapColorSecondary>
+        <R Value = "13"/>
+        <!--MinValue = "0" MaxValue = "255"-->
+        <G Value = "14"/>
+        <!--MinValue = "0" MaxValue = "255"-->
+        <B Value = "15"/>
+        <!--MinValue = "0" MaxValue = "255"-->
+      </CapColorSecondary>
+      <TubeGroupName Value = "Green" />
+      <!--TubeGroupNameValidness values:NotValid,Valid-->
+      <TubeGroupNameValidness Value = "Valid"/>
+      <!--TubeDimensionsValidness values:NotValid,Valid-->
+      <TubeDimensionsValidness Value = "Valid"/>
+      <!--TubeOffsetValidness values:NotValid,Valid-->
+      <TubeOffsetValidness Value = "Valid"/>
+      <!--TubeTiltValidness values:NotValid,Valid-->
+      <TubeTiltValidness Value = "Valid"/>
+      <!--CapColorPrimaryValidness values:NotValid,Valid-->
+      <CapColorPrimaryValidness Value = "Valid"/>
+      <!--CapColorSecondaryValidness values:NotValid,Valid-->
+      <CapColorSecondaryValidness Value = "Valid"/>
+	  <!--TubeHolderType values:NotApplicable,Green,Blue,NotValid.
+	  Values are considered only when tubetype is "CapillaryTube"-->
+	  <TubeHolderType Value = "NotApplicable"/>
+	  <!--HighLevelModuleID values are defined at the top of this file-->
+	  <HighLevelModuleID Value = "ANALYTICS_MODULE"/>
+      <!--HighLevelErrorID values are defined at the top of this file-->
+      <HighLevelErrorID Value = "NoError"/>
+      <ResultDescription Value = "Not in error state"/>
+      <!--LastAnalysisResponse values:NotLastResponse,LastResponse-->
+      <LastAnalysisResponse Value = "NotLastResponse"/>
+
+    </TubeCharacteristics>
+
+    <!--TransmitThisResponse values:Yes,No,FirmwareFailure-->
+    <FluidCharacteristics TransmitThisResponse = "Yes">
+      <H_Value Value = "1" />
+      <!--MinValue = "0" MaxValue = "13"-->
+      <I_Value Value = "2" />
+      <!--MinValue = "0" MaxValue = "13"-->
+      <L_Value Value = "3" />
+      <!--MinValue = "0" MaxValue = "13"-->
+      <FluidVolume Value = "1000" />
+      <!--MinValue = "0" MaxValue = "10000"-->
+      <!--SpinStatus values:TubeHasNotBeenSpun,TubeHasBeenSpun,Unknown/Indeterminate-->
+      <SpinStatus Value = "TubeHasBeenSpun"/>
+      <!--HIL_Validness values:Valid,NotValid,UnspunTube,UnsupportedTubeType,LowFluidVolume,TooManyLabels,InvalidLabel,BlockedFluidRegion,LowConfidenceResult-->
+      <HIL_Validness Value = "Valid"/>
+      <!--FluidVolumeValidness values:Valid,NotValid,UnspunTube,UnsupportedTubeType,LowFluidVolume,TooManyLabels,InvalidLabel,BlockedFluidRegion,LowConfidenceResult-->
+      <FluidVolumeValidness Value = "Valid"/>
+	  <!--HighLevelModuleID values are defined at the top of this file-->
+	  <HighLevelModuleID Value = "ANALYTICS_MODULE"/>
+      <!--HighLevelErrorID values are defined at the top of this file-->
+      <HighLevelErrorID Value = "NoError"/>
+      <ResultDescription Value = "Not in error state"/>
+      <!--LastAnalysisResponse values:NotLastResponse,LastResponse-->
+      <LastAnalysisResponse Value = "LastResponse"/>
+    </FluidCharacteristics>
+
+  </AnalysisData>
+
+  
+
+</AnalysisDatas>

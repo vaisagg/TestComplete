@@ -1,0 +1,574 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+
+function CreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders::CreatePatientOrder");
+    Log["Message"]("Setting the Sample ID as : " + SampleID );
+    var objctrl = GetControl("PatientOrders_CreatePatientOrders","txtboxSampleId");
+    SetText(objctrl, SampleID)
+    SendKeys(objctrl, "[Tab]")
+    
+    var objctrl = GetControl("PatientOrders_CreatePatientOrders","txtboxRackId");
+    SetFocus(objctrl);
+    
+    var transSpecimen = GetTranslatedString(Specimen,"")
+    Log["Message"]("Setting the Specimen Type as : " + Specimen);
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","cmdSpecimen");
+    SetComboValue(objctrl, transSpecimen)
+    
+    SetOrderPriority(Priority);  
+    
+if((Analyzer!="")&&(Analyzer!=null))
+    {
+      Log["Message"]("Setting the module type as : " + Analyzer );
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","cmbModuleType");
+      SetComboValue(objctrl, Analyzer)
+    }
+
+    if(SelectAssay(Assay) != true)
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","btnSavePatientOrder");
+    ClickControl(objctrl);
+    
+    ///Modified to handle auto increment pop up
+    
+    var transAutoIncrement = GetTranslatedString("Auto-Increment Sample ID and Rack-Position exceeded the maximum number of characters allowed for Sample ID.","");
+    var transSavedSuccessfully = GetTranslatedString("Saved successfully.","");
+    
+    var totalchars  = aqString["GetLength"](SampleID);
+    if(totalchars>=20)
+    {
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblMaxLimitSampleID");
+      if(VerifyControlText(objctrl,transAutoIncrement) == true )
+      {
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+          ClickControl(objctrl);
+          Log["Message"]("Auto-Increment Sample ID and Rack-Position exceeded the maximum number of characters allowed for Sample ID. pop up is clicked successfully");
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+          if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+          {
+            Log["Message"]("Order saved successfully.");
+            objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+            ClickControl(objctrl);
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Warning"]("Order not saved successfully");
+            Log["PopLogFolder"]();
+            return false;
+          }
+      }
+    }
+    else
+    {
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+      if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+      {
+        Log["Message"]("Order saved successfully.");
+        objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+        ClickControl(objctrl);
+        Log["PopLogFolder"]();
+        return true;
+      }    
+      else
+      {
+        Log["Warning"]("Order not saved successfully");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+
+    ///Modified to handle auto increment pop up
+    
+        
+//    objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+//    
+//    var transSavedSuccessfully = GetTranslatedString("Saved successfully.","")
+//    if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+//    {
+//      Log["Message"]("Order saved successfully.");
+//    }
+//    else
+//    {
+//      Log["Warning"]("Order not saved successfully");
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+//    ClickControl(objctrl);
+//    Log["PopLogFolder"]();
+//    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function GetBatchOrderIDs(strSampleID, intSampleCount)
+{
+  try
+  {
+    var arrBatchIDs = new Array();
+    intInitSampleCount = aqConvert["StrToInt"](strSampleID["replace"](/\D*/,"" ));
+    strBatchSample = strSampleID["replace"]( /\d.*/, "" );
+    
+    for(var intCount = 0; intCount < intSampleCount; intCount++)
+    {
+      arrBatchIDs[intCount] = strBatchSample + intInitSampleCount;
+      intInitSampleCount++;
+    }
+    return  arrBatchIDs;
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function CreateBatchOrder(Assay, SampleID, Specimen, Analyzer, Priority, SpecifyRangeBy, SampleCount)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders::CreateBatchOrder");
+    Log["Message"]("Setting the Sample ID as : " + SampleID );
+    var objctrl = GetControl("PatientOrders_CreatePatientOrders","txtboxSampleId");
+    SetText(objctrl, SampleID)
+    SendKeys(objctrl, "[Tab]")
+    
+    var objctrl = GetControl("PatientOrders_CreateBatchOrdersBySID","cmbBoxBatchOrderMethod");
+    transSpecifyRangeBy = GetTranslatedString(SpecifyRangeBy, ""); 
+    SetComboValue(objctrl, transSpecifyRangeBy);
+    //SetFocus(objctrl);
+    
+    objctrl = GetControl("PatientOrders_CreateBatchOrdersBySID","txtBoxNumberOfSamples");
+    SetText(objctrl, SampleCount)
+    SendKeys(objctrl, "[Tab]")
+    
+    var transSpecimen = GetTranslatedString(Specimen,"")
+    Log["Message"]("Setting the Specimen Type as : " + Specimen);
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","cmdSpecimen");
+    SetComboValue(objctrl, transSpecimen)
+    
+    SetOrderPriority(Priority);  
+    
+    Log["Message"]("Setting the module type as : " + Analyzer );
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","cmbModuleType");
+    SetComboValue(objctrl, Analyzer)
+
+    if(SelectAssay(Assay) != true)
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","btnSaveBatchOrder");
+    ClickControl(objctrl);
+    
+    objctrl = GetControl("PatientOrders_CreateBatchOrdersBySID","msgBoxConfirmation");
+    transConfirmation = GetTranslatedString("Confirmation", "")
+    if(!VerifyControlText(objctrl, transConfirmation))
+    {
+      Log["Message"]("Batch order confirmation message did not come.");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    objctrl = GetControl("PatientOrders_CreateBatchOrdersBySID","btnConfirmationYes");
+    ClickControl(objctrl);
+    
+    //WaitForControl(Control,iWaitTime)
+    aqUtils["Delay"](8000,"Waiting for Save popup")
+    
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+    
+    var transSavedSuccessfully = GetTranslatedString("Saved successfully.","")
+    if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+    {
+      Log["Message"]("Order saved successfully.");
+    }
+    else
+    {
+      Log["Warning"]("Order not saved successfully");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+    ClickControl(objctrl);
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+function SetOrderPriority(Priority)
+{
+  try
+  {
+    Log["Message"]("Setting the order priority as: " + Priority);
+    switch(Priority)
+    {
+      case "Routine":
+      case "":
+                    objctrl = GetControl("PatientOrders_CreatePatientOrders", "radioBtnRoutine");
+                    break;
+      case "STAT":
+                    objctrl = GetControl("PatientOrders_CreatePatientOrders", "radioBtnSTAT");
+                    break;    
+      case "ASAP":
+                    objctrl = GetControl("PatientOrders_CreatePatientOrders", "radioBtnASAP");
+                    break;
+      default:
+                    objctrl = GetControl("PatientOrders_CreatePatientOrders", "radioBtnRoutine");
+                    break;                  
+    }
+    SelectRadioBtn(objctrl);
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;
+  }
+}
+
+
+/*
+  Select one or more assay during creation of patient order
+  Multiple assays should be separated by ;
+  e.g. Gluh_3;Crea_2
+*/
+function SelectAssay(Assay)
+{
+  try
+  {
+    Log["Message"]("Selecting the Assay : " + Assay);
+    arrAssay = Assay["split"](";");
+    var intAddedAssayCount = 0;
+    for(intIndex=0; intIndex<arrAssay["length"]; intIndex++)
+    {
+      var objctrl = GetControl("PatientOrders_CreatePatientOrders","filtertxtboxSelectTests");
+	  SetFocus(objctrl)
+      SetText(objctrl, arrAssay[intIndex]);
+
+      var objctrl = GetControl("PatientOrders_CreatePatientOrders","singlesAndRatiosList");
+      aqUtils["Delay"](500, "Selecting assay");
+      SelectPicBoxTest(objctrl,arrAssay[intIndex]);
+
+      //SendKeys(objctrl, "[Enter]")
+    
+      aqUtils["Delay"](500, "Checking whether assay got added to list");
+      objPatientOrdersGrid = GetControl("PatientOrders_CreatePatientOrders","grdPatientOrders");
+    
+      var transTest = GetTranslatedString("Test","")
+      if(CheckTextonGrid(objPatientOrdersGrid, transTest, arrAssay[intIndex]) == true)
+      {
+        Log["Message"]("Assay successfully added to the list");
+        intAddedAssayCount++;
+      }
+      else
+      {
+        Log["Warning"]("Assay: " + arrAssay[intIndex] + " could not be added to the list");
+      }
+    }
+	
+	//if(arrAssay["length"]==1)
+//    {
+//      sExpectedTest = "_"+arrAssay[0]+"_";
+//      if(CheckTextonGrid(objPatientOrdersGrid, transTest, sExpectedTest)==true)
+//      objPatientOrdersGrid["Click"](57, 101);
+//    }
+
+    if(intAddedAssayCount == arrAssay["length"])
+    {
+      Log["Message"]("All the assays got added to the order");
+      return true;
+    }
+    else
+    {
+      Log["Message"]("All the assays were not added to the order");
+      ClearPatientOrder();             //Clearing the patient data 
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    return false;
+  }
+}
+function ClearPatientOrder()
+{
+  objctrl = GetControl("PatientOrders_CreatePatientOrders","btnClearPatientOrder");
+    ClickControl(objctrl);
+  
+   objctrl = GetControl("PatientOrders_CreateBatchOrdersBySID","btnConfirmationYes");
+    ClickControl(objctrl);
+     
+} 
+
+function VerifySelectedAssayList(Assay)
+{
+  try
+  {
+    Log["Message"]("Verifying whether the order was added to the grid");
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","grdPatientOrders");
+  
+    var transTest = GetTranslatedString("Test","")
+    if(CheckTextonGrid(objctrl, transTest, Assay) == true)
+    {  Log["Message"]("Order successfully added to the list");
+      return true;
+    }
+    else
+    {
+      Log["Warning"]("Order not added to the list");
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;
+  }
+}
+
+function CreateAnAddOnPatientOrder(Assay, SampleID, Analyzer)
+{
+  try
+  {
+    Log["AppendFolder"]("PatientOrders::CreateAnAddOnPatientOrder");
+    Log["Message"]("Setting the Sample ID as : " + SampleID );
+    var objctrl = GetControl("PatientOrders_CreatePatientOrders","txtboxSampleId");
+    SetText(objctrl, SampleID)
+    SendKeys(objctrl, "[Tab]")
+    
+    var objctrl = GetControl("PatientOrders_CreatePatientOrders","txtboxRackId");
+    SetFocus(objctrl);
+        
+    if(Analyzer!="")
+    {
+      Log["Message"]("Setting the module type as : " + Analyzer );
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","cmbModuleType");
+      SetComboValue(objctrl, Analyzer)
+    }
+
+    if(SelectAssay(Assay) != true)
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+    objctrl = GetControl("PatientOrders_CreatePatientOrders","btnSavePatientOrder");
+    ClickControl(objctrl);
+    
+    ///Modified to handle auto increment pop up
+    
+    var transAutoIncrement = GetTranslatedString("Auto-Increment Sample ID and Rack-Position exceeded the maximum number of characters allowed for Sample ID.","");
+    var transSavedSuccessfully = GetTranslatedString("Saved successfully.","");
+    
+    var totalchars  = aqString["GetLength"](SampleID);
+    if(totalchars>=20)
+    {
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblMaxLimitSampleID");
+      if(VerifyControlText(objctrl,transAutoIncrement) == true )
+      {
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+          ClickControl(objctrl);
+          Log["Message"]("Auto-Increment Sample ID and Rack-Position exceeded the maximum number of characters allowed for Sample ID. pop up is clicked successfully");
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+          if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+          {
+            Log["Message"]("Add an order for "+SampleID+" saved successfully.");;
+            objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+            ClickControl(objctrl);
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Warning"]("Order not saved successfully");
+            Log["PopLogFolder"]();
+            return false;
+          }
+      }
+    }
+    else
+    {
+      objctrl = GetControl("PatientOrders_CreatePatientOrders","msgboxlblSave");
+      if(VerifyControlText(objctrl,transSavedSuccessfully) == true )
+      {
+        Log["Message"]("Add an order for "+SampleID+" saved successfully.");
+        objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+        ClickControl(objctrl);
+        Log["PopLogFolder"]();
+        return true;
+      }    
+      else
+      {
+        Log["Warning"]("Add an order for "+SampleID+" is not saved successfully");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+
+    ///Modified to handle auto increment pop up
+
+   }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+exp["description"]);
+    return false;
+  }
+
+} 
+
+function HILOrderedOrNot(SampleID)  //Function will return true if HIL entry is available in Sample order
+{
+  InitializeMetaData();
+  NoOfEntries=false;
+  InvokeWorkflow("Worklist_WorklistOverview");
+  var grid=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("ResultsManagementWin")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("SampleOverviewTab")["WinFormsObject"]("ContentFrame_SampleOverviewTab")["WinFormsObject"]("SampleOverviewCtrl")["WinFormsObject"]("panel_OverviewGrid")["WinFormsObject"]("SampleOverviewGrid")
+ 
+  for(RowIndex=0;RowIndex<grid["RowCount"];RowIndex++)
+  {
+    
+  if(aqString["Compare"](grid["Item"](3,RowIndex)["Value"],SampleID,false)==0)
+  {
+    val=grid["Item"](6,RowIndex)["Value"];
+    if(val=="Vision_H"||val=="Vision_I"||val=="Vision_L")
+    NoOfEntries=true;
+    break;
+   // Log["Message"](grid["Item"](6,RowIndex)["Value"]);
+   } 
+}
+  return(NoOfEntries);
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : fnCreatePatientOrder
+//*  Description: CreatePatientOrder for Hydra project
+//*  Input: SID,RackID,Specimen,Analyzer,Assay
+//*  Output: boolean
+//*  Example: CreatePatientOrder(SID,RackID,Specimen,Analyzer,Assay)
+//*  Date of Creating: 30/10/2018
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function fnCreatePatientOrder(SID,Specimen,Priority,Analyzer,Assay)
+{
+    var strSampleStatus = "";
+    try
+    { 
+          Log["AppendFolder"]("Create Patient Order")
+          
+          //Enter Sample ID
+          Log["AppendFolder"]("Enter Sample ID as "+SID)
+          var objctrl = GetControl("PatientOrders_CreatePatientOrders","txtboxSampleId");
+          SetText(objctrl, SID)
+          aqUtils["Delay"](2000);
+         // if(objctrl[Text]="")
+          //Log["Error"]("Unable to enter sample id");
+          //Log["Message"]()
+          SendKeys(objctrl, "[Tab]")        
+          
+          //Rack ID
+          var objctrl2 = GetControl("PatientOrders_CreatePatientOrders","txtboxRackId");
+          SetFocus(objctrl2);
+          SendKeys(objctrl2, "[Tab]")
+          Log["PopLogFolder"]()
+          
+          //Specimen
+          Log["AppendFolder"]("Choose specimen as "+Specimen)
+          objctrl3 = GetControl("PatientOrders_CreatePatientOrders","cmdSpecimen");
+          SetComboValue(objctrl3, "Serum")
+          Log["PopLogFolder"]()
+          
+          //Priority
+          Log["AppendFolder"]("Choose Priority as "+Priority)
+          SetOrderPriority(Priority);  
+          Log["PopLogFolder"]()
+          
+          //Analyzer
+          Log["AppendFolder"]("Setting the module type as : " + Analyzer );
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","cmbModuleType");
+          SetComboValue(objctrl, Analyzer)
+          Log["PopLogFolder"]()
+          
+          
+          if(Assay=="IMT")
+          {
+            var arrIMT = new Array("Sodium","Potassium","Chloride")
+            Log["AppendFolder"]("Selecting IMT Tests - Na;K;Cl" );
+            for(count=0;count<arrIMT["length"];count++)
+            {                       
+              //Select Test
+              Log["Message"]("Select Test :"+ arrIMT[count])
+              var objctrl = GetControl("PatientOrders_CreatePatientOrders","filtertxtboxSelectTests");
+              SetFocus(objctrl)
+              SetText(objctrl, arrIMT[count]);
+              var objctrl2 = GetControl("PatientOrders_CreatePatientOrders","singlesAndRatiosList");
+              aqUtils["Delay"](500, "Selecting assay");
+              SelectPicBoxTest(objctrl2,arrIMT[count]);             
+            }
+            Log["PopLogFolder"]();
+
+          }
+          else
+          {          
+            //Select Test
+            Log["AppendFolder"]("Select Test: " + Assay );
+            var objctrl = GetControl("PatientOrders_CreatePatientOrders","filtertxtboxSelectTests");
+            SetFocus(objctrl)
+            SetText(objctrl, Assay);
+            var objctrl2 = GetControl("PatientOrders_CreatePatientOrders","singlesAndRatiosList");
+            aqUtils["Delay"](500, "Selecting assay");
+            SelectPicBoxTest(objctrl2,Assay);
+            Log["PopLogFolder"]()
+          }
+          
+          //Save
+          Log["AppendFolder"]("Save Patient Order" );
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","btnSavePatientOrder");
+          ClickControl(objctrl);
+          
+          //Ok
+          objctrl = GetControl("PatientOrders_CreatePatientOrders","btnPatientOrderOK");
+          ClickControl(objctrl);
+          Log["PopLogFolder"]()
+    }
+    catch(exp)
+    {
+        Log["Error"]("Exception",exp["description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }
+    Log["PopLogFolder"]();
+    return true;
+} 
+
+
+
+
+
+
+

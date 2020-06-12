@@ -1,0 +1,930 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispSystemHealthCheck
+
+//-------------------------------------Maintenance Screen --------------------------------
+
+//***************************************************************************************
+//*   Function Name        : ClickOnAllActivitiesButton()
+//*   Function Description : This function is used to Click on All Activities Button in Maintenance Screen
+//*   Input                : - 
+//*   Output               : return true, if Clicked on All Activities Button
+//*                          return false, if not Clicked on All Activities Button
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function ClickOnAllActivitiesButton()
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Click on 'All Activities' button in Maintenance Overview Screen ")
+    
+    //Get All Activies button control
+    var allActivitiesBtn = GetAutomationIDControl("Maintenance","btnAllActivities");
+    
+    //Verify the All Activitie button Enabled
+    if(VerifyObjectEnabled(allActivitiesBtn))
+    {
+      //Click on All Activities button
+      ClickCtrl(allActivitiesBtn)
+      
+      Log["Message"]("Clicked on the 'All Activities' button in Maintenance overview Screen")
+      Log["PopLogFolder"]()
+      return true;
+    } else {
+      Log["Error"]("All Activities' button is not enabled or unable to loctae in Maintenance Overview screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : SelectModuleNameInMaintenanceScreen()
+//*   Function Description : This function is used to Select the Module name from the Filter drop down in Maintenance screen
+//*   Input                : moduleName 
+//*   Output               : return true, if the given Module Name is selected in drop down
+//*                          return false, if the given Module Name is not selected in drop down
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 25/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function SelectModuleNameInMaintenanceScreen(moduleName)
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Selecting the module name '" + moduleName + "' from the drop down");
+    
+    //Get module name combo box
+    var moduleNameCtrl = GetAutomationIDControl("Maintenance", "cbBoxModuleMaintenanceOverview");
+      
+    //Check the module name combo box is displayed
+    if(VerifyObjectExists(moduleNameCtrl)) 
+    {
+      Log["Message"]("Located the combo box to select module name");
+      
+      //Select the module name from combobox
+      SelectComboBoxItem(moduleNameCtrl, moduleName);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = moduleNameCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](moduleName))
+      {
+        Log["Message"]("Given module name '" + moduleName + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given module name in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the module name combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : GetActivityStatusFromMaintenanceList()
+//*   Function Description : This function is used to get the Status of Given Activity Name from Maintenance datagrid
+//*   Input                : activityName 
+//*   Output               : return activityStatus, if get the activity status from Maintenance datagrid
+//*                          return false, if unable to get the activity status from Maintenance datagrid
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function GetActivityStatusFromMaintenanceList(moduleName,activityName)
+{
+  try
+  {   
+    Log["AppendFolder"]("Maintenance :: Get the status of Activity '" + activityName + "' from maintenance list");
+     
+    //select the module name to filter the maintenance list
+    if(!SelectModuleNameInMaintenanceScreen(moduleName))
+    {
+      Log["Error"]("Unable to appy the module name filter in the maintenance screen");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    
+    //---------------------------------Verify the Maintenance data grid exists---------------------
+    
+    //Get Maintenance data grid control
+    var dtgrdMaintenance = GetAutomationIDControl("Maintenance","dtgrdMaintenanceOverview")
+    
+    //Verify the Maintenance data grid
+    if(!VerifyObjectExists(dtgrdMaintenance))
+    {
+      Log["Error"]("Unable to Locate 'Maintenance Overview' datagrid")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Message"]("'Maintenance Overview' data grid is exists")
+    
+    //-----------------------------------------------------------------------------------------------
+    
+    
+    //-------------Get the Activity Status from Maintenance datagrid--------------------------------
+    
+    //Get the row count of the Maintenance datagrid    
+    var rowDetails = GetSFGridRowDetails(dtgrdMaintenance);
+    
+    if(!rowDetails)
+    {
+      Log["Error"]("There are no records displayed in the datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var isActivityDisplayed = false;
+
+    //Iterate the rows to Verify 
+    for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+    {
+      var rowParent = rowDetails[rowIndex];
+      
+      //Get the Activity Name
+      var activityNameTextBlock = Getchild(rowParent, "AutomationId", "ActivityNameTextBlock");
+      
+      //Check the actual activity name matches with expected activity name
+      if(activityNameTextBlock["Text"] == activityName)
+      {
+        isActivityDisplayed = true;
+        
+        Log["Message"]("The Activity name - " + activityName + "' exists in the datagrid");
+        
+        //Get the Activity Status block control
+        var activityStatusText =  Getchild(rowParent,"AutomationId","StatusTextBlock1");
+        
+        //check the activityStatus is displayed
+        if(VerifyObjectExists(activityStatusText))
+        {
+          //Get the Activity Status
+          var activityStatus = activityStatusText["Text"];
+          Log["Message"]("Current status of the Activity '" + activityName + " ' is" + activityStatus);
+          Log["PopLogFolder"]();
+          return activityStatus;
+        } else {
+          Log["Error"]("Activity name '" + activityName + "' is located in the daatgrid, But unable to get the status");
+          Log["PopLogFolder"]();
+          return false;          
+        }        
+      }
+    }
+    
+    //check the activity is not listed in grid
+    if(!isActivityDisplayed)
+    {
+      Log["Error"]("Unable to locate the maintenance activity '" + activityName  + "' from the maintenance list");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : SelectActivityFromMaintenanceScreen()
+//*   Function Description : This function is used to select the Activity from Maintenance datagrid
+//*   Input                : activityName
+//*   Output               : return true, if the given Activity Name is selected in Maintenance datagrid
+//*                          return false, if unable to select the given Activity Name in Maintenance datagrid
+//*   Created By           : 
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function SelectActivityFromMaintenanceScreen(activityName)
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Click on the activity '" + activityName + "' from maintenance list");
+    
+    //Get Maintenance data grid control
+    var dtgrdMaintenance = GetAutomationIDControl("Maintenance","dtgrdMaintenanceOverview")
+    
+    //Get the row count of the Maintenance datagrid    
+    var rowDetails = GetSFGridRowDetails(dtgrdMaintenance);
+    
+    if(!rowDetails)
+    {
+      Log["Error"]("There are no records displayed in the datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    var isActivityDisplayed = false;
+
+    //Iterate the rows to Verify 
+    for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+    {
+      //get the row parent of the current iteration
+      var rowParent = rowDetails[rowIndex];
+      
+      //Get the Activity Name
+      var activityNameTextBlock = Getchild(rowParent, "AutomationId", "ActivityNameTextBlock");
+      
+      //Check the actual activity name matches with expected activity name
+      if(activityNameTextBlock["Text"] == activityName)
+      {
+        isActivityDisplayed = true;
+        
+        //click on the row
+        ClickCtrl(rowParent);
+        
+        Log["Message"]("Clicked on the row item which is having the activity '" + activityName + "'");
+        break;
+      }
+    }
+    
+    //check the activity is displayed and selected
+    if(isActivityDisplayed)
+    {
+      Log["Message"]("Successfully clicked on the row information which is having the activity '" + activityName + "'");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the activity '" + activityName +"' from the maintenance activity list displayed");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function CheckMaintenanceActivityDetailsPopupDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("MaintenanceActivityDetails :: Check the maintenance activity details popup is displayed");
+    
+    //get the activityDetailsPop
+    var activityDetailsPopupCtrl = GetAutomationIDControl("Maintenance_MaintenanceActivityDetails","popUpMaintenanceActivityDetails");
+    
+    //check the maintenance activity popup ctrl is displayed
+    if(VerifyObjectExists(activityDetailsPopupCtrl))
+    {
+      Log["Message"]("Maintenance activity details popup is displayed");
+      Log["PopLogFolder"]();
+      return true;
+      
+    } else {
+      Log["Error"]("Unable to locate the maintenance activity details page");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function StopActivityFromMaintenanceActivityDetailsPopup(activityName)
+{
+  try
+  {
+    Log["AppendFolder"]("MaintenanceActivityDetails :: Click on the Stop Activity From Activity Details Popup")
+    
+    //get the maintenance activity details popup ctrl
+    var activityDetailsPopupCtrl = GetAutomationIDControl("Maintenance_MaintenanceActivityDetails","popUpMaintenanceActivityDetails");
+    
+    //check the maintenance activity popup ctrl is displayed
+    if(VerifyObjectExists(activityDetailsPopupCtrl))
+    {    
+      //get the activity namectrl
+      var actualActivityName = Getchild(activityDetailsPopupCtrl, "AutomationId", "ActivityContent");
+      
+      if(actualActivityName["Text"] == activityName)
+      {
+        Log["Message"]("Maintenance activity details popup is successfully displayed for the activity '" + activityName + "'");
+        
+        //get the stop activity btn ctrl
+        var btnStopActivityCtrl = GetAutomationIDControl("Maintenance_MaintenanceActivityDetails","btnStopMaintenanceActivity");
+        
+        //check the stop button is displayed
+        if(VerifyObjectExists(btnStopActivityCtrl))
+        {
+          Log["Message"]("Stop Activty button is successfully located in maintenance activity details popup");
+          
+          //check the stop button is enabled
+          if(VerifyObjectEnabled(btnStopActivityCtrl))
+          {
+            //click on the stop activity button
+            ClickCtrl(btnStopActivityCtrl);
+            
+            Log["Message"]("Clicked on the stop activity button in the maintenance activity details popup");
+            Log["PopLogFolder"]();
+            return true;
+          } else {
+            Log["Error"]("Stop activity button is not enabled in mainetnance activity details popup");
+            Log["PopLogFolder"]();
+            return false;
+          }          
+        } else {
+          Log["Error"]("Unable to locate the stop activity button in the maintenance activity details popup for the activity '" + activityName + "'");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      } else {
+        Log["Error"]("The maintenance activity details popup is displayed for incorrect activity than it is clicked");
+        Log["PopLogFolder"]();
+        return false;
+      }            
+    } else {
+      Log["Error"]("Unable to locate the maintenance activity details page");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : StopActivityInMaintenanceScreen()
+//*   Function Description : This function is used to select the Activity from Maintenance datagrid
+//*   Input                : moduleType,activityName
+//*   Output               : return true, if Maintenance Activity stopped successfully
+//*                          return false, if unable to perform Stop operation on given Activity Name
+//*   Created By           : 
+//*   Created Date         : 
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function StopActivityInMaintenanceScreen(moduleType,activityName)
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Stop maintenance activity '" + activityName  + "' which is 'InProcess'");
+    
+    var moduleName = GetActualSystemModuleName(moduleType);
+    
+    //check the system module name is retrieved 
+    if(!moduleName)
+    {
+      Log["Error"]("Unable to get the system module name '" + moduleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    //Get Current status of the activity
+    var activityCurrentStatus = GetActivityStatusFromMaintenanceList(moduleName,activityName);
+        
+    //Check the activity is exist with the inprocess status
+    if(activityCurrentStatus == false)
+    {
+      Log["Error"]("Unable to get the status of the maintenance activity '" + activityName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } else if (activityCurrentStatus == "Inprocess")
+    {
+      //Click on the activity name in the maintenance activity grid
+      if(!SelectActivityFromMaintenanceScreen(activityName))
+      {
+        Log["Error"]("Unable to select the activity to stop the maintenance activity is InProcess");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      //check the maintenance activity details popup displayed
+      if(!CheckMaintenanceActivityDetailsPopupDisplayed())
+      {
+        Log["Error"]("Failed to locate the maintenance activity details popup");
+        Log["PopLogFolder"]();
+        return false;        
+      }
+      
+      //Click on the stop activity button in the maintenance activity popup
+      if(!StopActivityFromMaintenanceActivityDetailsPopup(activityName))
+      {
+        Log["Error"]("Unable to perform the stop activity for the maintenance activity '" + activityName + "'");
+        Log["PopLogFolder"]();
+        return false;        
+      }
+      
+      Log["PopLogFolder"]();
+      return true; 
+    } else {
+      Log["Error"]("The activity is not in expected status to perform stop operation");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  
+  }
+}
+
+
+
+//----------------------------------------------------------------------------------------
+
+
+//-------------------------------------All Activities Popup-------------------------------
+
+//***************************************************************************************
+//*   Function Name        : VerifyAllActivitiesPopUpDisplayed()
+//*   Function Description : This function is used to check the All Activities Popup Displayed
+//*   Input                :  -
+//*   Output               : return true, if All Activity Popup is Displayed
+//*                          return false, if All Activity Popup is not Displayed
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function VerifyAllActivitiesPopUpDisplayed()
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Verify the 'All Activities' Pop up Displayed")
+    
+    //Get All Activities Popup control
+    var allActivitiesPopUp = GetAutomationIDControl("Maintenance_AllActivities","popUpAllActivities")
+    
+    //Verify the All Activities popup displayed
+    if(VerifyObjectExistance(allActivitiesPopUp))
+    {
+      Log["Message"]("'All Activities Pop up' is displaying")
+      Log["PopLogFolder"]()
+      return true;
+    } else {
+      Log["Error"]("Unable to locate 'All Activities Pop Up'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : CloseAllActivitiesPopup()
+//*   Function Description : This function is used to close the All Activities Popup
+//*   Input                : -
+//*   Output               : return true, if Clicked on Closed button in All Activities popup
+//*                          return false, if unable to click on Closed button in All Activities popup
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function CloseAllActivitiesPopup()
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Close All Activities Popup")
+    
+    //Get the All Activities popup Close button control
+    var btnAllActivitiesPopupClose = GetAutomationIDControl("Maintenance_AllActivities","btnAllActivitiesPopupClose")
+    
+    //Verify the Close button Enabled
+    if(VerifyObjectEnabled(btnAllActivitiesPopupClose))
+    {
+      //Click on Close button
+      ClickCtrl(btnAllActivitiesPopupClose)
+      
+      Log["Message"]("Clicked on the 'Close' button in All Activies Popup")
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Close' button is not enabled or unable to loctae in View All Activities Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception" + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : SelectActivityFromAllActivities()
+//*   Function Description : This function is used to select the Activity from All Activities Grid
+//*   Input                : activityName
+//*   Output               : return true, if the given Activity Name is selected in All Activities datagrid
+//*                          return false, if unable to select the given Activity Name in All Activities datagrid
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function SelectActivityFromAllActivities(activityName)
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Select the Activity '" + activityName + "' from the activities list")
+    
+    
+    //-------------Verify and Select the Activity from All Activities grid---------------------------
+    
+    //Get All Activities Grid control container
+    var dtgrdAllActivities = GetAutomationIDControl("Maintenance_AllActivities","dtgrdMaintenanceAllActivities");
+    
+    //Get the row count of the All Activities datagrid
+    var rowDetails = GetAllChildren(dtgrdAllActivities, "ClassName", "GridRow");
+    
+    // Check when No record in Grid  
+    if(rowDetails.length <= 0)
+    {
+      Log["Error"]("There are no records displayed in the All Activities datagrid");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      rowDetails = rowDetails.reverse();
+    }
+    
+    var isActivityExistAndSelected = false;
+
+    //Iterate the rows to Verify and Select the Activity
+    for(var rowIndex=0; rowIndex<rowDetails.length; rowIndex++)
+    {
+      var rowParent = rowDetails[rowIndex];
+      
+      //Get the Activity Name
+      var activityNameTextBlock = Getchild(rowParent, "AutomationId", "AllActivitiesActivityNameTextBlock");
+      
+      //Check the actual activity name matches with expected activity name
+      if(activityNameTextBlock["Text"] == activityName)
+      {
+        Log["Message"]("The Activity name - " + activityName + "' exists in the datagrid");
+        
+        //Click on the activity record
+        ClickCtrl(rowParent);
+        
+        Log["Message"]("Clicked on the row item which is having the activity '" + activityName + "'");
+        isActivityExistAndSelected = true;
+        break;
+      }
+    }
+    
+    Log["PopLogFolder"]();
+    return isActivityExistAndSelected;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : ClickOnPerformButtonInAllActivities()
+//*   Function Description : This function is used to click on Perform Button in All Activities popup
+//*   Input                : - 
+//*   Output               : return true, if Clicked on Perform button in All Activities popup
+//*                          return false, if unable to clik on Perform button in All Activities popup
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function ClickOnPerformButtonInAllActivities()
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Click on 'Perform' button in All Activities Popup")
+    
+    //Get Perform button control
+    var allActivitiesBtn = GetAutomationIDControl("Maintenance_AllActivities","btnAllActivitiesPerform");
+    
+    //Verify the Perform button Enabled
+    if(VerifyObjectEnabled(allActivitiesBtn))
+    {
+      //Click on Perform button
+      ClickCtrl(allActivitiesBtn)
+      
+      Log["Message"]("Clicked on the 'Perform' button in All Activies Popup")
+      Log["PopLogFolder"]()
+      return true;
+    } else {
+      Log["Error"]("Perform' button is not enabled or unable to loctae in View All Activities Popup");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : SelectModuleNameInAllActivities()
+//*   Function Description : This function is used to Select the Module name from the Filter drop down in All Activities Popup
+//*   Input                : moduleName 
+//*   Output               : return true, if the given Module Name is selected in drop down
+//*                          return false, if the given Module Name is not selected in drop down
+//*   Created By           : Prabu Ramaraj
+//*   Created Date         : 25/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function SelectModuleNameInAllActivities(moduleName)
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Selecting the module name '" + moduleName + "' from the drop down");
+    
+    //Get module name combo box
+    var moduleNameCtrl = GetAutomationIDControl("Maintenance_AllActivities", "cbBoxModuleAllActivities");
+      
+    //Check the module name combo box is displayed
+    if(VerifyObjectExists(moduleNameCtrl)) 
+    {
+      Log["Message"]("Located the combo box to select module name");
+      
+      //Select the module name from combobox
+      SelectComboBoxItem(moduleNameCtrl, moduleName);
+      
+      //Get the selected text value from specimen type combobox
+      var selectedValue = moduleNameCtrl["Selection"].toArray()[0];
+      
+      //Check the selected specimen is valid
+      if(aqString["ToLower"](selectedValue) == aqString["ToLower"](moduleName))
+      {
+        Log["Message"]("Given module name '" + moduleName + "' has been selected successfully in combo box");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Unable to select the given module name in combo box");
+        Log["PopLogFolder"]();
+        return false;
+      }      
+    } else {
+      Log["Error"]("Unable to locate the module name combo box");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : AcceptActivityConfirmationDialog()
+//*   Function Description : This function is used to click on Yes Button in Activity perform Confirmation dialog
+//*   Input                :  -
+//*   Output               : return true, if Clicked on Yes Button in Activity perform Confirmation dialog
+//*                          return false, if unable to click on Yes Button in Activity perform Confirmation dialog
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function AcceptActivityConfirmationDialog()
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Accept the Activity Maintenance confirmation popup");
+    
+    //Refresh the root node of the application to get the latest popup details
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"](); 
+ 
+    //Get the Activity confirmation dialog control
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //Verify the Activty Confirmation dialog control
+    if(!VerifyObjectExists(alertDialog))
+    {
+      Log["Error"]("Unable to Locate Confirmation Dialog")
+      Log["PopLogFolder"]()
+      return false
+    }
+    
+    Log["Message"]("Maintenance Activity Confirmation dialogue is Displaying")
+    
+    //Get the Yes button control in Activity Confirmation dialog
+    var yesBtn = Getchild(alertDialog, ["AutomationId","ObjectIdentifier"], ["PrimaryButton", "Yes"]);
+    
+    //Check the Yes button is displayed and enabled
+    if(VerifyObjectEnabled(yesBtn))
+    {
+      Log["Message"]("Yes Button is enabled in Activity Confirmation Dialog box");
+      
+      //Click on the ok button in the Activity Confirmation popup      
+      ClickCtrl(yesBtn);
+      
+      Log["Message"]("Successfully Accepted Perform Activity Confirmation");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to Locate 'Yes' button/'Yes' button is not Enabled")
+      Log["PopLogFolder"]()
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : AcceptScheduleTimeKeepDialog()
+//*   Function Description : This function is used to click on Yes Button in Next Schedule Time dialog
+//*   Input                : - 
+//*   Output               : return true, if Clicked on Yes Button in Next Schedule Time dialog
+//*                          return false, if unable to click on Yes Button in Next Schedule Time dialog
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          :  -
+//*   Modified Date        :  -
+//*****************************************************************************************
+function AcceptScheduleTimeKeepDialog()
+{
+  try
+  {
+    Log["AppendFolder"]("Accept Next Schedule Time confirmation popup");
+    
+    //Refresh the root node of the application to get the latest popup details
+    Sys["Process"]("5ceed41e-3bef-42e2-9ad9-eb1335f89a75")["Refresh"](); 
+ 
+    //Get the Time Schedule dialog control
+    var alertDialog = GetAutomationIDControl("SystemHealthCheck", "alertDialog");
+    
+    //Verify the Time Schedule dialog control
+    if(!VerifyObjectExists(alertDialog))
+    {
+      Log["Error"]("Unable to Locate Time Schedule Dialog")
+      Log["PopLogFolder"]()
+      return false
+    }
+    
+    Log["Message"]("Maintenance Activity Time Schedule Dialog is displaying")
+    
+    //Get the Yes button control from the Time Schedule Dialog
+    var yesBtn = Getchild(alertDialog, ["AutomationId","ObjectIdentifier"], ["PrimaryButton", "Yes"]);
+    
+    //Check the Yes button is displayed and enabled
+    if(VerifyObjectEnabled(yesBtn))
+    {
+      Log["Message"]("Yes Button is enabled in Time Schedule dialog");
+      
+      //Click on the ok button in the Activity Confirmation popup      
+      ClickCtrl(yesBtn);
+      
+      Log["Message"]("Successfully done next scheduled time")
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to Locate 'Yes' button/'Yes' button is not Enabled")
+      Log["PopLogFolder"]()
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//***************************************************************************************
+//*   Function Name        : PerformMaintenanceActivityInAllActivities()
+//*   Function Description : This function is used to click on Yes Button in Next Schedule Time dialog
+//*   Input                : moduleType, activityName
+//*   Output               : return true, if Maintenance Activity Started to process 
+//*                          return false, if unable to start Maintenance Activity
+//*   Created By           : Ramani Paulsamy
+//*   Created Date         : 21/11/2019
+//*   Modified By          : Prabu Ramaraj
+//*   Modified Date        : 25/11/2019
+//*****************************************************************************************
+function PerformMaintenanceActivityInAllActivities(moduleType,activityName)
+{
+  try
+  {
+    Log["AppendFolder"]("Maintenance :: Perform maintenance activity '" + activityName + "' from module '" + moduleType + "'");
+    
+    var moduleName = GetActualSystemModuleName(moduleType);
+    
+    //check the system module name is retrieved 
+    if(!moduleName)
+    {
+      Log["Error"]("Unable to get the system module name '" + moduleName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+        
+    //Apply filter with module name
+    if(!SelectModuleNameInAllActivities(moduleName))
+    {
+      Log["Error"]("Unable to apply the module name filter combo box value in view all ativities screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Select Activity
+    if(!SelectActivityFromAllActivities(activityName))
+    {
+      Log["Error"]("Unable to select Activity '" +activityName)
+      Log["PopLogFolder"]()
+      return false
+    }
+    
+    //Click on Perform button
+    if(!ClickOnPerformButtonInAllActivities())
+    {
+      Log["Error"]("Unable to click on 'Perform' button ")
+      Log["PopLogFolder"]()
+      return false;
+    }
+    
+    //Accept Maintenance Activity Confirmation
+    if(!AcceptActivityConfirmationDialog())
+    {
+      Log["Error"]("Unable to Accept Maintenance Activity Confirmation")
+      Log["PopLogFolder"]()
+      return false; 
+    }
+    
+    //Click Yes on Time Schedule Dialog
+    if(!AcceptScheduleTimeKeepDialog())
+    {
+      Log["Error"]("Unable to Set Next Schedule Time for Maintenance Activity")
+      Log["PopLogFolder"]()
+      return false; 
+    }
+    
+    //Close All Activities Popup
+    if(!CloseAllActivitiesPopup())
+    {
+      Log["Error"]("Unable to Close All Activities Pop up")
+      Log["PopLogFolder"]()
+      return false;
+    }
+    
+    Log["Message"]("Successfully Performed Maintenance activity for '" + activityName + "'")
+    Log["PopLogFolder"]()
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+//----------------------------------------------------------------------------------------

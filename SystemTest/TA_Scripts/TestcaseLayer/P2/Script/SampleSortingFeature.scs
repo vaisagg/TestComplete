@@ -1,0 +1,591 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT SampleSortingFeatureSteps
+
+var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+
+function BarcodeError()
+{
+
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Feature: Barcode Error");
+  
+  Log["AppendFolder"]("Setup: Barcode Error");
+  if(!ConfigureBarcodeErrorSortArea())
+  {
+    Log["Error"]("Setup failed");
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  GWT182934_01_InvalidBarcode();
+  GWT182934_02_MissingBarcode();
+  GWT182934_03_DuplicateBarcode();
+  GWT182934_04_BarcodeMismatch();
+    
+  Log["AppendFolder"]("Teardown: Barcode Error");
+  BarcodeErrorTeardown();
+  Log["PopLogFolder"](); 
+  
+Log["PopLogFolder"]();
+}
+
+function GWT179334_01_SortingCalibratedSample()
+{
+  InitializeMetaData();
+  
+  NetworkSuite["Variables"]["SHScenario"] = "CalQCSort";
+  
+  ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "I");
+  
+  Log["AppendFolder"]("Feature: Sample sorting");
+  
+  Log["AppendFolder"]("Setup: Sample sorting");
+  if(!ConfigureCalQCSortArea())
+  {
+    Log["Error"]("Setup failed");
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("GWT179334_01: Sorting a calibration sample");
+  
+  Log["AppendFolder"]("Given Trinidad Is Initialized");    
+  //if(!GivenApplicationIsInitialized())
+  if(!GivenAtellicaInitialized())
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }      
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And sorting is configured with Cal-QC sort area");
+  if(!IsSHConfiguredForCalQCSortArea())
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }      
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When non-storable Calibrator sample has completed processing");
+  if(!IsCalibrationSampleLoaded())
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }   
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Cal/QC SortArea has Empty slots ");
+  if(!IsCalSortAreaHasEmptySlots())
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+  Log["AppendFolder"]("Then Calibrator sample is unloaded to the configured Cal/QC sort area");
+  if(!IsCalSampleUnloaded())
+   {
+    ReportTestStatusToResultXML("SampleSorting", "GWT179334_01_SortingCalibratedSample", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+ 
+  
+  Log["AppendFolder"]("Teardown: Sample sorting");
+  CalQCSortingTeardown();
+  Log["PopLogFolder"](); 
+
+   Log["PopLogFolder"]();
+}
+
+function GWT180537_01_CappedSampleError()
+{
+  InitializeMetaData();
+  
+  NetworkSuite["Variables"]["SHScenario"] = "CappedError";
+  
+  Log["AppendFolder"]("Feature: Capped sample");
+  Log["AppendFolder"]("GWT180537_01: Capped sample when there is no decapper configured");
+  
+  ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "I");
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized()) 
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "F");
+    Log["Error"]("Test failed: Verification failed Atellica Initialization","GWT180537");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And there is no decapper configured");
+  if(!DecapperConfiguration()) 
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "F");
+    Log["Error"]("Test failed: Verification failed Decapper configuration","GWT180537");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    CappedSampleError_TearDown();
+    return false;
+  }
+
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("When a sample is identified as capped");
+  if(!IdentifyCappedSample()) 
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "F");
+    Log["Error"]("Test failed: Verification failed IdentifyCappedSample","GWT180537");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    CappedSampleError_TearDown();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample is marked as CapError and unloaded");
+  if(!CapErrorUnload())
+  {
+    ReportTestStatusToResultXML("SampleSorting", "GWT180537_01_CappedSampleError", "F");
+    Log["Error"]("Test failed: Verification failed IdentifyCappedSample","GWT180537");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    CappedSampleError_TearDown();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  CappedSampleError_TearDown();
+}
+
+
+function LanguageTesting()
+{
+  
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  AddNameMappingObjects();
+  Initialize();
+  
+  var TestDataFile=Project["Variables"]["TestDataFile"];
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"LanguageTesting","BarcodeErrorSort")
+  var dictColumn=arrTestData[0];
+  var Languages=dictColumn["item"]("Languages")
+  var LanguageIDs=Languages["split"](",")
+  
+  var Query = "SELECT Nodes FROM [Initialization$]";
+  var arrNodes = new Array();
+  arrNodes = GetTestItems(TestDataFile, Query, "Nodes");
+  
+  var Username = arrNodes[0]
+  var Password = arrNodes[1]
+  
+  Log["AppendFolder"]("Execution of features in languages");
+  
+  for(var i=0;i<LanguageIDs["length"];i++)
+  {
+	Log["AppendFolder"]("Clear historical data");
+    ClearApplicationData();
+    Log["PopLogFolder"]();
+	
+    Log["AppendFolder"]("Change Language of the application to "+LanguageIDs[i]);
+    StepChangeLanguage(LanguageIDs[i], Username, Password)
+    Log["PopLogFolder"]();
+    //BarcodeError1()
+    NotArchiveSample()
+  }
+   Log["PopLogFolder"]();
+}
+
+
+function GWT182934_01_InvalidBarcode()
+{
+   //Invalid Barcode Error verification starts here
+  Log["AppendFolder"]("GWT182934_01: Invalid Barcode");
+  NetworkSuite["Variables"]["SHScenario"] = "InvalidBarcodeErrorSort";
+    
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "I")
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized"); 
+    Log["AppendFolder"]("Verify all nodes(VMM,SH,CH and DECAPPER) of Trinidad are Ready");   
+    //if(!GivenApplicationIsInitialized())
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+      return false;
+    }      
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+    
+
+    Log["AppendFolder"]("And sorting is configured with barcode exceptions sort area");
+    Log["AppendFolder"]("Verify SH configured for barcode exceptions sort area");   
+    if(!GivenSortingIsConfiguredWithBarcodeExceptionsSortArea())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("When the sample is loaded with invalid barcode issue");
+    Log["AppendFolder"]("Load a patient sample with invalid barcode issue"); 
+    if(!WhenTheSampleIsMarkedWithInvalidBarcodeIssue())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And tray/Slot is available");
+    Log["AppendFolder"]("Verify empty slots available in the sort area"); 
+    if(!IsInvalidBarcodeErrorSortAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+     Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then Sample is unloaded to the configured barcode exception sort area");
+    Log["AppendFolder"]("Verify sample is unloaded to barcode exception sort area"); 
+    if(!IsInvalidBarcodeSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And the sample details page displays sample has an invalid barcode");
+    Log["AppendFolder"]("Verify sample status is invalid barcode");
+    if(!ThenTheSampleDetailsPageDisplaysIndicationThatSampleHasInvalidBarcode())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_01_InvalidBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+  Log["PopLogFolder"](); 
+}
+
+function GWT182934_02_MissingBarcode()
+{
+  //  Missing Barcode Error verification starts here
+  Log["AppendFolder"]("GWT182934_02: Missing Barcode");
+  NetworkSuite["Variables"]["SHScenario"] = "MissingBarcodeErrorSort";
+    
+  ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "I");
+  
+    Log["AppendFolder"]("Given Trinidad Is Initialized");   
+    Log["AppendFolder"]("Verify all nodes(VMM,SH,CH and DECAPPER) of Trinidad are Ready");  
+    //if(!GivenApplicationIsInitialized())
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+      return false;
+    }      
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("And sorting is configured with barcode exceptions sort area");
+    Log["AppendFolder"]("Verify SH configured for barcode exceptions sort area"); 
+    if(!GivenSortingIsConfiguredWithBarcodeExceptionsSortArea())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+       
+    Log["AppendFolder"]("When the sample is loaded with missing barcode issue");
+     Log["AppendFolder"]("Load a patient sample with missing barcode issue"); 
+    if(!WhenTheSampleIsMarkedWithUnreadableMissingBarcodeIssue())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And tray/Slot is available");
+    Log["AppendFolder"]("Verify empty slots available in the sort area"); 
+    if(!IsMissingBarcodeErrorSortAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then Sample is unloaded to the configured barcode exception sort area");
+    Log["AppendFolder"]("Verify sample is unloaded to barcode exception sort area"); 
+    if(!IsMissingBarcodeSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And the sample details page displays sample has a missing/unreadable barcode");
+    Log["AppendFolder"]("Verify sample status is unreadable barcode");
+    if(!VerifyMissingBarcodeError())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_02_MissingBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+    
+  Log["PopLogFolder"]();
+}
+
+function GWT182934_03_DuplicateBarcode()
+{
+  //Duplicate Barcode Error verification starts here
+  Log["AppendFolder"]("GWT182934_03: Duplicate Barcode");
+  NetworkSuite["Variables"]["SHScenario"] = "DuplicateBarcodeErrorSort";
+   
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "I");
+  
+    Log["AppendFolder"]("Given Trinidad Is Initialized");    
+    //if(!GivenApplicationIsInitialized())
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }      
+   Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("And sorting is configured with barcode exceptions sort area");
+    if(!GivenSortingIsConfiguredWithBarcodeExceptionsSortArea())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    Log["AppendFolder"]("When the sample is loaded with Duplicate barcode issue");
+    if(!IsSampleLoadedWithDuplicateBarcodeError())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And tray/Slot is available");
+    if(!IsDuplicateBarcodeErrorSortAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then Sample is unloaded to the configured barcode exception sort area");
+    if(!IsDuplicateBarcodeSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And the sample details page displays Sample has a duplicate barcode");
+    if(!VerifyDuplicateBarcodeError())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_03_DuplicateBarcode", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function GWT182934_04_BarcodeMismatch()
+{
+ // Barcode Mismatch Error verification starts here
+  Log["AppendFolder"]("GWT182934_04: Barcode Mismatch");
+    NetworkSuite["Variables"]["SHScenario"] = "BarcodeMismatchErrorSort";
+    
+    ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "I"); 
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");    
+    //if(!GivenApplicationIsInitialized())
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+      return false;
+    }      
+   Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("And sorting is configured with barcode exceptions sort area");
+    if(!GivenSortingIsConfiguredWithBarcodeExceptionsSortArea())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When the sample is loaded with barcode mismatch issue");
+    if(!IsSampleLoadedWithBarcodeMismatchError())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And tray/Slot is available");
+    if(!IsBarcodeMismatchSortAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When the sample is loaded with barcode mismatch issue");
+    if(!IsSampleReloadedWithBarcodeMismatchError())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then Sample is unloaded to the configured barcode exception sort area");
+    if(!IsBarcodeMismatchSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And the sample details page displays Sample has a mismatch barcode");
+    if(!VerifyBarcodeMismatchError())
+    {
+      ReportTestStatusToResultXML("Barcode errors", "GWT182934_04_BarcodeMismatch", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;    
+    }
+    Log["PopLogFolder"]();
+    
+  Log["PopLogFolder"]();
+}
+
+
+

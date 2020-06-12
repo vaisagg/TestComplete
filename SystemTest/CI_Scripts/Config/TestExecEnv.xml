@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestFramework>
+  <TestExecute>
+      <Installable>F:\SystemTest\TCMedia\TestExecute120.exe</Installable>
+      <InstallationPath>C:\Program Files (x86)\SmartBear\TestExecute 12</InstallationPath>
+      <Executable>C:\Program Files (x86)\SmartBear\TestExecute 12\Bin\TestExecute.exe</Executable>
+      <LicenseFile>F:\SystemTest\TCMedia\hasplm.ini</LicenseFile>
+      <LicenseTarget>C:\Program Files (x86)\Common Files\Aladdin Shared\HASP</LicenseTarget>
+      <TestSelector>F:\SystemTest\CI_Scripts\Config\TestSelector.xml</TestSelector>
+      <TestResults>F:\SystemTest\TestOutput</TestResults>
+      <ResultOverviewFile>F:\SystemTest\SmokeComplete.txt</ResultOverviewFile>
+      <DeploymentInfoFile>F:\SystemTest\BuildInstrumentsInfo.xml</DeploymentInfoFile>
+      <TestFrameworkInstaller>F:\SystemTest\CI_Scripts\TestFrameworkInstaller.ps1</TestFrameworkInstaller>
+      <TestTargetsPath>F:\SystemTest</TestTargetsPath>
+  </TestExecute>
+</TestFramework>

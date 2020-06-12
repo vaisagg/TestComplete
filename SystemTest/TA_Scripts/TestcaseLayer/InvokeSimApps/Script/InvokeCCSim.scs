@@ -1,0 +1,51 @@
+﻿//USEUNIT CCLibrary
+//USEUNIT CommonUtilities
+function InvokeCCSim()
+{ 
+  try
+  {
+      var strAppName=" CC"
+      //var strAppPath = Project["Variables"]["CC_BatchFile"];
+//    var strAppPath ="C:\\Siemens\\Bin\\Ramp.exe"; // modified for P2 project
+      var strAppPath ="C:\\Siemens\\Bin\\StartENG.bat";
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+      var CCProcessobj = Aliases.TriModuleDisplay
+      //Check if the CC Process exists
+      if(CCProcessobj.Exists==false)
+      {
+        InvokeCC(strAppName,strAppPath,"","")
+        aqUtils.Delay(45000); 
+      }
+      
+      //Check the CC RAMP Service is running
+      var res = StartService(".", "RAMP Service");
+      if(res == true)
+      {
+        Log.Message("The CC RAMP Service started successfully or already started"); 
+      }
+      else
+      {
+        Log.Error("Unable to start the CC RAMP Service");
+      }
+      
+//      //Check the CC Module Manager Service is running
+//      var res = StartService(".", "CC Module Manager");
+//      if(res == true)
+//      {
+//        Log.Message("The CC Module Manager Service started successfully or already started"); 
+//        return true;
+//      }
+//      else
+//      {
+//        Log.Error("Unable to start the CC Module Manager Service");
+//        return false;
+//      }    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+  }
+}
+
+

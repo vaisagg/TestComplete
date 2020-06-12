@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="data">
+			<Node name="{24b6fa0b-0143-461a-9758-aeb9e9a9428b}">
+				<Prp name="default project" type="S" value="{BDF3E256-0E71-4A97-92E0-861A2188194D}"/>
+			</Node>
+			<Node name="{2a1c1347-c48c-45b2-ad83-55406d97d7c8}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Wave1Migration\Wave1Migration.mds.tcLS"/>
+			</Node>
+			<Node name="{304d330c-7abc-490c-83a7-3d9fe62cae32}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\SampleHandler\SampleHandler.mds.tcLS"/>
+			</Node>
+			<Node name="{51d54094-8605-4356-b5b1-da0eb339cbb5}">
+				<Prp name="relpath" type="S" value="TestProject1\TestProject1.mds.tcLS"/>
+			</Node>
+			<Node name="{7b1cdbff-2b30-4a4e-902e-fd7d6ad10a1e}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\InitializationWave1\InitializationWave1.mds.tcLS"/>
+			</Node>
+			<Node name="{8a823977-2adb-4bc1-b91f-973b0fa98fe6}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\IA\IA.mds.tcLS"/>
+			</Node>
+			<Node name="{bdf3e256-0e71-4a97-92e0-861a2188194d}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Wave1Migration\Wave1Migration.mds.tcLS"/>
+			</Node>
+			<Node name="logs">
+				<Prp name="key" type="S" value="{37414964-D72A-441E-B957-E79733BB7506}"/>
+				<Prp name="relpath" type="S" value="Log"/>
+			</Node>
+			<Node name="variables"/>
+		</Node>
+		<Prp name="signature" type="S" value="{71078212-FAEB-4856-A901-B237C89E6B5C}"/>
+	</Node>
+</Nodes>

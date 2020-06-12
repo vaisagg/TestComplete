@@ -1,0 +1,20 @@
+0 WashLevelSensorWet
+0 ConditionerLevelSensorWet
+0 CleanerLevelSensorWet
+0 SalineLevelSensorWet
+0 WashLevelSensorWet
+0 AcidLevelSensorWet
+0 BaseLevelSensorWet
+0 CleanerLevelSensorWet
+0 PrimaryWasteFullSensorWet
+0 PrimaryWasteOverflowSensorWet
+0 SecondaryWasteFullSensorWet
+0 SecondaryWasteOverflowSensorWet
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 

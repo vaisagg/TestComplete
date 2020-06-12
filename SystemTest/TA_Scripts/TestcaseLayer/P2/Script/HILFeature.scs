@@ -1,0 +1,2465 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT HILFeatureSteps
+
+function HILIntegration()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Feature: HIL");
+  ClearWorklistData();
+  
+  GWT197393_01();
+  GWT197660_01();
+  
+  HILTearDown();
+  Log["PopLogFolder"]();  
+}
+
+function HILFeatures()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Feature: HIL");
+   if(!StepShutdownAllApps())     // Restarting all modules to handle SH drawer Issue
+   {
+     Log["PopLogFolder"]();
+     return false;
+    } 
+   if(!StepInvokeAllApps())
+    {
+      Log["PopLogFolder"]();
+      return false;
+    } 
+
+    ClearWorklistData();
+    GWT196983_01_CC();
+    GWT196983_02_CC();
+    GWT196983_03_CC();
+    GWT206966_01();
+    GWT196982_01_CC();  
+    GWT196982_02_CC();
+    GWT196982_03_CC();
+    GWT205841_01_HILInterferenceDetermination();  
+    GWT205841_03_HILInterferenceDetermination();  
+    GWT205841_02_HILInterferenceDetermination(); 
+    
+    StepInitializeIA();
+    
+    GWT196982_04_IA();
+    GWT196982_05_IA();
+    GWT196982_06_IA(); 
+    GWT206957_01();
+    GWT196984_02_IA();
+
+    HILTearDown();
+  
+  Log["PopLogFolder"]();
+} 
+
+
+//////////////////////////HIL feature///////////////////////////////////////////////////////////
+function GWT205841_01_HILInterferenceDetermination()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT205841_01 : Questionable HIL interference setup to run unaffected tests only and HIL detection is based on SQC with Vision HIL error sort area configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205841_01"; 
+ // NetworkSuite["Variables"]["DecapperScenario"] = "";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205841_01", "I");  
+  
+  Log["AppendFolder"]("Given SQC is configured with vision HIL error sort area"); 
+  if(!GivenSQCIsConfigured_GWT205841_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Sample Volume Determination", "GWT205841_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL setting is configured to be based on TCS"); 
+  if(!GivenHILSettingIsConfiguredToBeBasedOnTCS())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample is determined to be having Questionable interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingQuestionableInterference())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheunaffectedTests())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+} 
+
+
+function GWT205841_02_HILInterferenceDetermination()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT205841_02 : Questionable HIL interference setup to run unaffected tests only and HIL detection is based on SQC with Vision HIL error sort area configured and not available ");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205841_02"; 
+ // NetworkSuite["Variables"]["DecapperScenario"] = "";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205841_02", "I");  
+  
+  Log["AppendFolder"]("Given SQC is configured with Vision HIL error sort area not available"); 
+  if(!GivenSQCIsConfigured_GWT205841_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL setting is configured to be based on TCS"); 
+  if(!GivenHILSettingIsConfiguredToBeBasedOnTCS())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample is determined to be having Questionable interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingQuestionableInterference_GWT205841_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheunaffectedTests_GWT205841_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+} 
+
+function GWT205841_03_HILInterferenceDetermination()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT205841_03 : Questionable HIL interference setup to run unaffected tests only and HIL detection is based on SQC with Vision HIL error sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205841_03"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205841_03", "I");  
+  
+  Log["AppendFolder"]("Given SQC is configured with Vision HIL error sort area not available"); 
+  if(!GivenSQCIsConfigured_GWT205841_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL setting is configured to be based on TCS"); 
+  if(!GivenHILSettingIsConfiguredToBeBasedOnTCS())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample is determined to be having Questionable interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingQuestionableInterference_GWT205841_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheunaffectedTests_GWT205841_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_03", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT205841_04_HILInterferenceDetermination()//IA only
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT205841_04 : Questionable HIL interference setup to run unaffected tests only and HIL detection is based on SQC with Vision HIL error sort area configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205841_04"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205841_04", "I");  
+  
+  Log["AppendFolder"]("Given SQC is configured with vision HIL error sort area"); 
+  if(!GivenSQCIsConfigured_GWT205841_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL setting is configured to be based on TCS"); 
+  if(!GivenHILSettingIsConfiguredToBeBasedOnTCS())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample is determined to be having Questionable interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingQuestionableInterference_GWT205841_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheunaffectedTests_GWT205841_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_04", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+} 
+
+function GWT205841_05_HILInterferenceDetermination()//IA only
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT205841_05 : Questionable HIL interference setup to run unaffected tests only and HIL detection is based on SQC with Vision HIL error sort area configured and spot not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205841_05"; 
+ // NetworkSuite["Variables"]["DecapperScenario"] = "";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205841_05", "I"); 
+
+  Log["AppendFolder"]("Given SQC is configured with vision HIL error sort area"); 
+  if(!GivenSQCIsConfigured_GWT205841_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL setting is configured to be based on TCS"); 
+  if(!GivenHILSettingIsConfiguredToBeBasedOnTCS())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample is determined to be having Questionable interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingQuestionableInterference_GWT205841_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheunaffectedTests_GWT205841_05())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_05", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+} 
+
+
+
+function GWT205841_06_HILInterferenceDetermination()//IA only
+{
+  InitializeMetaData();
+
+  Log["AppendFolder"]("GWT205841_06 : Questionable HIL interference setup to run unaffected tests only and HIL detection is based on SQC with Vision HIL error sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205841_06"; 
+
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205841_06", "I"); 
+  
+  Log["AppendFolder"]("Given SQC is configured with vision HIL error sort area"); 
+
+  if(!GivenSQCIsConfigured_GWT205841_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL setting is configured to be based on TCS"); 
+  if(!GivenHILSettingIsConfiguredToBeBasedOnTCS())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample is determined to be having Questionable interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingQuestionableInterference_GWT205841_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+
+
+  Log["AppendFolder"]("Then Sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheunaffectedTests_GWT205841_06())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205841_06", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+} 
+
+
+
+function GWT197394_01_HILWorkflowConfiguredAsManual()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT197394_01: HIL workflow is configured as 'Manual', system does not allow operator to configure the vision HIL interference settings")
+  
+   ReportTestStatusToResultXML("SQC-HIL", "GWT197394_01", "I");  
+  
+  Log["AppendFolder"]("Given that SQC is configured on the system"); 
+  if(!GivenOnlyOneSQCAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197394_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the operator has configured the HIL workflow as manual"); 
+  if(!WhenTheOperatorHasConfiguredTheHILWorkflowAsManual_GWT197394_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197394_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then the system does not allow the operator to configure the Vision HIL interference setting"); 
+  if(!ThenTheSystemDoesNotAllowTheOperatorToconfigureTheVisionHILInterferenceSetting_GWT197394_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197394_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+} 
+
+function GWT197394_02_HILWorkflowConfiguredAsManual()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT197394_02: HIL workflow is configured as 'CH-Based', system does not allow operator to configure the vision HIL interference settings")
+  
+   ReportTestStatusToResultXML("SQC-HIL", "GWT197394_02", "I");  
+  
+  Log["AppendFolder"]("Given that SQC is configured on the system"); 
+  if(!GivenSQCIsConfigured_GWT205841_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197394_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the operator has configured the HIL workflow as CH-Based"); 
+  if(!WhenTheOperatorHasConfiguredTheHILWorkflowAsCHBased_GWT197394_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197394_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then the system does not allow the operator to configure the Vision HIL interference setting"); 
+  if(!ThenTheSystemDoesNotAllowTheOperatorToconfigureTheVisionHILInterferenceSetting_GWT197394_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197394_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+} 
+
+
+function GWT198294_01()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("GWT198294_01: HIL Interference detection is set to 'Manual'");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT198294_01";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT198294_01", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT198294_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And SQC is configured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT198294_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When HIL detection is set to 'Manual'");
+  if(!SHPanelWithHILSettingsGWT198294Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT198294_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("Then HIL CH tests are not ordered automatically");
+  if(!ThenPatientSampleGWT198294Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT198294_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+
+  Log["AppendFolder"]("Teardown: GWT#198924"); 
+  GWT198294Teardown();
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();  
+
+}
+
+
+//function GWT196983()
+//{
+//   InitializeMetaData();
+//   Log["AppendFolder"]("GWT196983:Definite HIL Interference Setup to not run any test and HIL detection is based on SQC-(CC Tests only)");
+//  
+//   Log["PopLogFolder"]();
+//   
+//   Log["AppendFolder"]("Teardown: GWT#196983"); 
+//   GWT196983Teardown();
+//   Log["PopLogFolder"]();
+//}
+
+function GWT196983_01_CC()
+{
+  Log["AppendFolder"]("GWT196983_01 : Definite HIL Interference Setup to not run any test and HIL detection is based on SQC-(CC Tests only)-HIL Sort area configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196983_01_CC";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196983_01", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And SQC is configured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL workflow is configured to be based on TCS");
+  if(!SHPanelWithHILSettingsGWT196983Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("When sample is determined to have atleast 1 test with definite interference for an HIL enabled TDef And HIL definition interference setting is configured to not run any tests");
+  if(!WhenPatientSampleLoadedAndSQCHILSortAreaAvailableGWT196983Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not sent to analyzers");
+  if(!ThenPatientSampleUnloadedAndNotSentToAanlyzerGWT196983Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+}
+
+
+function GWT196983_02_CC()
+{
+
+  Log["AppendFolder"]("GWT196983_02 : Definite HIL Interference Setup to not run any test and HIL detection is based on SQC-(CC Tests only)-HIL Sort area configured but not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196983_02_CC";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196983_02", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And SQC is configured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL workflow is configured to be based on TCS");
+  if(!SHPanelWithHILSettingsGWT196983Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("When sample is determined to have atleast 1 test with definite interference for an HIL enabled TDef And HIL definition interference setting is configured to not run any tests");
+  if(!WhenPatientSampleLoadedAndSQCHILSortAreaUnavailableGWT196983Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not sent to analyzers");
+  if(!ThenPatientSampleUnloadedAndNotSentToAanlyzerGWT196983Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+}
+
+function GWT196983_03_CC()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("GWT196983_03 : Definite HIL Interference Setup to not run any test and HIL detection is based on SQC-(CC Tests only)-HIL Sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196983_03_CC";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196983_03", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And SQC is configured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL workflow is configured to be based on TCS");
+  if(!SHPanelWithHILSettingsGWT196983Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("When sample is determined to have atleast 1 test with definite interference for an HIL enabled TDef And HIL definition interference setting is configured to not run any tests");
+  if(!WhenPatientSampleLoadedAndHoldingAvailableGWT196983Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_03", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not sent to analyzers");
+  if(!ThenPatientSampleUnloadedAndNotSentToAanlyzerGWT196983Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_03", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+}
+
+function GWT196982_04_IA()
+{
+  Log["AppendFolder"]("GWT196982_04 : Definite HIL interference Setup to run \"Unaffected tests only\" and HIL detection is based on SQC - IA-Sort Area configured Spot Available ");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196982_04_IA"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196982_04", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT196982_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT196982_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT196982_04_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleatst one definite interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingAtleastOneDefiniteInterference_GWT196982_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_04", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTests_GWT196982_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_04", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196982_05_IA()
+{
+  Log["AppendFolder"]("GWT196982_05 : Definite HIL interference Setup to run \"Unaffected tests only\" and HIL detection is based on SQC - IA-Sort Area configured, Spot not Available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196982_05_IA"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196982_05", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT196982_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT196982_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT196982_05_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleatst one definite interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingAtleastOneDefiniteInterference_GWT196982_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_05", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTests_GWT196982_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_05", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196982_06_IA()
+{
+  Log["AppendFolder"]("GWT196982_06 : Definite HIL interference Setup to run \"Unaffected tests only\" and HIL detection is based on SQC - IA-Sort Area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196982_06"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196982_06", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT196982_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT196982_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT196982_06_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_IA", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleatst one definite interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingAtleastOneDefiniteInterference_GWT196982_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_06", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTests_GWT196982_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_06", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  Log["AppendFolder"]("Teardown : Clearing Worklist data"); 
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+ // Log["PopLogFolder"]();
+}
+
+
+function GWT206957_01()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT206957_01 : SQC HIL detection ON and CH Module is NOT configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT206966_01"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT206957_01", "I");  
+  
+  Log["AppendFolder"]("Given CH analyzer is not configured");
+  if(!GivenCHAnalyzerNotConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206957_01", "F");
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT206957_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206957_01", "F");
+    Log["PopLogFolder"]();
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And HIL is disabled in TDef"); 
+  if(!GivenHILDisabledInTDEF_GWT206957_01())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206957_01", "F");
+    Log["PopLogFolder"]();
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is Loaded with IA"); 
+  if(!WhenSampleIsSampleIsLoadedWithIA_GWT206957_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206957_01", "F");
+    Log["PopLogFolder"]();
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then TCS2 Did not Detetct HIL interfence in Sample"); 
+  if(!ThenTCS2DidnotDetectHILInterferenceInSample_GWT206957_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206957_01", "F");
+    Log["PopLogFolder"]();
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+//  Log["AppendFolder"]("Teardown : Clearing Worklist data"); 
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+//  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("TearDown-Enabling CH Analyzer"); 
+    if(EnableCH_TearDown())
+   {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"](); 
+   Log["PopLogFolder"]();
+}
+
+function GWT206966_01()
+{
+  Log["AppendFolder"]("GWT206966_01 : SQC HIL detection ON and CH Module is configured");
+  //NetworkSuite["Variables"]["SHScenario"] = "GWT206966_01"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT206966_01", "I");  
+  
+  Log["AppendFolder"]("Given SQC is Configured on the system");
+  if(!GivenSQCConfiguredOnSystem_GWT206966_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206966_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When CH Based HIL is configured"); 
+  if(!WhenCHBasedHILIsConfigured_GWT206966_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "_GWT206966_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then HIL CH Analysis option is available"); 
+  if(!HILCHConfigurationIsAvailable_GWT206966_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "_GWT206966_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT205843_02_IA()
+{
+  Log["AppendFolder"]("GWT205843_02 : HIL detection is based on SQC and no test have SQC HIL interference-IA only");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205843_02_IA"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT205843_02_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL detection based on SQC");
+  if(!GivenHILDetectionBasedonSQC_GWT205843_02_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT205843_02_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given CH analyzer is not configured");
+  if(!GivenCHAnalyzerNotConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "F");
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+Log["AppendFolder"]("Then SQC Did not Trigger HIL interference in Sample"); 
+  if(!WhenSQCDidnotTriggerHILInterferenceInSample_GWT205843_02_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "F");
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+    
+  Log["AppendFolder"]("Then sample is unloaded to Output area"); 
+  if(!ThenSampleIsAspiratedAndUnloadedToOutputArea_GWT205843_02_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    EnableCH_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+ 
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["AppendFolder"]("TearDown-Enabling CH Analyzer"); 
+    if(EnableCH_TearDown())
+   {
+      Log["Warning"]("TearDown-Enabling CH Analyzer Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"](); 
+   Log["PopLogFolder"]();
+}
+
+function GWT205843_01_CC()
+{
+  Log["AppendFolder"]("GWT205843_01 : HIL detection is based on SQC and no test have SQC HIL interference");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205843_01_CC"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT205843_01", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT205843_01_CC())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL detection based on SQC");
+  if(!GivenHILDetectionBasedonSQC_GWT205843_01_CC())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least two test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT205843_01_CC())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+Log["AppendFolder"]("When SQC Did not Trigger HIL interfence in Sample"); 
+  if(!WhenSQCDidnotTriggerHILInterferenceInSample_GWT205843_01_CC())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+    
+  Log["AppendFolder"]("Then sample is unloaded to Output area"); 
+  if(!ThenSampleIsAspiratedAndUnloadedToOutputArea_GWT205843_01_CC())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT205843_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196983_04_IA()
+{
+  Log["AppendFolder"]("GWT196983_04 : Definite HIL interference Setup to \"Do not run any test\" and HIL detection is based on SQC - IA-Sort Area configured Spot Available ");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196983_04_IA"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196983_04", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT196983_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT196983_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT196983_04_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleatst one definite interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingAtleastOneDefiniteInterference_GWT196983_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_04", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTests_GWT196983_04_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_04", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196983_05_IA()
+{
+  Log["AppendFolder"]("GWT196983_05 : Definite HIL interference Setup to \"Do not run any test\" and HIL detection is based on SQC - IA-Sort Area configured, Spot not Available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196983_05_IA"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196983_05", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT196983_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT196983_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT196983_05_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_05", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleatst one definite interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingAtleastOneDefiniteInterference_GWT196983_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_05", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTests_GWT196983_05_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_05", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196983_06_IA()
+{
+  Log["AppendFolder"]("GWT196983_06 : Definite HIL interference Setup to \"Do not run any test\" and HIL detection is based on SQC - IA-Sort Area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196983_06"; 
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196983_06", "I");  
+  
+  Log["AppendFolder"]("Given SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem_GWT196983_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And HIL workflow is configured to be based on TCS2");
+  if(!GivenHILConfiguredToBasedonTCS2_GWT196983_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And at least one test has HIL threshold defined in TDef"); 
+  if(!GivenTestHasHILThresholdDefinedinTDEF_GWT196983_06_IA())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_06", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleatst one definite interference"); 
+  if(!WhenSampleIsDeterminedToBeHavingAtleastOneDefiniteInterference_GWT196983_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_06", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests"); 
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTests_GWT196983_06_IA())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196983_06", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196982_01_CC()
+{
+// Testcase#197098 - CC tests
+
+  Log["AppendFolder"]("GWT196982_01 : Definite HIL Interference Setup to run \"Unaffected tests only\" and HIL detection is based on SQC");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196982_01";
+    
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured");
+  if(!GivenSQCIsConfiguredGWT196982_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL workflow is configured to be based on TCS");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196982())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleast one enabled test with definite interference");
+  if(!WhenSampleDeterminedToHaveOneTestWithDefiniteInterferenceGWT196982_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When HIL definition interference setting is configured to Run only unaffected tests");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196982())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests");
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTestsGWT196982_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+  Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196982_02_CC()
+{
+// Testcase#197098 - CC tests
+
+  Log["AppendFolder"]("GWT196982_02 : Definite HIL Interference Setup to run \"Unaffected tests only\" and HIL detection is based on SQC");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196982_02";
+    
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "I");
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured");
+  if(!GivenSQCIsConfiguredGWT196982_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL workflow is configured to be based on TCS");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196982())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleast one enabled test with definite interference");
+  if(!WhenSampleDeterminedToHaveOneTestWithDefiniteInterferenceGWT196982_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When HIL definition interference setting is configured to Run only unaffected tests");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196982())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests");
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTestsGWT196982_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+   
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196982_03_CC()
+{
+// Testcase#197098 - CC tests
+
+  Log["AppendFolder"]("GWT196982_03 : Definite HIL Interference Setup to run \"Unaffected tests only\" and HIL detection is based on SQC");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196982_03";
+    
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "I");
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured");
+  if(!GivenSQCIsConfiguredGWT196982_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL workflow is configured to be based on TCS");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196982())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample is determined to be having atleast one enabled test with definite interference");
+  if(!WhenSampleDeterminedToHaveOneTestWithDefiniteInterferenceGWT196982_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When HIL definition interference setting is configured to Run only unaffected tests");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196982())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated for only the unaffected tests");
+  if(!ThenSampleIsAspiratedForOnlyTheUnaffectedTestsGWT196982_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196982_03", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT197393_01()
+{
+
+  Log["AppendFolder"]("GWT197393_01: HIL configred as Vision-Based and operator can configure options for definite and questionable interference");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT197393_01";
+  
+  ReportTestStatusToResultXML("SQC-HIL", "GWT197393_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197393_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured on the system");
+  if(!GivenOnlyOneSQCAvailable())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197393_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When the operator configured the HIL workflow as Vision based");
+  if(!WhenHILWorkflowConfiguredToBeBasedOnTCSGWT197393())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197393_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the operator can configure 3 options for definite and questionable interference");
+  if(!ThenOperatorCanConfigureThreeOptionsForDefAndQuestionableInterference())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197393_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+  Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+}
+
+function GWT196984_01_CC()
+{
+  // Testcase#197098 - CC tests
+  Log["AppendFolder"]("GWT196984_01: HIL detection is based on SQC and no test has SQC HIL interference");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196984_01";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured");
+  if(!GivenSQCIsConfiguredGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL detection is based on SQC");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When no tests have any SQC HIL interference");
+  if(!WhenNoTestsHaveAnyHILInterferenceGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And definite HIL interference is setup to do not run any tests");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC HIL sort area is configured and spot available");
+  if(!WhenHILSortAreaIsConfiguredAndSpotAvailableGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is unloaded into output area");
+  if(!ThenSampleIsUnloadedToOutputAreaGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+   Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196984_02_IA()
+{
+  // Testcase#198278 - IA tests
+
+  Log["AppendFolder"]("GWT196984_02: HIL detection is based on SQC and no test has SQC HIL interference");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT196984_02";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured");
+  if(!GivenSQCIsConfiguredGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And HIL detection is based on SQC");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When no tests have any SQC HIL interference");
+  if(!WhenNoTestsHaveAnyHILInterferenceGWT196984_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And definite HIL interference is setup to do not run any tests");
+  if(!GivenHILWorkflowConfiguredToBeBasedOnTCSGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC HIL sort area is configured and spot available");
+  if(!WhenHILSortAreaIsConfiguredAndSpotAvailableGWT196984_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is unloaded into output area");
+  if(!ThenSampleIsUnloadedToOutputAreaGWT196984_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT196984_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT206956_01()
+{
+  Log["AppendFolder"]("GWT206956_01: SQC HIL detection OFF and CH module is configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT206956_01";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT206956_01", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC HIL detection is OFF");
+  if(!GivenSQCHILDetectionIsOFFGWT206956_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And chemistry analytical module is configured on system");
+  if(!GivenChemistryModuleIsConfiguredGWT206956())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When manual HIL detection is configured");
+  if(!WhenManualHILDetectionIsConfiguredGWT206956_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then HIL CH tests are not automatically ordered");
+  if(!ThenHILCHTestsAreNotAutomaticallyOrderedGWT206956_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    
+    return false;
+  }
+    Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT206956_02()
+{
+  Log["AppendFolder"]("GWT206956_02: SQC HIL detection OFF and CH module is configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT206956_02";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT206956_02", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC HIL detection is OFF");
+  if(!GivenSQCHILDetectionIsOFFGWT206956_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And chemistry analytical module is configured on system");
+  if(!GivenChemistryModuleIsConfiguredGWT206956())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When manual HIL detection is configured");
+  if(!WhenManualHILDetectionIsConfiguredGWT206956_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then HIL CH tests are automatically ordered");
+  if(!ThenHILCHTestsAreAutomaticallyOrderedGWT206956_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_02", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT206956_03()
+{
+  InitializeMetaData();
+  //CH-HIL setting - According to TDef
+  Log["AppendFolder"]("GWT206956_03: SQC HIL detection OFF and CH module is configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT206956_03";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT206956_03", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC HIL detection is OFF");
+  if(!GivenSQCHILDetectionIsOFFGWT206956_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And chemistry analytical module is configured on system");
+  if(!GivenChemistryModuleIsConfiguredGWT206956())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When manual HIL detection is configured");
+  if(!WhenManualHILDetectionIsConfiguredGWT206956_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_03", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then HIL CH tests are not automatically ordered");
+  if(!ThenHILCHTestsAreNotAutomaticallyOrderedGWT206956_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT206956_03", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+}
+
+function GWT197660_01()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT197660_01 : CH based HIL detection - Always order HIL");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT197660_01";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT197660_01", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given CH Is Configured and HIL detection to be based on CH");
+
+  if(!GivenCHIsConfiguredAndHILDetectionToBeBasedOnCH_GWT197660_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Atleast one test has HIL threshold defined or CH based HIL detection is configured to always order HIL");
+
+  if(!WhenAtleastOneTestHasHILThresholdDefinedAndDetectionIsConfiguredToAlwaysOrderHIL_GWT197660_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is sent to CH analyzer for HIL evaluation");
+
+  if(!ThenSampleIsSentToCHAnalyzerForHILEvaluation_GWT197660_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_01", "F");
+    Log["PopLogFolder"]();
+    ClearWorklistData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+  if(!ClearWorklistData())
+  {
+    Log["Error"]("Teardown failed");
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+} 
+
+function GWT197660_02()
+{
+  Log["AppendFolder"]("GWT197660_02 : CH based HIL detection - According to Tdef HIL enabled");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT197660_02";
+
+  ReportTestStatusToResultXML("SQC-HIL", "GWT197660_02", "I");
+
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given CH Is Configured and HIL detection to be based on CH");
+
+  if(!GivenCHIsConfiguredAndHILDetectionToBeBasedOnCH_GWT197660_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Atleast one test has HIL threshold defined or CH based HIL detection is configured to always order HIL");
+
+  if(!WhenAtleastOneTestHasHILThresholdDefinedAndDetectionIsConfiguredToAlwaysOrderHIL_GWT197660_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    ClearApplicationData();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then Sample is sent to CH analyzer for HIL evaluation");
+
+  if(!ThenSampleIsSentToCHAnalyzerForHILEvaluation_GWT197660_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("SQC-HIL", "GWT197660_02", "F");
+    Log["PopLogFolder"]();
+    ClearApplicationData();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["AppendFolder"]("Teardown: HIL");
+
+  if(!ClearApplicationData())
+  {
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+   
+}
+
+
+function HILFeatures_All()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Feature: HIL");
+  ClearWorklistData();
+    
+//    GWT198294_01();  
+//    GWT197393_01();
+//    GWT196984_01_CC();
+//    GWT206956_01();
+//    GWT206956_02();
+    GWT206956_03();
+    GWT197660_01();
+    GWT197660_02();
+    GWT206966_01();
+    GWT196982_01_CC();  
+    GWT196982_02_CC();
+    GWT196982_03_CC();
+    GWT205843_01_CC();
+    GWT196983_01_CC();
+    GWT196983_02_CC();
+    GWT196983_03_CC();
+    GWT205841_01_HILInterferenceDetermination();   
+    GWT205841_02_HILInterferenceDetermination(); 
+    GWT205841_03_HILInterferenceDetermination();  
+    GWT197394_01_HILWorkflowConfiguredAsManual();
+    GWT197394_02_HILWorkflowConfiguredAsManual();
+    
+    StepInitializeIA();
+    
+    GWT205841_04_HILInterferenceDetermination();
+    GWT205841_05_HILInterferenceDetermination();
+    GWT205841_06_HILInterferenceDetermination();
+    GWT196984_02_IA();
+    GWT196982_04_IA();
+    GWT196982_05_IA();
+    GWT196982_06_IA();
+    GWT205843_02_IA(); 
+    GWT206957_01();
+    GWT196983_04_IA();
+    GWT196983_05_IA();
+    GWT196983_06_IA();
+    HILTearDown();
+  
+  Log["PopLogFolder"]();
+  }

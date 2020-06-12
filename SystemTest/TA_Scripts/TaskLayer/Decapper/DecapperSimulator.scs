@@ -1,0 +1,899 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT CommonUtilities
+//USEUNIT WorkflowNavigator
+var strWorkflowXMLPath=Project["Path"]+"TestData\\DeCapperWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\DeCapperControls.xml";
+
+function CheckCoverOpenSensor()
+{
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkCoverOpenSensor")
+  if(objCtrl!=null)
+  {
+  if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Cover Open Sensor Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Cover Open Sensor Checkbox is checked")
+  } 
+  }
+  else
+  {
+    Log["Warning"]("Cover Open Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+} 
+
+function UnCheckCoverOpenSensor()
+{
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkCoverOpenSensor");
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Cover Open Sensor Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Cover Open Sensor Checkbox is Unchecked")
+  } 
+  }
+   else
+  {
+    Log["Warning"]("Cover Open Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+}
+
+function CheckChuteSensor()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkChuteSensor");
+    if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Chute Sensor Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Chute Sensor Checkbox is checked")
+  }
+    }
+   else
+  {
+    Log["Warning"]("Chute Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+ 
+} 
+
+function UncheckChuteSensor()
+{
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkChuteSensor");
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Chute Sensor Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Chute Sensor Checkbox is Unchecked")
+  }
+    }
+   else
+  {
+    Log["Warning"]("Chute Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+ 
+}
+function CheckWasteBinPresent()
+{
+ try
+  {
+     InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkWasteBinPresent")
+  if(objCtrl!=null)
+  {
+  if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Waste Bin Present Checkbox is already checked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Waste Bin Present Checkbox is checked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Waste Bin Present Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UncheckWasteBinPresent()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    objCtrl=GetControl("DCapSimulator","ChkWasteBinPresent")
+    if(objCtrl!=null)
+    {
+      if(!objCtrl["IsChecked"]["OleValue"])
+      {
+        Log["Message"]("Waste Bin Present Checkbox is already Unchecked");
+
+      } 
+      else
+      {
+        SelectCheckbox(objCtrl)
+        Log["Message"]("Waste Bin Present Checkbox is Unchecked");
+      } 
+    }
+    else
+    {
+      Log["Warning"]("Waste Bin Present Checkbox is not available");
+    }
+    
+    if(!objCtrl["IsChecked"]["OleValue"])
+      return true;
+
+    else
+      return false;
+
+  }
+  catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+    return false;
+  } 
+}
+
+function CheckWasteBinFull()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkWasteBinFull");
+  if(objCtrl!=null)
+  {
+  if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Waste Bin Full Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Waste Bin Full Checkbox is checked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Waste Bin Full Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UncheckWasteBinFull()
+{
+  try
+  {
+     InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkWasteBinFull")
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Waste Bin Full Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Waste Bin Full Checkbox is Unchecked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Waste Bin Full Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+  
+}
+
+
+function CheckTubeGripperOpenSensor()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkTubeGripperOpenSensor")
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Tube Gripper Open Sensor Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Tube Gripper Open Sensor Checkbox is checked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Cap Gripper Open Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UncheckTubeGripperOpenSensor()
+{
+ try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkTubeGripperOpenSensor")
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Tube Gripper Open Sensor Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Tube Gripper Open Sensor Checkbox is Unchecked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Cap Gripper Open Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+function CheckCapGripperOpenSensor()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkCapGripperOpenSensor")
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Cap Gripper Open Sensor Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Cap Gripper Open Sensor Checkbox is checked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Cap Gripper Open Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckCapGripperOpenSensor()
+{
+ try
+  {
+       InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkCapGripperOpenSensor")
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Cap Gripper Open Sensor Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Cap Gripper Open Sensor Checkbox is Unchecked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Cap Gripper Open Sensor Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+function CheckHeadRotationAtBin()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationAtBin");
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation At Bin Checkbox is already checked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Head Rotation At Bin Checkbox is checked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation At Bin Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckHeadRotationAtBin()
+{
+  try
+  {
+      InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationAtBin");
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation At Bin Checkbox is already Unchecked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Head Rotation At Bin Checkbox is Unchecked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation At Bin Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckHeadRotationAtTrack()
+{
+   try
+  {
+   InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationAtTrack")
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation At Track Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Head Rotation At Track Checkbox is checked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation At Track Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckHeadRotationAtTrack()
+{
+    try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationAtTrack")
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation At Track Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Head Rotation At Track Checkbox is Unchecked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation At Track Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckSpinnerOn()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkSpinnerOn")
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Spinner On Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Spinner On Checkbox is checked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Spinner On Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckSpinnerOn()
+{
+  try
+  {
+      InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkSpinnerOn");
+ if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Spinner On Checkbox is already Unchecked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Spinner On Checkbox is Unchecked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Spinner On Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckTubeGripperClose()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkTubeGripperClose");
+ if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Tube Gripper Close Checkbox is already checked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Tube Gripper Close Checkbox is checked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Tube Gripper Close Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckTubeGripperClose()
+{
+  try
+  {
+      InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  if(objCtrl!=null)
+  {
+    objCtrl=GetControl("DCapSimulator","ChkTubeGripperClose")
+  if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Tube Gripper Close Checkbox is already Unchecked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Tube Gripper Close Checkbox is Unchecked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Tube Gripper Close Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckCapGripperClose()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkCapGripperClose")
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Cap Gripper Close Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Cap Gripper Close Checkbox is checked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Cap Gripper Close Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckCapGripperClose()
+{
+  try
+  {
+      InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkCapGripperClose")
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Cap Gripper Close Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Cap Gripper Close Checkbox is Unchecked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Cap Gripper Close Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckHeadRotationToTrack()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationToTrack");
+  if(objCtrl!=null)
+  {
+    if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation To Track Checkbox is already checked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Head Rotation To Track Checkbox is checked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation To Track Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckHeadRotationToTrack()
+{
+   try
+  {
+     InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationToTrack")
+  if(objCtrl!=null)
+  {
+    if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation To Track Checkbox is already Unchecked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl)
+    Log["Message"]("Head Rotation To Track Checkbox is Unchecked")
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation To Track Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckHeadRotationToBin()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationToBin")
+if(objCtrl!=null)
+  {
+      if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation To Bin Checkbox is already checked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Head Rotation To Bin Checkbox is checked");
+  } 
+   }
+   else
+  {
+    Log["Warning"]("Head Rotation To Bin Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+} 
+
+function UnCheckHeadRotationToBin()
+{
+  try
+  {
+     InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadRotationToBin");
+  if(objCtrl!=null)
+  {
+  if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Rotation To Bin Checkbox is already Unchecked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Head Rotation To Bin Checkbox is Unchecked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Rotation To Bin Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+}
+
+function CheckHeadVertical()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadVertical");
+  if(objCtrl!=null)
+  {
+  if(objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Vertical Checkbox is already checked")
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Head Vertical Checkbox is checked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Vertical Checkbox is not available");
+  }
+  }
+   catch(ex)
+  {
+    Log["Message"]("Exception - "+ ex["Description"]);
+  } 
+
+} 
+
+function UnCheckHeadVertical()
+{
+  try
+  {
+  InitializeWorkflowXML(strWorkflowXMLPath);
+  InitializeControlXML(strControlXMLPath);
+  objCtrl=GetControl("DCapSimulator","ChkHeadVertical");
+  if(objCtrl!=null)
+  {
+  if(!objCtrl["IsChecked"]["OleValue"])
+  {
+    Log["Message"]("Head Vertical Checkbox is already Unchecked");
+  } 
+  else
+  {
+    SelectCheckbox(objCtrl);
+    Log["Message"]("Head Vertical Checkbox is Unchecked");
+  } 
+    }
+   else
+  {
+    Log["Warning"]("Head Vertical Checkbox is not available");
+  }
+  }
+  catch(ex)
+ {
+    Log["Message"]("Exception - " + ex["Description"]);
+    }
+  }
+function VerifyOverflowSensorIsNotHigh()
+{
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    objCtrl=GetControl("DCapSimulator","ChkWasteBinFull");
+    if (CheckboxStatus(objCtrl))
+    {
+      Log["Error"]("Overflow sensor is high")  
+    }
+    else
+    {
+      Log["Message"]("Overflow sensor is not high")
+    } 
+  }
+  catch(ex)
+  {
+    Log["Message"]("Exception - " + ex["Description"]);
+  }
+  
+} 

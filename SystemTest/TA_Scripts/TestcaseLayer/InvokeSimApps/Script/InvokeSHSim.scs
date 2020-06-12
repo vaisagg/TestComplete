@@ -1,0 +1,113 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT SHLibrary
+function InvokeSHSim()
+{ 
+  try
+  {
+      var strAppName=" SH"
+	  var sTCSVersion=GetTCSVersionInSH()
+      if(sTCSVersion==2)
+        var strAppPath ="C:\\Siemens\\Bin\\Ramp.exe";// for SQC builds
+      else
+        var strAppPath = "C:\\Siemens\\Bin\\StartENG.bat";  //for Decapper builds
+      //var strAppPath ="C:\\Siemens\\Bin\\Ramp.exe"; // modified for P2 project
+     // var strAppPath = "C:\\Siemens\\Bin\\StartENG.bat";
+      var strProcessName = "SH.ModuleManager";
+      var oShell=Sys.OleObject("Shell.Application");
+      var bReturn = false;
+      
+      InvokeSH(strAppName,strAppPath,"", strProcessName)
+      
+       //Check the SH RAMP Service is running
+      var res = StartService(".", "RAMP Service");
+      if(res == true)
+      {
+        Log.Message("The SH RAMP Service started successfully or already started"); 
+      }
+      else
+      {
+        Log.Error("Unable to start the SH RAMP Service");
+      }
+      
+      var objProcess = Sys.WaitProcess(strProcessName, 25000);
+      
+//       Below code block commented for CI pipeline 
+//      if (Aliases.SH_ModuleManager.SampleHandlerUI.groupBox1.txtCurrentActivity.WaitProperty("Text","PreInitialize",120000))
+      if(objProcess["Exists"] == true)
+      {
+        Log.Message("SH module manager launched successfully")
+      }
+      else
+      {
+        Log.Warning("Unable to launch SH module manager")
+      }
+      
+//      var res = StartService(".", "TCSService");
+//      if(res == true)
+//      {
+//        Log.Message("The TCSService started successfully or already started"); 
+//      }
+//      else
+//      {
+//        Log.Error("Unable to start the TCSService");
+//      }
+      
+//      var res = StartService(".", "DVSService");
+//      if(res == true)
+//      {
+//        Log.Message("The DVSService started successfully or already started"); 
+//      }
+//      else
+//      {
+//        Log.Error("Unable to start DVSService");
+//      }
+      
+//      //Check the SH Module Manager Service is running
+//      var res = StartService(".", "SHMMService");
+//      if(res == true)
+//      {
+//        Log.Message("The SH Module Manager Service started successfully or already started"); 
+//        return true;
+//      }
+//      else
+//      {
+//        Log.Error("Unable to start the SH Module Manager Service");
+//        return false;
+//      }    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+  }
+}
+function GetTCSVersionInSH()
+{
+  try
+  {
+    var sTriProcessXMLPath="F:\\InstrumentOutput\\TriProcesses.xml"
+    var objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+    objXMLDoc["async"] = false;
+    objXMLDoc["load"](sTriProcessXMLPath);
+    var arrobjNodes   = objXMLDoc["selectNodes"]("//TrinidadProcess");
+    for(var i=0;i<arrobjNodes["length"];i++)
+    {
+      if(arrobjNodes["item"](i)["getAttribute"]("Name")=="TCS2.MainProject.exe")
+      {
+        Log.Message("TCS version is 2")
+        return 2;
+      } 
+    } 
+    if(i==arrobjNodes["length"])
+    {
+      Log.Message("TCS version is 1")
+      return 1;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    return false;  
+  }
+  
+  
+} 

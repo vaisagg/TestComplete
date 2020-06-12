@@ -1,0 +1,67 @@
+﻿//USEUNIT Inventory
+//USEUNIT WorkflowNavigator
+
+function LoadCCAnalyzerReagents()
+{
+  ReportTestStatusToResultXML("Initialize", "Load CC Reagents", "I");
+  
+  var boolReturnValue = LoadCHReagents();
+  
+  if(boolReturnValue == true)
+    ReportTestStatusToResultXML("Initialize", "Load CC Reagents", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "Load CC Reagents", "F");
+} 
+
+
+function LoadCHReagents()
+{
+  try
+  {
+    InitializeMetaData(); 
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"Reagents","LoadCCReagents")
+    var dictColumn=arrTestData[0];
+    var Assays=dictColumn["item"]("Assays")
+    Log["AppendFolder"]("Initialization::LoadReagents");
+    //Load reagents 
+    var intFailCount = 0; 
+    var boolVal, boolValue;
+    
+    var Navigation = InvokeWorkflow("Inventory_ReagentCatridgeEntry");
+    if (!Navigation)
+      return false;
+  
+    var arrAssays=Assays["split"](";") ;
+    for(var i=0;i<arrAssays["length"];i++)
+    {
+       boolVal = LoadCCReagents(arrAssays[i]);
+       if(!boolVal)
+        intFailCount++;
+    }
+  
+    //Verify loaded reagents available 
+    var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+      return false;
+  
+    var arrAssays=Assays["split"](";") ;
+    for(var i=0;i<arrAssays["length"];i++)
+    {
+      boolValue = VerifyReagentLoaded(arrAssays[i],"CC");
+      if(!boolValue)
+        intFailCount++;
+    }
+    Log["PopLogFolder"]();
+    
+    if(intFailCount == 0)
+      return true;
+    else
+      return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception" + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

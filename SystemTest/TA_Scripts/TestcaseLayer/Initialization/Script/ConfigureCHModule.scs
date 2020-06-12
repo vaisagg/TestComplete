@@ -1,0 +1,22 @@
+﻿//USEUNIT WorkflowNavigator
+//USEUNIT Setup
+
+function ConfigureCCModule()
+{
+  InitializeMetaData();
+  aqUtils["Delay"](10000,"Delay for application synchronization");
+
+  ReportTestStatusToResultXML("Initialize", "CC Module Settings", "I");
+  
+  var Navigation = InvokeWorkflow("Setup_Settings_ModuleConfiguration");
+  if (!Navigation)
+    ReportTestStatusToResultXML("Initialize", "CC Module Settings", "F");
+  
+  var boolValue = SetCCModuleConfiguration()
+  
+  if(boolValue == true)
+    ReportTestStatusToResultXML("Initialize", "CC Module Settings", "P");
+  else
+    ReportTestStatusToResultXML("Initialize", "CC Module Settings", "F");
+  
+}

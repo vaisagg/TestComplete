@@ -1,0 +1,573 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT ControlAccessLibrary
+//USEUNIT TCNativeLibraries
+
+var TestDataFile="";
+function InitializeMetaData()
+{
+    var ProjPath = ProjectSuite["Path"];
+    var arrPath  = ProjPath["split"]("Atellica")
+    TestDataFile =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\TestData.xls";
+ 
+//    var strWorkflowXMLPath = arrPath[0]+"TestcaseLayer\\P2\\TestData\\TrinidadWorkflows.xml";
+//    var strControlXMLPath  = arrPath[0]+"TestcaseLayer\\P2\\Testdata\\TrinidadControls.xml";
+    var strWorkflowXMLPath = arrPath[0]+"TaskLayer\\GUIAccessLibrary\\WorkflowNavigator\\TrinidadWorkflows.xml";
+    var strControlXMLPath  = arrPath[0]+"TaskLayer\\GUIAccessLibrary\\ControlAccess\\TrinidadControls.xml";
+    
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    AddNameMappingObjects();
+    InitializeLocalizationProcedure();
+    
+}
+function InitializeLocalizationProcedure()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica");
+  var SQLFilePath =  arrPath[0] + "TestcaseLayer\\P2\\TestData\\LocSQLScripts.sql";
+  
+  //SQLFilePath=Project["Path"]+"TestData\\LocSQLScripts.sql";
+  //Project["Variables"]["TestDataFile"]=Project["Path"]+"TestData\\TestData.xls"; 
+  if (!ExecSQLQueryFile(SQLFilePath))
+  {
+    Log["Error"]("Initialization: Localization sql scripts failed")
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InitializeWorkflowXML
+//*
+//*  Description: Reads application's Workflows.xml file and intializes objWorkflowsXML to contain workflow nodes
+//*  
+//*  Input: NA
+//*
+//*  Output: NA   
+//*
+//*  Example: InitializeWorkflowXML()
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InitializeWorkflowXML(strWorkflowXMLPath)
+{
+	try
+	{
+		//var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+		objWorkflowsXML = ReadXML(strWorkflowXMLPath);
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: "+exp["description"]);
+	}
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InitializeControlXML
+//*
+//*  Description: Reads application's Controls.xml file and intializes objControlsXML to contain control nodes
+//*  
+//*  Input: NA
+//*
+//*  Output: NA   
+//*
+//*  Example: InitializeControlXML()
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+
+function InitializeControlXML(strControlXMLPath)
+{
+	try
+	{
+		//var ControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+		objControlsXML = ReadXML(strControlXMLPath);
+    //AddNameMappingObjects();
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: "+exp["description"]);
+	}
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeWorkflow
+//*
+//*  Description: Invokes a workflow(navigation) based on the WorkflowCode passed as a parameter
+//*  
+//*  Input: WorkflowCode
+//*
+//*  Output: Boolean   
+//*
+//*  Example: InvokeWorkflow("System_Logs_OperatorEventLog_Export")
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeWorkflow(WorkflowCode)
+{
+	try
+	{
+	  Log["AppendFolder"]("WorkflowNavigator::InvokeWorkflow");
+    //Get the workflow path
+	   // var WorkflowCode="System_Logs_OperatorEventLog_Export"//"QC_QCstatistics_QCreview
+		//var strWorkflowXMLPath=Project["Path"]+"TestData\\WF.xml" 
+		var objWorkflow = objWorkflowsXML["selectSingleNode"]("/Workflows/Category/Workflow[@code='"+ WorkflowCode +"']");
+		//var Workflowid = objWorkflow["selectSingleNode"]("./WorkflowID")["text"];  
+		var WorkflowCode = objWorkflow["getAttribute"]("code");
+		 
+		var objNavigationPathControls=objWorkflow["selectNodes"]("./NavigationPath/Control");
+		var objTargetControl=objWorkflow["selectSingleNode"]("./NavigationPath")["getAttribute"]("target");
+	   
+		var objExitPathControls=objWorkflow["selectNodes"]("./ExitPath/Control");
+			
+		if(objNavigationPathControls["length"]==0)
+		{
+			Log["Error"]("The Navigation Path found null for "+WorkflowCode)
+      Log["PopLogFolder"]();
+			return false;
+		}
+		//Invoke workflows
+		if(NavigateToWorkflow(objNavigationPathControls,objTargetControl))
+		{       
+      //Log["Message"]("WF navigation successfully done for " + WorkflowCode)
+      Log["Checkpoint"]("WF navigation successfully done for " + WorkflowCode);
+      Log["PopLogFolder"]();
+			return true;        
+		}
+		else
+		{
+      Log["Warning"]("Could not complete WF navigation for " + WorkflowCode)
+      Log["PopLogFolder"]();
+			return false; 
+		}
+     Log["PopLogFolder"]();
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: "+exp["description"]);
+    Log["PopLogFolder"]();
+			return false;
+	}
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ExitWorkflow
+//*
+//*  Description: Exits from a workflow(navigation) based on the WorkflowCode passed as a parameter
+//*  
+//*  Input: WorkflowCode
+//*
+//*  Output: Boolean   
+//*
+//*  Example: ExitWorkflow("System_Logs_OperatorEventLog_Export")
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function ExitWorkflow(WorkflowCode)
+{
+	try
+	{
+		var objWorkflow=objWorkflowsXML["selectSingleNode"]("/Workflows/Category/Workflow[@code='"+ WorkflowCode +"']");
+		var objExitPathControls=objWorkflow["selectNodes"]("./ExitPath/Control")
+		for(var intCount = 0; intCount < objExitPathControls["length"]; intCount++)
+		{
+			var ControlName = objExitPathControls["item"](intCount)["getAttribute"]("name");
+			var objControl=GetControl("",ControlName)
+
+			if (objControl["Exists"])
+			{
+				PerformActionOnControl(objControl,ControlName);
+			}
+			else
+			{
+				Log["Error"]("Exit to workflow is unsuccessfull as unable to find the object "+ControlName)
+				return false;
+			}
+		}
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: "+exp["description"]);
+	}
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : GetAllWorkflows
+//*
+//*  Description: Exits from a workflow(navigation) based on the WorkflowCode passed as a parameter
+//*  
+//*  Input: 
+//*
+//*  Output: objWorkflowList (returns a xml node list of Workflows ) 
+//*
+//*  Example: GetAllWorkflows()
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function GetAllWorkflows()
+{
+    try
+    { 
+        InitializeWorkflowXML();
+        InitializeControlXML();
+         
+        var objWorkflowList = objWorkflowsXML["selectNodes"]("//Workflows/Category/Workflow");
+        return objWorkflowList;  
+    }
+    catch(exp)
+    {
+      Log["Error"]("Exception: "+exp["description"]);
+    }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : NavigateToWorkflow(objWFNavigationPath,objTargetControlName)
+//*
+//*  Description: Navigates to workflow based on the actions performed on the sequence of controls(provided in the navigation points)
+//*  
+//*  Input: objWFNavigationPath,objTargetControlName
+//*
+//*  Output: objWorkflowList (returns a xml node list of Workflows ) 
+//*
+//*  Example: NavigateToWorkflow(objWFNavigationPath,objTargetControlName)
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function NavigateToWorkflow(objWFNavigationPath,objTargetControlName)
+{
+	try
+	{
+		for(var intCount = 0; intCount < objWFNavigationPath["length"]; intCount++)
+		{
+			var ControlName = objWFNavigationPath["item"](intCount)["getAttribute"]("name");
+			var objControl=GetControl("",ControlName);
+			if (objControl["Exists"])
+			{
+				//objControl["Click"]()
+				PerformActionOnControl(objControl,ControlName);
+			}
+			else
+			{
+				Log["Error"]("Navigation to workflow is unsuccessfull as unable to find destination "+ControlName)
+				return false;
+			}
+		}
+
+		var objControl=GetControl("",objTargetControlName);
+		if (objControl["Exists"])
+		{
+			return true; 
+		}
+		else
+		{
+			Log["Error"]("Navigation to workflow is unsuccessfull as unable to find destination "+objTargetControlName);
+			return false;
+		}
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: "+exp["description"]);
+	}
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : PerformActionOnControl(objControl,ControlName)
+//*
+//*  Description: Performs an action on the control provided control name in the controls.xml and the Object
+//*  
+//*  Input: objControl,ControlName
+//*
+//*  Output: 
+//*
+//*  Example: PerformActionOnControl(objControl,ControlName)
+//*
+//*  Date of Creating: 
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function PerformActionOnControl(objControl,ControlName)
+{
+	try
+	{
+		var objWFControlsItem=objControlsXML["selectSingleNode"]("//Control[ControlName='"+ControlName+"']")
+    var Class=objWFControlsItem["getAttribute"]("Class")
+    
+    switch(Class)
+    {
+      case "ListBox":
+                          var iListBoxIndex=objWFControlsItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("Index");
+                          if (iListBoxIndex!=null)
+                          {
+                          	objControl["selectedIndex"]=iListBoxIndex;
+                            //Log["Picture"](Sys["Desktop"]["ActiveWindow"](), ControlName + " was selected with index: " + iListBoxIndex);
+                            Log["Event"](ControlName + " was selected with index: " + iListBoxIndex, "", pmNormal, "", Sys["Desktop"]["Picture"](), -1);
+                          }
+                          break;
+    
+      case "QCTabControl":
+      case "TabControl":
+      case "DMUITabCtrl":
+                          var iTabIndex=objWFControlsItem["selectSingleNode"]("PropertiesEx")["getAttribute"]("tabIndex");
+                          if (iTabIndex!=null)
+                          {
+                          	objControl["selectedIndex"]=iTabIndex;
+                            aqUtils["Delay"](800, "Navigation");
+                            Log["Event"](ControlName + " was selected with tab index: " + iTabIndex, "", pmNormal, "", Sys["Desktop"]["Picture"](), -1);
+                            //Log["Picture"](Sys["Desktop"]["ActiveWindow"](), ControlName + " was selected with tab index: " + iTabIndex);
+                          }
+                          break;
+      case "ShellButton":
+                          if(ControlName=="btnSetup")
+                          {
+                            clickOnSetupButton(objControl);
+                            break;
+                          } 
+                          else
+                          {
+                            aqUtils["Delay"](1000,"Navigation");
+                            objControl["Click"]();  
+                            break;
+                          } 
+  
+      default:
+                          aqUtils["Delay"](1000,"Navigation");
+                          objControl["Click"]();  
+                          break;
+  }
+		
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: "+exp["description"]);
+	}
+}
+
+function clickOnSetupButton(objControl)
+{
+  for(i=0;i<10;i++)
+  {
+
+    objControl["Click"]();
+    aqUtils["Delay"](2500,"Navigation");
+    var objTabBtn=GetControl("Setup_Testdefinition_IMTestdefinition_ImportTdef","tbbtnTestDefinition");
+   
+    if(objTabBtn!=null)
+    {
+      if(objTabBtn["VisibleOnScreen"])
+      {
+      
+      Log["Message"]("Setup Click function called");
+      
+      return;
+      }
+    } 
+  
+}
+
+}
+
+//******************************************************************************
+//                      Primary Display Functions
+//******************************************************************************
+//Added by Vaisag || Updated by Prabu
+function InvokeWorkFlowInPrimeDisp(WorkflowCode)
+{
+  try
+	{
+	  Log["AppendFolder"]("WorkflowNavigator::InvokeWorkflow for navigating to '" + WorkflowCode + "'");
+    
+    //Navigating to the dashbaord screen
+    if(!NavigateToDashboardScreen())
+    {
+      Log["Error"]("Dashboard navigation failed, Unable to navigate to dashbaord");
+      Log["PopLogFolder"](); 
+      return false;
+    }
+
+		var objWorkflow = objWorkflowsXML["selectSingleNode"]("/Workflows/Category/Workflow[@code='"+ WorkflowCode +"']");
+		var WorkflowCode = objWorkflow["getAttribute"]("code");
+		var objNavigationPathControls=objWorkflow["selectNodes"]("./NavigationPath/Control");
+		var objTargetControl=objWorkflow["selectSingleNode"]("./NavigationPath")["getAttribute"]("target");
+		var objExitPathControls=objWorkflow["selectNodes"]("./ExitPath/Control");
+			
+		if(objNavigationPathControls["length"]==0)
+		{
+			Log["Error"]("The Navigation Path found null for '" + WorkflowCode + "'");
+      Log["PopLogFolder"]();
+			return false;
+		}
+
+		//Invoke workflows
+		if(NavigateToWorkflowinPrimeDisp(objNavigationPathControls,objTargetControl))
+		{       
+      Log["Checkpoint"]("WF navigation successfully done for '" + WorkflowCode + "'");
+      Log["PopLogFolder"]();
+			return true;        
+		} else {
+      Log["Warning"]("Could not complete WF navigation for '" + WorkflowCode + "'");
+      Log["PopLogFolder"]();
+			return false; 
+		}     
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: ", exp["description"]);
+    Log["PopLogFolder"]();
+		return false;
+	}
+}
+
+//Added by Vaisag || Updated by Prabu
+function NavigateToWorkflowinPrimeDisp(objWFNavigationPath,objTargetControlName)
+{
+	try
+	{
+    //Iterating the workflow control sequences
+		for(var intCount = 0; intCount < objWFNavigationPath["length"]; intCount++)
+		{
+			var ControlName = objWFNavigationPath["item"](intCount)["getAttribute"]("name");
+			var objControl=GetAutomationIDControl("",ControlName);
+			if (objControl["Exists"])
+			{
+        Log["Message"]("Navigation control '" + ControlName + "' located and performing a click action");
+        
+        //Click on the control
+        ClickCtrl(objControl);
+        
+        //wait for the process ring (screen load icon) to be dis appeared
+        WaitForProgressRingToDisappear(30);
+        
+			} else {
+				Log["Error"]("Navigation to workflow is unsuccessfull as unable to find control '" + ControlName + "'");
+				return false;
+			}
+		}
+
+    //Getting the target / destination control
+		var objControl=GetAutomationIDControl("",objTargetControlName);
+    
+    //Check the destination control is displayed
+		if (objControl["Exists"])
+		{
+      Log["Message"]("Target destination control successfully located");
+			return true; 
+		} else {
+			Log["Error"]("Navigation to workflow is unsuccessfull as unable to find destination '" + objTargetControlName + "'");
+			return false;
+		}
+	}
+	catch(exp)
+	{
+		Log["Error"]("Exception: ", exp["description"]);
+    return false;
+	}
+}
+
+
+//***************************************************************************************
+//*   Function Name       : NavigateToDashboardScreen()
+//*   Function Description: This function is used to navigate to the dashbaord / home screen
+//*   Input               : NA
+//*   Output              : return true, if the System Health Check controls are displayed
+//*                         return false, if the System Health Check Controls are not displayed
+//*   Date of Creating    : 11 June 2019
+//*   Last Modified date  : 27 June 2019
+//*   Created By          : Prabu Ramaraj
+//*****************************************************************************************
+function NavigateToDashboardScreen()
+{
+  try
+  {
+    Log["AppendFolder"]("Dashboard :: Navigating to Dashbaord Screen");
+    
+    //Get home button control from header
+    var homeBtnCtrl = GetAutomationIDControl("HomeButton", "btnHome");
+    
+    //Get the samples list button control
+    var sampleListBtnCtrl = GetAutomationIDControl("SampleList", "btnSampleList");    
+    
+    //Check the home button is displayed
+    if(VerifyObjectExists(homeBtnCtrl))
+    {
+      //Check the home button is enabled
+      if(VerifyObjectEnabled(homeBtnCtrl)) 
+      {
+        Log["Message"]("Home Button is located and clicking to navigate to dashboard");
+        
+        //Click on the home button to navigate to the dashbaord
+        ClickCtrl(homeBtnCtrl);
+        
+        //Get the samples list button control
+        var sampleListBtnCtrl = GetAutomationIDControl("SampleList", "btnSampleList");
+    
+        if(VerifyObjectEnabled(sampleListBtnCtrl))
+        {
+          //Get the rack expand / collapse button control
+          var rackExpanderCtrl = GetAutomationIDControl("HomeButton", "rackExpander");
+    
+          //Click on the expander button to collapse the rack details
+          ClickCtrl(rackExpanderCtrl);
+        }
+        
+      } else if(VerifyObjectExistance(sampleListBtnCtrl)){
+        
+        Log["Message"]("Samples rack is expanded in dashbaord");
+        
+        //Get the rack expand / collapse button control
+        var rackExpanderCtrl = GetAutomationIDControl("HomeButton", "rackExpander");
+    
+        //Click on the expander button to collapse the rack details
+        ClickCtrl(rackExpanderCtrl);
+        
+      } else {
+        Log["Message"]("The screen is already landed in dashbaord");
+      }
+    }
+    
+    //Get the system health check module control
+    var systemMachineMap = GetAutomationIDControl("SystemHealthCheck", "systemHealthCheck");
+    
+    //Check the system health check is displayed as verification of dashbaord screen
+    if(VerifyObjectExists(systemMachineMap)) 
+    {
+      Log["Message"]("Checked that the system health check object is visible and the page is navigated to dashboard");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Unable to locate the system health check object");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :" + e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//Added by Prabu Ramaraj - Yet to be tested to implemented in testcases
+function WaitForProgressRingToDisappear(timeToWait) 
+{
+  try
+  {
+    var progressRing = GetAutomationIDControl("HomeButton", "processRing");
+    WaitForControlToGetDisappeared(progressRing, timeToWait);
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    return false;
+  }
+}

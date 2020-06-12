@@ -1,0 +1,152 @@
+<Controls>
+	<Category Name="DeCapper">
+		<Workflow Code="DCapSimulator">
+			<Control Class="CheckBox">
+				<Text>Cover Open Sensor</Text>
+				<ControlName>ChkCoverOpenSensor</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Cover Open Sensor</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Chute Sensor</Text>
+				<ControlName>ChkChuteSensor</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Chute Sensor</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Waste Bin Present</Text>
+				<ControlName>ChkWasteBinPresent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Waste Bin Present</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Waste Bin Full</Text>
+				<ControlName>ChkWasteBinFull</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Waste Bin Full</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Tube Gripper Open Sensor</Text>
+				<ControlName>ChkTubeGripperOpenSensor</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Tube Gripper Open Sensor</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Cap Gripper Open Sensor</Text>
+				<ControlName>ChkCapGripperOpenSensor</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Cap Gripper Open Sensor</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Head Rotation At Bin</Text>
+				<ControlName>ChkHeadRotationAtBin</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Head Rotation At Bin</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Head Rotation At Track</Text>
+				<ControlName>ChkHeadRotationAtTrack</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>"Head Rotation At Track</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Spinner On</Text>
+				<ControlName>ChkSpinnerOn</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Spinner On</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Tube Gripper Close</Text>
+				<ControlName>ChkTubeGripperClose</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Tube Gripper Close</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Cap Gripper Close</Text>
+				<ControlName>ChkCapGripperClose</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Cap Gripper Close</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Head Rotation To Track</Text>
+				<ControlName>ChkHeadRotationToTrack</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>HeadRotationToTrack</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Head Rotation To Bin</Text>
+				<ControlName>ChkHeadRotationToBin</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Head Rotation To Bin</MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text>Head Vertical</Text>
+				<ControlName>ChkHeadVertical</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility></Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode>Head Vertical</MessageCode>
+				<PropertiesEx/>
+			</Control>
+		</Workflow>
+		<Workflow Code="DCapModuleManager">
+			<Control Class="ListBox">
+				<Text></Text>
+				<ControlName>lstMessage</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lstMessage</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx/>
+			</Control>
+			<Control Class="ListBox">
+				<Text></Text>
+				<ControlName>lstSamples</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lstSamples</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode></MessageCode>
+				<PropertiesEx/>
+			</Control>
+		</Workflow>
+	</Category>
+</Controls>

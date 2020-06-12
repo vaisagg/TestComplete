@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<Root>
+  <WindowsService Name="UIW.Maintenance.DBMaintenanceService" DEPENDSON="" HEARTBEAT="SIM" />
+  <WindowsService Name="UIW.Framework.EventService" DEPENDSON="DBM" HEARTBEAT="SIM" />
+  <WindowsService Name="UIW.DM.DMService" DEPENDSON="EventMgr" HEARTBEAT="SIM" />
+  <WindowsService Name="SystemInstrumentManager" DEPENDSON="DM" HEARTBEAT="SIM" />
+  <WindowsService Name="UIW.Reports.ReportsManagerService" DEPENDSON="SIM" HEARTBEAT="SIM" EXITMODE="RESTART" />
+  <TrinidadProcess Name="TOrangeService.exe" PATH="c:\Siemens\bin" DEPENDSON="sim.service.exe" />
+  <TrinidadProcess Name="ARMConsole.exe" PATH="c:\Siemens\ARM\bin" />
+  <WindowsService Name="DiagnosticsWindowsService" DEPENDSON="ARMConsole.exe" />
+  <TrinidadProcess Name="SampleMoverMediator.exe" PATH="$(SMM)" HEARTBEAT="VMM" />
+  <WindowsService Name="DL Module Manager" DEPENDSON="EventMgr" HEARTBEAT="DL" />
+  <WindowsService Name="PlannerWinSVC" DEPENDSON="EventMgr" HEARTBEAT="PLANNER" />
+  <WindowsService Name="DLDiagnosticsWindowsService" DEPENDSON="DLARMConsole.exe" />
+</Root>

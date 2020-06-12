@@ -1,0 +1,4680 @@
+﻿//USEUNIT StepDefinitionPrimeDisp
+
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra");
+var TestDataFile =  arrPath[0] + "TestcaseLayer\\ARM\\TestData\\TestData.xls";
+var DBDataFile = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\DBQuery.xls";
+
+function GivenUpdateTrayTipCountUsingQuery(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Update the tip count for Left Tip Tray & Right Tip Tray");
+    
+    //--------------------------------------Fetching Testdata---------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    
+    var leftTrayTipCount = suppliesTestData[0]["Item"]("PresetLeftTipCount");
+    var rightTrayTipCount = suppliesTestData[0]["Item"]("PresetRightTipCount");
+    
+    var sqlQuery = GetTestItemsByTestName(DBDataFile,"Supplies","TipTrayCountSetupTemplate");
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //--------------------------------------Shutdown Hydra Before Running SQL Query-----------------------------
+    Log["AppendFolder"]("Step :: Shutdown hydra to execute the SQL query");
+    //Shut Down Legacy Consoles
+    if(!StepShutdownHydraApplication())
+    {
+      Log["Error"]("Failed to shudown hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //----------------------------------------Execute SQL Query for Left tray-----------------------------------
+        
+    //Check the left tray is having the tip count to be udpated
+    if(leftTrayTipCount != undefined && leftTrayTipCount != null)
+    {    
+      Log["AppendFolder"]("Setup :: Update the Left Tip Tray Count as '" + leftTrayTipCount + "'");
+      
+      var trayTipCount = leftTrayTipCount;
+      var statusId = "1";
+      var consumableId = "2";
+      
+      //if the tip count is passed as empty 
+      //Then set the status id  as '4' and tip count as 0 to make the tip count empty
+      if(trayTipCount == "")
+      {
+        trayTipCount = "0";
+        statusId = "4";
+      }
+      
+      var tipTrayQuery = sqlQuery[0]["Item"]("Query1");
+      var updatedTrayTipCount = aqString["Replace"](tipTrayQuery, "trayTipCount", trayTipCount);
+      var updatedStatusId = aqString["Replace"](updatedTrayTipCount, "statusId", statusId);
+      var finalTipTrayQuery = aqString["Replace"](updatedStatusId, "consumableId", consumableId);
+                   
+      //Execute the tip tray sql query 
+      if(!StepExecSQLQueryFromString(finalTipTrayQuery,strConString))
+      {
+        Log["Error"]("Failed to execute the sql query for the Left Tray Tip");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      } else {        
+        Log["PopLogFolder"]();
+      }      
+    } else {
+      Log["Error"]("Please check tip tray count provided in the left tip tray count from test data");
+      Log["PopLogFolder"]();      
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //----------------------------------------Execute SQL Query for Right tray----------------------------------
+    
+    //Check the right tray is having the tip count to be udpated
+    if(rightTrayTipCount != undefined && rightTrayTipCount != null)
+    {
+      Log["AppendFolder"]("Setup :: Update the Right Tip Tray Count as '" + rightTrayTipCount + "'");
+      
+      var trayTipCount = rightTrayTipCount;
+      var statusId = "1";
+      var consumableId = "3";
+      
+      //if the tip count is passed as empty 
+      //Then set the status id  as '4' and tip count as 0 to make the tip count empty
+      if(trayTipCount == "")
+      {
+        trayTipCount = "0";
+        statusId = "4";
+      }
+      
+      var tipTrayQuery = sqlQuery[0]["Item"]("Query1");
+      var updatedTrayTipCount = aqString["Replace"](tipTrayQuery, "trayTipCount", trayTipCount);
+      var updatedStatusId = aqString["Replace"](updatedTrayTipCount, "statusId", statusId);
+      var finalTipTrayQuery = aqString["Replace"](updatedStatusId, "consumableId", consumableId);
+                   
+      //update the tip count for the right tray by running sql query
+      if(!StepExecSQLQueryFromString(finalTipTrayQuery,strConString))
+      {
+        Log["Error"]("Failed to execute the sql query for the Left Tray Tip");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"]();
+        return false;
+      } else {
+        Log["PopLogFolder"]();
+      }
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------------Re-initialize Hydra and all applications-----------------------------            
+      
+    Log["AppendFolder"]("Setup :: Launch Hydra, Backend & Primary Display App");
+    
+    //launch Hydra application with (Start Trinidad, UDD, Primary UI & Hydra DML Simulator)
+    if(!StepLaunchHydraApplication())
+    {
+      Log["Error"]("Failed to re-initialize the hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------
+      
+      
+    //------------------------------------------Login to the Primary UI-----------------------------------------
+    Log["AppendFolder"]("Setup :: Login to Primary UI as 'LoginG0' user");
+
+    //Initailize variables
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");
+      
+    //Login to the primary ui with the given user name and password
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------
+      
+      
+    //----------------------------------------Check the ready state---------------------------------------------
+    Log["AppendFolder"]("Setup :: Check HYDRA Ready State in Primary Display");
+    
+    //Check the module ready state for all the system module displayed
+    if(!StepCheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("Failed to verify the system ready state in primary ui");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------   
+    
+    Log["PopLogFolder"](); 
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ConfigureSupplyThresholdValue(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Configure the threshold value for the supply in view all supply screen");
+
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+
+    var supplyNameArr = suppliesTestData[0]["Item"]("SupplyThresholdName")["split"](";");
+    var thresholdValueArr = suppliesTestData[0]["Item"]("SupplyThresholdValue")["split"](";");    
+    //----------------------------------------------------------------------------------------------------------
+        
+    //--------------------------Update and configure the threshold value for the supply-------------------------
+    
+    //Update supply threshold value from view all supplies screen
+    if(!StepUpdateSupplyThresholdValues(supplyNameArr,thresholdValueArr))
+    {
+      Log["Error"]("Configuring the supply threshold value action failed");
+      Log["PopLogFolder"]();
+      return false; 
+    } else {
+      Log["Checkpoint"]("Successfully configured the supply threshold value in view all supplies screen");
+      Log["PopLogFolder"]();
+      return true;
+    }    
+    //----------------------------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenTray1InUseAndTray2NotInUse()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Open & Close 'Right Tip Tray' and perform 'Cancel' in Replace popup to make 'Left Tip Tray - InUse'");
+    
+    //-----------------------Open Right Tip Tray and Make Left Tip Tray In Use----------------------------------        
+    var trayName = "Right Tip Tray";
+    
+    //Perform action for the given tray name
+    if(OpenAndCloseTipTrayWithoutAction(trayName))
+    {
+      Log["Checkpoint"]("'" + trayName + "' is successfully opened & close and cancelled the replace tip popup");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Failed to open & close the tray '" + trayName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //----------------------------------------------------------------------------------------------------------  
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function WhenTray2InUseAndTray1NotInUse()
+{
+  try
+  {
+    //-----------------------Open Left Tip Tray and Make Right Tip Tray In Use----------------------------------
+    
+    Log["AppendFolder"]("Step :: Open & Close Left Tip Tray and press Cancel to make Right Tip Tray 'InUse'");
+    var trayName = "Left Tip Tray";
+    
+    //Perform action for the given tray name
+    if(OpenAndCloseTipTrayWithoutAction(trayName))
+    {
+      Log["Message"]("'" + trayName + "' is successfully opened & close and cancelled the replace tip popup");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Failed to open & close the tray '" + trayName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //----------------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function OpenAndCloseTipTrayWithoutAction(trayName)
+{
+  try
+  {
+    //-----------------------------------------Open Tip Tray----------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open the Tip Tray
+    if(!StepOpenTipTray(trayName))
+    {
+      Log["Error"]("Failed to Open '" + trayName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("'" + trayName + "' was successfully opened");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //--------------------------------------------Close Tip tray------------------------------------------------
+    Log["AppendFolder"]("Step :: Close Tip Tray Door for '" + trayName + "'");
+    
+    //Close the Tip Tray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close '" + trayName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("'" + trayName + "' was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------------Perform Cancel action on the alert-------------------------------------
+    var action = "Cancel"
+    Log["AppendFolder"]("Step :: " + action + " the replace tips for the '" + trayName + "'");
+    
+    //Perform cancel Operation
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform action '" + action + "' in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTheTipTrayIsNotDisplayedWithInUseStatus(trayName)
+{
+  try
+  {  
+    Log["AppendFolder"]("Step :: Verify the 'InUse' not displayed for the '" + trayName + "'");
+        
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+            
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' does not contains 'InUse' status");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Verification failed as the '" + trayName + "' is displayed with 'InUse' status");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyThePresetTipCountDisplayedWithInUse(testName,trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Remaining Tip Count displayed for the '" + trayName + "' with 'InUse'");
+    
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);    
+    var trayTipCount = "";
+    var isStatusVerified=true;
+    
+    if(trayName == "Left Tray")
+    {
+      trayTipCount = suppliesTestData[0]["Item"]("PresetLeftTipCount");      
+    } else if (trayName == "Right Tray")
+    {
+      trayTipCount = suppliesTestData[0]["Item"]("PresetRightTipCount");
+    }
+        
+    //----------------------------------------------------------------------------------------------------------
+    
+    //---------------------------------------------Verify the Tray Tip Count------------------------------------
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+    
+    Log["AppendFolder"]("Step :: Verify the Remaining Tip Count displayed for the '" + trayName + "'");
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,trayTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of tray '" + trayName + "' with expected tip count '" + trayTipCount + "' Failed");
+      isStatusVerified=false;
+    } else {
+      Log["Checkpoint"]("Successfully verified tray '" + trayName + "' with expected count '" + trayTipCount + "'");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------------------------Verify the InUse status -----------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'InUse' displayed for the '" + trayName + "'");
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the '" + trayName + "' is not displayed with 'InUse' status");
+      isStatusVerified=false;
+    } else {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' contains 'InUse' status");      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return isStatusVerified;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTray2InuseAfterTray1Depleted(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Right Tip Tray 'InUse' after Left Tip Tray Depletes");
+    
+    //-------------------------------------------Fetching Testdata----------------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var isStatusVerified = true;
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------------Create Patient Order Samples-----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------------Load samples 1 & 2---------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 2 from the sample list");
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[0]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[1]);
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------------Check the samples aspirated------------------------------------------
+    Log["AppendFolder"]("Step :: Check the Samples Aspirated Status");
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the given sample id is aspirated in sample list datagrid
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample aspiration verification passed");
+        sampleAspiratedCount = sampleAspiratedCount + 1;
+        Log["PopLogFolder"]();        
+      } else {
+        Log["Error"]("Sample aspiration verification  for sample'" + sampleList[i] + "' failed");
+        Log["PopLogFolder"]();  
+      }
+    }
+    
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    
+    //----------------------------------Check the Left Tip Tray depleted----------------------------------------
+    Log["AppendFolder"]("Step :: Verify the Left Tip Tray is depleted and displayed as Empty");
+
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' is not displayed with 'Empty' status");
+      isStatusVerified = false
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' contains 'Empty' status");      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //----------------------------------Check the Right Tip Tray InUse Status-----------------------------------    
+    Log["AppendFolder"]("Step :: Verify the 'In Use' status displayed in Right Tray");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'In Use' status");
+      isStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'In Use' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------------Verify the Right Tray Tip Count ---------------------------------------
+    Log["AppendFolder"]("Step :: Verify the Preset Tip Count in Right Tray");
+    
+    //Check the remaining count displayed in the status of the tray
+    if(aqString["Find"](trayStatus,testData[0]["Item"]("PresetRightTipCount"),0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'Empty' status");
+      isStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'Empty' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return isStatusVerified;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTray2IsEmptyAfterDepleted(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Right Tip Tray is empty after Right Tip Tray depleted");
+    
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-----------------------------------Load samples 3, 4 & 5--------------------------------------------------
+    Log["AppendFolder"]("Step :: Load 3rd,4th and 5th samples using the DML simulator");
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[3]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[4]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[5]);
+    
+    //Load samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+            
+    //--------------------------------------Check the samples aspirated-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the 3rd, 4th and 5th samples are getting 'Aspirated' in sample list screen");
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //check the given sample is aspirated
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample aspiration verification passed");
+        sampleAspiratedCount = sampleAspiratedCount + 1;
+        Log["PopLogFolder"]();        
+      } else {
+        Log["Error"]("Sample aspiration verification  for sample'" + sampleList[i] + "' failed");
+        Log["PopLogFolder"]();  
+      }
+    }
+    
+    //Check all the given samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    
+    //--------------------------------------Check the Right Tip Tray depleted-----------------------------------
+    Log["AppendFolder"]("Step :: Verify the Right Tip Tray is depleted");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'Empty' status");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'Empty' status");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyRightTrayIsEmptyAfterDepleted(testName)
+{
+   try
+  {
+    Log["AppendFolder"]("Step :: Verify the Right Tip Tray is empty after Right Tip Tray depleted");
+   
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+   
+    //----------------------------------------------------------------------------------------------------------
+  
+    //-----------------------------------Load samples 1, 2 & 3--------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Samples using DML Simulator");
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[1]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[2]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[3]);
+   
+    //Load samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //--------------------------------------Check the samples aspirated-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Samples Aspirated Status");
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the sample aspirated status in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample aspiration verification passed");
+        sampleAspiratedCount = sampleAspiratedCount + 1;
+        Log["PopLogFolder"]();       
+      } else {
+        Log["Error"]("Sample aspiration verification  for sample'" + sampleList[i] + "' failed");
+        Log["PopLogFolder"]();
+      }
+    }
+    
+    //check all samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;     
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+   
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+   
+   
+    //--------------------------------------Check the Right Tip Tray depleted-----------------------------------
+    Log["AppendFolder"]("Step :: Verify the Right Tip Tray is depleted");
+   
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+   
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'Empty' status");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'Empty' status");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+   
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTheTipTrayReloaded(trayName)
+{
+  try
+  {  
+    Log["AppendFolder"]("Step :: Verify the '" + trayName + "' is reloaded with 120 tips");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"120",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the '" + trayName + "' is not displayed with 'Empty' status");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' contains 'Empty' status");
+      Log["PopLogFolder"]();
+      return true;  
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTheTipTrayDepleted(trayName)
+{
+  try
+  {  
+    Log["AppendFolder"]("Step :: Verify the '" + trayName + "' is depleted and displaying as Empty");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the '" + trayName + "' is not displayed with 'Empty' status");
+      Log["PopLogFolder"]();      
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' contains 'Empty' status");
+      Log["PopLogFolder"]();
+      return true;  
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAlertDisplayedInSupplyNeedsScreen(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verifying Alert In Supply Needs");
+    
+    //------------------------------------------Fetching Testdata ----------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+
+    var supplyName = suppliesTestData[0]["Item"]("SupplyName");//["split"](";");
+    var supplyStatus = suppliesTestData[0]["Item"]("SupplyAlertMessage");//["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+        
+    //--------------------Check the supply name and Status dispalyed in Supply Alert screen----------------------
+    if(!StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus))
+    {
+      Log["Error"]("Verification of Supply '" + supplyName + "' with expected status '" + supplyStatus + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Supply '" + supplyName + "' is displayed in supply needs screen with the status '" + supplyStatus + "'");
+      Log["PopLogFolder"]();
+      return true;  
+    }    
+    //----------------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyEventLogGeneratedInEventLogs(testName)
+{
+  try
+  {   
+    //---------------------------------------Fetching Testdata -------------------------------------------------   
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+
+    var eventCode = eventLogTestData[0]["Item"]("EventCode");//["split"](";");
+    var eventMessage = eventLogTestData[0]["Item"]("EventMessage");//["split"](";");
+    var eventTypeToFilter = eventLogTestData[0]["Item"]("EventTypeForAdvancedFilter");
+    var moduleTypeToFilter = "All";
+    //----------------------------------------------------------------------------------------------------------
+        
+    //------------------------------Verify Event Log for threshold met------------------------------------------
+    Log["AppendFolder"]("Step :: Verifying log entry in Operator Event Log");
+    
+    //Check the log entry is created in operator event log
+    if(!StepVerifyTheEventMessageInEventLogGrid(eventCode,eventMessage,eventTypeToFilter,moduleTypeToFilter))
+    {
+      Log["Error"]("Verification of Event Code '" + eventCode + "'  with Event message '" + eventMessage + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Event code '" + eventCode + "' and Event message '" + eventMessage + "' is displayed in event log");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //----------------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenTray1AndTray2IsEmptyAndSampleProcessingShouldFail(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Left Tip Tray & Right Tip Tray should be empty and sample processing should fail");
+    
+    //----------------------------------------------Fetching Testdata------------------------------------------- 
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    
+    var sampleList = new Array();
+    
+    //Creating list of samples from the testdata
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[5]);
+    //----------------------------------------------------------------------------------------------------------
+        
+    //----------------------------------------Load samples 6----------------------------------------------------
+    Log["AppendFolder"]("Step :: Load 6th Sample from the sample list");
+    
+    //Launch and load samples using DML simulator    
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //---------------------------------Check the sample 6 is not getting processed------------------------------
+    Log["AppendFolder"]("Step :: Check the 6th Sample '" + sampleList[0] + "' is not getting processed ");
+    
+    //Check the sample is not processing and displayed as intervention needed in sample list screen
+    if(!StepCheckSampleStatusinSampleList(sampleList[0],"Intervention Needed"))
+    {
+      Log["Error"]("Sample processing verification step failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenPerformingReplaceoperationInReplaceTipsPopUp(trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Open & Close '" + trayName + "' and Perform 'Replaced' in Replace Tip Popup ");
+    
+    //--------------------------------------Open Tip Tray-------------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open the TipTray
+    if(!StepOpenTipTray(trayName))
+    {
+      Log["Error"]("Failed to Open: "+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //--------------------------------------Close Tip tray------------------------------------------------------
+    Log["AppendFolder"]("Step :: Close Tip Tray Door for '" + trayName + "'");
+    
+    //Close the TipTray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close:"+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //---------------------------------Perform Replaced action on the alert-------------------------------------
+    var action = "Replaced"
+    Log["AppendFolder"]("Step :: " + action + " the tips from the '" + trayName + "'");
+    
+    //Perfrom the given action is replace tip popup
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform action '" + action + "' in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenPerformingReplaceOperationInReplaceTipsPopup(trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Open & Close '" + trayName + "' and Perform 'Replaced' in Replace Tip Popup");
+    
+    //------------------------------------------Open Tip Tray---------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open tip tray
+    if(!StepOpenTipTray(trayName))
+    {
+      Log["Error"]("Failed to Open: "+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-----------------------------------------Close Tip tray---------------------------------------------------
+    Log["AppendFolder"]("Step :: Close Tip Tray Door for '" + trayName + "'");
+    
+    //Close tip tray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close:"+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //---------------------------------Perform Replaced action on the alert-------------------------------------
+    var action = "Replaced"
+    Log["AppendFolder"]("Step :: " + action + " the tips for the '" + trayName + "'");
+
+    //Perfrom the given action is replace tip popup
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform action '" + action + "' in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenPerformingRemoveOperationInReplaceTipsPopup(trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Open & Close '" + trayName + "' and perform 'Remove' in Replace Tip Popup");
+    
+    //-----------------------------------------Open Tip Tray----------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open the TipTray
+    if(!StepOpenTipTray(trayName))
+    {
+      Log["Error"]("Failed to Open: "+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //---------------------------------------Close Tip tray-----------------------------------------------------
+    Log["AppendFolder"]("Step :: Close Tip Tray Door for '" + trayName + "'");
+    
+    //Close the TipTray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close:"+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //----------------------------------Perform Removed action on the alert-------------------------------------
+    var action = "Removed"
+    Log["AppendFolder"]("Step :: " + action + " the tips from the '" + trayName + "'");
+    
+    //Perfrom the given action is replace tip popup
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform action '" + action + "' in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenPerformingCancelOperationInReplaceTipsPopup(trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Open & Close '" + trayName + "' and perfrom Cancel in Replace Tip Popup");
+    
+    //--------------------------------------Open Tip Tray-------------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open the tip tray
+    if(!StepOpenTipTray(trayName))
+    {
+      Log["Error"]("Failed to Open: "+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //--------------------------------------Close Tip tray------------------------------------------------------
+    Log["AppendFolder"]("Step :: Close Tip Tray Door for '" + trayName + "'");
+    
+    //Close the tip tray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close:"+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //----------------------------------Perform Cancel action on the alert--------------------------------------
+    var action = "Cancel"
+    Log["AppendFolder"]("Step :: " + action + " the replace tips for the '" + trayName + "'");
+    
+    //Perofrm Cancel Operation in replace tip tray
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform '" + action + "' action in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTray1EmptyStatusAfterDepleting(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Left Tip Tray 'Empty' after Left Tip Tray Depletes");
+    
+    //---------------------------------------Fetching Testdata-------------------------------------------------- 
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var isStatusVerified=true;
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------Create Patient Order Samples-----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //create multiple patient order
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //------------------------------------Load samples 1 & 2 & 3 & 4--------------------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 1,2,3,4 & 5 from the sample list");
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[0]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[1]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[2]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[3]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[4]);
+    
+    //Load samples using the dml simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //----------------------------------------Check the samples aspirated---------------------------------------
+    Log["AppendFolder"]("Step :: Check the Samples Aspirated Status");
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the sample aspirated status in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample aspiration verification passed");
+        sampleAspiratedCount = sampleAspiratedCount + 1;
+        Log["PopLogFolder"]();        
+      } else {
+        Log["Error"]("Sample aspiration verification  for sample'" + sampleList[i] + "' failed");
+        Log["PopLogFolder"]();  
+      }
+    }
+    
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    //------------------------------------Check the Left Tip Tray depleted--------------------------------------
+    Log["AppendFolder"]("Step :: Verify the Left Tip Tray is depleted");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' is not displayed with 'Empty' status");
+      Log["PopLogFolder"]();
+      isStatusVerified= false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' contains 'Empty' status");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return isStatusVerified;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyThePresetTipCountDisplayed(testName,trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Remaining Tip Count displayed for the '" + trayName + "'");
+    
+    //-----------------------------------------Fetching Testdata------------------------------------------------ 
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);    
+    var trayTipCount = "";
+    
+    if(trayName == "Left Tray")
+    {
+      trayTipCount = suppliesTestData[0]["Item"]("PresetLeftTipCount");      
+    } else if (trayName == "Right Tray")
+    {
+      trayTipCount = suppliesTestData[0]["Item"]("PresetRightTipCount");
+    }
+    
+    //----------------------------------------------------------------------------------------------------------
+        
+    //------------------------------------------Verify the Tip count--------------------------------------------
+    
+    //Get the Tip Tray Status from View All Supplies Screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+    
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,trayTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of tray '" + trayName + "' with expected tip count '" + trayTipCount + "' Failed");
+      Log["PopLogFolder"]();      
+      return false; 
+    } else {
+      Log["Checkpoint"]("Successfully verified tray '" + trayName + "' with expected count '" + trayTipCount + "'");
+      Log["PopLogFolder"]();
+      return true; 
+    }
+    //----------------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenProcessTheSamplesAndVerifyTheRightTrayCountAndTheLeftTrayIsDepleted(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Create And Process Samples & Verify The Left & Right Tray");
+    
+    //------------------------------------------Fetching Testdata ----------------------------------------------
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var expectedTipCount = suppliesTestData[0]["Item"]("RemainingRightTipCount");    
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //--------------------------------------Create patient order sampels----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //---------------------------------------Load patient order samples-----------------------------------------
+    Log["AppendFolder"]("Step :: Load Samples using DML Simulator");
+        
+    //Load Samples using DML simulatoe
+    if(!LoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //------------------------------------Check Sample Aspirated Status-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");
+    
+    var sampleAspiratedCount = 0;
+    //Looping to verify the Samples Status
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the sample aspirated status in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } 
+      Log["PopLogFolder"]();             
+    }  
+    
+    //Verify all the Samples are Aspiated  
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+      
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+   
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    
+    //------------------------------Verify the remaining tip count after sample aspiration ---------------------
+    Log["AppendFolder"]("Verify the Remaining 'Right Tray' Tip count");
+      
+    var IsStatusVerified = true;
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+    
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,expectedTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of 'Right Tray' with expected tip count '" + expectedTipCount + "' Failed");
+      IsStatusVerified = false; 
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' with expected count '" + expectedTipCount + "'");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //---------------------------Verify the left tray is depleted-----------------------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'Left Tray' is depleted");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' is not displayed with 'Empty' status");
+      IsStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' contains 'Empty' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return IsStatusVerified;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenProcessTheSamplesAndVerifyTheLeftTrayCountAndTheRightTrayIsDepleted(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Create And Processing Samples & Verify The Left & Right Tray");
+    
+    //---------------------------------------Fetching Testdata -------------------------------------------------
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var expectedTipCount = suppliesTestData[0]["Item"]("RemainingLeftTipCount");  
+    //----------------------------------------------------------------------------------------------------------
+    
+    //--------------------------------------Create patient order sampels----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //---------------------------------------Load patient order samples-----------------------------------------    
+    Log["AppendFolder"]("Step :: Load Samples using DML Simulator");
+    
+    
+    //Load Samples using DML simulator
+    if(!LoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //------------------------------------Check Sample Aspirated Status-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");    
+    var sampleAspiratedCount = 0;
+    
+    //Looping to verify the Samples Status
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the samples are getting aspirated in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } 
+      Log["PopLogFolder"]();
+    }
+      
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      return false;      
+    }        
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+   
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    
+    //-----------------------------------Verify the Left Tip Tray Count ----------------------------------------
+    Log["AppendFolder"]("Verify the Remaining 'Left Tray' Tip count");
+    var IsStatusVerified = true;
+        
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,expectedTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of 'Left Tray' with expected tip count '" + expectedTipCount + "' Failed");
+      IsStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' with expected count '" + expectedTipCount + "'");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------Verify the Right Tray Tip Count Depleted-----------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'Right Tray' is depleted");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'Empty' status");
+      IsStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'Empty' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return IsStatusVerified;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenProcessOneSampleAndVerifyTheLeftTrayCountAndTheRightTrayIsDepleted(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Create And Processing Samples & Verify The Left & Right Tray");
+    
+    //---------------------------------------Fetching Testdata -------------------------------------------------
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["Item"]("SampleId")["split"](";")[3];
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var expectedTipCount = suppliesTestData[0]["Item"]("RemainingLeftTipCount");  
+    //----------------------------------------------------------------------------------------------------------
+    
+    //--------------------------------------Create patient order sampels----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //---------------------------------------Load patient order samples-----------------------------------------    
+    Log["AppendFolder"]("Step :: Load Samples from the sample list");
+    
+    //Load samples using the DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for sample to load and listed in sample list screen")
+    
+    
+    //------------------------------------Check Sample Aspirated Status-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");    
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } 
+      Log["PopLogFolder"]();
+    }
+      
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }        
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+   
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    
+    //-----------------------------------Verify the Left Tip Tray Count ----------------------------------------
+    Log["AppendFolder"]("Verify the Remaining 'Left Tray' Tip count");
+    var IsStatusVerified = true;
+        
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,expectedTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of 'Left Tray' with expected tip count '" + expectedTipCount + "' Failed");
+      IsStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' with expected count '" + expectedTipCount + "'");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------Verify the Right Tray Tip Count Depleted-----------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'Right Tray' is depleted");
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'Empty' status");
+      IsStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'Empty' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return IsStatusVerified;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyInUseShiftedFromLeftTrayToRightTray(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify 'In Use' shifted from Left Tray to Right Tray");
+    
+    //-------------------------------------Fetching Testdata----------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var rightTrayTipCount = suppliesTestData[0]["Item"]("PresetRightTipCount");
+    //----------------------------------------------------------------------------------------------------------
+    
+    //--------------------------------------------Open LeftTip Tray---------------------------------------------
+    Log["AppendFolder"]("Step :: Open Left Tip Tray Door");
+    
+    //Open the TipTray
+    if(!StepOpenTipTray("Left Tray"))
+    {
+      Log["Error"]("Failed to Open Left Tray");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("'Left Tray was successfully opened");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    //----------------------------------Verify the InUse shifted to Right Tray----------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'InUse' is shifted to Right Tray");
+        
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+            
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the ''Right Tray' is not displayed with 'InUse' status");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'InUse' status");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-------------------------------Verify the Tip count value in Right Tray-----------------------------------
+    
+    Log["AppendFolder"]("Step :: Verify the tip count in Right Tray");
+    
+    //Check the tip count displayed in the status of the tray
+    if(aqString["Find"](trayStatus,rightTrayTipCount,0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Right Tray' is not displayed with 'InUse' status");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Right Tray' contains 'InUse' status");
+      Log["PopLogFolder"]();
+    }        
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyLeftTipTrayCountAfterCloseAndCancelReplacePopup(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Close 'Left Tip Tray' and Click on Cancel from Replace Tip Popup");
+    
+    //--------------------------------------Fetching Testdata---------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var leftTrayTipCount = suppliesTestData[0]["Item"]("PresetLeftTipCount");
+    var trayName = "Left Tip Tray";
+    //----------------------------------------------------------------------------------------------------------
+    
+    //----------------------------------------Close Tip tray----------------------------------------------------
+    Log["AppendFolder"]("Step :: Close 'Left Tip Tray'")
+    
+    //Close the Tip Tray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close '" + trayName + "'");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("'" + trayName + "' was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-----------------------------------Cancel Operation in Replace Tip Popup----------------------------------
+    var action = "Cancel";
+    Log["AppendFolder"]("Step :: Click '" + action + "' from Replace Tip Popup");
+    
+    //Perform action on the alert
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform action '" + action + "' in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //----------------------------------Verify Left Tray Tip Count----------------------------------------------
+    Log["AppendFolder"]("Step :: Verify the Left Tip Tray Count");
+        
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,leftTrayTipCount,0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' tip count is not matched");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' tip count as '" + leftTrayTipCount + "'");
+      Log["PopLogFolder"]();
+    } 
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception",e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenMakeTray2EmptyAndVerifyTray1TipCountWithInUseAndTray2AsEmpty(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Make Right Tip Tray Empty and Verify Left Tip Tray 'InUse' with tip count");
+    
+    //---------------------------------------Fetching Testdata -------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var trayTipCount = suppliesTestData[0]["Item"]("PresetLeftTipCount"); ;
+    
+    var trayName = "Right Tip Tray";
+    var isStatusVerified=true;    
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------Making the Left Tip Tray InUse by Open and Closing Right Tip Tray----------------------
+    Log["AppendFolder"]("Step :: Open & Close '" + trayName + "' and perform 'Remove' in Replace Tip Popup");
+    
+    //---------------------------------Open Tip Tray------------------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open the Tip Tray
+    if(!StepOpenTipTray(trayName))
+    {
+      Log["Error"]("Failed to Open: "+trayName);
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------------Close Tip tray-------------------------------------------------
+    Log["AppendFolder"]("Step :: Close Tip Tray Door for '" + trayName + "'");
+    
+    //Close the Tip Tray
+    if(!StepCloseTipTray(trayName))
+    {
+      Log["Error"]("Failed to close:"+trayName);
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully closed");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //----------------------------------Perform Removed action on the alert-------------------------------------
+    var action = "Removed"
+    Log["AppendFolder"]("Step :: " + action + " the tips from '" + trayName + "'");
+    
+    //Perform Remove Operation
+    if(!StepActionOnTipTrayConfirmationAlert(trayName,action))
+    {
+      Log["Error"]("Failed to perform action '" + action + "' in tip tray confirmation alert");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Clicked '" + action + "' for the '"  + trayName + "'");
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();
+    //---------------------------------------------------------------------------------------------------------- 
+
+    
+    //------------Verify Preset count and InUse for Left Tip Tray &Empty status for Right Tip Tray -------------
+    Log["AppendFolder"]("Step :: Verify Left Tip Tray displays remianing Tip Count With 'InUse'");
+              
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    Log["AppendFolder"]("Step :: Verify Left Tip Tray displays remianing Tip Count");
+    
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,trayTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of tray '" + trayName + "' with expected tip count '" + trayTipCount + "' Failed");
+      Log["PopLogFolder"]();
+      isStatusVerified= false; 
+    } else {
+      Log["Checkpoint"]("Successfully verified tray '" + trayName + "' with expected count '" + trayTipCount + "'");
+      Log["PopLogFolder"]();
+    }
+      
+    Log["AppendFolder"]("Step :: Verify Left Tip Tray displays 'InUse'");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the '" + trayName + "' is not displayed with 'InUse' status");
+      Log["PopLogFolder"]();
+      isStatusVerified=false;
+    } else {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' contains 'InUse' status");
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();    
+    //------------------------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------Verify Right Tip displays Empty-----------------------------------------     
+    Log["AppendFolder"]("Step :: Verify Right Tip Tray displays 'Empty'");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Right Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the '" + trayName + "' is not displayed with 'InUse' status");
+      Log["PopLogFolder"]();
+      isStatusVerified= false;
+    } else {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' contains 'InUse' status");
+      Log["PopLogFolder"]();
+    }
+    
+   Log["PopLogFolder"]();
+   return isStatusVerified;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTray1EmptyStatusAfterDepleting3Samples(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Left Tip Tray 'Empty' after Left Tip Tray Depletes");
+    
+    //----------------------------------------Fetching Testdata ------------------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //--------------------------------------Create Patient Order Samples----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //------------------------------------Load samples 1 & 2 & 3------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 1,2 & 3 using DML Simulator");
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[0]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[1]);
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[2]);
+    
+    //Load Samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+
+    //------------------------------------Check Sample Aspirated Status-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");    
+    var sampleAspiratedCount = 0;
+    
+    //Looping to verify the sample status
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the sample is aspirated in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } 
+      Log["PopLogFolder"]();
+    }
+      
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      return false;      
+    }        
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    
+    //-----------------------------------Check the Left Tip Tray depleted---------------------------------------
+    Log["AppendFolder"]("Step :: Verify the Left Tip Tray is depleted");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"Empty",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' is not displayed with 'Empty' status");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' contains 'Empty' status");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+        
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTrayRemainingTipsAndNotInUseAfterTrayOpen(testName,trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Leave Tray open and Tray should display last known remaining tips");
+   
+    //----------------------------------------Fetching Testdata ------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);    
+    var trayNameToOpen;
+    var expectedTipCount;
+   
+    if(trayName ==  "Tray1" || trayName == "Left Tray" || trayName == "Left Tip Tray")
+    {
+      trayNameToOpen = "Left Tray";
+      expectedTipCount = suppliesTestData[0]["Item"]("PresetLeftTipCount");
+    }
+    else if(trayName ==  "Tray2" || trayName == "Right Tray" || trayName == "Right Tip Tray")
+    {
+      trayNameToOpen = "Right Tray";
+      expectedTipCount = suppliesTestData[0]["Item"]("PresetRightTipCount");
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+   
+    //--------------------------------------------Open Tip Tray-------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayName + "'");
+    
+    //Open the tip tray
+    if(!StepOpenTipTray(trayNameToOpen))
+    {
+      Log["Error"]("Failed to Open: "+trayName);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayName+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------------------Verify tip count-----------------------------------------------    
+    Log["AppendFolder"]("Step :: Verify expected tip count '" + expectedTipCount + "' is displayed for the '" + trayName + "'");
+    
+    //Get the tip tray status
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayNameToOpen);
+    
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,expectedTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of tray '" + trayName + "' with expected tip count '" + expectedTipCount + "' Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false; 
+    } else {
+      Log["Checkpoint"]("Successfully verified tray '" + trayName + "' with expected count '" + expectedTipCount + "'");
+      Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //----------------------------------------Verify the InUse status displayed---------------------------------
+    Log["AppendFolder"]("Step :: Verify 'InUse' isn't displayed for the '" + trayName + "'");
+    
+    //Check tray status doesn't display InUse
+    if(aqString["Find"](trayStatus,"In Use",0,false) != -1)
+    {
+      Log["Error"]("Tray : '" + trayName + "' displaying the status : In Use");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+     Log["Checkpoint"]("Successfully verified tray : '" + trayName + "' didn't display the status: In Use");
+     Log["PopLogFolder"]();
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function ThenTray1IsOpenAndTray2IsEmptyAndSampleProcessingShouldFail(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Leave Tray open and Tray should display last known remaining tips");
+    
+    //---------------------------------------Fetching Testdata -------------------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName); 
+    var sampleList = patientOrderTestData[0]["item"]("SampleId")["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+    
+    //---------------------------Create Patient Order Samples---------------------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-----------------------------------Load Patient Order Samples---------------------------------------------
+    Log["AppendFolder"]("Step :: Load Sample's using DML Simulator");
+        
+    //load the samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+
+    //--------------------------Check the samples are not getting processed-------------------------------------
+    Log["AppendFolder"]("Step :: Verify samples are not getting processed");
+    var isSampleFailed = true;   
+    for(var sample = 0;sample<sampleList.length;sample++)
+    {
+      Log["AppendFolder"]("Step :: Check the Sample '" + sampleList[sample] + "' is not getting processed ");
+      
+      //Check the samples are in Intervention needed status in sample list screen
+      if(!StepCheckSampleStatusinSampleList(sampleList[sample],"Intervention Needed"))
+      {
+        isSampleFailed = false;
+      }
+      Log["PopLogFolder"]();
+    }
+    
+    //Check all samples are matched with the expected sample status
+    if(isSampleFailed)
+    {
+      Log["Checkpoint"]("All samples resulted in Intervention Needed status");    
+      Log["PopLogFolder"]();
+    } else {
+      Log["Error"]("Sample processing verification step failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAlertInSupplyNeedsAfterProcessingSamples(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the supply alert displayed after processing samples");
+    
+    //-------------------------------------------Fetching Testdata----------------------------------------------
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var supplyName = suppliesTestData[0]["Item"]("SupplyName");//["split"](";");
+    var supplyStatus = suppliesTestData[0]["Item"]("SupplyAlertMessage");//["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-------------------------------------Create Patient Order Samples-----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-------------------------------------Load samples 1 ---------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Sample using DML Simulator");
+    
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId")["split"](";")[0]);
+
+    //Load samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------Check the samples aspirated------------------------------------------
+    Log["AppendFolder"]("Step :: Check the Samples Aspirated Status");
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the samples are in aspirated status in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample aspiration verification passed");
+        sampleAspiratedCount = sampleAspiratedCount + 1;
+        Log["PopLogFolder"]();        
+      } else {
+        Log["Error"]("Sample aspiration verification  for sample'" + sampleList[i] + "' failed");
+        Log["PopLogFolder"]();  
+      }
+    }
+    
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+    
+    //------------------------------------Verify Threshold alert--------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Verifying Alert In Supply Needs");
+    
+    //Check the supply name is displayed in supply needs screen
+    if(!StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus))
+    {
+      Log["Error"]("Verification of Supply '" + supplyName + "' with expected status '" + supplyStatus + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //----------------------------------------------------------------------------------------------------------  
+    
+    Log["Checkpoint"]("Successfully verified the alert with status: "+supplyStatus+" for supply name "+supplyName+" in supply needs datagrid");
+    Log["PopLogFolder"]();
+    return true;  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenTray1IsOpenAndTray2IsEmptyAndSampleListProcessingShouldFail(testName)
+{
+   try
+  {
+    Log["AppendFolder"]("Step :: Leave Tray open and Tray should display last known remaining tips");
+    
+    //---------------------------------------Fetching Testdata -------------------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName); 
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    //---------------------------Create Patient Order Samples---------------------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-----------------------------------Load Patient Order Samples---------------------------------------------
+    Log["AppendFolder"]("Step :: Load Sample using DML simulator");
+    
+    var sampleList = new Array();
+    sampleList.push(patientOrderTestData[0]["item"]("SampleId")["split"](";")[1]);
+    sampleList.push(patientOrderTestData[0]["item"]("SampleId")["split"](";")[2]);
+    
+    //Load samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for sample to load and listed in sample list screen")  
+    
+    //--------------------------Check the samples are not getting processed-------------------------------------
+    Log["AppendFolder"]("Step :: Verify samples are not getting processed");
+    var isSampleFailed = true;   
+    for(var sample = 0;sample<sampleList.length;sample++)
+    {
+      Log["AppendFolder"]("Step :: Check the Sample '" + sampleList[sample] + "' is not getting processed ");
+      
+      //Check the samples are in intervention needed status in sample list screen
+      if(!StepCheckSampleStatusinSampleList(sampleList[sample],"Intervention Needed"))
+      {
+        isSampleFailed = false;
+      }
+      Log["PopLogFolder"]();
+    }
+    
+    //Check all samples are matched with the expected sample status
+    if(isSampleFailed)
+    {
+      Log["Checkpoint"]("All samples resulted in Intervention Needed status");    
+      Log["PopLogFolder"]();
+    } else {
+      Log["Error"]("Sample processing verification step failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifySampleProcessingFromTray1AfterTray2Open(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Opening Tray2 and Verify sample processing from Tray1");
+    
+    //---------------------------------------Fetching Testdata -------------------------------------------------
+    
+    //patient test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var leftTrayTipCount = suppliesTestData[0]["Item"]("RemainingLeftTipCount");
+    //----------------------------------------------------------------------------------------------------------
+    
+    var trayNameToOpen = "Right Tray";
+   
+    //----------------------------------------------------------------------------------------------------------
+      
+    //--------------------------------------------Open Tip Tray-------------------------------------------------
+    Log["AppendFolder"]("Step :: Open Tip Tray Door for '" + trayNameToOpen + "'");
+    
+    //Open the tip tray
+    if(!StepOpenTipTray(trayNameToOpen))
+    {
+      Log["Error"]("Failed to Open: "+trayNameToOpen);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"](trayNameToOpen+" was successfully opened");
+      Log["PopLogFolder"]()
+    }
+    //----------------------------------------------------------------------------------------------------------
+       
+    //--------------------------------------Create patient order sampels----------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+      
+    //---------------------------------------Load patient order samples-----------------------------------------    
+    Log["AppendFolder"]("Step :: Load Samples using DML Simulator");
+    var sampleList = new Array();
+    sampleList.push(patientOrderTestData[0]["Item"]("SampleId")["split"](";")[1]);
+    
+    //Load samples using DML simulator
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //------------------------------------Check Sample Aspirated Status-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");    
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //Check the samples are aspirated in sample list screen
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } 
+      Log["PopLogFolder"]();
+    }
+      
+    //Check all the samples are aspirated
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }        
+    Log["PopLogFolder"]();
+    //---------------------------------------------------------------------------------------------------
+   
+    //Adding delay
+    aqUtils["Delay"](60000,"Waiting for Tips count to reflect in All supplies screen")
+       
+    //-------------------------------Verify the Left Tray Tip in InUse-----------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'Left Tray' is InUse");
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies("Left Tray");
+    
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' is not displayed with 'In Use' status");
+      IsStatusVerified = false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' contains 'In Use' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------Verify the Tip count value in Left Tray-----------------------------------
+    
+    Log["AppendFolder"]("Step :: Verify the tip count in Right Tray");
+        
+    //Check the tip count displayed in the status of the tray
+    if(aqString["Find"](trayStatus,leftTrayTipCount,0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the 'Left Tray' didn't display the count: "+leftTrayTipCount);
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Successfully verified 'Left Tray' displays tip tray count as: "+leftTrayTipCount);
+      Log["PopLogFolder"]();
+    }        
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTheRemainingTipCountDisplayedWithInUse(testName,trayName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Remaining Tip Count displayed for the '" + trayName + "' with 'InUse'");
+    
+    //----------------------------------------------Fetching Testdata ------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    
+    var trayTipCount = "";
+    var isStatusVerified=true;
+    
+    if(trayName == "Left Tray")
+    {
+      trayTipCount = suppliesTestData[0]["Item"]("RemainingLeftTipCount");      
+    } else if (trayName == "Right Tray")
+    {
+      trayTipCount = suppliesTestData[0]["Item"]("RemainingRightTipCount");
+    }
+    
+    //-------------------------------------------Verify the Tray Tip Count--------------------------------------
+    
+    //Get the tray status from view all supplies screen
+    var trayStatus = StepGetTipTrayStatusDisplayedInViewAllSupplies(trayName);
+    
+    Log["AppendFolder"]("Step :: Verify the Remaining Tip Count displayed for the '" + trayName + "'");
+    //Check the expected tip count is available in the status
+    if(aqString["Find"](trayStatus,trayTipCount,0,false) == -1) 
+    {
+      Log["Error"]("Verification of tray '" + trayName + "' with expected tip count '" + trayTipCount + "' Failed");
+      isStatusVerified=false;
+    } else {
+      Log["Checkpoint"]("Successfully verified tray '" + trayName + "' with expected count '" + trayTipCount + "'");      
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------------------Verify the Tray InUse Status-------------------------------------
+    Log["AppendFolder"]("Step :: Verify the 'InUse' displayed for the '" + trayName + "'");
+    //Check the InUse word displayed in the status of the tray
+    if(aqString["Find"](trayStatus,"In Use",0,false) == -1)
+    {
+      Log["Error"]("Verification failed as the '" + trayName + "' is not displayed with 'InUse' status");
+      isStatusVerified=false;
+    } else {
+      Log["Checkpoint"]("Successfully verified '" + trayName + "' contains 'InUse' status");
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return isStatusVerified;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+
+//----------------------------Pre-Treatment---------------------------------------------------------------------
+
+function GivenUpdateIMTAndPretreatmentFluidsUsingQuery(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Given IMT and Pretreatment fluids are loaded using query");
+    
+    //--------------------------Fetching Testdata---------------------------------------------------------------
+    var databaseQuery = GetTestItemsByTestName(DBDataFile,"Supplies",testName);
+    var sqlQuery = databaseQuery[0]["Item"]("Query1");
+    
+    //----------------------------------------------------------------------------------------------------------
+       
+    //--------------------------------------Shutdown Hydra Before Running SQL Query-----------------------------
+    Log["AppendFolder"]("Step :: Shutdown hydra to execute the SQL query");
+    
+    //Shut Down Legacy Consoles
+    if(!StepShutdownHydraApplication())
+    {
+      Log["Error"]("Failed to shudown hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------Execute Query--------------------------------------------------------
+
+    Log["AppendFolder"]("Step :: Executing the SQL query to update the IMT /Pretreatment informations");
+    
+    //assigning the database connection string to a variable
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    
+    //Execute the SQL Query
+    if(ExecSQLQueryFromString(sqlQuery,strConString)!=-1) 
+    {
+      Log["Message"]("IMT/Pretreatment data is updated using SQL query");
+    } else {      
+      Log["Error"]("SQL Query execution failed to update tip tray count");
+    }
+    Log["PopLogFolder"]();      
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-------------------------------------Re-initialize Hydra and all applications-----------------------------            
+      
+    Log["AppendFolder"]("Setup :: Launch Hydra, Backend & Primary Display App");
+    if(!StepLaunchHydraApplication())
+    {
+      Log["Error"]("Failed to re-initialize the hydra");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------  
+      
+    //------------------------------------------Login to the Primary UI-----------------------------------------
+    Log["AppendFolder"]("Setup :: Login to Primary UI as 'LoginG0' user");
+
+    //Initailize variables    
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0");
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password");
+    
+    //Login to Primary UI  
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to PrimaryUI");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------  
+      
+    //----------------------------------------Check the ready state---------------------------------------------
+    Log["AppendFolder"]("Setup :: Check HYDRA Ready State in Primary Display");
+    
+    //Check the ready state for the modules
+    if(!StepCheckAllSystemModulesReadyState())
+    {
+      Log["Error"]("Failed to verify the system ready state in primary ui");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    //----------------------------------------------------------------------------------------------------------   
+          
+    Log["PopLogFolder"](); 
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function WhenTheAssaysAreEnabledInAssayList(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Enable the assays for the given tests from Assay List");
+   
+    //------------------------------------------Fetching Testdata ---------------------------------------------
+    var tDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);
+        
+    var assayType = tDefTestData[0]["Item"]("AssayType");
+    var assayList = tDefTestData[0]["Item"]("AssaysToEnable")["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+    
+    //---------------------------------------Enable the Assay from Assay List-----------------------------------
+    
+    //Enable the given assay list from the assay list screen (Tdef)
+    if(StepEnableAssaysFromAssayList(assayType,assayList))
+    {
+      Log["Checkpoint"]("Successfully enabled all the given assays");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Failed to enable the given assays");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //----------------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function WhenTheTestsAreDisabledFromAssayLists(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Disable the Assay list from the assay setup");
+    
+    //----------------------------------------Fetching Testdata ------------------------------------------------
+    var tDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);
+    
+    var assayType = tDefTestData[0]["Item"]("AssayType");
+    var assayList = tDefTestData[0]["Item"]("AssaysToDisable")["split"](";");
+    //----------------------------------------------------------------------------------------------------------    
+    
+    //-------------------------------------Disable Assays from Assay List---------------------------------------
+    
+    //Disable the assay from assay list from Assay Setup popup 
+    if(StepDisableAssaysFromAssayList(assayType,assayList))
+    {
+      Log["Checkpoint"]("Given Assays are successfully disabled in the Assay List");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Failed to disable the assay list");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    //----------------------------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function ConfigureIMTAndPretreatmentThresholdValue(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Configure the threshold value for the supply in view all supply screen");
+
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+
+    var supplyNameArr = suppliesTestData[0]["Item"]("SupplyThresholdName")["split"](";"); 
+    var thresholdValueArr = suppliesTestData[0]["Item"]("SupplyThresholdValue")["split"](";");    
+    //----------------------------------------------------------------------------------------------------------
+    
+    //--------------------------Update and configure the threshold value for the supply-------------------------
+    
+    //update the threshold configuration by supply name
+    if(!StepUpdateSupplyThresholdValues(supplyNameArr,thresholdValueArr))
+    {
+      Log["Error"]("Configuring the supply threshold for 'IMT & Pretreatment' action failed");
+      Log["PopLogFolder"]();
+      return false; 
+    } else {
+      Log["Checkpoint"]("Supply Threshold value for 'IMT & Pretreatment' completed successfully");
+      Log["PopLogFolder"]();
+      return true;
+    }    
+    //----------------------------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyIMTAndPretreatmentFluidsDetails(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify IMT and Pretreatment fluid details");
+   
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);    
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    
+    //------------------------------------Get Fluids Data-------------------------------------------------------
+       
+    //Get required data of fluids
+    var fluidDetails = StepGetAllFluidsDetails(fluidNames)
+    
+    //Check the fluid data is displayed in view all supplies screen
+    if(fluidDetails == false)
+    {
+      Log["Error"]("Failed to get details of given fluids");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //-----------Verify volume is % & LOT,OBS,Expiration dates are displayed------------------------------------
+    
+    var isValidData = true;
+    //Iterate the fluid names from the IMT and verify the details
+    for(var i=0; i<fluidNames.length; i++)
+    {
+      //Verify Volume in percentage and OBS,LOT are displayed     
+      Log["AppendFolder"]("Step :: Verify if details displayed for " + fluidNames[i] + " is as expected");
+      
+      //check fluid deails is disabled
+      if(fluidDetails[i][0] != "Disabled")
+      {
+        //Don't check percentage if fluid is Multisensor
+        if(fluidNames[i] != "A-LYTE Multisensor")
+        {      
+          //Verifying volume is in percentage
+          if(aqString["Find"](fluidDetails[i][0],"%") != -1)
+          {
+            Log["Message"]("The displayed volume "+fluidDetails[i][0]+" for the fluid: "+fluidNames[i]+" is in percentage");
+            Log["Message"]("OBS displayed for the fluid: "+fluidNames[i]+" is: "+fluidDetails[i][1]);
+            Log["Message"]("Lot Expiration date displayed for the fluid: "+fluidNames[i]+" is: "+fluidDetails[i][2]);
+            Log["Message"]("LOT displayed for the fluid: "+fluidNames[i]+" is: "+fluidDetails[i][3]);
+            Log["PopLogFolder"]();      
+          } else {  
+            Log["Error"]("The displayed volume "+fluidDetails[i][0]+" for the fluid: "+fluidNames[i]+" is not in percentage");
+            Log["PopLogFolder"]();
+            isValidData = false;
+          }      
+        } else {
+          Log["Message"]("Volume displayed for the fluid: "+fluidNames[i]+" is "+fluidDetails[i][0]); 
+          Log["Message"]("OBS displayed for the fluid: "+fluidNames[i]+" is: "+fluidDetails[i][1]);
+          Log["Message"]("Lot Expiration date displayed for the fluid: "+fluidNames[i]+" is: "+fluidDetails[i][2]);
+          Log["Message"]("LOT displayed for the fluid: "+fluidNames[i]+" is: "+fluidDetails[i][3]);  
+          Log["PopLogFolder"]();   
+        }
+      } else {
+        Log["Error"]("The fluid '" + fluidNames[i] + "' is displayed as disabled in view all supplies");
+        Log["PopLogFolder"]();
+        isValidData = false;
+      }
+    }
+        
+    //check the supply details are verified as displayed
+    if(!isValidData)
+    {
+      Log["Error"]("Percentage is not displayed for the volume in some of the fluids");
+      Log["PopLogFolder"]();      
+      return false;  
+    }
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["Checkpoint"]("Sucessfully verified fluid volumes are in percentage and LOT,OBS,Lot Expiration date are displayed");   
+    Log["PopLogFolder"]();    
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAlertDisplayedWhenFluidVolumeReachesThreshold(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify alert displayed when fluid volume reaches/goes below threshold");
+    
+    //-----------------------------------------Fetching Testdata------------------------------------------------
+    
+    //supplies test data 
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    var supplyNameOnAlert = suppliesTestData[0]["item"]("SupplyName");
+    var supplyStatusOnAlert = suppliesTestData[0]["item"]("SupplyAlertMessage");
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleList = patientOrderTestData[0]["item"]("SampleId")["split"](";");//get the sample list
+    //----------------------------Check fluid enabled and get details before processing--------------------------
+         
+    Log["AppendFolder"]("Step :: Check all the given supplly fluids are enabled in view all supplies screen");
+    
+    var isAllFluidEnabled = true;
+      
+    //Get required details of fluids
+    var fluidDetailsBeforeProcess = StepGetAllFluidsDetails(fluidNames)
+
+    //Check the fluid details are displayed    
+    if(fluidDetailsBeforeProcess == false)
+    {
+      Log["Error"]("Failed to get details of given fluids");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    
+    //check all the fluids are displayed and enabled
+    for(var i=0; i<fluidNames.length; i++)        
+    {
+      //Verify fluid data is enabled
+      Log["AppendFolder"]("Step :: Verify the supply '" + fluidNames[i] + "' is enabled in view all supplies screen");
+      
+      //Check the data of fluids if disabled
+      if(fluidDetailsBeforeProcess[i][0] == "Disabled")
+      {
+        Log["Error"]("Supply '" + fluidNames[i] + "' is disabled in all supplies screen");
+        Log["PopLogFolder"]();
+        isAllFluidEnabled = false;
+      } else {
+        Log["Message"]("Supply '" + fluidNames[i] + "' is displayed with values");
+        Log["PopLogFolder"]();
+      }
+    }
+           
+    //Check that all the given supplies are displayed as expected  
+    if(!isAllFluidEnabled)
+    {
+      Log["Error"]("Some of the given fluid's are not enabled in view all supplies screen");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["PopLogFolder"]();
+         
+    //----------------------------Create Patient Order Samples--------------------------------------------------
+    
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //---------------------------------------------------------------------------------------------------------
+       
+    //----------------------------Load samples------------------------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Samples the given number of samples using DML simulator");
+    
+    //Load sample id's using DML simulator
+    if(!StepLaunchAndLoadSamplesArrayFromHydraDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-----------------Check Sample Aspirated Status in Sample List Screen--------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");
+    
+    var sampleAspiratedCount = 0;
+    
+    //check all the samples are aspirated
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the Sample '" + sampleList[i] + "' Aspirated Status ");
+      
+      //check the individual sample aspirated
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } else {
+        Log["Error"]("Sample '" + sampleList[i] + "' not aspirated as expected");
+      }
+      Log["PopLogFolder"]();
+    }
+    
+    //verify that all samples aspirated  
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }        
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //-----------Check the Supply volume decremented in view all supplies screen--------------------------------
+    
+    Log["AppendFolder"]("Step :: Check IMT volume decremented after processing IMT samples");    
+        
+    //Get required current displayed details of IMT fluids
+    var fluidDetailsAfterProcess = StepGetAllFluidsDetails(fluidNames)
+    
+    //Check the Supply details are displayed    
+    if(fluidDetailsAfterProcess == false)
+    {
+      Log["Error"]("Failed to get details of given fluids");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   
+    var isVolumeDecremented = true;
+
+    //Iterate the fluid and compare the details to verify the volume decremented    
+    for(var i=0;i<fluidNames.length;i++)
+    {
+      Log["AppendFolder"]("Verify the fluid '" + fluidNames[i] + "' volume/count is getting decremented");
+            
+      //Don't check if fluid is disabled
+      if(fluidDetailsAfterProcess[i][0] == "Disabled")
+      {
+         isVolumeDecremented = false;
+         Log["Error"]("Unable to check volume as the fluid '"+ fluidNames[i] + "' is displayed as 'Disabled'");         
+         Log["PopLogFolder"]();
+         continue;
+      }
+      
+      var valueBeforeProcess = null;
+      var valueAfterProcess = null;     
+       
+      //Don't split percentage if fluid is Multisensor
+      if(fluidNames[i] != "A-LYTE Multisensor") 
+      {
+        fluidDetailsBeforeProcess[i][0] = fluidDetailsBeforeProcess[i][0].split("%")[0]
+        fluidDetailsAfterProcess[i][0] = fluidDetailsAfterProcess[i][0].split("%")[0]  
+      }
+      
+      valueBeforeProcess = aqConvert["StrToInt"](fluidDetailsBeforeProcess[i][0]); 
+      valueAfterProcess = aqConvert["StrToInt"](fluidDetailsAfterProcess[i][0]);
+      
+            
+      //Check Volume/Count is reduced after the sample process
+      if(valueBeforeProcess > valueAfterProcess)
+      {
+        Log["Message"]("The volume/count is reduced for the fluid:"+fluidNames[i])
+        Log["Message"]("The volume/count for the fluid: "+fluidNames[i]+" before processing is: "+valueBeforeProcess);
+        Log["Message"]("The volume/count for the fluid: "+fluidNames[i]+" after processing is: "+valueAfterProcess);
+        Log["PopLogFolder"]();
+      } else {
+        isVolumeDecremented = false;
+        Log["Error"]("The volume/count is not reduced for the fluid:"+fluidNames[i])
+        Log["Error"]("The volume/count for the fluid: "+fluidNames[i]+" before sample processing is: "+valueBeforeProcess);
+        Log["Error"]("The volume/count for the fluid: "+fluidNames[i]+" after sample processing is: "+valueAfterProcess);
+        Log["PopLogFolder"]();
+      }
+    }
+    
+    //Check the volume decremented flag    
+    if(!isVolumeDecremented)
+    {
+      Log["Error"]("Some of the fluid volume is not decremented as expected after processing the samples");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //------------------------Check the alert is displayed in supply needs alert screen-------------------------
+     
+    Log["AppendFolder"]("Step :: Check the alert is displayed in supply needs alert screen");    
+
+    //check the alert is displayed in view alerts screen
+    if(!StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyNameOnAlert,supplyStatusOnAlert))
+    {
+      Log["Error"]("Supply '" + supplyNameOnAlert + "' is not displayed with the expected status '" + supplyStatusOnAlert + "' in view alerts screen");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    Log["Checkpoint"]("Supply '" + supplyNameOnAlert + "' is displayed in the view alert screen with expected status '" + supplyStatusOnAlert + "'.");
+    Log["PopLogFolder"]();
+    
+    //----------------------------------------------------------------------------------------------------------
+              
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenDepleteFluidsAndVerifyEventLogs(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify event log after fluid depletion");
+    
+    //--------------------------------------Fetching Testdata---------------------------------------------------
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);        
+    var sampleList = patientOrderTestData[0]["item"]("SampleId")["split"](";");
+    
+    //event logTest data
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+    var code = eventLogTestData[0]["Item"]("EventCodeForFluidDepletion");
+    var message = eventLogTestData[0]["Item"]("EventMessageForFluidDepletion");
+    //----------------------------------------------------------------------------------------------------------
+        
+    //---------------------------------------Create Patient Order Samples---------------------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //------------------------------------------Load samples----------------------------------------------------
+    Log["AppendFolder"]("Step :: Load Samples the given number of samples using DML simulator");
+    
+    //Load Samples
+    if(!StepLaunchAndLoadSamplesArrayFromHydraDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-----------------------------------------Check Sample Aspirated Status------------------------------------
+    
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");    
+    
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      //check sample is aspirated
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } else {
+        Log["Error"]("Sample '" + sampleList[i] + "' not aspirated as expected");
+      }
+      Log["PopLogFolder"]();
+    }
+    
+    //check all samples aspirated 
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }        
+    Log["PopLogFolder"]();
+    
+   //-----------------------------------------------------------------------------------------------------------
+   
+   //----------------------------------Verify IMT volume is depleted--------------------------------------------
+   
+   Log["AppendFolder"]("Step :: Verify IMT fluid volume is depleted after sample processing");
+   
+   //Get the required volume/count and store here
+   var fluidDetailsAfterDeplete = StepGetAllFluidsDetails(fluidNames) 
+   
+   if(fluidDetailsAfterDeplete == false)
+   {
+     Log["Error"]("Failed to get the volume/count for the given supply name");
+     Log["PopLogFolder"]();
+     Log["PopLogFolder"]();     
+     return false;
+   }
+    
+   //-----------------------------------------Verify if volume/count is depleted--------------------------------
+   
+    var isDepleted = true;
+    
+    for(var i=0;i<fluidNames.length;i++)
+    {
+      Log["AppendFolder"]("Verifying if the fluid: "+fluidname[i]+" volume/count is depleted after processing sample");
+      
+      var valueAfterProcess = null;
+      
+      if(fluidNames != "A-LYTE Multisensor") //If not multisensor the volume will be in percentage
+      {
+        var afterSplit = fluidDetailsAfterDeplete[i][0].split("%")[0]
+        valueAfterProcess = aqConvert["StrToInt"](afterSplit);   
+      } else {
+        valueAfterProcess = aqConvert["StrToInt"](fluidDetailsAfterDeplete[i][0]);     
+      }
+      
+      if(valueAfterProcess == 0)
+      {
+          Log["Message"]("The volume/count is depleted for the fluid:"+fluidNames[i])
+          Log["Message"]("The volume/count for the fluid: "+fluidNames[i]+" after processing is: "+valueAfterProcess);
+          Log["PopLogFolder"]();
+      } else {
+        isDepleted = false;
+        Log["Error"]("The volume/count is not depleted for the fluid:"+fluidNames[i])
+        Log["Error"]("The volume/count for the fluid: "+fluidNames[i]+" after sample processing is: "+valueAfterProcess);
+        Log["PopLogFolder"]();
+      }
+    }
+    
+    //check the supplies are depleted for processing
+    if(!isDepleted)
+    {
+      Log["Error"]("Verification of Volume/Count of fluid is depleted after sample process, failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   
+    Log["PopLogFolder"]();    
+    //----------------------------------------------------------------------------------------------------------
+   
+    //---------------------------Check Event Log After IMT volume depletion-------------------------------------
+   
+    Log["AppendFolder"]("Step :: Verify Event Log after IMT volume depletion")
+   
+    //Verify the Threshold Met EventLog
+    if(StepVerifyTheEventMessageInEventLogGrid(code,message))
+    {
+      Log["Message"]("Threshold Met Log message is displaying in Event Log Grid");
+    } else{
+      Log["Error"]("Threshold Met Log message is not displaying in Event Log Grid");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["Checkpoint"]("Successfully verified event logs after fluid delpetion");
+    Log["PopLogFolder"]();
+    return true;  
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTheIMTSensorDisplayedVolumeInCount()
+{
+  try
+  {
+    //---------------------------Verify the IMT Sensor Volume displayed in Count---------------------------
+ 
+    Log["AppendFolder"]("Step :: Verify the IMT Sensor Volume displayed in Count");
+     
+    //-------------------------------------------Get Fluids Data--------------------------------------------
+   
+    Log["AppendFolder"]("Step :: Get details of A-LYTE Multisensor")
+    
+    //INDEX = 0-Volume,1-OBS,2-LotExpirationDate,3-Lot
+    var fluidData = StepGetFluidDetailsFromSupplyNeeds("A-LYTE Multisensor");
+    
+    //check the fluid data is captured
+    if(fluidData == false)
+    {
+      Log["Error"]("Failed to get the details of the A-LYTE Multisensor");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Retrived all data of A-LYTE Multisensor");
+    }
+    
+    Log["PopLogFolder"]();
+      
+  //----------------------------------Verify IMT Sensor value is in count-----------------------------
+    
+    Log["AppendFolder"]("Step :: Verify IMT sensor is enabled and displyed count value");
+    
+    //check the IMT Sensor is Enabled
+    if(fluidData[0] != "Disabled")
+    {
+      //check Sensor value is displayed in count
+      if(aqConvert["StrToInt"](fluidData[0]) >= 0)
+      {
+        Log["Message"]("The dispalyed IMT sensor value '"+fluidData[0]+"' is displayed in count")
+        Log["PopLogFolder"]();
+        Log["Checkpoint"]("The IMT sensor count for A-LYTE Multisensor is displayed in count");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("The dispalyed IMT sensor value '"+fluidData[0]+"' is not displayed in count");
+        Log["PopLogFolder"]();
+        Log["PopLogFolder"](); 
+        return false;
+      }
+    } else {
+      Log["Error"]("A-LYTE Multisensor is disabled in view all supplies screen");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  //---------------------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTheLotExpirationDateForFluids(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Lot Expiration date for IMT & Pretreatment Fluids");
+    
+    //------------------------------------------Fetching Testdata -----------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    
+    var expirationDate = suppliesTestData[0]["Item"]("LotExpirationDaysFromCurrentDate");//["split"](";");
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+
+    //-------------------------------------------Get Fluids Details---------------------------------------------------------
+      
+    //Get fluid data 
+    var fluidData = StepGetAllFluidsDetails(fluidNames)
+    
+    //check fluid data is fetched
+    if(fluidData == false)
+    {
+      Log["Error"]("Failed to get data of given fluids");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //---------------------------Verify Lot Expiration Dates of IMT and Pretreatment fluids------------------------------
+    var isExpirationDateEqual = true;
+    
+    for(var i=0;i<fluidNames.length;i++)        
+    {
+      //Verify Lot expiration dates are as expected
+      Log["AppendFolder"]("Step :: Verify the fluid '"+fluidNames[i] + "' is enabled and Expected Lot expiration date is displayed")
+      
+      //check the fluid is enabled
+      if(fluidData[i][0] != "Disabled")
+      {
+        //Add No of days with Current date = > Expiration date  
+        var expectedLotExpirationDateTime = aqDateTime["AddDays"](aqDateTime["Now"](),expirationDate)
+        
+        //Get only date
+        var expectedLotExpirationDate =  (aqDateTime["GetDay"](expectedLotExpirationDateTime) + "/" + aqDateTime["GetMonth"](expectedLotExpirationDateTime) + "/" + aqDateTime["GetYear"](expectedLotExpirationDateTime))
+        
+        //Converting string to date and comparing the dates
+        if(aqDateTime["Compare"](aqConvert["StrToDate"](fluidData[i][2]),aqConvert["StrToDate"](expectedLotExpirationDate)) == 0)
+        {
+          Log["Message"]("Displayed Lot expiration date is as expected lot expiration date for fluid: "+fluidNames[i]);
+          Log["Message"]("Lot expiration date displayed: "+fluidData[i][2]);
+          Log["Message"]("Lot expiration date expected: "+expectedLotExpirationDate);
+          Log["PopLogFolder"]();
+        } else {
+          isExpirationDateEqual = false;
+          Log["Error"]("Displayed Lot expiration date is not as expected lot expiration date for fluid: "+fluidNames[i]);
+          Log["Error"]("Lot expiration date displayed: "+fluidData[i][2]);
+          Log["Error"]("Lot expiration date expected: "+expectedLotExpirationDate);
+          Log["PopLogFolder"]();
+        }        
+      } else {
+        isExpirationDateEqual = false;
+        Log["Error"]("The fluid '" + fluidNames[i] + "' is displayed as Disabled status");
+        Log["PopLogFolder"]();
+      }
+    }
+    
+    //check the expiration date is displayed as expected
+    if(!isExpirationDateEqual)
+    {
+      Log["Error"]("Lot Expiration date verification failed for some of the fluids");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["Checkpoint"]("Lot expiration date verification successfully completed for the given fluids");
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTheOBSForFluids(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the OBS for IMT & Pretreatment Fluids ");
+    
+    //-----------------------------------------------Fetching Testdata -----------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");    
+    var installationDate = suppliesTestData[0]["Item"]("InstallationDaysFromCurrentDate");//["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-----------------------------------------Get Fluids Data--------------------------------------------------
+                 
+    //Get Data for the given fluids
+    var fluidData = StepGetAllFluidsDetails(fluidNames)
+    
+    //check the fluids are displayed
+    if(fluidData == false)
+    {
+      Log["Error"]("Failed to get data of given fluids");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    //---------------------------------Verify the OBS for IMT & Pretretment-------------------------------------
+        
+    var isOBSEqual = true;
+    
+    for(var i=0; i<fluidNames.length; i++)        
+    {
+      Log["AppendFolder"]("Step :: Verify the fluid '" +fluidNames[i] + "' is enabled and Expected OBS Days Displayed")
+      
+      //check the Fluid is enabled
+      if(fluidData[i][0] != "Disabled")
+      {
+        //Get the Calculated OBS (Calculate by Fluid Names & Installation date)
+        var expectedOBS = CalculateOBSDateFromInstallationDate(fluidNames[i],installationDate)
+        
+        //Verify the calculated OBS from the installation date 
+        if(expectedOBS)
+        {
+          //Verify the Expected OBS displayed 
+          if(fluidData[i][1] == expectedOBS)
+          {
+            Log["Message"]("The OBS displayed is as expected OBS for the fluid: "+fluidNames[i]);
+            Log["Message"]("OBS displayed :"+fluidData[i][1]);
+            Log["Message"]("OBS Expected: "+expectedOBS);
+            Log["PopLogFolder"]();
+          } else {
+            isOBSEqual = false;
+            Log["Error"]("The OBS displayed is not as expected OBS for the fluid: "+fluidNames[i]);
+            Log["Error"]("OBS displayed :"+fluidData[i][1]);
+            Log["Error"]("OBS Expected: "+expectedOBS);
+            Log["PopLogFolder"]();
+          } 
+        } else {
+          isOBSEqual = false;
+          Log["Error"]("Failed to get the OBS date from the installation date");
+          Log["PopLogFolder"]();          
+        }
+      } else {
+        isOBSEqual = false;
+        Log["Error"]("The fluid '" + fluidNames[i] + "' is displayed as Disabled status");
+        Log["PopLogFolder"]();
+      }
+    }
+    
+    //Check the OBS value
+    if(!isOBSEqual)
+    {
+      Log["Error"]("OBS verification failed for some of the fluids");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("OBS verification successfully completed for the given fluids");
+      Log["PopLogFolder"]()
+      return true;
+    }
+    //----------------------------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function CalculateOBSDateFromInstallationDate(fluidName,installationDate)
+{
+  try
+  {
+    Log["AppendFolder"]("Calculate the OBS date from OBS days & Installation date")
+    
+    //Get the OBs Days from Data bases
+    var obsDays = GetOBSDaysFromDatabase(fluidName);
+    
+    //Verify the Obs days  
+    if(!obsDays)
+    {
+      Log["Error"]("Unable to get OBS days from DB")
+      return false;
+    }
+      
+    //Get installation Date
+    var getInstallationDate = aqDateTime["AddDays"](aqDateTime["Now"](),installationDate)
+    
+    //Get expiration date
+    var expirationDate = aqDateTime["AddDays"](getInstallationDate,obsDays)
+    
+    //Get the difference to Current & Expiration Date(Total Days)
+    var timeDifference = aqDateTime["TimeInterval"](aqDateTime["Now"](),expirationDate)
+    
+    var OBSTime = aqConvert["TimeIntervalToStr"](timeDifference)
+    
+    //Get the Date & Hour 
+    var OBSDays = OBSTime["split"](":")[0]
+    var OBSHour = OBSTime["split"](":")[1]
+    
+    if(OBSDays.length == 2)
+    {
+      if(OBSDays[0] == 0)
+      OBSDays = aqString["Remove"](OBSDays,0,1)
+    }
+    
+    if(OBSHour.length == 2)
+    {
+      if(OBSHour[0] == 0)
+      OBSHour = aqString["Remove"](OBSHour,0,1)
+    }
+    
+    //Get the calculated OBS in a expected format
+    var expectedOBS = OBSDays + " d " + OBSHour + " h";
+    
+    Log["Message"]("Calculated OBS Date For '" +fluidName + "' is: " +expectedOBS )
+    Log["PopLogFolder"]()
+    return expectedOBS;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function GetOBSDaysFromDatabase(fluidName)
+{
+  try
+  {
+    Log["AppendFolder"]("Get the OBS Days from database");
+    
+    var consumableId = "";
+    var typeId = "";
+    
+    //Get the Consumable ID & Type by bu Fluidname
+    if(fluidName == "IMT Std B")
+    {
+      consumableId = "21";
+      typeId = "1";
+    } 
+    else if(fluidName == "IMT Standard A")
+    {
+      consumableId = "19";
+      typeId = "1";
+    }
+    else if(fluidName == "IMT Diluent")
+    {
+      consumableId = "22";
+      typeId = "1";
+    }
+    else if(fluidName == "A-LYTE Multisensor")
+    {
+      consumableId = "4";
+      typeId = "2";
+    }
+    else if(fluidName == "Pretreatment")
+    {
+      consumableId = "18";
+      typeId = "1";
+    }
+    else {
+      Log.Error("There is no Matching Consumable ID")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Query for getting OBS from DB
+    var obsQuery = "select OnboardStability from dbo.Consumables WHERE ConsumableID = " + consumableId + " AND TypeID = " + typeId;
+    
+    var strConString = "Provider=sqloledb;Server=.;Database=MM;Integrated Security=SSPI;"
+    
+    //Get the RecordSet of OBS
+    var obs = ReturnQueryRecordSetFromString(obsQuery,strConString)
+    
+    //Get the Obs days  
+    var obsDays = obs["Fields"]("OnboardStability").Value
+    
+    Log["Message"]("OBS days taken form Database for the Fluid '" + fluidName + " ' is " +obsDays)
+    Log["PopLogFolder"]();  
+    return obsDays;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenPreTreatmentSuppliesShouldGetDisabled()
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Pretreatment supplies are in disabled state");
+    
+    //get the pretreatment details disaplyed
+    
+    //0-Volume,1-OBS,2-LotExpirationDate,3-Lot
+    var pretreatmentDetails = StepGetFluidDetailsFromSupplyNeeds("Pretreatment");
+    
+    //Check the pretreatment supplies are in disabled state
+    if(pretreatmentDetails[0] == "Disabled")
+    {
+      Log["Checkpoint"]("Pretreatment supplies are succeessfully verified as disabled");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Pretreatment supplies are not in disabled state");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function ThenAlertShouldNotDisplayedInSupplyNeedsScreen(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verifying Alert is not displayed In Supply Needs");
+    
+    //------------------------------------------Fetching Testdata ----------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var supplyName = suppliesTestData[0]["Item"]("SupplyName");    
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //--------------------Check the supply ane and Status dispalyed in Supply Alert screen----------------------
+    if(StepVerifyTheSupplyNameNotDisplayedInSupplyNeedsAlert(supplyName))
+    {
+      Log["Checkpoint"]("Verification succefully done as the supply '" + supplyName + "' is not displayed in alert screen");
+      Log["PopLogFolder"]();
+      return true;
+    } else {
+      Log["Error"]("Verification is failed as the supply '" + supplyName + "' is displayed in the alert screen");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    //----------------------------------------------------------------------------------------------------------     
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenTrackThePretreatmentSupplyDetailsByEnablingAssayBack(testName,pretreatmentDataBeforeDisabling)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the Pretreatment supplies are in enabled state with the previous values");
+    
+    //---------------------------------------------Fetching Testdata--------------------------------------------
+    
+    //supplies test data
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var supplyName = suppliesTestData[0]["Item"]("SupplyName");
+    var supplyStatus = suppliesTestData[0]["Item"]("SupplyAlertMessage");
+    
+    //patient order test data
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);
+    var sampleId = patientOrderTestData[0]["Item"]("SampleId");
+    var specimen = patientOrderTestData[0]["Item"]("Specimen");
+    var priority = patientOrderTestData[0]["Item"]("Priority");
+    var analyzer = patientOrderTestData[0]["Item"]("Analyzer");
+    var assay = patientOrderTestData[0]["Item"]("Assay");
+    var replicates = patientOrderTestData[0]["Item"]("Replicates");
+  
+    //Tdef testdata
+    var tDefTestData = GetTestItemsByTestName(TestDataFile,"TestDefinition",testName);
+    var assayType = tDefTestData[0]["Item"]("AssayType");
+    var assayList = tDefTestData[0]["Item"]("AssaysToEnable")["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+    
+    //---------------------------------------Enable the Assay from Assay List-----------------------------------
+    
+    //Enable the given assay list from the assay list screen (Tdef)
+    if(StepEnableAssaysFromAssayList(assayType,assayList))
+    {
+      Log["Checkpoint"]("Successfully enabld the Pretreatment assays");
+      Log["PopLogFolder"]();      
+    } else {
+      Log["Error"]("Failed to enable the Pretreatment assays");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    //----------------------------------------------------------------------------------------------------------  
+    
+    //-----------------------Check the Pretreatment Supply is enabled with previous values----------------------
+    Log["AppendFolder"]("Step :: Check the Pretreatment supply is enabled back");
+    
+    //0-Volume,1-OBS,2-LotExpirationDate,3-Lot
+    var pretreatmentDataAfterEnabledBack = StepGetFluidDetailsFromSupplyNeeds("Pretreatment");
+    
+    var isPretreatmentDetailsRestored = true;
+    
+    //check the pretreatment supply is displayed in view all supplies screen
+    if(pretreatmentDataAfterEnabledBack == false)
+    {
+      Log["Error"]("Unable to get the pretreatment details from view all supplies screen");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //check the pretreatment details are restored as same as before disabling    
+    
+    //check the length of the array to check the pretreatment information details
+    if(pretreatmentDataAfterEnabledBack.length == pretreatmentDataBeforeDisabling.length)
+    {
+      //check the volume displayed has been restored with value of before disabling
+      if(pretreatmentDataAfterEnabledBack[0] != pretreatmentDataBeforeDisabling[0])
+      {
+        Log["Error"]("Pretreatment supply volume has been changes after enabling back");
+        Log["PopLogFolder"]();        
+        isPretreatmentDetailsRestored = false;
+      }
+      
+      //check the OBS days for the pretreatment supply
+      if(pretreatmentDataAfterEnabledBack[1] != pretreatmentDataBeforeDisabling[1])
+      {
+        Log["Error"]("Pretreatment supply volume has been changes after enabling back");
+        Log["PopLogFolder"]();
+        isPretreatmentDetailsRestored = false;
+      }            
+      
+      //check the lot expiration date for the pretreatment supply
+      if(pretreatmentDataAfterEnabledBack[2] != pretreatmentDataBeforeDisabling[2])
+      {
+        Log["Error"]("Pretreatment supply volume has been changes after enabling back");
+        Log["PopLogFolder"]();
+        isPretreatmentDetailsRestored = false;
+      }      
+    } else {
+      Log["Error"]("Data before and after enabling the pretreatment supply is mismatched");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Check the pretreatment details are successfully restored
+    if(isPretreatmentDetailsRestored)
+    {
+      Log["Checkpoint"]("Pretreatment details are successfully restored as before disabling the pretreatment assays");
+    } else {
+      Log["Error"]("Some of the pretreatment informations volume / OBS/ lot expiration are not restored properly");
+    }
+    Log["PopLogFolder"]();
+    
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //------------------------Check the Suppressed Alert is displayed back in View Alerts-----------------------
+    Log["AppendFolder"]("Step :: Check the supply alert message restored and displayed in the alert screen before the pretreatment get disabled");
+    
+    //Check the alert message disaplayed back before disabling the pretreatment supply
+    if(!StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus))
+    {
+      Log["Error"]("Verification of Supply '" + supplyName + "' with expected status '" + supplyStatus + "' is Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Checkpoint"]("Pretreatment alert message is displayed in the View alert screen as expected");
+      Log["PopLogFolder"]();  
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------Create Patient order for the Pretreatment Supplies (A1c_E tests)-----------------------
+    Log["AppendFolder"]("Step :: Create patient order with the test 'A1c_E' for the 'Pretreatment Supply'");
+    
+    //Create patient order
+    if(StepCreatePatientOrder(sampleId,specimen,priority,analyzer,assay,replicates))
+    {
+      Log["Message"]("Patient order for the Pretreatment test is created successfully with sample Id '" + sampleId + "'");
+      Log["PopLogFolder"]();
+    } else {
+      Log["Error"]("Failed to create the patient order for the pretreatment test");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }          
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-------------------------------Load Samples for the Pretreatment test A1c_E-------------------------------
+    Log["AppendFolder"]("Step :: Load Samples for the pretreatment test");
+    var sampleList = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    
+    //Load Samples
+    if(!StepLaunchAndLoadSamplesArrayFromHydraDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Loading samples using hydra DML dimulator completed successfully");
+      Log["PopLogFolder"]();      
+    }    
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //------------------------------------Check Sample Aspirated Status-----------------------------------------
+    Log["AppendFolder"]("Step :: Check the Sample Aspirated Status");
+    
+    var sampleAspiratedCount = 0;
+    for(var i=0; i < sampleList.length; i++)
+    {
+      Log["AppendFolder"]("Step :: Check the '" + sampleList[i] + "' Aspirated Status ");
+      
+      //check samplestatus is Aspirated
+      if(StepCheckSampleStatusinSampleList(sampleList[i],"Aspirated"))
+      {
+        Log["Message"]("Sample '" + sampleList[i] + "' aspirated successfully");
+        sampleAspiratedCount = sampleAspiratedCount + 1;        
+      } 
+      Log["PopLogFolder"]();             
+    }  
+    
+    //check all samples are aspirated  
+    if(sampleAspiratedCount != sampleList.length)
+    {
+      Log["Error"]("Some of the samples are not aspirated");  
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }      
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+   
+    
+    //------------------------------Check the Pretreatment Volume is getting reduced----------------------------
+    Log["AppendFolder"]("Step :: Check the pretreatment volume is getting decreamented after the sample processing");
+    
+    //get the pretreatment supply details from view all supplies screen
+    var ptDataAfterSampleProcessing = StepGetFluidDetailsFromSupplyNeeds("Pretreatment");//0-Volume,1-OBS,2-LotExpirationDate,3-Lot
+    
+    //Check the volume is decremented
+    if(ptDataAfterSampleProcessing[0] < pretreatmentDataAfterEnabledBack[0])
+    {
+      Log["Checkpoint"]("Pretreatment supply values is getting decremented after assay for the supply is enabled back");
+      Log["PopLogFolder"]();
+    } else {
+      Log["Error"]("Pretreatment volume has not been decreamented after the sample processing");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function ThenFluidVolumeShouldBeDisplayedAsZero(testName)
+{
+  try
+  {
+    //--------------------------------------------Fetching Testdata---------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);    
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+ 
+    //-------------------------Check the fluid volume displayed as 0 for the expired fluid----------------------
+    
+    Log["AppendFolder"]("Step :: Check the Fluid volume is displayed as '0'")
+    
+    var isVolumeZero = true;
+ 
+    for(var i=0; i<fluidNames.length; i++)
+    {
+      //Get the fluid details
+      var fluidDetail = StepGetFluidDetailsFromSupplyNeeds(fluidNames[i])  
+      
+      //check fluid details are displayed  
+      if(fluidDetail != false)
+      {
+        Log["AppendFolder"]("Step :: Verify if fluid: "+fluidNames[i]+" volume/count is '0%'");
+        
+        var expectedValue = "0 %";
+        //Don't check percentage if fluid is Multisensor
+        if(fluidNames[i] == "A-LYTE Multisensor")
+        {
+          expectedValue = "0"; 
+        }
+        
+        //check fluid volume displayed as '0'
+        if(fluidDetail[0] == expectedValue)
+        {
+          Log["Message"]("Fluid: "+fluidNames[i]+" volume is displayed as '" + expectedValue + "'");
+          Log["PopLogFolder"](); 
+        } else {
+          isVolumeZero = false;
+          Log["Error"]("Fluid: "+fluidNames[i]+" volume is not displayed as '" + expectedValue + "'")
+          Log["Error"]("Displayed volume for the fluid: " + fluidNames[i] + " is: " + fluidDetail[0]);
+          Log["PopLogFolder"]();
+        }
+      } else {
+        isVolumeZero = false;
+        Log["Error"]("Failed to get "+ fluidNames[i] +" details");
+        Log["PopLogFolder"]();
+      }        
+    }
+
+    //check all the given fluids are displaying the zero value
+    if(!isVolumeZero)
+    {
+      Log["Error"]("Verification failed as the fluid volume doesn't displayed '0' as expected");
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["Checkpoint"]("Successfully verified if volume of the fluids are displayed as '0'");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false; 
+  }
+}
+
+function ThenVerifyTheLOTExpirationDateForFluids(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the LOT Expiration date for IMT & Pretreatment Fluids");
+    
+    //------------------------------------------Fetching Testdata ----------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    
+    var expirationDate = suppliesTestData[0]["Item"]("LotExpirationDaysFromCurrentDate")["split"](";");
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    
+    //-------------------------------------------Get Fluids Details---------------------------------------------
+       
+    //Get fluid data 
+    var fluidData = StepGetAllFluidsDetails(fluidNames)
+    
+    //check fluid data is fetched
+    if(fluidData == false)
+    {
+      Log["Error"]("Failed to get data of given fluids");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //---------------------------Verify Lot Expiration Dates of IMT and Pretreatment fluids---------------------
+    var isExpirationDateEqual = true;
+    
+    for(var i=0;i<fluidNames.length;i++)        
+    {
+      //Verify Lot expiration dates are as expected
+      Log["AppendFolder"]("Step :: Verify the fluid '"+fluidNames[i] + "' is enabled and Expected Lot expiration date is displayed")
+      
+      //check fluid is enabled
+      if(fluidData[i][0] != "Disabled")
+      {
+        //Add No of days with Current date = > Expiration date  
+        var expectedLotExpirationDateTime = aqDateTime["AddDays"](aqDateTime["Now"](),expirationDate)
+        
+        //Get only date
+        var expectedLotExpirationDate =  (aqDateTime["GetDay"](expectedLotExpirationDateTime) + "/" + aqDateTime["GetMonth"](expectedLotExpirationDateTime) + "/" + aqDateTime["GetYear"](expectedLotExpirationDateTime))
+        
+        //Converting string to date and comparing the dates
+        if(aqDateTime["Compare"](aqConvert["StrToDate"](fluidData[i][2]),aqConvert["StrToDate"](expectedLotExpirationDate)) == 0)
+        {
+          Log["Message"]("Displayed Lot expiration date is as expected lot expiration date for fluid: "+fluidNames[i]);
+          Log["Message"]("Lot expiration date displayed: "+fluidData[i][2]);
+          Log["Message"]("Lot expiration date expected: "+expectedLotExpirationDate);
+          Log["PopLogFolder"]();
+        } else {
+          isExpirationDateEqual = false;
+          Log["Error"]("Displayed Lot expiration date is not as expected lot expiration date for fluid: "+fluidNames[i]);
+          Log["Error"]("Lot expiration date displayed: "+fluidData[i][2]);
+          Log["Error"]("Lot expiration date expected: "+expectedLotExpirationDate);
+          Log["PopLogFolder"]();
+        }        
+      } else {
+        isExpirationDateEqual = false;
+        Log["Error"]("The fluid '" + fluidNames[i] + "' is displayed as Disabled status");
+        Log["PopLogFolder"]();
+      }
+    }
+    
+    //Check the expiration date is displayed as expected
+    if(!isExpirationDateEqual)
+    {
+      Log["Error"]("Lot Expiration date verification failed for some of the fluids");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["Checkpoint"]("Lot expiration date verification successfully completed for the given fluids");
+    Log["PopLogFolder"]()
+    return true;    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyTheFluidOBSShouldBeDisplayedAsZero(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verify the OBS for IMT & Pretreatment Fluids ");    
+    
+    //----------------------------------------------Fetching Testdata ------------------------------------------
+    
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var fluidNames = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------------------------Get Fluids Data--------------------------------------------
+         
+    Log["AppendFolder"]("Step : Check the fluid is displayed in view all supplies screen and get the details");
+      
+    //Get the fluid informations
+    var fluidData = StepGetFluidDetailsFromSupplyNeeds(fluidNames)
+    
+    //Check all the fluids are displayed
+    if(fluidData == false)
+    {
+      Log["Error"]("Failed to get data of given fluids");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+        
+    //-----------------------------------------------Verify if fluid is enabled---------------------------------    
+    Log["AppendFolder"]("Step :: Verify the fluid is displayed and enabled and OBS displayed as '0 h 0 d");
+    
+    var isOBSDisplayed = true;
+    
+    for(var i=0; i<fluidNames.length; i++)
+    {
+      Log["AppendFolder"]("Check the fluid '" + fluidNames[i] + "' is enabled and OBS displayed as expected");
+      
+      //check the fluid enabled status
+      if(fluidData[i][0] != "Disabled")
+      {
+        //Verify the Fluid OBS as '0 d 0 h'
+        if(fluidData[i][1] == "0 d 0 h")
+        {
+          Log["Message"]("The OBS displayed is '0 d 0 h' for the fluid: "+fluidNames[i]);
+        } else {
+          isObsEqual = false;
+          Log["Error"]("The OBS displayed is not '0 d 0 h' for the fluid '"+fluidNames[i] + "'");
+          Log["Error"]("OBS displayed as '" + fluidData[i][1] + "'");
+          isOBSDisplayed = false;
+        }
+      } else {
+        Log["Error"]("The fluid '" + fluidNames[i] + "' is displayed as 'Disabled' in view all supplies screen");
+      }
+      Log["PopLogFolder"]();
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"](); 
+    return isOBSDisplayed;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function ThenVerifyAlertDisplayedInSupplyNeedsScreenForLotExpiration(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verifying Lot Expiration Alert In Supply Needs");
+    
+    //-------------------------------------------Fetching Testdata ---------------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+    var supplyName = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    var supplyStatus = suppliesTestData[0]["Item"]("LotExpirationDateAlertMessage")["split"](";");
+    //----------------------------------------------------------------------------------------------------------
+    
+    
+    //--------------------Check the LOT Expiration Alert Displayed in Alert screen------------------------------
+    if(!StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus))
+    {
+      Log["Error"]("Verification of Supply '" + supplyName + "' with expected status '" + supplyStatus + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["PopLogFolder"]();
+      return true;
+    }    
+    //----------------------------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyAlertDisplayedInSupplyNeedsScreenForOBSExpiration(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Verifying OBS Expiration Alert In Supply Needs");
+    
+    //----------------------------Fetching Testdata --------------------------------------
+    var suppliesTestData = GetTestItemsByTestName(TestDataFile,"Supplies",testName);
+
+    var supplyName = suppliesTestData[0]["Item"]("FluidNames")["split"](";");
+    var supplyStatus = suppliesTestData[0]["Item"]("OBSEpirationAlertMessage")["split"](";");
+    //------------------------------------------------------------------------------------
+    
+    
+    //-----------------Check the OBS Expiration Alert Displayed in Alert screen-----------
+    if(!StepVerifyTheSupplyStatusInSupplyNeedsDatagrid(supplyName,supplyStatus))
+    {
+      Log["Error"]("Verification of Supply '" + supplyName + "' with expected status '" + supplyStatus + "' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["PopLogFolder"]();
+      return true;  
+    }    
+    //------------------------------------------------------------------------------------
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTheEventLogForFluidDepletion(testName)
+{
+try
+  {
+    Log["AppendFolder"]("Verifying Fluid Depletion Event In Event Log Screen ");
+   
+    //-------------------------------Fetching Testdata------------------------------------    
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+
+    var code = eventLogTestData[0]["Item"]("EventCodeForFluidDepletion");//["split"](";");
+    var message = eventLogTestData[0]["Item"]("EventMessageForFluidDepletion");//["split"](";");
+    //------------------------------------------------------------------------------------
+    
+    
+    //-----------------------------Verify Event Log---------------------------------------
+    //check the event code and event message displayed in EventLog screen
+    if(!StepVerifyTheEventMessageInEventLogGrid(code,message))
+    {
+      Log["Error"]("Verification of Event Code '" + code + "'  with Event message'"+message+"' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Event code and Event message has been successfully verified in event log screen");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------
+    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTheEventLogForLotExpiration(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Verifying Fluid Depletion Event In Event Log Screen ");
+   
+    //-------------------------------Fetching Testdata------------------------------------    
+    var eventLogTestData = GetTestItemsByTestName(TestDataFile,"OperatorEventLogs",testName);
+
+    var code = eventLogTestData[0]["Item"]("EventCodeForLotExpiration");
+    var message = eventLogTestData[0]["Item"]("EventMessageForLotExpiration");
+    //------------------------------------------------------------------------------------
+    
+    //-------------------------------Verify Event Log-------------------------------------
+    //check the event code and event message displayed in EventLog screen
+    if(!StepVerifyTheEventMessageInEventLogGrid(code,message))
+    {
+      Log["Error"]("Verification of Event Code '" + code + "'  with Event message'"+message+"' is Failed");
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Event code and Event message has been successfully verified in event log screen");
+      Log["PopLogFolder"]();
+      return true;     
+    }
+    //------------------------------------------------------------------------------------    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ThenVerifyTheSampleProcessFailed(testName)
+{
+  try
+  {
+    Log["AppendFolder"]("Step :: Create And Processing Samples from the test data");
+    
+    //-----------------------------Fetching Testdata -------------------------------------
+    var patientOrderTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder",testName);       
+    //------------------------------------------------------------------------------------
+        
+    //-----------------------------Create Patient Order Samples---------------------------
+    Log["AppendFolder"]("Step :: Create Patient Order for Number of Samples");
+    
+    var sampleIdArr = patientOrderTestData[0]["Item"]("SampleId")["split"](";");
+    var specimenArr = patientOrderTestData[0]["Item"]("Specimen")["split"](";");
+    var priorityArr = patientOrderTestData[0]["Item"]("Priority")["split"](";");
+    var analyzerArr = patientOrderTestData[0]["Item"]("Analyzer")["split"](";");
+    var assayArr = patientOrderTestData[0]["Item"]("Assay")["split"](";");
+    var replicatesArr = patientOrderTestData[0]["Item"]("Replicates")["split"](";");
+    
+    //Create multiple patient orders
+    if(!StepCreateMultiplePatientOrders(sampleIdArr, specimenArr, priorityArr, analyzerArr, assayArr, replicatesArr))
+    {
+      Log["Error"]("Failed to create the patient order");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    
+    //--------------------------Load Patient Order Samples -------------------------------
+    Log["AppendFolder"]("Step :: Load Sample 1 from the sample list");
+    var sampleList = new Array();
+    sampleList["push"](patientOrderTestData[0]["item"]("SampleId"));
+    
+    //Load Samples
+    if(!StepLoadSamplesinDMLSimulator(sampleList))
+    {
+      Log["Error"]("Failed to load the samples using hydra DML simulator");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    //----------------------Verify the Samples are Aspirated------------------------------
+    Log["AppendFolder"]("Step :: Check the 1st Sample Aspirated Status");
+    
+    //Check sample aspirated status in Assay Error
+    if(!StepCheckSampleStatusinSampleList(sampleList[0],"Assay Error"))
+    {
+      Log["Error"]("Sample aspiration step failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+//----------------------------------------------Post Run Methods------------------------------------------------
+
+function PostRunStepAsReloadTray1AndTray2()
+{
+  try
+  {
+    Log["AppendFolder"]("Post Run Step :: Reload Left Tip Tray & Right Tip Tray Tip Count");
+    
+    //----------------------------------------Reload Left Tray Tips---------------------------------------------
+    Log["AppendFolder"]("Step :: Reload Left Tip Tray");
+    if(!WhenPerformingReplaceOperationInReplaceTipsPopup("Left Tip Tray"))
+    {
+      Log["Error"]("Failed to reload the left tip tray");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    //----------------------------------------Reload Right Tray Tips--------------------------------------------
+    Log["AppendFolder"]("Step :: Reload Right Tip Tray");
+    if(!WhenPerformingReplaceOperationInReplaceTipsPopup("Right Tip Tray"))
+    {
+      Log["Error"]("Failed to reload the right tip tray");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    //----------------------------------------------------------------------------------------------------------
+    
+    Log["PopLogFolder"]()
+    return true;
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function PostRunStepAsEnableAllIMTPretreatmentTests()
+{
+  try
+  {
+    Log["AppendFolder"]("Post Run Step :: Enable all the IMT & Pretreatment tests from Assay List");
+    
+    var assayType = "CH";
+    var assayList = ["NA", "K", "CL", "A1c_E"];
+    
+    if(StepEnableAssaysFromAssayList(assayType,assayList))
+    {
+      Log["Checkpoint"]("Successfully executed the post run activity of enabling all the IMT & Pretreatment assays");
+      Log["PopLogFolder"]();
+      return true;      
+    } else {
+      Log["Error"]("Failed to execute the post run activity of enabling all the IMT & Pretreatment assays");
+      Log["PopLogFolder"]();
+      return false;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ExitTDefWithoutSaving()
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Exit TDef Without Saving");
+    
+    //Click Finish button in TDef screen and click 'No' button in confirmation alert to exit from TDef screen
+    if(!StepFinishAndExitAssaySetup())
+    {
+      Log["Error"]("Failed to Exit TDef without saving");
+      //if Finish and exist failes,relaunch Primedisp and Login
+      ExitTDefFailurePostRun();
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Successfully Exited from TDef screen");
+      Log["PopLogFolder"]()
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function ExitTDefFailurePostRun()
+{
+  try
+  {
+    Log["AppendFolder"]("PostRunStep :: Relaunch And Login To Primary UI");
+    
+    //------------------------------Fetching Testdata ------------------------------------
+    //Get the user credentials
+    var user_Credentials = GetTestItemsByTestName(TestDataFile,"GenericARM","LoginG0"); 
+    var username = user_Credentials[0]["Item"]("User");
+    var password = user_Credentials[0]["Item"]("Password"); 
+    //------------------------------------------------------------------------------------
+    
+    //Kills Primary UI  
+    if(!StepKillPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to terminate Primary UI")
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Primary UI is Closed")
+    }
+    
+    //launch Primary UI
+    if(!StepLaunchPrimaryDisplayApplication())
+    {
+      Log["Error"]("Failed to launch Primary UI")
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Primary UI is Launched")
+    }
+    
+    //Login to Primary UI
+    if(!StepLoginToHydra(username,password))
+    {
+      Log["Error"]("Failed to Login to Primary UI")
+      Log["PopLogFolder"]();
+      return false;
+    } else {
+      Log["Message"]("Logged In to Primary UI Successfully")
+      Log["PopLogFolder"]()
+      return true;
+    }    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}

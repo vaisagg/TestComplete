@@ -1,0 +1,325 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT LocalizationUtilities
+//USEUNIT System
+//USEUNIT Authentication
+//USEUNIT TCCSConfigLibrary
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+//***************************************************************************************
+//                    Create QC Definition
+//***************************************************************************************
+
+function CreateQCDefinition(TestName)
+{
+	Log["AppendFolder"]("QC:: CreateQCDefinition")
+    QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition",TestName);                     //Get QC Definition details from from TestData excel file 
+    if (QCDefList!=null)
+        {
+          if(!QCDefIsAvailabale(QCDefList["Fields"]("ControlID").Value, QCDefList["Fields"]("ControlLot").Value))         //Checking whether given QCDefinition is existing Application Database
+            {
+              QCDefList["MoveFirst"]();
+ 
+              while (!QCDefList["EOF"])
+              {
+              QCDefinitionFunc(QCDefList);    
+              QCDefList["MoveNext"]();
+              }
+            
+            Delay(250);
+            Log["PopLogFolder"]();
+            return true;
+            }
+        else
+        {
+        Log["Message"]("QCDefinition with Control ID/Control Lot " + QCDefList["Fields"]("ControlID").Value +"/" + QCDefList["Fields"]("ControlLot").Value + " is already available");
+        Delay(250);
+		Log["PopLogFolder"]();
+        return true;
+        }
+    }
+    else
+    {
+    Log["Warning"]("QCDefinition for the Test " + TestName +" is not available in TestData file");
+    Delay(250);
+    
+    Log["PopLogFolder"]();
+    return true;
+    }
+}
+function QCDefIsAvailabale(ControlID, ControlLot)
+{
+
+ try
+  {
+  
+  var Connectionstring = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"; 
+  var QueryString = "select * from dbo.QC_Defs Where QC_Def_ID='"+ ControlID + "' or LotNumber=" + ControlLot;
+  
+
+	var ADOConnection = Sys["OleObject"]("ADODB.Connection");
+      var RecordSet = Sys["OleObject"]("ADODB.Recordset");
+      ADOConnection["ConnectionString"] = Connectionstring;
+      ADOConnection["Open"]();
+      RecordSet["Open"](QueryString, ADOConnection,1,1 );
+   
+       if (RecordSet["RecordCount"]>0)return true;
+    else return false;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return false;
+  } 
+}
+
+function  QCDefinitionFunc(QCDefinitionData)
+{
+  try
+  {
+    Log["AppendFolder"]("QC::QCDefinitionFunc");
+    
+      var Navigation = InvokeWorkflow("QC_AddQCDefintion");
+      if (!Navigation) 
+      {
+        return false;
+      }
+        Log["Message"]("Creating a QC Definition for Test : " + QCDefinitionData["Fields"]("TestName").Value );
+       objctrl = GetControl("QC_AddQCDefinition","textBoxName");
+       SetText(objctrl,QCDefinitionData["Fields"]("ControlName").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","textBoxLotNumber");
+       SetText(objctrl,QCDefinitionData["Fields"]("ControlLot").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","textBoxID");
+       SetText(objctrl,QCDefinitionData["Fields"]("ControlID").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","comboBoxSpecimen");
+       setWPFComboText_New(objctrl,QCDefinitionData["Fields"]("Specimen").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","wpfDatePicker1");
+       SetDatePickerValue_New(objctrl,QCDefinitionData["Fields"]("ExpDate").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","comboBoxControlType");
+       setWPFComboText_New(objctrl,QCDefinitionData["Fields"]("ControlType").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","comboBoxLevel");
+       setWPFComboText_New(objctrl,QCDefinitionData["Fields"]("Level").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","comboBox_Usage");
+       setWPFComboText_New(objctrl,QCDefinitionData["Fields"]("Usage").Value);
+       
+       objctrl = GetControl("QC_AddQCDefinition","checkBoxIsOnboard");
+       boolValue=false;
+       if(QCDefinitionData["Fields"]("IsOnboard").Value!=null)
+       {
+       if(aqString["Compare"](QCDefinitionData["Fields"]("IsOnboard").Value,"Yes",false)==0)
+       {
+         boolValue=true;
+         SetShellCheckBox(objctrl, boolValue );
+       }
+       } 
+
+       
+       FillQCTestDetails(QCDefinitionData);            //As QC definition details objects can not be accessed, geneating a temp fuction to fill the data
+       
+       objctrl = GetControl("QC_AddQCDefinition","SaveButton");
+       if(objctrl["Enabled"]==true)            //Checks whether Save button is enabled or not
+       {
+          Clickbutton(objctrl);
+          Log["Message"]("QC definition created for "+QCDefinitionData["Fields"]("TestName").Value);
+          Delay(250);
+          Log["PopLogFolder"]();
+          return true;
+       }
+       else
+       {
+          objctrl = GetControl("QC_AddQCDefinition","CancelButton");
+          Clickbutton(objctrl);
+          Log["Message"]("Unable to create QC definition for "+QCDefinitionData["Fields"]("TestName").Value);
+          Delay(500);
+          objctrl = GetControl("QC_AddQCDefinition","No");
+          Clickbutton(objctrl);
+          Log["PopLogFolder"]();
+          return false;
+       }
+    }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+}
+function FillQCTestDetails(QCDefinitionData)
+{
+  try
+  {
+    SelectPicBoxTest(GetControl("QC_AddQCDefinition","testSelectionCtrl"), QCDefinitionData["Fields"]("TestName").Value)
+   // AddQCDef_SelectTest(QCDefinitionData["Fields"]("TestName").Value);  //Functin is replaced by above function, Delete after verify
+    Delay(500);
+    obj=Aliases["Shell"]["WinFormsObject"]("QCDetailsAddWindow")["WinFormsObject"]("Root")["WinFormsObject"]("ContentFrame")["WinFormsObject"]("QCDefinitionDetailCtrl")["WinFormsObject"]("groupBox1")["WinFormsObject"]("panelTestList")["WinFormsObject"]("TestsGrid")["WinFormsObject"]("Panel", "")["WinFormsObject"]("UIWComboEditingControl", "")
+    
+    setWPFComboText_New(obj,QCDefinitionData["Fields"]("SD").Value);
+    Sys["Desktop"]["Keys"]("[Tab]")
+    Sys["Desktop"]["Keys"](QCDefinitionData["Fields"]("Low").Value)
+    Sys["Desktop"]["Keys"]("[Tab]")
+    Sys["Desktop"]["Keys"](QCDefinitionData["Fields"]("High").Value)
+    Sys["Desktop"]["Keys"]("[Tab][Tab][Tab][Tab]")
+    Sys["Desktop"]["Keys"](QCDefinitionData["Fields"]("OpenStabilityDays").Value)
+    
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return null;
+  } 
+}
+
+function CreateQCOrder(TestName, QCControlID)
+{
+  try
+  {
+    Log["AppendFolder"]("QC::CreateQCOrder");
+    Log["Message"]("Creating QC Order for Test : " + TestName + " with Control ID : " + QCControlID);
+   
+    var Navigation = InvokeWorkflow("QC_AddQCOrder");
+    if (Navigation)
+    {    
+      if (QCDefIsAvail_CtrlID(QCControlID))                                                       
+      {
+         objctrl = GetControl("QC_AddQCOrder","textBoxFilter");
+         SetText(objctrl,TestName);
+       
+         objctrl = GetControl("QC_AddQCOrder","testSelectionCtrl");
+         if(objctrl["Items"]["Count"]==1)
+         {
+           Selected= SelectPicBoxTest(objctrl, TestName);
+  //         objctrl=GetControl("QC_AddQCOrder","ControlMaterialsGrid");
+  //         rowCount= FindQCDefinitionInGrid(objctrl,"Control ID",QCControlID);
+  //         ClickOnItem(objctrl["Item"](0, rowCount));     // To click on "+" icon in Control Materials Grid
+         }
+         objctrl = GetControl("QC_AddQCOrder","ControlOrderSaveButton");
+         Clickbutton(objctrl);
+         objctrl = GetControl("QC_AddQCOrder","OK");
+         Clickbutton(objctrl);
+         Log["PopLogFolder"]();
+         return true;
+      }
+      else
+      {
+        Log["Message"]("QCDefinition with ID " + QCControlID + " for the Test "+ TestName  +" is not available");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+    else
+    {
+      Log["Message"]("Unable to navigate to QC Order screen");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception - "+ exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyQCOrder(QCControlID)
+{
+    Log["AppendFolder"]("QC::VerifyQCOrder");
+    Log["Message"]("Verifying QC Order with Control ID : " + QCControlID);
+    
+  if(QCOrderIsAvailabale(QCControlID))
+  {
+      Log["Message"]("QC Order with ID " + QCControlID + " is available in Worklist");
+      Log["PopLogFolder"]();
+       return true;
+  }
+  else
+  {
+      Log["Message"]("QC Order with ID " + QCControlID + " is not available in Worklist");
+      Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+function VerifyQCDefinition(QCControlID)
+{
+   Log["AppendFolder"]("QC::VerifyQCDefinition");
+    Log["Message"]("Verifying QC Order with Control ID : " + QCControlID);
+    objctrl = GetControl("QC_VerifyQCDefintion","QCDefinitionsGrid");
+    rowCount= FindQCDefinitionInGrid(objctrl,"Control ID",QCControlID);
+   
+  if(rowCount>=0)
+  {
+      Log["Message"]("QC Defintion with ID " + QCControlID + " is available in QC Defintion List");
+      Log["PopLogFolder"]();
+       return true
+  }
+  else
+  {
+      Log["Message"]("QC Defintion with ID " + QCControlID + " is not available in QC Defintion List");
+      Log["PopLogFolder"]();
+      return false;
+  }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : QCDefIsAvail_CtrlID(ControlID)
+//*  Description: This function check in Bus_DM wheter given QCdefinition is available or not 
+//*  Input: QCDefinition Control ID and ControlLot
+//***********************************************************************************************************************************************************************************
+
+function QCDefIsAvail_CtrlID(ControlID)
+{
+ try
+  {
+    var Connectionstring = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"; 
+    var QueryString = "select * from dbo.QC_Defs Where QC_Def_ID='"+ ControlID + "'"
+
+	  var ADOConnection = Sys["OleObject"]("ADODB.Connection");
+    var RecordSet = Sys["OleObject"]("ADODB.Recordset");
+    ADOConnection["ConnectionString"] = Connectionstring;
+    ADOConnection["Open"]();
+    RecordSet["Open"](QueryString, ADOConnection,1,1 );
+      
+    if(RecordSet["RecordCount"]>0) return true;
+    else return false;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return false;
+  } 
+}
+
+function QCOrderIsAvailabale(QCControlID)
+{
+
+ try
+  {
+  var Connectionstring = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"; 
+  var QueryString = "select * from dbo.Samples Where SID='"+ QCControlID + "' and StatusID= 1 and is_QC= 'true'"
+  
+	var ADOConnection = Sys["OleObject"]("ADODB.Connection");
+      var RecordSet = Sys["OleObject"]("ADODB.Recordset");
+      ADOConnection["ConnectionString"] = Connectionstring;
+      ADOConnection["Open"]();
+      RecordSet["Open"](QueryString, ADOConnection,1,1 );
+   
+       if (RecordSet["RecordCount"]>0)return true;
+    else return false;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception - " + exp["description"]);
+    return false;
+  } 
+}

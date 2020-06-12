@@ -1,0 +1,3889 @@
+<Controls>
+
+<!--HYDRA DML DL Simulator control-->	
+	<Category Name="HYDRADMLSIM">
+		<Workflow Code="DLSampleLoad">
+			<Control Class="TabItem">
+				<Text/>
+				<ControlName>DLLoadTab</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DL Sample Load</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text/>
+				<ControlName>ConnectToSIM</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ConnectToSimButton</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text/>
+				<ControlName>ConnectionStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ConnectedStatusTextBlock</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text/>
+				<ControlName>LoadRackButton</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LoadRackButton</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+			<Control Class="SampleBarcodeControl">
+				<Text/>
+				<ControlName>SampleBarcode1</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FirstSlot</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+			<Control Class="SampleBarcodeControl">
+				<Text/>
+				<ControlName>SampleBarcode2</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecondSlot</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+			<Control Class="SampleBarcodeControl">
+				<Text/>
+				<ControlName>SampleBarcode3</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ThirdSlot</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+				<Control Class="SampleBarcodeControl">
+				<Text/>
+				<ControlName>SampleBarcode4</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FourthSlot</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+				<Control Class="SampleBarcodeControl">
+				<Text/>
+				<ControlName>SampleBarcode5</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FifthSlot</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>
+				<Control Class="SampleBarcodeControl">
+				<Text/>
+				<ControlName>SampleBarcode6</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SixthSlot</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType = 'DMLAutomationObject'/>
+			</Control>		
+		</Workflow>
+	</Category>
+	
+<!--Diagnostic Client Controls-->
+	<Category Name="Diagnostics">
+		<Workflow Code="MechanismSequences">
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnRunSequence</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ExecuteSequence</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>			
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cmbAvailableSequence</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SequenceComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>	
+			<Control Class="ListView">
+				<Text></Text>
+				<ControlName>lstMechanismList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MechanismList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>
+			<Control Class="RadDataGrid">
+				<Text></Text>
+				<ControlName>grdSequenceRequestHistory</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SequenceRequestHistoryGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnEnterDiagnostics</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Enter Diagnostics</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnExitDiagnosticsARM</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Exit Diagnostics</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="AutoAlignment">
+			<Control Class="RadDataGrid">
+				<Text></Text>
+				<ControlName>grdAutoAlignment</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AutoAlignmentsGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>
+			<Control Class="RadCartesianChart">
+				<Text></Text>
+				<ControlName>graphPhotmetricAlignment</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>barSeries</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='AutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>
+	
+<!--Primary Display control-->	
+	<Category Name="LoginPage">
+		<Workflow Code="Login">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageLogin</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>loginPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnLogin</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnLogin</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtOperatorId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtUserName</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtOperatorPassword</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtPassword</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Login_SecurityQuestions">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>securityQuestionsAlert</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ChangePasswordSecurityQuestionViewRoot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cmbBoxSecurityQuestion1</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Question1LabledComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cmbBoxSecurityQuestion2</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Question2LabledComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxSecurityAnswer1</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Answer1TextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxSecurityAnswer2</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Answer2TextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnSaveSecurityAnswers</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SaveAllBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+		</Workflow>
+	</Category>
+	<Category Name="GlobalFunctions">
+		<Workflow Code="Logout">
+		</Workflow>
+		<Workflow Code="SearchBar">
+		</Workflow>
+		<Workflow Code="Print">
+		</Workflow>
+		<Workflow Code="Keyboard">
+		</Workflow>
+		<Workflow Code="Explorer">
+		</Workflow>
+		<Workflow Code="VolumeBar">
+		</Workflow>
+	</Category>
+	<Category Name="TitleBar">
+		<Workflow Code="HomeButton">
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnHome</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>HomeBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageHome</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>HomePageCtrl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>processRing</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ProgressRing</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnHamburger</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Hamburger</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtSignedUserText</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SignedUserText</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="BurgerMenu">
+			<Control Class="ListBoxItem">
+				<Text></Text>
+				<ControlName>LogOff</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LogoffListBoxItem</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="BurgerMenu_LogOff">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>PopupLogOff</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LogOffViewRoot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnSignOut</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SignOutBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Cart">
+		</Workflow>
+		<Workflow Code="SystemDetails">
+		</Workflow>
+	</Category>
+	<Category Name="Calibration">
+		<Workflow Code="CalibrationOverview">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>tileCalibrationOverview</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_CalibrationOverview</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>btnCalibratorDefinitions</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnCal</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="CalibrationOverview_CalibrationOrders">
+		<Control Class="Button">
+			<Text></Text>
+			<ControlName>comboBoxAnalyzer</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>SelectAnalyzer</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="Button">
+			<Text></Text>
+			<ControlName>btnSelectAssay</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>SelectAssay</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>selectAssayDialog</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>SelectAssaysDialogUserControl</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>selectAssaySearchBox</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>searchBox</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>gridAssaySearch</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>SearchGridView</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>gridCalibratorMaterial</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>MaterialDataGrid</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="Button">
+			<Text></Text>
+			<ControlName>btnPlaceCalibrationOrder</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>PlaceOrderButton</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>gridCalibrationOrder</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>OrderDataGrid</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>textOrdersPlaced</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>PopupContentTextBlock</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="Button">
+			<Text></Text>
+			<ControlName>btnClearOrders</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>ClearButton</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		<Control Class="CustomObj">
+			<Text></Text>
+			<ControlName>popUpAssayWarning</ControlName>
+			<AccessType>XML</AccessType>
+			<Accessibility>AssayWarningPopup</Accessibility>
+			<IsLocalized>Y</IsLocalized>
+			<MessageCode/>
+			<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+		</Control>
+		</Workflow>
+		<Workflow Code="CalibrationOverview_CalibrationResults">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>gridCalibrationResults</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>dgCalibrationResults</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAccept</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>acceptBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnReject</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rejectBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>resultFilter</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>filterExpander</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>analyzerFilter</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AnalyzerComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>assayNameFilter</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AssayComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>reagentLotFilter</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ReagentLotComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnDeleteOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>deleteOrderBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="CalibrationOverview_CalibrationDefinitions">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageCalibrationDefinition</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalibrationDefintionsPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdCalibrationDefinitions</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalibrationDefintionDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAddNewCalDefinitions</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnAddNew</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnEditCalDefinitions</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnEdit</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCalDefinitionsDelete</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnDelete</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCalOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalOrdersButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="CalibrationOverview_IMTCalibration">
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnIMTCalibration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMTCalButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>grdIMTCalibration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>dgIMTCalibration</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCalibrateIMT</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnCalibrateIMT</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCalibrationStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LabelStatusText</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="CalibrationOverview_CalibrationDefinitions_AddNew">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageAddCalibrationDefinitionPopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>TestsSearchGridView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxAssayType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>assayType</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txbMaterialName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MaterialNameField</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txbMaterialID</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MaterialIDField</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txbLotID</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LotIDField</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>CalDefinitionExpiryDate</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CustomDatePicker</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>CalendarViewCalDefinition</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalendarView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>HeaderButtonCalDefinition</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>HeaderButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxActive</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>activeCheck</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txbCheckSum</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ChecksumField</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="GridView">
+				<Text></Text>
+				<ControlName>grdvwSearchAssayGridCalDefinition</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>GridView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrAssignedValues</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AccordionAssignedValues</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>textFieldDeleteIcon</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>GlyphElement</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCalDefinitionsSave</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>saveBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCalDefinitionsClose</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>abortBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCalOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalOrdersButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>		
+	</Category>
+	<Category Name="Dashboard">
+		<Workflow Code="DashboardTiles">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileSTATInProcessCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>STATsTile_InProgress</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>tileMaintenanceTotalCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MaintenanceTile_TotalCount</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>tileSupplyNeedsTotalCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SupplyNeedTile_TotalCount</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileSTAT</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_Stats</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileSTATTotalCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StatsTile_TotalCount</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileSTATInterventionNeededCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>STATsTile_NeedIntervention</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>tileReagentNeedsTotalCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ReagentNeedsTile_TotalCount</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>tileRountineSamplesTotalCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NeedInterventionTile_TotalCount</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileRoutineSamples</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_NeedsIntervention</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>		
+	</Category>
+	<Category Name="HowDoI">
+		<Workflow Code="HowDoI">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>tileHowDoI</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_WorkflowWizards</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdWorkflowWizard</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WorkflowWizardDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnLaunchWorkflowWizard</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WorkflowWizardLaunchButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>assaySetupPop</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AssaySetUpDialog</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rdBtnAssayTypeIM</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMRadioButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rdBtnAssayTypeCH</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CHRadioButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rdBtnAssayTypeOD</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>RadioInterpretationType</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_ViewEditAssay">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>viewEditAssaySetupPop</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CHAssayAddEditView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_TDef">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>viewEditCHTdefPopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NavigationControl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>viewEditIMTdefPopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImTestDefNavigationControl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Definition">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>btnFinish</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnImTestDefFinish</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>btnSave</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SaveButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>checkBoxCIStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblComboIMCIStatus</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtImDefDisplayName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LbltxtboxImDefDisplayName</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxControlBracketedTest</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>controlBracketTestChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>ToggleControlBracketedTest</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ControlBracketedTestToggle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>TogglecontrolLevel</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImDefLevelsToggle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxControlLevel</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblComboImDefLevels</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxCentrifugeBeforeRepeating</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CentrifugeBeforeRepeatingChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Calculation">
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxCHUnit</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>UnitsComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxIMUnit</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImTestLblComboCalculationUnits</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>AssayComparisonCorrelationPivotForCH</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AssayComparisonCorrelationPivot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxCHHemolysis</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>HemolysisCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxCHIcterus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IcterusCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxCHLipemia</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LipemiaCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxIMHemolysis</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>hThresholdChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxIMIcterus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>iThresholdChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxIMLipemia</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lThresholdChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxCHHemolysis</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>HemolysisComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxCHIcterus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IcterusComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxCHLipemia</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LipemiaComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxIMHemolysis</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ComboxBoxHemolysisThreshold</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxIMIcterus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ComboxBoxIcterusThreshold</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxIMLipemia</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ComboBoxLipemiaThreshold</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxMasterCurveUnit</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ComboBoxMasterCurveUnits</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtSlope</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblTxtBoxCalcSlope</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtReadonlySlope</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureLblTxtBoxCalcSlope</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtIntercept</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblTxtBoxCalcIntercept</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtReadonlyIntercept</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureLblTxtBoxCalcIntercept</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>ToggleConcentraionDecimal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImTestCalcConcentrationDecimalToggle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxImTestCalcConcentrationDecimal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblComboImTestCalcConcentrationDecimal</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>readOnlyImTestConcentrationDecimal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureLblComboImTestCalcConcentrationDecimal</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxImTestCalIndexDecimal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblComboImTestCalIndexDecimal</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>readOnlyImTestCalIndexDecimal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblComboSecureImTestCalIndexDecimal</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>ToggleIndexDecimal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IndexDecimalLocked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxDisplayedResultType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ComboBoxDisplayedResultType</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>ReadOnlyResultType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureComboBoxResultType</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxResultType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ComboBoxResultType</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxEnterSlope</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImDefEnterSlopeChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxEnterIntercept</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImDefEnterInterceptChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtIMConversionFactor</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImTestCalcConvertionFactor</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Calibration">
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtCalibrationLotIntervalDays</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lotCalIntervalDaysTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtMinimumReplicates</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>minimumReplicatesTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtNewLot</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>newLotTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxLotCalibrationExpiration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lotCalibrationExpirationChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxPackCalibrationExpiration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>packCalibrationExpirationChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxNewLot</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NewLotChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxIFUChanged</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IfuChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxExtendCal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>extendCalChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxAcceptCal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>isAcceptCalChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxAutoexcludeCalReplicate</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>autoCalExcludeChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxPerformQCWithCalibration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>qcWithCalChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxAutomaticAcceptance</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>autoAcceptanceChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>LotCalibrationIntervalLock</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LotCalibrationIntervaltoggle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>ExtendCalibrationLock</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImCalibrationExtendCalibrationLocked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>AutoExcludeCalReplicateLock</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AutoExcludeCalReplicatetoggle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtUnRefrigeratedOBSHrs</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>calUnRefregiratedTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtRefrigeratedOBSHrs</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalRefregiratedTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtPackCalIntervalDays</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>packCalIntervalDaysTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Ranges">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Reagents">
+			<Control Class="ScrollViewer">
+				<Text></Text>
+				<ControlName>gridAncillaryDiluent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ExDataGridImAncillaryReagentDetails</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>groupPrimaryReagent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMPrimaryReagentGroup</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dropDownPrimaryReagentName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureDropdownImReagentName</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtPrimaryReagentCode</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureLBLTxtBoxImReagentCode</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>txtBoxSolidWell</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureLblTxtBoxImReagentSolidWell</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtSolidVolume</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblTxtBoxImReagentSolidVolume</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>comboBoxReagentLiteWell</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblTxtComboImReagentLiteWell</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>txtReagentLiteVolume</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblTxtBoxImReagLiteVolume</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>ComboBoxAncillaryWell</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblComboImReagAncillaryWell</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxAncillaryVolume</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LblTxtBoxImReagAncillaryVolume</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtReagentCalCode</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecureLblTxtBoxImReagentCalCode</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxUseForInventory</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImReagentInventoryChecked</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Reflex">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Repeat">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Panels">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_Ratios">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_OffSystemTests">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_ReagentRequirements">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_AssayList">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageTdefAssayListContent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AssayListContent</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_TestDisplayOrder">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_QCPanel">
+		</Workflow>
+		<Workflow Code="HowDoI_AssaySetup_CalibrationSchedule">
+		</Workflow>
+		<Workflow Code="HowDoI_SystemSettings">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>systemSettingsConfigurationPopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SystemSettingsRoot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>systemSettingsNavigationPanel</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>navigationcontrol</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnFinishSystemSettings</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CloseAllBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="HowDoI_SystemSettings_AccountsAndSecurity">
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdGroups</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>GroupsDG</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdAccounts</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AccountsDG</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdPrivileges</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PrivilegesDG</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCreateAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CreateAccountBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnEditViewAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>EditViewBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnDeleteAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DeleteAccountBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnResetAccountPassword</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ResetPasswordBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnChangeAccountPassword</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ChangePasswordBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnChangeSecurityQuestions</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ChangeSecurityQuestionsBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+		</Workflow>
+		<Workflow Code="HowDoI_SystemSettings_AccountsAndSecurity_CreateAccount">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>popupCreateAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CreateAccountRoot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbBoxMemberOfGroup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MemberofGroupComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtCreateAccountOperatorId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OperatorIDLabeledTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>txtCreateAccountPassword</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PasswordLabeledTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtCreateAccountConfirmPassword</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ConfirmPasswordLabeledTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtCreateAccountFullName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FullNameLabeledTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtCreateAccountDescription</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DescriptionTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxOperatorMustChangePassword</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OperatorPasswordCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxDisableAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DisableAccountCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnSaveNewAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SaveBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCancelCreateAccount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CancelBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>
+	<Category Name="Maintenance">
+		<Workflow Code="Maintenance">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>tileMaintenance</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_Maintenance</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdMaintenanceOverview</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>dgMaintenanceOverview</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAllActivities</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AllActivitiesButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbBoxModuleMaintenanceOverview</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ModuleComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dateDisplayMaintenance</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SelectedDateTextBlock</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>imageReset</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ResetImage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>calendarWeekly</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WeekCalendar</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>txtDescription</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ActivityContent</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>txtStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ADStatus</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>txtFrequency</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FrequencyContent</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>txtCommentBox</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NotPerformedCommentTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button"> 
+				<Text></Text>
+				<ControlName>btnCloseDetails</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MADetailsButtonCancel</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Maintenance_AllActivities">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>popUpAllActivities</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MaintenanceAllActivitiesRoot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdMaintenanceAllActivities</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>dgMaintenanceAllActivities</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAllActivitiesPerform</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PerformButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbBoxModuleAllActivities</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AllActivitiesModuleComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAllActivitiesPopupClose</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CloseButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Maintenance_Settings">
+		</Workflow>
+		<Workflow Code="Maintenance_ReviewAndApprove">
+		</Workflow>
+		<Workflow Code="Maintenance_MaintenanceActivityDetails">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>popUpMaintenanceActivityDetails</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MaintenanceActivityDetailsRoot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtMADescription</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ActivityContent</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtMAStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ADStatus</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>		
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnOkMaintenanceActivityDetails</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MADetailsButtonOKOnly</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnStopMaintenanceActivity</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StopActivityBUtton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>radioBtnPerform</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ActionsRadioButtonPerform</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>radioBtnNotPerform</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NotPerformedButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>btnOKPerform</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>MADetailsButtonOk</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>
+	<Category Name="Orders">
+		<Workflow Code="Orders_PatientOrders">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_Orders</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tilePatientOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PatientOrdersTile</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pagePatientOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PatientOrdersPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtSampleId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtSampleId</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>textFieldDeleteIcon</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DeleteButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtManualDilution</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ManualDiltuionTxtBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbSpecimenType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SpecimenTypeComboBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbPriority</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PriorityCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAddTestForPO</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AddTestsButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>pageAddTestPopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AddTestDialogPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbAssayType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AssayTypeCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="GridView">
+				<Text></Text>
+				<ControlName>grdvwSearchAssayGrid</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SearchGridView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdPatientOrdersTest</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DgPatientOrderList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnPlacePatientOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PlaceOrderButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCancel</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>cancelButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnRunIDSettings</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>RunIdSettingsBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>pagerunIDPopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>runIdSettingDialog</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>txtRunID</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtRunIdNumber</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rbtnRunIdForAllOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rdoWithRunId</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rbtnDontUseRunId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rdoNo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Orders_BatchOrders">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileBatchOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BatchOrdersTile</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnPlaceBatchOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalOrderBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageBatchOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BatchOrderPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rdoBatchOrderSampleId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rdoSampleId</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtAddEditPopupRackId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtRackIds</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>rdoBatchOrderRackId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rdoRackId</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBatchOrderBatchName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BatchNameTxtBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAddTestForBatchOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AddTestBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtNumberOfSamples</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NumberOfSampleTxtBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbBatchOrderSampleType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SampleTypeCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAddEditRackId</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AddEditBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbBatchOrderSpecimenType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SmapleTypeCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnViewBatchOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnViewBatchOrders</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdBatchOrdersTest</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DgBatchOrderList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Orders_BatchOrders_ViewBatchOrders">
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdViewBatchOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ViewBatchOrderDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageViewBatchOrders</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>viewBatchOrders</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>
+	<Category Name="QC">
+		<Workflow Code="QCNeeds">
+		</Workflow>
+		<Workflow Code="QCNeeds_QCDefinition">
+		</Workflow>
+		<Workflow Code="QCNeeds_QCOrders">
+		</Workflow>
+	</Category>
+	<Category Name="Reagents">
+		<Workflow  Code="ReagentNeeds">
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnReagentOverview</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OverviewButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileReagentNeeds</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_ReagentNeeds</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnReagentLoading</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LoadingButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow  Code="ReagentNeeds_ReagentOverview">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>filterExpanderCtrlReagent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FilterExpanderControl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdReagentOverview</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ReagentOverviewAccordion</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>cbGroupByReagent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>chkboxGroupAssay</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ReagentName_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentLotNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ReagentLot_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentPackLocation</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>RPackLocation_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentPosition</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Position_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Status_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentSequenceNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SequenceNumber_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentCountRemaining</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CountRemaining_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentOnboardStability</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OnboardStability_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblIMReagentLotExpiration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LotExpirationDetails_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Pivot">
+				<Text></Text>
+				<ControlName>SequencePivotCHPairedPack</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>rootPivot</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentName</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ReaagentHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentLotNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LotHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentPackLocation</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PackLocationHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentPosition</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PositionHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StatusHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentSequenceNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SequenceNumberHCC_Header</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentSequenceNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CountRemainingHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentOnboardStability</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OnboardHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentCountRemaining</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CountRemainingHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblCHReagentLotExpiration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ExpirationHCC_Content</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnUnloadReagent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnUnload</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnDisableReagentLot</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnDisableReagentLotContent</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnDisableReagentPack</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnDisableReagntPackContent</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cmbbxCHWell1Status</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WellStateLabeledCB</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxCHWell1Count</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WellCountTB</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow  Code="ReagentNeeds_ReagentLoading">
+			<Control Class="ListBox">
+				<Text></Text>
+				<ControlName>listIMPrimaryReagents</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMPrimaryReagentList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ListBox">
+				<Text></Text>
+				<ControlName>listCHReagents</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CHReagentList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ListBox">
+				<Text></Text>
+				<ControlName>listIMAncillaryReagents</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMAncillaryDoorList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtPackBarcodeTextBox</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtPackBarcode</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnVerifyButton</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>VerifyButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnSaveButton</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SaveButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblManualConfirmationPopUp</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtTitle1</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdConfirmationPopUp</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>dataGridControl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnOKManualPackConfirmationPopUp</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OKButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>
+	<Category Name="SampleList">
+		<Workflow Code="SampleList">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>rackExpander</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>expButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnSampleList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SampleListButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdSampleList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SamplelistDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>SampleListDetailsPanel</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SampleListDLDetails</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>		
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>SamplePriority</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtSamplePriority</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>		
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>ScannedDateTime</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtScannedDateTime</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>SampleStatus</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtSampleStatus</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>UnloadedDateTime</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtUnloadedDateTime</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>Rackaddress</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtRackaddress</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>SampleContainerType</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtSampleContainerType</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>Sampletype</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtSampletype</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="STATsScreen">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdSTATSampleInterventionNeeded</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NeedingInterventionDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>statInterventionNeedeAccordian</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>NeedingInterventionExpander</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdSTATSamplesInprocess</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>InprocessDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>statInprocessAccordian</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>InprocessExpander</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="RoutineScreen">
+			<Control Class="ToggleButton">
+				<Text></Text>
+				<ControlName>patientInterventionNeededAccordian</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PatientNeedsExpander</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdPatientInterventionNeeded</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PatientNeedsDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>
+	<Category Name="Supplies">
+		<Workflow Code="Supplies_SupplyNeeds">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>tileSupplyNeeds</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_SupplyNeeds</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAllSuppliesButton</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ViewAllSuppliesButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdSupplyNeedsDataGrid</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SupplyAlertListDatagrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Supplies_ViewAllSupplies">
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>pageViewAllSuppliesListView</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SupplyViewAllListView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgridHydraIMTFluid</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMTFluidDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgridHydraPretreatment</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SupplyNeedsPretreatmentDatagridUserControl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		    <Control Class="Button">
+				<Text></Text>
+				<ControlName>btnThresholdConfiguration</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ThresholdConfigurationBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>popUpThresholdConfig</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SupplyThresholdConfigDialog</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnThresholdSave</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImportWorkListOkBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbSystemFluidVolumeThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SystemFluidVolumeThresholdCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbIMTFluidVolumeThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMTFluidVolumeThresholdCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtIMTSensorCountThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>IMTSensorThresholdCountsTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbPretreatmentFluidVolumeThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PretreatmentFluidVolumeThresholdCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtOnBoardStabilityThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OnboardStabilityThresholdHoursTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtLotExpirationThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LotExpirationThresholdHoursTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtTipsRemainingThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>TipsRemainingThresholdTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbWasteBinLevelThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WasteBinLevelThresholdCombo</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtSealerFoilSheetRemainingThreshold</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SealerFoilSheetsRemainingThresholdTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdOtherSupplies</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OtherSuppliesDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Supplies_ReplacePopup">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>replacePopup</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ManualReplacePopup</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdManualReplaceSupply</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ManualReplaceListDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>txtReplaceLotNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtLotNumber</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>txtReplaceSeqNumber</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtSequenceNumber</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text/>
+				<ControlName>replacePopupExpiryDate</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>cdpExpiryDate</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text/>
+				<ControlName>replacePopupExpiryDateCalendar</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CalendarView</Accessibility>
+				<IsLocalized>N</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+	</Category>	
+	<Category Name="SystemHealthCheck">
+		<Workflow Code="SystemHealthCheck">
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>systemHealthCheck</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>machineMap</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>moduleStateCtrl</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>moduleStateCtrl</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>alertDialog</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>alertDialog</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnPlayModule</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PlayBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnPauseModule</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PauseBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnStopModule</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StopBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnShutdown</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ShutdownBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnDiagnostics</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SearchFreqBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnTroubleShooting</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnTroubleShooting</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtTransientState</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>TxtBlkTransitionState</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txStopAlerttTitle</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtTitle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnstopImmediateButton</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>stopImmediateButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>	
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnstopButton</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>stopButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="System_DL">
+		</Workflow>
+		<Workflow Code="System_Hydra">
+		</Workflow>
+	</Category>
+	<Category Name="Troubleshooting">
+		<Workflow Code="Troubleshooting">
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxOperatorDiagnostics</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ShowVirtualCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnTroubleShooting</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>btnTroubleShooting</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxEventLog</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>EventLogCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxLisLog</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LISLogCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>pageTroubleShootingView</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WidgetControlTrubleShootingView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+		</Workflow>
+		<Workflow Code="Troubleshooting_OperatorDiagnostics">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageOperatorDiagnostics</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OperatorDiagnosticPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>lstModuleItems</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>lstItems</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdSubSystemsDataGrid</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SubsystemsDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdDiagnosticsDataGrid</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DiagnosticActivityDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnPerformDiagnostics</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PerformBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>txtStatusDiagnostics</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StatusValueTxt</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Troubleshooting_OperatorEventLog">
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdEventLog</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pageOperatorEventLog</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OperatorEventLogPage</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAdvancedFilter</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AdvancedFilters</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Troubleshooting_SystemMessageLog">
+		</Workflow>
+		<Workflow Code="Troubleshooting_LISLog">
+		</Workflow>
+		<Workflow Code="Troubleshooting_OperatorEventLog_Export">
+		</Workflow>
+		<Workflow Code="Troubleshooting_OperatorEventLog_AdvancedFilter">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdModule</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ModuledataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdCategory</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CategorydataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdSubSystem</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SubsystemdataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>dtgrdOperatingMode</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>OperatingModedataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnOkAdvancedFilters</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AdvanceFilterOkBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnResetAdvancedFilters</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AdvanceFilterResetBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCancelAdvancedFilters</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>AdvanceFilterCancelBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxByDate</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DateRangeCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>calenderStartDate</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>StartDate</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>calenderEndDate</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>EndDate</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>			
+			<Control Class="CheckBox">
+				<Text></Text>
+				<ControlName>checkBoxByEvent</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ByEventCheckBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>radioBtnEventText</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>EventRadioButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="RadioButton">
+				<Text></Text>
+				<ControlName>radioBtnEventCode</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CodeRadioButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxEventText</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>EventTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBox">
+				<Text></Text>
+				<ControlName>txtBoxEventCode</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>CodeTextBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Troubleshooting_SystemMessageLog_Export">
+		</Workflow>
+		<Workflow Code="Troubleshooting_SystemMessageLog_AdvancedFilter">
+		</Workflow>
+		<Workflow Code="Troubleshooting_LISLog_Export">
+		</Workflow>
+		<Workflow Code="Troubleshooting_LISLog_CaptureSettings">
+		</Workflow>
+	</Category>
+	<Category Name="Worklist">
+		<Workflow Code="Worklist">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>tileWorklist</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Tile_WorkList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ScrollViewer">
+				<Text></Text>
+				<ControlName>grdWorkList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>WorklistDataGrid</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>filterExpanderCtrl</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>FilterExpander</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="ComboBox">
+				<Text></Text>
+				<ControlName>cbOrderTime</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LComboBoxName</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnMoveSamplesToHistorical</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnAutomaticMoveHistorical</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnDeleteOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnDeleteOrder</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnEditOrView</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnEditView</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAddTestToOrder</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnAddTestToOrder</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnAddComments</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnComment</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnStartWatching</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnStartWatching</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnStopWatching</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnStopWatching</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnYesMoveToHistorical</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>PrimaryButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnNoMoveToHistorical</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SecondaryButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="TextBlock">
+				<Text></Text>
+				<ControlName>lblTestCount</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LabelTestCount</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Worklist_EditView">
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>pivotWorkListPatientSampleDetails</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>Pivot1</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Worklist_MoveToHistoricalBatch">
+		</Workflow>
+		<Workflow Code="Worklist_QueryLIS">
+		</Workflow>
+		<Workflow Code="Worklist_ImportWorklist">
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnImportWorklist</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BtnImportWorklist</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>radioBtnImportWorkList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImportWorklistRadioBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnBrowseimportWorkList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>BrowseButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Custom">
+				<Text></Text>
+				<ControlName>radioBtnLocal</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LocalRadioBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnBrowserBrowseWindow</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SelectBrowserBrowseButton</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnOkBrowserWindow</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>SelectBrowserOkBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>popUpTitle</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>txtTitle</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnOkBrowserWindow</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImportWorkListOkBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="Button">
+				<Text></Text>
+				<ControlName>btnCancelImportWorklist</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>ImportWorkListCancelBtn</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="CustomObj">
+				<Text></Text>
+				<ControlName>filePathBrowsePopUp</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>LocationTxtBox</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+			<Control Class="DataGrid">
+				<Text></Text>
+				<ControlName>dtgrdImportedWorkList</ControlName>
+				<AccessType>XML</AccessType>
+				<Accessibility>DataGridImportedWorkList</Accessibility>
+				<IsLocalized>Y</IsLocalized>
+				<MessageCode/>
+				<PropertiesEx ControlType='PrimeDispAutomationObject'/>
+			</Control>
+		</Workflow>
+		<Workflow Code="Worklist_Export">
+		</Workflow>
+		<Workflow Code="Worklist_AssayValidation">
+		</Workflow>
+		<Workflow Code="Worklist_Statistics">
+		</Workflow>
+	</Category>
+</Controls>

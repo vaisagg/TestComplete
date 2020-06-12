@@ -1,0 +1,1818 @@
+﻿//USEUNIT PatientOrders
+//USEUNIT WorkflowNavigator
+//USEUNIT Inventory
+//USEUNIT DiagnosticsLibrary
+//USEUNIT Setup
+//USEUNIT Samples
+//USEUNIT QC
+//USEUNIT Worklist
+//USEUNIT System
+//USEUNIT Maintenance
+
+//******************************************************************
+//                Common Reusable Functions
+//******************************************************************
+
+function StepLogoutAndLogin(UserName,Password)
+{
+  try
+  {
+    //Logout
+    if(!Logout())
+    {
+      return false;
+    }
+  
+    //Login 
+    if(!LoginToHydra(UserName,Password))
+    {
+      return false;
+    }
+  }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  return true;
+}
+
+function StepNavigateToCITestDefinitionCCCalibrationGeneralTab(Assay)
+{
+  try
+  {
+    //Navigate to CI Test Definition tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+    if(!Navigation)
+      return false
+    
+    //Select Assay
+    if(!fnSelectTestinTdef(Assay))
+      return false
+    
+    //Navigate to CITestDefinition_Calibration_General tab
+    return InvokeWorkflow("Setup_TestDefinition_CITestDefinition_CCCalibration_General");
+  }   
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false
+  }
+  
+}
+
+function StepNavigateToCITestDefinitionCalibrationTab(Assay)
+{
+  try
+  {
+    //Navigate to CI Test Definition tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+    if(!Navigation)
+    {
+      return false;
+    }
+    
+    //Select Assay
+    if(!fnSelectTestinTdef(Assay))
+    {
+      return false;
+    }
+    
+    //Navigate to CITestDefinition_Calibration tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition_IMCalibration");
+    if(!Navigation)
+    {
+      return false;
+    }
+    }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  return true;
+}
+
+function StepNavigateToCITestDefinitionIACommonTab(Assay)
+{
+  try
+  {
+    //Navigate to CI Test Definition tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+    if(!Navigation)
+    {
+      return false;
+    }
+    
+    //Select Assay
+    if(!fnSelectTestinTdef(Assay))
+    {
+      return false;
+    }
+    
+    //Navigate to CITestDefinition_Common tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition_IACommon");
+    if(!Navigation)
+    {
+      return false;
+    }
+    }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  return true;
+}
+
+function StepNavigateToCITestDefinitionCCCommonTab(Assay)
+{
+  try
+  {
+    //Navigate to CI Test Definition tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+    if(!Navigation)
+    {
+      return false;
+    }
+    
+    //Select Assay
+    if(!fnSelectTestinTdef(Assay))
+    {
+      return false;
+    }
+    
+    //Navigate to CITestDefinition_Common tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition_CCCommon");
+    if(!Navigation)
+    {
+      return false;
+    }
+    }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  return true;
+}
+
+function StepNavigateToCITestDefinition()
+{
+  try
+  {
+    //Navigate to CI Test Definition tab
+    var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+    if(!Navigation)
+    {
+      return false;
+    }
+       }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  return true;
+}
+function StepNavigateToUserAccountCreation()
+{
+   return InvokeWorkflow("Setup_Accounts_Accounts");
+
+}
+
+function StepCreateUserAccount(Member,OperatorID,Password,Fullname)
+{ 
+    return CreateUserAccount(Member,OperatorID,Password,Fullname) 
+}
+
+function StepVerifyUserAccount(OperatorID)
+{ 
+
+    return VerifyUserAccount(OperatorID) 
+}
+
+function StepReagentIsLoaded(Assay,TypeOfReagent,MechName,SeqName)
+{
+     try
+     {   
+        //Navigate to Inventory->Reagent overview screen 
+        var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+        if (!Navigation)
+          return false;
+          
+        //Verify if reagent already exists
+        if(!VerifyReagentLoaded(Assay,TypeOfReagent))
+        {
+            //load reagents
+            if(!LoadingHydraReagents(TypeOfReagent,MechName,SeqName))
+            {
+              return false;
+            }
+            
+            if(!VerifyReagentLoaded(Assay,TypeOfReagent))
+            {
+              return false;
+            }            
+        } 
+     }
+     catch(e)
+     {
+        Log.Error(e.description) ; 
+        return false;
+     }
+     return true;
+}
+
+function StepCreatePatientOrderHydra(SID,Specimen,Priority,Analyzer,Assay)
+{    
+    //Navigate to Patient Orders->Create Patient Orders tab
+    var Navigation = InvokeWorkflow("PatientOrders_CreatePatientOrders");
+    if(!Navigation)
+      return false
+    
+    //Create Patient Order
+    return fnCreatePatientOrder(SID,Specimen,Priority,Analyzer,Assay);
+}
+
+function StepLoadSamples(SID)
+{   
+    //Navigate to Samples->Simulate Load Rack tab
+    //Click Sample tab
+    var SamplesTab=GetControl("Samples_SampleHandler","btnSamples");
+    SamplesTab.Click();
+    aqUtils["Delay"](3000);
+  
+    //Click Simulate Load Rack tab
+    var LoadRackTab=GetControl("Samples_SimulateLoadRack","tbbtnSimulateLoadRack");
+    LoadRackTab.Click();
+    aqUtils["Delay"](1000);
+        
+    return LoadSamplesThroughDL(SID,'','','','',''); 
+}
+
+function StepCheckSampleStatus(SID,SampleStatus)
+{ 
+      //navigate To Samples->Sample list tab
+      var btnSample = GetControl("Samples_SampleList","btnSamples");
+      ClickControl(btnSample);
+      var btnSampleList = GetControl("Samples_SampleList","tbbtnSampleListDL");
+      ClickControl(btnSampleList);
+    
+      return VerifySampleStatusHydra(SID,SampleStatus); 
+}
+
+function StepVerifyTestResult(SID)
+{   
+    //navigate To Worklist->Worklist overview screen
+      var Navigation=InvokeWorkflow("Worklist_WorklistOverview");
+      if (!Navigation)
+       return false;
+       
+    return fnVerifyTestResult(SID)
+} 
+
+function StepUpdateDB(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1) 
+     {
+        return true;
+     }
+     else
+     {
+        return false;
+     }
+}
+
+function StepResumeHydraToReady()
+{
+      //Navigate to Hydra tab
+      Log["AppendFolder"]("Navigating to Hydra module")
+      var Navigation=InvokeWorkflow("System_Status_System");
+      var HydraTab=Sys["Process"]("Shell")["WinFormsObject"]("ShellForm")["WinFormsObject"]("_MDICLIENT_")["WinFormsObject"]("SystemWindow")["WinFormsObject"]("Root")["WinFormsObject"]("Root_PAGES")["WinFormsObject"]("Status")["WinFormsObject"]("ContentFrame_SystemStatus")["WinFormsObject"]("SystemStatusViewHost")["WinFormsObject"]("wpfElementHost")["WPFObject"]("HwndSource: AdornerDecorator", "wpfElementHost")["WPFObject"]("AdornerDecorator", "", 1)["WPFObject"]("AvalonAdapter", "", 1)["WPFObject"]("SystemStatusLayoutView", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("Viewbox", "", 1)["WPFObject"]("ModuleSelectorControl")["WPFObject"]("ModuleSelectorControl", "", 1)["WPFObject"]("LayoutRoot")["WPFObject"]("PART_Selector")["WPFObject"]("ListBoxItem", "", 3)["WPFObject"]("LayoutRoot");
+      HydraTab.Click();
+      Log["PopLogFolder"]();  
+      
+      // Start Hydra if in Stopped state
+      var HydraStatus=GetModuleStatusHydra("Hydra");
+      if (HydraStatus=="Stopped")
+      {
+        //Start Hydra Module
+        ClickOnStartButtonHydra();
+        
+        //Adding delay
+        aqUtils["Delay"](60000,"Waiting for modules status from Stop - Ready")
+      }
+      
+      //Checking Module status
+      if(!CheckModuleStatusHydra())
+      {
+        Log["Error"]("Module not in Ready state")
+        return false;
+      }    
+      return true;
+}
+
+function StepVerifySubsystemIsOK(strModule)
+{
+    //Navigate to System status   
+    var Navigation=InvokeWorkflow("System_Status_System");
+    if (!Navigation)
+    {
+      Log["Error"]("Failed to navigate to System_Status_System")
+      return false;
+    }
+    
+    //Select Hydra Module
+    if(!fnSelectModuleARM("HYDRA1"))
+    {
+      Log["Error"]("Failed to navigate to Hydra module")
+      return false;
+    }
+    
+    //get mechanism status and supplies status for the specified module
+    var MechanismStatus = fnCheckSubSystemMechanismStatus(strModule);
+    var SuppliesStatus = fnCheckSubSystemSuppliesStatus(strModule);
+    
+    //checks if mechanism and supplies status is OK
+    if(MechanismStatus == "OK" && SuppliesStatus == "OK")
+          return true;
+    else
+          return false;
+}
+
+function StepGetInventoryCountValueFromReagentGrid(Assay)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+        
+      return GetReagentCountValue(Assay);
+}
+
+function StepStartServiceAndInitializeDiagnosticsClient()
+{
+   if(!StartServiceAndInitializeDiagnosticsClient())
+   {
+      Log["Error"]("Diagnostic Initialize failed")
+        return false;
+   }
+   
+   //if(!ClickLoadDataCheckbox())
+  // {
+   //   Log["Error"]("Diagnostic Initialize failed")
+   //     return false;
+  // }
+   
+   return true;
+}
+
+function StepCheckWCFServiceandstartIoT()
+{
+  return checkWCFServiceandstartIoT();
+}
+
+function StepNavigateToReagentLoader()
+{
+   return InvokeWorkflow("Inventory_ReagentLoader");
+
+}
+
+function StepNavigateToSystemStatus()
+{
+   return InvokeWorkflow("System_Status_System");
+
+}
+
+function StepCheckModuleStatusHydra()
+{ 
+      //Navigate to System status   
+      var Navigation=InvokeWorkflow("System_Status_System");
+      if (!Navigation)
+        return false;
+        
+      return CheckModuleStatusHydra();
+}
+
+function StepCopyBarcodeAtSpecifiedPosition(ReagentType,Barcode,Position)
+{
+  return CopyBarcodeAtSpecifiedPosition(ReagentType,Barcode,Position);
+}
+
+function StepHydraReagentIsLoaded(Assay,LotNumber,Barcode,Position,RgtType,MechName,SeqName)
+{
+     try
+     {   
+        //Navigate to Inventory->Reagent overview screen 
+        var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+        if (!Navigation)
+          return false;
+          
+          
+          
+        //Verify if reagent already exists
+        if(!VerifyHydraReagentIsLoadedAndEnabled(Assay,LotNumber))
+        {
+            //Copy Barcode at specified position in barcode text file        
+            if(!CopyBarcodeAtSpecifiedPosition(RgtType,Barcode,Position))
+            {
+              return false;
+            }
+             //load reagents
+            if(!LoadingHydraReagents(RgtType,MechName,SeqName))
+            {
+              return false;
+            }
+            //Verify if reagent loaded
+            if(!VerifyHydraReagentIsLoadedAndEnabled(Assay,LotNumber))
+            {
+              return false;
+            }            
+        } 
+     }
+     catch(e)
+     {
+        Log.Error(e.description) ; 
+        return false;
+     }
+     return true;
+}
+
+function StepVerifyHydraReagentIsLoadedAndEnabled(Assay,LotNumber)
+{
+    //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+ 
+      return VerifyHydraReagentIsLoadedAndEnabled(Assay,LotNumber)
+}
+
+//******************************************************************
+//         FEATURE 1 : 225700 - DisplayReagentRemaining
+//******************************************************************
+
+function StepOperatorNavigatesToReagentOverviewScreen()
+{
+  return fnNavigateToRgntOvw();
+}
+
+function StepVerifyDisplayReagentRemaining(RgntName,RgntType,InvUnit)
+{
+  return fnVerifyReagentInventory(RgntName,RgntType,InvUnit);
+}
+
+function StepGetCHReagentPackStatus(ReagentName,LotNo)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+  
+      return GetCHReagentPackStatus(ReagentName,LotNo);
+}
+
+function StepGetIMReagentPackStatus(ReagentName,LotNo)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+  
+      return GetIMReagentPackStatus(ReagentName,LotNo);
+}
+
+function StepGetWellCountValueFromCHReagentDetails(ReagentName)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+        
+      return GetWellCountValueFromCHReagentDetails(ReagentName);
+}
+
+function StepGetCountValueFromIMReagentDetails(ReagentName)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+        
+      return GetCountValueFromIMReagentDetails(ReagentName);
+}
+
+function StepDisableReagentLotForUnusableRecoverable(ReagentName)
+{
+  return DisableReagentLotForUnusableRecoverable(ReagentName);
+}
+
+function StepUncheckAllSelectedAssayFromReagentGrid()
+{
+    //Navigate to Inventory->Reagent overview screen 
+    var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+        return false;
+        
+    return UncheckAllTheCheckedReagentFromReagentGrid();
+}
+
+function StepGetInventoryCountValueAsPerLot(Assay,LotNo)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+        
+      return GetInventoryCountValueAsPerLot(Assay,LotNo);
+}
+
+function StepVerifyHydraReagentInventoryUnit(Assay,LotNumber,InvUnit)
+{
+    return VerifyReagentInventoryUnit(Assay,LotNumber,InvUnit)
+}  
+
+function StepGetCountValueFromReagentDetailsAsPerLot(ReagentName,LotNo)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+        
+      return GetCountValueFromReagentDetailsAsPerLot(ReagentName,LotNo);
+}
+
+function StepGetWellCountValueFromCHReagentDetailsAsPerLot(ReagentName,LotNo)
+{
+      //Navigate to Inventory->Reagent overview screen 
+      var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+      if (!Navigation)
+        return false;
+        
+      return GetWellCountValueFromCHReagentDetailsAsPerLot(ReagentName,LotNo);
+}
+
+//******************************************************************
+//         FEATURE 2 : 284141 - EnableDisableReagentPack
+//******************************************************************
+
+function StepUpdateProductCodeinDB(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1){     
+      Log["Checkpoint"]("Product code updated sucessfully in Reagent DB")
+      return true
+    }else
+      return false
+}
+
+function StepVerifyReagentPackIsEnabled(RgntName)
+{
+  return fnVerifyReagentPackIsEnabled(RgntName);
+}
+
+function StepDisableReagentPack(RgntName,RgntType)
+{
+  return fnDisableReagentPack(RgntName,RgntType);
+}
+
+function StepVerifyPackDisabled(RgntName)
+{
+  return fnVerifyReagentPackIsDisabled(RgntName);
+}
+
+function StepEnableReagentPack(RgntName,RgntType)
+{
+  return fnEnableReagentPack(RgntName,RgntType);
+}
+
+function StepClickOnReagent(RgntName)
+{
+  return fnClickOnReagent(RgntName);
+}
+//******************************************************************
+//       [3] FEATURE : 278988 - Sample Tips
+//******************************************************************
+
+function StepUpdateTrayInventoryInDB(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1){     
+      Log["Checkpoint"]("Product code updated sucessfully in Reagent DB")
+      return true
+    }else
+      return false
+}
+
+function StepOperatorNavigatesToSupplies()
+{
+    return fnNavigateToSuppliesOvw();
+}
+
+
+function StepCaptureSampleTipInventory(Tray1Inv,Tray2Inv)
+{
+    return fnCaptureSampleTipInventory(Tray1Inv,Tray2Inv);
+}
+
+/*-------
+ AMAR 
+ -------*/
+ 
+//*****************************************************************
+//         [FEATURE 4:  278992 - Configure Alert Threshold for Sample Tips]   
+//******************************************************************
+
+function StepUpdateThresholdInventoryInDB(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1){     
+      Log["Checkpoint"]("Threshold updated sucessfully in Consumables_Details DB")
+      return true
+    }else
+      return false
+}
+
+function StepOperatorNavigatesToSuppliesThreshold()
+{
+    return fnNavigateToSuppliesOvw();
+}
+
+function StepCaptureSampleTipInventoryThreshold(Tray1Inv,Tray2Inv)
+{
+    return fnCaptureSampleTipInventoryThreshold(Tray1Inv,Tray2Inv)
+}
+
+/*-------
+ RAMITHA 
+ -------*/
+
+//******************************************************************
+//         FEATURE 5: 224694 - Sequences
+//******************************************************************
+
+function StepClickOnEnterDiagnostics()
+{
+  return ClickOnEnterDiagnostics();
+}
+function StepExecutePredefinedSequence(MechName,SeqNames,ReagentType)
+{
+  return ExecutePredefinedSequence(MechName,SeqNames,ReagentType);
+}
+
+/*-------
+ SHAHANA 
+ -------*/
+ 
+ //******************************************************************
+//         FEATURE : 278989 - IM Cuvettes
+//******************************************************************
+
+function StepUpdateCuvetteStatusinDB(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1){     
+      Log["Checkpoint"]("Cuvette Status updated sucessfully in Reagent DB")
+      Log["PopLogFolder"]()
+      return true
+    }else
+      return false
+}
+
+function StepOperatorNavigatesToSuppliesOverviewScreen()
+{
+      //Navigate to supplies overview screen
+    if (!fnNavigateToSuppliesOvw())
+        return false;
+    else
+      return true;
+
+} 
+
+
+//Muru
+function StepVerifyCuvetteStatus(ExpectedStatus)
+{
+    //Navigate to supplies overview screen
+    if (!fnNavigateToSuppliesOvw())
+      return false
+      
+    var CuvetteStatus= fnGetCuvetteStatus(); 
+    if (CuvetteStatus ==ExpectedStatus){
+      Log["Checkpoint"]("Cuvette Status is correct- Expected Status : "+ExpectedStatus+" Actual Status is "+CuvetteStatus)
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Cuvette status");
+      return true;}
+    else{
+      Log["Error"]("Cuvette Status is correct- Expected Status : "+ExpectedStatus+" Actual Status is "+CuvetteStatus)
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Cuvette status");
+      return false;} 
+
+}
+
+function StepCuvetteStatusAsOK()
+{
+  var ViewSupplies=GetControl("Inventory_SuppliesOverview","btnViewAll");
+  //comment for view all if not required
+  ViewSupplies.Click();
+  var CuvetteStatus= fnGetCuvetteStatus();
+  if (CuvetteStatus=="OK")
+    Log["Message"]("Cuvette Status displayed correctly");
+  else
+    Log["Error"]("Cuvette Status displayed is incorrect");
+} 
+
+//******************************************************************
+//         FEATURE  : 227348 - Modifying TDef
+//******************************************************************
+function StepMinimumReplicateSet(MinReplicates,Assay)
+{
+  try
+  { 
+    //Navigate to CI Test Definition->Calibration tab
+    var Navigation = StepNavigateToCITestDefinitionCalibrationTab(Assay)
+    if(!Navigation)
+    {
+      return false;
+    }
+    
+    //Set Minimum Replicates
+    var Replicates=SetMinimumReplicates(MinReplicates);
+    if(!Replicates)
+    {
+      return false;
+    }       
+  }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  return true;
+}
+
+function StepSetNewLotReplicate(NewLotReplicate,Assay)
+{
+  try
+ {
+  
+    //Navigate to CI Test Definition->Calibration tab
+    var Navigation = StepNavigateToCITestDefinitionCalibrationTab(Assay)
+    if(!Navigation)
+    {
+      return false;
+    }
+    
+    //Set New Lot Replicates
+    Log["AppendFolder"]("Expected : System should not be able to modify the new lot value" );
+    var Replicates=SetNewLotReplicate(NewLotReplicate);
+    if(Replicates)
+    {
+      Log["Error"]("Expected: value should not change; Actual : Value changed" );
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //try to Save the changes
+    Log["AppendFolder"]("Expected : System should not save the changes as button is disabled" );
+    Log["Message"]("Try to Save the changes in CI Tdef screen" );
+    objSave = GetControl("","btnSaveTdef");
+    
+    if(objSave["Enabled"])
+    {
+      Log["Error"]("Expected: Save button should be disabled; Actual : Save is enabled" );
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Save button disabled; user is not able to save changes" );
+    }  
+  }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  return true;
+}
+
+function StepModifyCentrifugeFoRepeat(Assay)
+{
+  try
+  {
+    //Navigate to CI Test Definition->Common tab
+    var Navigation=StepNavigateToCITestDefinitionIACommonTab(Assay);
+    if(!Navigation)
+    {
+      return false;
+    }
+    
+    //Set Centrifuge For Repeat
+    var res = SelectCentrifugeFoRepeat()
+    if(!res)
+    {
+     return false; 
+    }
+  
+  }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  return true;
+}
+
+function StepCentrifugeFoRepeatIsModifiedAndSaved()
+{
+  try
+  {
+    
+    Log["Message"]("Saving the changes in CI Tdef screen" );
+    objSave = GetControl("","btnSaveTdef");
+    ClickControl(objSave);
+    
+    //Verify TDef is saved successfully
+    if(VerifyTDefSaved())
+    {
+      //Click on Ok button
+      objctrlok = GetControl("","btnOK");
+      ClickControl(objctrlok);
+    }
+    else
+    {
+      Log["Error"]("Failed to save changes" );
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //Verifes if Centrifuge For Repeat is checked
+    var res = VerifyCentrifugeFoRepeatChecked()
+    if(!res)
+    {
+     return false; 
+    }
+  
+  }
+  catch(e)
+  {
+    Log.Error(exp.description) ; 
+    return false;
+  }
+  Log["PopLogFolder"]();
+  return true;
+}
+
+function StepfnModifyRegionstatusversionvaluesIA(Region,Status,MinSWTestVersion)
+{
+    return fnModifyRegionstatusversionvaluesIA(Region,Status,MinSWTestVersion)
+}
+
+function StepfnModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue(DisplayName,PrintName,LISName,Calcode)
+{
+    return fnModifyPrintDisplayLISCalfieldsforIAwithnonuniquevalue(DisplayName,PrintName,LISName,Calcode)
+}
+
+function StepfnModifyPrintDisplayLISCalfieldsforIAwithuniquevalue(DisplayName,PrintName,LISName,Calcode)
+{
+    return fnModifyPrintDisplayLISCalfieldsforIAwithuniquevalue(DisplayName,PrintName,LISName,Calcode)
+}
+
+function StepSetcalibrationLotinterval(LotCalibrationIntervalDays)
+{
+   return SetcalibrationLotinterval(LotCalibrationIntervalDays)
+}
+
+function StepIncreasecalibrationLotinterval(IncreaseLotCalibrationIntervalDays)
+{
+   return IncreasecalibrationLotinterval(IncreaseLotCalibrationIntervalDays)
+}
+
+function StepModifyPrintDisplayLISReuse(DisplayName,PrintName,LISName,ResultTimeLimit)
+{ 
+    return ModifyPrintDisplayLISReuse(DisplayName,PrintName,LISName,ResultTimeLimit)
+}
+
+function StepModifyPrintDisplayNewLotReplicateCurrentLotReplicate(DisplayName,PrintName,NewLotReplicate,CurrentLotReplicate)
+{ 
+    return ModifyPrintDisplayNewLotReplicateCurrentLotReplicate(DisplayName,PrintName,NewLotReplicate,CurrentLotReplicate)
+}
+
+//******************************************************************
+//          FEATURE : 225702 - Reagent OBS Expiration
+//******************************************************************
+
+function StepTrackOBSValue(Assay)
+{
+
+  //Navigates to Reagent overview screen
+  var NavigateStatus=StepOperatorNavigatesToReagentOverviewScreen();
+  if(!NavigateStatus)
+  {
+    return false;
+  } 
+  
+  //Checks OBS value
+  if(!GetReagentOBSValue(Assay))
+  {
+    return false;
+  } 
+   return true; 
+  
+} 
+
+//*****************************************************************
+//         [FEATURE 6:  FEATURE: 227358 - Standalone TDef Editor]  
+//******************************************************************
+function StepOperatorNavigatesToTDef()
+{
+    return fnNavigateToTDef();
+}
+
+function StepSelectTestinTdef(TestName)
+{
+    return fnSelectTestinTdef(TestName)
+}
+
+function StepfnEditTestIDentification(TestName,TestType,TestVersion,DisplayName,PrintName,LISName,LOINC,Status)
+{
+    return fnEditTestIDentification(TestName,TestType,TestVersion,DisplayName,PrintName,LISName,LOINC,Status)
+}
+
+
+function StepfnEditGeneralSection(ResultReviewMode,ResultTimeLimit,AnalyteStability)
+{
+    return fnEditGeneralSection(ResultReviewMode,ResultTimeLimit,AnalyteStability)
+}
+
+
+
+function StepfnEditMeasuringIntervalvalues(LowMeasuringPlasma,HighMeasuringPlasma,LowMeasuringSerum,HighMeasuringSerum)
+{
+    return fnEditMeasuringIntervalvalues(LowMeasuringPlasma,HighMeasuringPlasma,LowMeasuringSerum,HighMeasuringSerum)
+}
+//fnEditAdvacedIASection
+
+function StepfnEditAdvacedIASection()
+{
+    return fnEditAdvacedIASection()
+}
+//fnEditAdvacedCCSection
+function StepfnEditAdvacedCCSection()
+{
+    return fnEditAdvacedCCSection()
+}
+
+
+//******************************************************************
+//       [4] FEATURE : 259953 - IMT Sensor
+//       [5] FEATURE : 247523 - IMT Bulk System Fluids 
+//       [6] FEATURE : 247524 - Pretreatment Consumable 
+//******************************************************************
+
+function StepUpdateDBIMTandPreTreatment(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1){     
+      Log["Checkpoint"]("IMT and Pretreatment fluids loaded in DB")
+      return true
+    }else
+      return false
+}
+
+function StepVerifyFluidLevelAboveThresolhd(strQuery,strConString,ConsumeID)
+{
+    if(ReturnQueryRecordSetFromString(strQuery,strConString) =="Did not meet Threshold"){     
+        Log["Checkpoint"]("Threshold Level Not met for Consumable ID "+ConsumeID)
+        return true
+    }else{
+        Log["Error"]("Threshold Level MET for Consumable ID "+ConsumeID)
+        return false
+    }
+}
+
+function StepCaptureIMTAndPretreatmentData(SuppliesType,CurrObj,PropertyName,ExpectedVal)
+{
+    return fnCaptureSuppliesData(SuppliesType,CurrObj,PropertyName,ExpectedVal);
+}
+
+function StepCheckVisualIndicationForLotVolumeAndOBS(SuppliesType,CurrObj,PropertyName,VisualIndication)
+{
+    return fnCheckVisualIndicationForLotVolumeAndOBS(SuppliesType,CurrObj,PropertyName,VisualIndication);
+}
+
+function StepFluidLevelAboveBelowThresolhdDB(SuppliesType,resultDB,ThresholdValue)
+{
+    return fnFluidLevelAboveBelowThresolhdDB(SuppliesType,resultDB,ThresholdValue);
+}
+
+
+function StepSelectTestinCITDef(Test)
+{
+  var Navigation = InvokeWorkflow("Setup_TestDefinition_CITestDefinition");
+  if (!Navigation)
+    return false
+  else
+    return fnSelectTestinTdef(Test)  
+}
+
+function StepVerifyCalibrationTriggersIsChecked()
+{
+   return VerifyCalibrationTriggersIsChecked()
+}
+
+function StepSetCalibrationTriggersIsChecked(boolValue)
+{
+   return SetCalibrationTriggersIsChecked(boolValue)
+}
+
+function StepEditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+{
+   return EditAutoCalibrationTriggerFields(LotExpirationDays,PackExpirationHours)
+}
+function StepSettingupOBSThresholdAndOperatorEventLog(SuppliesTypeCount,ArrSuppliesType,OBSThresholdValue,thresholdIndicator)
+{
+    return fnSettingupOBSThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType,OBSThresholdValue,thresholdIndicator);
+}
+
+function StepReadAndStoreFluidDataForIMTPretreatment(controlVal,SuppliesTypeCount)
+{
+    return fnReadAndStoreFluidDataForIMTPretreatment(controlVal,SuppliesTypeCount);
+}
+function StepSettingupVolumeThresholdAndOperatorEventLog(SuppliesTypeCount,ArrSuppliesType,OBSThresholdValue,VolumeThresholdMultisensor,thresholdIndicator)
+{
+    return fnSettingupVolumeThresholdValueForIMTAndPretreatment(SuppliesTypeCount,ArrSuppliesType,OBSThresholdValue,VolumeThresholdMultisensor,thresholdIndicator);
+}
+
+function StepVerifyAutoCalibrationTriggerFieldsDisabled()
+{
+   return VerifyAutoCalibrationTriggerFieldsDisabled()
+}
+
+function StepVerifyControlBracketedTestDisabledEnabled()
+{
+   return VerifyControlBracketedTestDisabledEnabled()
+}
+
+function StepVerifyControlLevelFieldDisabledEnabled()
+{
+  return VerifyControlLevelFieldDisabledEnabled()
+}
+
+function StepNavigateToWorklistOverviewScreen()
+{
+  return InvokeWorkflow("Worklist_WorklistOverview");
+}
+
+function StepVerifyReagentLoaded(Assay,Analyzer)
+{
+	//Navigate to Inventory->Reagent overview screen 
+    var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+        return false;
+  
+  return VerifyReagentLoaded(Assay,Analyzer)
+}
+
+function StepCreateQCDefinition(TestName)
+{
+  return CreateQCDefinition(TestName)
+}
+
+function StepCreateQCOrder(TestName, QCControlID)
+{
+  return CreateQCOrder(TestName, QCControlID);
+}
+
+function StepGetReagentOBSValue(Assay)
+{
+  return GetReagentOBSValue(Assay)
+}
+
+function StepGetOBSFromReagentDetails(Assay)
+{
+  return GetOBSFromReagentDetails(Assay)
+  
+}
+
+function StepUpdatePiercedOrFirstLoadedDateForReagentOBSExpired(DateTimeValue,ReagentType)
+{
+  return UpdatePiercedOrFirstLoadedDateForReagentOBSExpired(DateTimeValue,ReagentType)
+}
+
+function StepTDefTriggerOBSAboveThresholdForReagent(TDefPath,TagName,NodeValue)
+{  
+  return fnReplaceXMLNodeValue(TDefPath,TagName,NodeValue)
+
+}
+
+function StepUnloadReagentHydra(Assay,Analyzer)
+{
+  var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+  if (!Navigation)
+    return false;
+    
+  UnloadReagentHydra(Assay,Analyzer)
+}
+
+//******************************************************************
+//         FEATURE : 225699 - Expired Reagent Usage
+//******************************************************************
+function StepCHLotExpired(ReagentName,Status)
+{
+    //Navigate to Reagent overview screen 
+    var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+      return false;
+      
+    //Check lot status - yet to implement
+    Log["Warning"]("Automation not yet implemented");
+    return true;
+}
+
+function StepIMLotExpired(ReagentName,Status)
+{
+    //Navigate to Reagent overview screen 
+    var Navigation=InvokeWorkflow("Inventory_ReagentOverview");
+    if (!Navigation)
+      return false;
+      
+    //Check lot status - yet to implement
+    Log["Warning"]("Automation not yet implemented");
+    return true;
+}
+
+//******************************************************************
+//         FEATURE : 225953 - Loading/Unloading CH reagent packs
+//******************************************************************
+function StepCheckReagentPackLoadedIntoCompartment(Assay,Barcode)
+{
+  return fnCheckReagentPackLoadedIntoCompartment(Assay,Barcode)
+}
+
+function StepVerifyReagentPackNotInUse(Assay)
+{
+  return fnVerifyReagentPackNotInUse(Assay)
+}
+
+function StepVerifyCHDrawerCapacityNotFull()
+{
+  return fnVerifyCHDrawerCapacityNotFull()
+}
+
+function StepfnUnloadCHReagentToDrawer(Assay,Barcode)
+{
+  return fnUnloadCHReagentToDrawer(Assay,Barcode)
+}
+function StepImportTestDefinitionHydra(SheetName)
+{
+  return ImportTestDefinitionHydra(SheetName)
+}
+
+function StepSetMaintenanceActivitiesAsPerform(sActivityName)
+{
+  var Navigation = InvokeWorkflow("Maintenance_Schedule");
+  if (!Navigation)
+    return false
+    
+  return SetMaintenanceActivitiesAsPerform(sActivityName)
+}
+
+function StepOperatorDiagnostic()
+{
+  OperatorDiagnostics()
+}
+
+function StepVerifySubSystemTabMechanismTED1Values(MechanismName)
+{
+  //Navigation to SubSytem Tab
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var SubSytem_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("SubSystem");        
+  SubSytem_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  // to handle errorup we get when we navigate to SubSystem tab fist time
+  Log["Enabled"]=false
+  if (Sys.Process("DiagnosticsClient").UIAObject("DiagnosticsClient").UIAObject("Invalid_Quick_Action").UIAObject("OK")["Exists"])
+    Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Invalid_Quick_Action")["UIAObject"]("OK")["Click"]()
+  Log["Enabled"]=true
+   
+  if(!SelectMechanismInSubSystemTab(MechanismName))
+    return false
+   
+  return VerifySubSystemTabMechanismTED1Values()
+}
+
+function StepSelectLoadDataCheckbox()
+{
+   //Navigation to Mechanism Tab 
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var Mechanism_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Mechanism_Sequences");   
+  Mechanism_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  return SelectLoadDataCheckbox()
+
+}
+
+function StepVerifyCHPhotometerRunCuvetteMapping()
+{
+  //Navigation to Auto Alignment Tab 
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var AutoAlignment_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Auto_Alignment")["UIAObject"]("Auto_Alignment")
+  AutoAlignment_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  //Navigation to Photometer sub tab
+  var Photometric_subtab = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("DiagnosticsClient_ViewModels_EngineAutoAlignment_2")
+  Photometric_subtab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  return VerifyCHPhotometerRun()
+
+}
+
+function StepVerifyAutoAlignmentPhotmetricRun(AlignmentName,sExpectedState,boolInt)
+{
+  //Navigation to Auto Alignment Tab 
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var AutoAlignment_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Auto_Alignment")["UIAObject"]("Auto_Alignment")
+  AutoAlignment_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  //Navigation to Photometer sub tab
+  var Photometric_subtab = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("DiagnosticsClient_ViewModels_EngineAutoAlignment_2")
+  Photometric_subtab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  return VerifyAutoAlignmentPhotmetricRun(AlignmentName,sExpectedState,boolInt)
+  
+}
+
+function StepVerifyCHPhotometerRunOffsetGraph()
+{
+  //Navigation to Auto Alignment Tab 
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var AutoAlignment_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Auto_Alignment")["UIAObject"]("Auto_Alignment")
+  AutoAlignment_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  return VerifyCHPhotometerRunOffsetGraph()
+
+}
+
+function StepVerifySubSystemTabMechanismTED2Values(MechanismName)
+{
+  //Navigation to SubSytem Tab
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var SubSytem_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("SubSystem");        
+  SubSytem_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  // to handle errorup we get when we navigate to SubSystem tab fist time
+  Log["Enabled"]=false
+  if (Sys.Process("DiagnosticsClient").UIAObject("DiagnosticsClient").UIAObject("Invalid_Quick_Action").UIAObject("OK")["Exists"])
+    Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Invalid_Quick_Action")["UIAObject"]("OK")["Click"]()
+  Log["Enabled"]=true
+ 
+  if(!SelectMechanismInSubSystemTab(MechanismName))
+    return false
+    
+  return VerifySubSystemTabMechanismTED2Values()
+   
+}
+
+function StepVerifySubSystemMechanismControlLoopIsTurnOnInTED1TED2(MechanismName)
+{
+  //Navigation on SubSytem Tab
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var SubSytem_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("SubSystem");        
+  SubSytem_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  // to handle errorup we get when we navigate to SubSystem tab fist time
+  Log["Enabled"]=false
+  if (Sys.Process("DiagnosticsClient").UIAObject("DiagnosticsClient").UIAObject("Invalid_Quick_Action").UIAObject("OK")["Exists"])
+    Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Invalid_Quick_Action")["UIAObject"]("OK")["Click"]()
+  Log["Enabled"]=true
+
+  if(!SelectMechanismInSubSystemTab(MechanismName))
+    return false
+  
+  return VerifySubSystemMechanismControlLoopIsTurnOnInTED1TED2()
+
+}
+
+function StepVerifySubSystemMechanismControlLoopIsTurnOnInTED1(MechanismName)
+{
+  
+  //Navigation to SubSytem Tab
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var SubSytem_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("SubSystem");        
+  SubSytem_tab["Click"]();
+  aqUtils["Delay"](1000)
+  
+  // to handle errorup we get when we navigate to SubSystem tab fist time
+  Log["Enabled"]=false
+  if (Sys.Process("DiagnosticsClient").UIAObject("DiagnosticsClient").UIAObject("Invalid_Quick_Action").UIAObject("OK")["Exists"])
+    Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Invalid_Quick_Action")["UIAObject"]("OK")["Click"]()
+  Log["Enabled"]=true
+
+  if(!SelectMechanismInSubSystemTab(MechanismName))
+    return false
+  
+  return VerifySubSystemMechanismControlLoopIsTurnOnInTED1()
+}
+
+function StepExecutePredefinedSequence_New(MechName,SeqNames)
+{        
+   //Navigation to Mechanism Tab
+  var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  var Mechanism_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Mechanism_Sequences");   
+  Mechanism_tab["Click"]();
+  
+  return ExecutePredefinedSequence_New(MechName,SeqNames)
+
+}
+
+function StepLoadReagentBarcodes(ReagentType,MechName,SeqName,sBarcodes)
+{
+  LoadReagentBarcodes(ReagentType,MechName,SeqName,sBarcodes)
+}
+
+function StepVerifyReagentPackErrorIconMessage(Assay,Analyzer,strExpectedError,SequenceNo,LotNo)
+{
+  var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+  if (!Navigation)
+    return false;
+      
+  return VerifyReagentPackErrorIconMessage(Assay,Analyzer,strExpectedError,SequenceNo,LotNo)
+}
+
+function StepNavigateToOperatorEventLog()
+{
+  return InvokeWorkflow("System_Logs_OperatorEventLog");
+}
+
+
+function StepPrimaryRgtDoorOpen(RgtType,Action)
+{
+  ReagentDoor(RgtType,Action) ; //Send Command to DML to open Door
+  
+  if (!IsRgtDoorClosed(RgtType))
+    {return true;}
+  else
+  {
+   // Log["Error"]("Failed: IM Primary Reagent Door Closed");
+    return false;
+    
+  }
+  
+}
+
+
+function StepPrimaryRgtDoorClose(RgtType,Action)
+{
+  ReagentDoor(RgtType,Action) ; //Send Command to DML to Close Door
+  return(IsRgtDoorClosed(RgtType));
+
+
+}
+
+
+
+function StepDoorOpenedBelowWarningTime(RgtType)
+{
+
+  //Is Door Opened
+  if (!IsRgtDoorClosed(RgtType))
+  {
+    Log["Message"](RgtType+"Reagent Door is opened");
+    var DoorTimerStatus = GetDoorTimeOutStatus(RgtType);//Get Door Timer status
+    if (aqString["Compare"](DoorTimerStatus,"Started",false)==0)
+     return true;
+    else
+     return false;
+    
+  }
+  else
+  {
+    Log["Error"](RgtType+"Reagent Door is not opened");
+    return false;
+  }
+  
+  }
+
+  function StepDoorOpenedMoreThanWarningTime(RgtType)
+{
+
+  //Is Door Opened
+  if (!IsRgtDoorClosed(RgtType))
+  {
+    Log["Message"](RgtType+"Reagent Door is opened");
+    
+    //Wait for Door Timer status to be Warning - 3Min delay
+    aqUtils["Delay"](180000,"Waiting for Open Door Timer to reach Warning Threshold");
+    
+    if (aqString["Compare"](GetDoorTimeOutStatus(RgtType),"Warning",false)==0) //Verify DoorTimer status
+      return true;
+    else
+      return(false);
+    
+  }
+  else
+  {
+    Log["Error"](RgtType+"Reagent Door is not opened");
+    return false;
+  }
+  
+  }
+
+
+  
+  function StepDoorOpenedMoreThanTimeout(RgtType)
+{
+
+  //Is Door Opened
+  if (!IsRgtDoorClosed(RgtType))
+  {
+    Log["Message"](RgtType+"Reagent Door is opened");
+    
+    //Wait for Door Timer status to be Timeout - 5Min delay
+    aqUtils["Delay"](300000,"Waiting for Open Door Timer to reach Timeout");
+    
+    if (aqString["Compare"](GetDoorTimeOutStatus(RgtType),"Timeout",false)==0) //Verify DoorTimer status
+    {return true;}
+    else
+    {return(false);}
+    
+  }
+  else
+  {
+    Log["Error"](RgtType+"Reagent Door is not opened");
+    return false;
+  }
+  
+  }
+  
+  
+  function StepDoorOpenedMoreThanTimeoutInDiagnostics(RgtType)
+{
+
+  //Is Door Opened
+  if (!IsRgtDoorClosed(RgtType))
+  {
+    Log["Message"](RgtType+"Reagent Door is opened");
+    
+    //Wait for Door Timer status to be Timeout - 5Min delay
+    aqUtils["Delay"](300000,"Waiting for Open Door Timer to reach Timeout");
+    return true;
+    
+//    if (aqString["Compare"](GetDoorTimeOutStatus(RgtType),"Timeout",false)==0) //Verify DoorTimer status
+//    {return true;}
+//    else
+//    {return(false);}
+    
+  }
+  else
+  {
+    Log["Error"](RgtType+"Reagent Door is not opened");
+    return false;
+  }
+  
+  }
+  
+  
+function StepVerifyDoorTimerIsNone(RgtType)
+{
+  var DoorTimerStatus = GetDoorTimeOutStatus(RgtType);
+  var RgtDoorStatusText = GetRgtDrawerStatusText(RgtType);
+  if (aqString["Compare"](DoorTimerStatus,"None",false)==0)
+  { return true;}
+  else
+  { return false;}
+  
+}
+
+function StepVerifyEventLogForTimerWarning()
+{
+  return (VerifyHydraEventLog("24 Hours","HYDRA1","IM primary reagent compartment packs mixing is about to timeout."))
+
+  
+
+  }
+  
+
+  function StepVerifyEventLogForTimeoutError()
+{
+  return(VerifyHydraEventLog("15 Minutes","HYDRA1","IM primary reagent compartment packs mixing has timed out. The packs need to be mixed manually."));//Event text to be updated
+
+  
+
+  }
+    
+  
+  function StepVerifyUIAlertOnInventory(Warningalert,SeverityLevel)
+  {
+    return (VerifyAlertOnInventory(Warningalert,SeverityLevel));
+   
+  }
+  
+  
+  
+  function StepGetReagentPackStatus(RgtType,RgtName,Sequence)
+  {
+    return GetReagentPackStatus(RgtType,RgtName,Sequence)
+  }
+  
+  
+  function StepVerifyManualMixDialogDisplayed()
+  {
+    
+    //var objRemixDialog = GetControl(); Automation Id not available 
+    var objRemixDialog = Sys["Process"]("Shell")["WaitWinFormsObject"]("MessageBox",1000);
+  
+    return( eval(GetPropertyValue(objRemixDialog,"Exists")) &&  GetPropertyValue(objRemixDialog,"VisibleOnScreen"))
+
+ 
+  
+  }
+  
+  
+function StepOperatorConfirmsManualRemix()
+{
+  var objRemixDialog = Sys["Process"]("Shell")["WinFormsObject"]("MessageBox");
+  if (!eval(GetPropertyValue(objRemixDialog,"Exists")) &&  GetPropertyValue(objRemixDialog,"VisibleOnScreen")){
+      return false}
+  else
+  {
+    //Click Yes on Popup
+    var btnYes = Sys["Process"]("Shell")["WinFormsObject"]("MessageBox")["WinFormsObject"]("Root")["WinFormsObject"]("WindowButtonsFrame")["WinFormsObject"]("Yes");
+    if (eval(GetPropertyValue(btnYes,"Exists")))
+    { 
+       Clickbutton(btnYes);
+       return true;
+    }
+    else
+    {
+     return false; 
+    }
+  }
+  
+
+}
+
+
+//**********************************************************************************
+//         FEATURE 1 : FEATURE : 232812 - UserRequestedStateTransition
+//**********************************************************************************
+
+/*----------
+ SHRUTIKA 
+ ----------*/
+
+function StepVerifyModuleStatus(sModuleName,sModuleStatus)
+{
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false
+  return VerifyModuleStatus(sModuleName,sModuleStatus)
+}
+
+function StepVerifyEventLogHydra(sTime,sModuleSerialNumber,sEvent)
+{
+  var Navigation = InvokeWorkflow("System_Logs_OperatorEventLog");
+  if (!Navigation)
+    return false
+    
+  return (VerifyHydraEventLog(sTime,sModuleSerialNumber,sEvent))
+
+}
+
+function StepGetModuleStatusHydra(sModuleName)
+{
+  var Navigation = InvokeWorkflow("System_Status_System");
+  if (!Navigation)
+    return false
+  return GetModuleStatusHydra(sModuleName)
+}
+
+/*-------
+ BHAWYA 
+ -------*/
+
+
+function StepStopPauseOrResumeModule(strAction)
+{
+    //Navigate
+    var Navigation = InvokeWorkflow("System_Status_System");
+    if (!Navigation)
+      return false;
+      
+    //Stop/Pause/Resume Hydra
+    return StopPauseOrResumeModule(strAction);
+}
+
+function StepEnterDiagnostics()
+{   
+    //Enter Diagnostics -From Diag Client
+    return ClickOnEnterDiagnostics()
+
+}
+
+function StepVerifyEventLogForStateTransition(EventLog)
+{    
+     //Verify Event Log for State Transition
+     return (VerifyHydraEventLog("24 Hours","HYDRA1",EventLog))
+
+}
+
+function StepfnClickIMReagentinGrid(Assay,Barcode,Changebarcode)
+{
+  return fnClickIMReagentinGrid(Assay,Barcode,Changebarcode)
+}
+
+function StepfnClickCHReagentinGrid(Assay,Barcode,Lot,Sequence,Year,Month,Day,CHassay)
+{
+  return fnClickCHReagentinGrid(Assay,Barcode,Lot,Sequence,Year,Month,Day,CHassay)
+}
+
+//******************************************************************************
+//        FEATURE : 247522 - Bulk System Fluids w/ Reservoirs
+//******************************************************************************
+function StepCaptureSuppliesData(SuppliesType,CurrObj,PropertyName,ExpectedVal)
+{
+   return fnCaptureSuppliesData(SuppliesType,CurrObj,PropertyName,ExpectedVal);
+}
+
+function StepVerifyOperatorEventLog(TimeFilter,ModuleSerailNumber,Event)
+{  
+    return VerifyHydraEventLog(TimeFilter,ModuleSerailNumber,Event);
+}
+
+function StepSetIMSuppliesAlertThresholdTipsRemaining(sTipsValue)
+{
+  if (!fnNavigateToSuppliesOvw())
+    return false
+
+//  var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+//  if (!Navigation)
+//    return false
+  
+  return SetIMSuppliesAlertThresholdTipsRemaining(sTipsValue)
+}
+
+
+function StepVerifyTipTrayStatus(sTray,sTipTrayStatus,sColorHighlighted)
+{
+    if (!fnNavigateToSuppliesOvw())
+    return false
+    
+//   var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+//   if (!Navigation)
+//    return false
+   
+   return VerifyTipTrayStatus(sTray,sTipTrayStatus,sColorHighlighted)
+}
+
+
+function StepVerifyTipTrayCountRemaining(sTray,sTipTrayTipsCount,sColorHighlighted)
+{
+    if (!fnNavigateToSuppliesOvw())
+    return false
+    
+//   var Navigation = InvokeWorkflow("Inventory_SuppliesOverview");
+//   if (!Navigation)
+//    return false
+    
+  return VerifyTipTrayCountRemaining(sTray,sTipTrayTipsCount,sColorHighlighted)
+}
+
+
+function StepUpdateDBRTQuery(strQuery,strConString)
+{
+    if(ExecSQLQueryFromString(strQuery,strConString)!=-1){     
+      Log["Checkpoint"]("Supplies Reloaded in DB")
+      return true
+    }else
+      return false
+}
+
+
+/*-------
+ BHAWYA 
+ -------*/
+//******************************************************************************
+//          FEATURE : 225712 : On-board reagent inventory tracking
+//******************************************************************************
+
+
+function StepVerifyReagentLoadingScreen(ReagentName)
+{
+  var Navigation = InvokeWorkflow("Inventory_ReagentOverview");
+  if (!Navigation)
+    return false;
+    
+    VerifyReagentLoadingScreen(ReagentName)
+}
+
+//******************************************************************************
+//        [1] FEATURE : 284206 - Cuvettes waste  
+//        [2] FEATURE : 284207 - Sample Tips waste
+//******************************************************************************
+function StepCaptureWasteStatus(WasteObjControl,ExpectedVal,WasteType)
+{
+   return fnCaptureWasteStatus(WasteObjControl,ExpectedVal,WasteType);
+}
+
+function StepSelectsYesInTheConfirmationPopup()
+{
+    var objConfirmationDialog = Sys["Process"]("Shell")["WinFormsObject"]("MessageBox");
+    if (!eval(GetPropertyValue(objConfirmationDialog,"Exists")) &&  GetPropertyValue(objConfirmationDialog,"VisibleOnScreen")){
+          return false}
+    else{    
+      //Click Yes on Popup
+          var btnYes = Sys["Process"]("Shell")["WinFormsObject"]("MessageBox")["WinFormsObject"]("Root")["WinFormsObject"]("WindowButtonsFrame")["WinFormsObject"]("Yes");
+          if (eval(GetPropertyValue(btnYes, "Exists"))){ 
+              Clickbutton(btnYes);
+          return true;}
+          else{
+          return false; }
+    }
+}
+
+function StepWasteDrawerOpenClose(WasteType,Action)
+{
+  return WasteBinDrawerOpenClose(WasteType,Action) ; //Send Command to DML to Open and Close Door
+}
+
+function StepSelectsNoInTheConfirmationPopup()
+{
+    var objConfirmationDialog = Sys["Process"]("Shell")["WinFormsObject"]("MessageBox");
+    if (!eval(GetPropertyValue(objConfirmationDialog,"Exists")) &&  GetPropertyValue(objConfirmationDialog,"VisibleOnScreen")){
+          return false}
+    else{    
+      //Click No on Popup
+          var btnNo = Sys["Process"]("Shell")["WinFormsObject"]("MessageBox")["WinFormsObject"]("Root")["WinFormsObject"]("WindowButtonsFrame")["WinFormsObject"]("No");
+          if (eval(GetPropertyValue(btnNo, "Exists"))){ 
+              Clickbutton(btnNo);
+          return true;}
+          else{
+          return false; }
+    }
+}
+
+//******************************************************************************
+// [FEATURE : 247557 - Supplies Miscellaneous Functionality]              
+//******************************************************************************
+
+
+function StepfnCaptureSuppliesDataforall(SuppliesType,CurrObj,PropertyName,ExpectedVal)
+{
+   return fnCaptureSuppliesDataforall(SuppliesType,CurrObj,PropertyName,ExpectedVal);
+}
+
+
+//******************************************************************************
+//          FEATURE : 316568 : Liquid Waste
+//******************************************************************************
+
+function StepToggleLiquidWasteSensor(SensorName,Action)
+{
+  return ToggleLiquidWasteSensor(SensorName,Action)
+}
+
+//***************************************************************************************************
+//          USERSTORY: 287524 - Alert once if multiple thresholds are met on the same supply         
+//***************************************************************************************************
+function StepNavigateToHydraModule()
+{
+    //Navigate to System status   
+    var Navigation=InvokeWorkflow("System_Status_System");
+    if (!Navigation)
+    {
+      Log["Error"]("Failed to navigate to System_Status_System")
+      return false;
+    }
+    
+    //Select Hydra Module
+    if(!fnSelectModuleARM("HYDRA1"))
+    {
+      Log["Error"]("Failed to navigate to Hydra module")
+      return false;
+    }else{
+    return true;}
+}
+
+function StepAlertAcknowledgementByUser(arrAlertMessage)
+{
+  return AlertAcknowledgementByUser(arrAlertMessage);
+}
+
+function StepNoAlertPresent(arrAlertMessage)
+{
+  return NoAlertPresent(arrAlertMessage);
+}
+
+function StepAlertPresent(arrAlertMessage)
+{
+  return AlertPresentForSupplies(arrAlertMessage);
+}

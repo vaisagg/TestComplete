@@ -1,0 +1,2114 @@
+﻿//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispSuppliesFeatureSteps
+
+//******************************************************************************
+//          CI pipeline
+//******************************************************************************
+function CI_Supplies_Scenarios()
+{
+  try
+  {
+     //Initialize Metadata
+     Log["AppendFolder"]("Initialize datafile and XML's")
+     InitializeMetaDataHYDRA();
+     Log["PopLogFolder"]();
+     
+     Log["AppendFolder"]("CI Pipeline :: Supplies Scenarios");
+     
+     //Feature 278988 - Sample Tips
+     FT_278988_SampleTips();
+     
+     //Feature 247523 - IMT Bulk System Fluids
+     FT_247523_IMTBulkSystemFluids()
+     
+     Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                                FEATURES  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+ 
+                    
+//******************************************************************************
+//                    FEATURE : 278988 : Sample Tips
+//******************************************************************************
+function FT_278988_SampleTips()
+{
+  try
+  {  
+      //Initialize Metadata
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 278988 :: Sample Tips");
+  
+      //MIT 329925
+      MIT_329925_SampleTipsCountLessOrEqualsThresholdTray1NotInUseTray2InUse();
+  
+      //MIT 328372  
+      MIT_328372_SampleTipsLessThanThresholdGoesDepleted_01();
+  
+      //MIT 328371
+      MIT_328371_SampleTipsWithTipsCountDepletedLeftTrayInUseRightTrayNotInUse_01();
+  
+      //MIT 328369
+      MIT_328369_SampleTipsWithTipsCountGreaterThanthresholdTray1InUseTray2NotInUse_01();  
+  
+      //MIT 328368
+      MIT_328368_SampleTipsCountLessOrEqualsThresholdTray1NotInUseTray2InUsePromptUnanswered();
+  
+      //MIT 328367
+      MIT_328367_SampleTipsWithTipsCountDepletedLetftTrayNotInUseAndRightTrayInUseUserPromptedAnsNO_01();
+  
+      //MIT 328366
+      MIT_328366_PressCancelInReplaceTipPopup_02();  
+  
+      //MIT 328364
+      MIT_328364_PressReplaceInReplaceTipPopupAndDepleteSamples();
+  
+      //MIT 328363
+      MIT_328363_SampleTipsCountLessOrEqualsthresholdTray1InUseTray2NotInUseUserPromptedYES();
+  
+      //MIT 328362
+      MIT_328362_PressReplaceInReplaceTipPopupAndDepleteSamples();  
+    
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();  
+  }
+}
+
+
+//******************************************************************************
+//                    FEATURE : 247523 : IMT Bulk System Fluids
+//******************************************************************************
+function FT_247523_IMTBulkSystemFluids()
+{
+  try
+  {
+      //Initialize Datafile and XMLS
+      InitializeMetaDataHYDRA();
+      
+      Log["AppendFolder"]("Feature 247523 :: IMT Bulk Fluids");
+  
+      //MIT 327752 
+     // MIT_327752_IMTOneTestEnabledFluidlevelLessThanOrEqualToThresholdAndLOTOBSNotExpired_01();
+      
+      //MIT 327753
+      MIT_327753_EnableIMTAndPretreatmentAssayAndVerifyTheGridValues();
+      
+      //MIT 327734
+      //MIT_327734_IMTAndPreTreatmentDisabledWithAllTestsDisabled_01();
+      
+      //MIT 327700
+      MIT_327700_IMTWithOneTestEnabledAndLotOrOBSExpired_01();
+      
+      //MIT 326678
+      MIT_326678_IMTOrPretreatmentWithOneTestEnabledFluidsEmptyAndLOTAndOBSNotExpired_01();
+      
+      Log["PopLogFolder"]();    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//                                GWT's   
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 278988 - Sample Tips ]
+//******************************************************************************
+
+function MIT_329925_SampleTipsCountLessOrEqualsThresholdTray1NotInUseTray2InUse()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+  
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_329925_SampleTipsCountLessOrQualsThresholdTray1NotInUseTray2InUse";
+    
+     //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 329925 - Sample tips with tips count <= threshold, tray1 not in use, tray2 in use")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_329925"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When ::  tips count > threshold and gets depleted after a while ")
+    if(!ConfigureSupplyThresholdValue("TC_329925"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();    
+    
+     //WHEN 1
+    Log["AppendFolder"]("When :: Make Right Tip Tray 'InUse' and Left Tray Not 'InUse'");
+    if(!WhenTray2InUseAndTray1NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Right Tip Tray' as 'Inuse' & Left Tip Tray not 'Inuse' and create patient order");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Right Tip Tray as 'InUse' with remaining tip count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_329925","Right Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for Right tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+      
+    //Then 2
+    Log["AppendFolder"]("Then :: Verify Tray 1 is empty")
+    if(!ThenVerifyTheTipTrayDepleted("Left Tray"))
+    {
+      Log["Error"]("Failed to verify the 'Left Tray' is Empty");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 3
+    Log["AppendFolder"]("Then :: Veify threshold met alert for Tray2, after processing samples");
+    if(!ThenVerifyAlertInSupplyNeedsAfterProcessingSamples("TC_329925"))
+    {
+      Log["Error"]("Verification Step failed on verifying the Left Tip Tray 'Depleted' status & Right Tip Tray 'Inuse' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    //THEN 4
+    Log["AppendFolder"]("Then :: Event geneated for threshold met in Event log screen");
+    if(!ThenVerifyEventLogGeneratedInEventLogs("TC_329925"))
+    {
+      Log["Error"]("Verification failed for the log displayed in Eventlog ");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 5
+    Log["AppendFolder"]("Then :: After Right Tip Tray depleted, Right Tip Tray should display 'Empty'");
+    if(!ThenVerifyRightTrayIsEmptyAfterDepleted("TC_329925"))
+    {
+      Log["Error"]("Verification step failed for depleting Right Tip Tray and verify the 'Empty' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_328372_SampleTipsLessThanThresholdGoesDepleted_01()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328372_SampleTipsLessThanThresholdGoesDepleted_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328372 - Sample tips with tips count > threshold goes depleted, tray 1 in use, tray 2 not in use-01")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328372"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When ::  tips count > threshold and gets depleted after a while ")
+    if(!ConfigureSupplyThresholdValue("TC_328372"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();    
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Make Left Tip Tray 'Inuse' and Right Tip Tray 'Not Inuse'");
+    if(!WhenTray1InUseAndTray2NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Left Tip Tray' as 'Inuse' & Right Tip Tray not 'Inuse'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray as 'InUse' with remaining tip count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328372","Left Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for left tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Right Tip Tray should not display 'InUse'")
+    if(!ThenVerifyTheTipTrayIsNotDisplayedWithInUseStatus("Right Tray"))
+    {
+      Log["Error"]("Verification step failed to check the 'InUse' not displayed for Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: After Left Tip Tray 'Depleted', Right Tip Tray should switch to 'InUse'");
+    if(!ThenVerifyTray2InuseAfterTray1Depleted("TC_328372"))
+    {
+      Log["Error"]("Verification Step failed on verifying the Left Tip Tray 'Depleted' status & Right Tip Tray 'Inuse' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: After Right Tip Tray depleted, Right Tip Tray should display 'Empty'");
+    if(!ThenVerifyTray2IsEmptyAfterDepleted("TC_328372"))
+    {
+      Log["Error"]("Verification step failed for depleting Right Tip Tray and verify the 'Empty' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: Alert should be displayed in supply needs");
+    if(!ThenVerifyAlertDisplayedInSupplyNeedsScreen("TC_328372"))
+    {
+      Log["Error"]("Verification failed for the supply needs alert displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 6
+    Log["AppendFolder"]("Then :: Event geneated for threshold met in Event log screen");
+    if(!ThenVerifyEventLogGeneratedInEventLogs("TC_328372"))
+    {
+      Log["Error"]("Verification failed for the log displayed in Eventlog ");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 7
+    Log["AppendFolder"]("Then :: Left Tip Tray and Right Tip Tray should be empty and sample processing should get failed");
+    if(!ThenTray1AndTray2IsEmptyAndSampleProcessingShouldFail("TC_328372"))
+    {
+      Log["Error"]("Verification failed for the Left Tip Tray and Right Tip Tray 'Empty' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }    
+}
+
+function MIT_328371_SampleTipsWithTipsCountDepletedLeftTrayInUseRightTrayNotInUse_01()
+{
+  try
+  { 
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328371_SampleTipsWithTipsCountDepletedLeftTrayInUseRightTrayNotInUse_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328371 - Sample tips with tips count depleted, tray 1 in use, tray 2 not in use")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328371"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+   
+    //Given2
+    Log["AppendFolder"]("When ::  Supply Threshold is Set ")
+    if(!ConfigureSupplyThresholdValue("TC_328371"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+   
+    //WHEN 1
+    Log["AppendFolder"]("When :: Make Left Tip Tray 'Inuse' and Create patient order");
+    if(!WhenTray1InUseAndTray2NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Left Tip Tray' as 'Inuse' & Right Tip Tray not 'Inuse' and create patient order");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray as 'InUse' with remaining tip count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328371","Left Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for left tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: After Left Tip Tray depleted, Left Tip Tray should display 'Empty'");
+    if(!ThenVerifyTray1EmptyStatusAfterDepleting("TC_328371"))
+    {
+      Log["Error"]("Verification step failed for depleting Left Tip Tray and verify the 'Empty' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Left Tip Tray and Right Tip Tray should be empty and sample processing should get failed");
+    if(!ThenTray1AndTray2IsEmptyAndSampleProcessingShouldFail("TC_328371"))
+    {
+      Log["Error"]("Verification failed for the Left Tip Tray and Right Tip Tray 'Empty' status and Sample processing");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }    
+}
+
+function MIT_328369_SampleTipsWithTipsCountGreaterThanthresholdTray1InUseTray2NotInUse_01()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328369_SampleTipsWithTipsCountGreaterThanthresholdTray1InUseTray2NotInUse_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 328369 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328369 - Sample tips with tips count greater than threshold, tray 1 in use, tray 2 not in use, tray remains open")
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328369"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN 1
+    Log["AppendFolder"]("When ::  Supply Threshold is Set")
+    if(!ConfigureSupplyThresholdValue("TC_328369"))
+    {  
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Make Left Tip Tray 'Inuse' & Right Tip Tray not 'Inuse'");
+    if(!WhenTray1InUseAndTray2NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Left Tip Tray' as 'Inuse' & Right Tip Tray not 'Inuse'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 3  
+    Log["AppendFolder"]("When :: Make Right Tip Tray Empty");
+    if(!WhenPerformingRemoveOperationInReplaceTipsPopup("Right Tip Tray"))
+    {
+      Log["Error"]("Failed to make the 'Right Tip Tray' empty");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then 1
+    Log["AppendFolder"]("Then :: Verify Tray 2 is empty")
+    if(!ThenVerifyTheTipTrayDepleted("Right Tray"))
+    {
+      Log["Error"]("Failed to verify the 'Right Tray' is Empty");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Tray 1 sample tip inventory displays the last known tips remaining, after Tray 1 is left open")
+    if(!ThenVerifyTrayRemainingTipsAndNotInUseAfterTrayOpen("TC_328369","Left Tray"))
+    {
+     Log["Error"]("Failed to verify Tray 1 display's remaining tips, after Tray 1 is left open");
+     ReportTestStatusToResultXML(featureName, testcaseName, "F");
+     Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+     return false; 
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: New orders shouldn't be processed as Tray 1 is NOT closed and Tray 2 is EMPTY")
+    if(!ThenTray1IsOpenAndTray2IsEmptyAndSampleProcessingShouldFail("TC_328369"))
+    {
+      Log["Error"]("Failed to verify that samples didn't process");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    Log["PopLogFolder"]();
+        
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_328368_SampleTipsCountLessOrEqualsThresholdTray1NotInUseTray2InUsePromptUnanswered()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328368_SampleTipsCountLessOrEqualsThresholdTray1NotInUseTray2InUsePromptUnanswered";
+    
+     //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328368 - Sample tips with tips count <= threshold, tray 1 not in use, tray 2 in use, use prompt unanswered")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328368"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When ::  tips count > threshold and gets depleted after a while ")
+    if(!ConfigureSupplyThresholdValue("TC_328368"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Make Right Tip Tray 'InUse' and Left Tray Not 'InUse'");
+    if(!WhenTray2InUseAndTray1NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Right Tip Tray' as 'Inuse' & Left Tip Tray not 'Inuse' and create patient order");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Right Tip Tray as 'InUse' with preset count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328368","Right Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for Right tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2 
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray Display's Preset Count");
+    if(!ThenVerifyThePresetTipCountDisplayed("TC_328368", "Left Tray") )
+    {
+      Log["Error"]("Failed to verify the Left Tip Tray Count")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify the Met Threshold alert displayed for Tray2(Right Tray) after processing samples")
+    if(!ThenVerifyAlertInSupplyNeedsAfterProcessingSamples("TC_328368"))
+    {
+      Log["Error"]("Failed to verify the Met Threshold alert displayed after processing samples");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+       
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: Verify sample processing and InUse displayed for Tray1, after Tray2 is left open");
+    if(!ThenVerifySampleProcessingFromTray1AfterTray2Open("TC_328368"))
+    {
+      Log["Error"]("Failed to verify sample processing from tray1 after tray 2 is open");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+       
+    //THEN 5
+    Log["AppendFolder"]("Then :: Verify 'Left Tip Tray' remaining count after Close 'LeftTip Tray' and click on the 'Cancel' in Replace Tip Popup");
+    if(!ThenVerifyLeftTipTrayCountAfterCloseAndCancelReplacePopup("TC_328368"))
+    {      
+      Log["Error"]("Verification step failed to check the 'Right Tip Tray' remaining count");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    Log["PopLogFolder"]();
+
+    //THEN 6
+    Log["AppendFolder"]("Then :: Verify Tray 1 should display the count of remaining tips");
+    if(ThenVerifyTheRemainingTipCountDisplayedWithInUse("TC_328368","Left Tray"))
+    {
+      Log["Error"]("Verify Tray 1 should display the count of remaining tips, failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+     //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to reload the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;   
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_328367_SampleTipsWithTipsCountDepletedLetftTrayNotInUseAndRightTrayInUseUserPromptedAnsNO_01()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328367_SampleTipsWithTipsCountDepletedTray1NotInUseTray2InUseUserPromptedAnsNO";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328367 - Sample tips with tips count depleted, tray 1 not in use, tray 2 in use, user prompted ans NO")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328367"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Given2
+    Log["AppendFolder"]("Given ::  Supply Threshold is Set ")
+    if(!ConfigureSupplyThresholdValue("TC_328367"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Make Right Tip Tray 'InUse' and Left Tray Not 'InUse'");
+    if(!WhenTray2InUseAndTray1NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Right Tip Tray' as 'Inuse' & Left Tip Tray not 'Inuse' and create patient order");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Right Tip Tray as 'InUse' with remaining tip count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328367","Right Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for Right Tip Tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Left Tip Tray should not display 'InUse'")
+    if(!ThenVerifyTheTipTrayIsNotDisplayedWithInUseStatus("Left Tray"))
+    {
+      Log["Error"]("Verification step failed to check the 'InUse' not displayed for Left Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray as 'InUse' with remaining tip count and Right Tip Tray displays Empty");
+    if(!ThenMakeTray2EmptyAndVerifyTray1TipCountWithInUseAndTray2AsEmpty("TC_328367"))
+    {
+      Log["Error"]("Failed to verify remaining tip count With 'Inuse' displayed for Right Tip Tray and Left Tip Tray Diplays remaining tip count")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"](); 
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: After Left Tip Tray depleted, Left Tip Tray should display 'Empty'");
+    if(!ThenVerifyTray1EmptyStatusAfterDepleting3Samples("TC_328367"))
+    {
+      Log["Error"]("Verification step failed for depleting Left Tip Tray and verify the 'Empty' status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_328366_PressCancelInReplaceTipPopup_02()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328366_PressCancelInReplaceTipPopup_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328366 - MIT: Sample tips with tips count > threshold, tray 1 in use, tray 2 not in use, user prompted ans NO and Cancel - 02");
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328366"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When ::  tips count > threshold")
+    if(!ConfigureSupplyThresholdValue("TC_328366"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();    
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Make Left Tip Tray 'Inuse' and Right Tip Tray not 'Inuse'");
+    if(!WhenTray1InUseAndTray2NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Left Tip Tray' as 'Inuse' & Right Tip Tray not 'Inuse'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify the 'Left Tip Tray' as 'InUse' with remaining tip count before 'Left Tip Tray' opened");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328366","Left Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for 'Left Tip Tray'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify the 'Right Tip Tray' should display with remaining tip count");
+    if(!ThenVerifyThePresetTipCountDisplayed("TC_328366","Right Tray"))
+    {
+      Log["Error"]("Verification step failed to check the 'Right Tip Tray' count");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify 'InUse' is shifted to Right Tray, Once 'Left Tip Tray' is 'Opened'");
+    if(!ThenVerifyInUseShiftedFromLeftTrayToRightTray("TC_328366"))
+    {
+      Log["Error"]("Verification step failed to check the 'Right Tip Tray' count");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: Verify 'Left Tip Tray' remaining count after Close 'LeftTip Tray' and click on the 'Cancel' in Replace Tip Popup");
+    if(!ThenVerifyLeftTipTrayCountAfterCloseAndCancelReplacePopup("TC_328366"))
+    {      
+      Log["Error"]("Verification step failed to check the 'Left Tip Tray' remaining count");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_328364_PressReplaceInReplaceTipPopupAndDepleteSamples()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328364_PressReplaceInReplaceTipPopupAndDepleteSamples";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 328364 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328364  - Sample tips with tips count < threshold goes depleted, tray 1 empty, tray 2 displays remaining tips")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328364"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Given 2 
+    Log["AppendFolder"]("Given ::  tips count > threshold and gets depleted after a while ") 
+    if(!ConfigureSupplyThresholdValue("TC_328364"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();    
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Make Left Tip Tray Not 'In Use' And Right Tip Tray 'In Use' by Cancelling the Replace pop for Left Tip Tray ");
+    if(!WhenPerformingCancelOperationInReplaceTipsPopup("Left Tip Tray"))
+    {
+      Log["Error"]("Failed to make Left Tip Tray  as Not 'In Use' Status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Right Tip Tray as 'InUse' And Verify the Right Tip Tray Displayed Preset Count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328364", "Right Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for Right Tip Tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2 
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray Displayed Preset Count");
+    if(!ThenVerifyThePresetTipCountDisplayed("TC_328364", "Left Tray") )
+    {
+      Log["Error"]("Failed to verify the Left Tip Tray Count")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+	  //THEN 3 
+    Log["AppendFolder"]("Then :: Verify the Right Tip Tray Count is '120' after 'Replace' Operation");
+    if(!(ThenPerformingReplaceoperationInReplaceTipsPopUp("Right Tip Tray") && ThenVerifyTheTipTrayReloaded("Right Tray")))
+    {
+      Log["Error"]("Failed to Perform Replace operation in 'Replace' popup And Verify the Count")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   //THEN 4
+    Log["AppendFolder"]("Then :: Create & Process the samples and Verify the Right Tip Tray Count and Left Tip Tray is Depleted"); 
+    if(!ThenProcessTheSamplesAndVerifyTheRightTrayCountAndTheLeftTrayIsDepleted("TC_328364"))
+    {
+      Log["Error"]("Sample processing And Tray Verification is failed")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()   
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }    
+}
+
+function MIT_328363_SampleTipsCountLessOrEqualsthresholdTray1InUseTray2NotInUseUserPromptedYES()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328363_SampleTipsCountLessOrEqualsthresholdTray1InUseTray2NotInUseUserPromptedYES";
+    
+     //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328363 - Sample tips with tips count <= threshold, tray1 in use, tray2 not in use, user prompted ans YES")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded ");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328363"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When ::  tips count > threshold and gets depleted after a while ")
+    if(!ConfigureSupplyThresholdValue("TC_328363"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();    
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Make Left Tip Tray 'Inuse' and Right Tip Tray not 'Inuse'");
+    if(!WhenTray1InUseAndTray2NotInUse())
+    {
+      Log["Error"]("Failed to make the 'Left Tip Tray' as 'Inuse' & Right Tip Tray not 'Inuse'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray as 'InUse' with remaining tip count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328363","Left Tray"))
+    {
+      Log["Error"]("Failed to verify remaining tip count and 'Inuse' displayed for left tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then 2
+    Log["AppendFolder"]("Then :: Verify Tray2(Right Tray) status is 'EMPTY'")
+    if(!ThenVerifyTheTipTrayDepleted("Right Tray"))
+    {
+      Log["Error"]("Failed to verify the 'Right Tray' is Empty");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();    
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify the Tray1 Met Threshold alert displayed after processing samples")
+    if(!ThenVerifyAlertInSupplyNeedsAfterProcessingSamples("TC_328363"))
+    {
+      Log["Error"]("Failed to verify the Tray1 Met Threshold alert displayed after processing samples");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;   
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 4
+    Log["AppendFolder"]("Then :: Tray 1 displays remaining tips and not InUse, after Tray 1 is left open")
+    if(!ThenVerifyTrayRemainingTipsAndNotInUseAfterTrayOpen("TC_328363","Left Tray"))
+    {
+     Log["Error"]("Failed to verify Tray 1 displyas remaining tips and not InUse, after Tray 1 is left open");
+     ReportTestStatusToResultXML(featureName, testcaseName, "F");
+     Log["PopLogFolder"]();
+     Log["PopLogFolder"]();
+     return false; 
+    }
+    Log["PopLogFolder"]();
+     
+    //THEN 5
+    Log["AppendFolder"]("Then :: New orders shouldn't be processed as Tray 1 is NOT closed and Tray 2 is EMPTY")
+    if(!ThenTray1IsOpenAndTray2IsEmptyAndSampleListProcessingShouldFail("TC_328363"))
+    {
+      Log["Error"]("Failed to verify that samples didn't process");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 6 
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray Count is '120' after 'Replace' Operation");
+    if(!ThenPerformingReplaceoperationInReplaceTipsPopUp("Left Tip Tray") && !ThenVerifyTheTipTrayReloaded("Left Tray"))
+    {
+      Log["Error"]("Failed to Perform Replace operation in 'Replace' popup And Verify the Count")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 7
+    Log["AppendFolder"]("Then :: Create & Process the samples and Verify the Left Tip Tray Count and Right Tip Tray is EMPTY"); 
+    if(!ThenProcessOneSampleAndVerifyTheLeftTrayCountAndTheRightTrayIsDepleted("TC_328363"))
+    {
+      Log["Error"]("Sample processing And Tray Verification is failed")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()  
+    
+     //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+    
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;   
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_328362_PressReplaceInReplaceTipPopupAndDepleteSamples()
+{
+  try
+  {
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_328362_PressReplaceInReplaceTipPopupAndDepleteSamples";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 328362 :: Sample Tips")
+    Log["AppendFolder"]("MIT : 328362  - Sample tips with tips count < threshold goes depleted, tray 2 empty, tray 1 displays remaining tips")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+        
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Sample tips Left Tip Tray and Right Tip Tray are loaded");
+    if(!GivenUpdateTrayTipCountUsingQuery("TC_328362"))
+    {
+      Log["Error"]("Failed to setup the tip tray count using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Given 2 
+    Log["AppendFolder"]("Given ::  tips count > threshold and gets depleted after a while ")
+    if(!ConfigureSupplyThresholdValue("TC_328362"))
+    {
+      Log["Error"]("Failed to set the supply threshold for the tips remaining");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();    
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Make Right Tip Tray Not 'In Use' And Left Tip Tray 'In Use' by Cancelling the Replace pop for Right Tray ");
+    if(!WhenPerformingCancelOperationInReplaceTipsPopup("Right Tip Tray"))
+    {
+      Log["Error"]("Failed to make Right Tip Tray  as Not 'In Use' Status");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 1
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray as 'InUse' And Verify the Left Tip Tray Displayed Preset Count");
+    if(!ThenVerifyThePresetTipCountDisplayedWithInUse("TC_328362", "Left Tray"))
+    {
+      Log["Error"]("Failed to verify count and 'Inuse' displayed for Left Tip Tray")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2 
+    Log["AppendFolder"]("Then :: Verify the Right Tip Tray Displayed Preset Count");
+    if(!ThenVerifyThePresetTipCountDisplayed("TC_328362", "Right Tray") )
+    {
+      Log["Error"]("Failed to verify the Right Tray Count")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+	  //THEN 3 
+    Log["AppendFolder"]("Then :: Verify the Left Tip Tray Count is '120' after 'Replace' Operation");
+    if(!(ThenPerformingReplaceoperationInReplaceTipsPopUp("Left Tip Tray") && ThenVerifyTheTipTrayReloaded("Left Tray")))
+    {
+      Log["Error"]("Failed to Perform Replace operation in 'Replace' popup And Left Tip Tray count Verification")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   //THEN 4
+    Log["AppendFolder"]("Then :: Create & Process the samples and Verify the Left Tip Tray Count and Right Tip Tray is Depleted"); 
+    if(!ThenProcessTheSamplesAndVerifyTheLeftTrayCountAndTheRightTrayIsDepleted("TC_328362"))
+    {
+      Log["Error"]("Sample processing And Tray Verification is failed")
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()  
+    
+    //POST Run
+    Log["AppendFolder"]("Post Run :: Reload Left Tip Tray and Right Tip Tray");
+    if(!PostRunStepAsReloadTray1AndTray2())
+    {
+      Log["Error"]("The Post run activity is failed to relaod the Left Tip Tray & Right Tip Tray");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]()
+
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }    
+}
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 247523 - IMT Bulk System Fluids ]
+//******************************************************************************
+
+function MIT_327752_IMTOneTestEnabledFluidlevelLessThanOrEqualToThresholdAndLOTOBSNotExpired_01()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_327752_IMTOneTestEnabledFluidlevelLessThanOrEqualToThresholdAndLoTOBSNotExpired_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: IMT & Pretreatment");
+    Log["AppendFolder"]("IMT : 327752 - Pretreatment with at least one test enabled, fluid level <= threshold and LOT/OBS not expired")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Execute the SQL query to refill the supplies");
+    if(!GivenUpdateIMTAndPretreatmentFluidsUsingQuery("TC_327752"))
+    {
+      Log["Error"]("Failed to refill supplies");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //WHEN 1    
+    Log["AppendFolder"]("When :: Enable an IMT Test in TDef")
+    if(!WhenTheAssaysAreEnabledInAssayList("TC_327752"))  
+    {
+      Log["Error"]("Failed to enable the IMT Test");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Set Threshold Values")
+    if(!ConfigureIMTAndPretreatmentThresholdValue("TC_327752"))
+    {
+      Log["Error"]("Failed to set the supply threshold");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();  
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Fluid volume should display in percentage along with LOT and OBS expiration data")
+    if(!ThenVerifyIMTAndPretreatmentFluidsDetails("TC_327752"))
+    {
+      Log["Error"]("Failed to verify the fluid volume and LOT_OBS expiration data");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Alert is displayed when the fluid volume reaches / drops below the user threshold")
+    if(!ThenVerifyAlertDisplayedWhenFluidVolumeReachesThreshold("TC_327752"))
+    {
+      Log["Error"]("Failed to verify if alert displayed when the fluid volume reaches / drops below the user threshold");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Event log is generated for the fluid level decremented below threshold");
+    if(!ThenVerifyEventLogGeneratedInEventLogs("TC_327752"))
+    {
+      Log["Error"]("Failed to verify event log for the fluid level decremented below threshold");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: IMT test should be ordered until the fluid is depleted and Event log should be generated for the Fluid depletion")
+    if(!ThenDepleteFluidsAndVerifyEventLogs("TC_327752"))
+    {
+      Log["Error"]("Verification of event log after IMT fluid depletion, failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_327753_EnableIMTAndPretreatmentAssayAndVerifyTheGridValues()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_327753_EnableIMTAndPretreatmentAssayAndVerifyTheGridValues";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: IMT & Pretreatment");
+    Log["AppendFolder"]("MIT : 327753 - Enable Pretreatment & IMT Fluids and Verify the 'Volume', 'Lot', 'Lot Expiration Date','OBS' ")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Execute the SQL Query to refill the supplies");
+    if(!GivenUpdateIMTAndPretreatmentFluidsUsingQuery("TC_327753"))
+    {
+      Log["Error"]("Failed to refill the supplies");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Enable IMT and Pretreatment Test");
+    if(!WhenTheAssaysAreEnabledInAssayList("TC_327753"))
+    {
+      Log["Error"]("Failed to enable IMT/Pretreatment Test");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 2
+    Log["AppendFolder"]("When :: Set Threshold Values")
+    if(!ConfigureIMTAndPretreatmentThresholdValue("TC_327753"))
+    {
+      Log["Error"]("Failed to set the supply threshold ");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify the IMT Fluid & Pretreatment Fluid Volume Displayed in Percentage along with LOT & OBS")
+    if(!ThenVerifyIMTAndPretreatmentFluidsDetails("TC_327753"))
+    {
+      Log["Error"]("Failed to Verify the IMT & Pretreatment Fluids Volume Displayed in Percentage along with LOT & OBS");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify the IMT Sensor Volume Displayed in Count")
+    if(!ThenVerifyTheIMTSensorDisplayedVolumeInCount())
+    {
+      Log["Error"]("Failed to Verify the IMT Sensor Volume Displayed in Count");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify the IMT Fluids , IMT Sensor & Pretreatment Fluid displayed LOT Expiration date ")
+    if(!ThenVerifyTheLotExpirationDateForFluids("TC_327753"))
+    {
+      Log["Error"]("Failed to Verify the LOT Expiration date for IMT & Pretreatment fluids");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify the IMT Fluids , IMT Sensor & Pretreatment Fluid displayed OBS ")
+    if(!ThenVerifyTheOBSForFluids("TC_327753"))
+    {
+      Log["Error"]("Failed to Verify the OBS for IMT & Pretreatment fluids");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_327734_IMTAndPreTreatmentDisabledWithAllTestsDisabled_01()
+{
+  try
+  {
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_327734_IMTAndPreTreatmentDisabledWithAllTestsDisabled_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: IMT & Pretreatment");
+    Log["AppendFolder"]("MIT : 327734 - Pretreatment with all tests disabled and LOT/OBS not expired-01")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: IMT and Pretreatment fluids are loaded in the system");
+    if(!GivenUpdateIMTAndPretreatmentFluidsUsingQuery("TC_327734"))
+    {
+      Log["Error"]("Failed to setup & load the IMT & Pretreatment fluid using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Set threshold value for the 'IMT & Pretreatment'")
+    if(!ConfigureIMTAndPretreatmentThresholdValue("TC_327734"))
+    {
+      Log["Error"]("Failed to set threshold value and verify the supply alert for IMT Fluids & Pretreatment");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Check the alert is displayed in the supply alert screen");
+    if(!ThenVerifyAlertDisplayedInSupplyNeedsScreen("TC_327734"))
+    {
+      Log["Error"]("Failed to verify the supply alert for IMT Fluids & Pretreatment");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Simulate a scenario with all tests disabled")
+    //0-Volume,1-OBS,2-LotExpirationDate,3-Lot
+    var pretreatmentDataBeforeDisabling = StepGetFluidDetailsFromSupplyNeeds("Pretreatment");
+    if(!WhenTheTestsAreDisabledFromAssayLists("TC_327734"))
+    {
+      Log["Error"]("Failed to disable the assay from Tdef Assay List Screen");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: No visual indication for the fluid data and Pretreatments should get disabled");
+    if(!ThenPreTreatmentSuppliesShouldGetDisabled())
+    {
+      Log["Error"]("Failed to check the IMT & Pretreatment disabled status in view all supplies");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: IMT / Pretreatment alerts should be suppressed");
+    if(!ThenAlertShouldNotDisplayedInSupplyNeedsScreen("TC_327734"))
+    {
+      Log["Error"]("Failed to verify the alert disappeared from the supply needs alert screen");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Tracking of fluid volume / LOT / OBS should continue");
+    if(!ThenTrackThePretreatmentSupplyDetailsByEnablingAssayBack("TC_327734", pretreatmentDataBeforeDisabling))
+    {
+      Log["Error"]("Failed to verify the tracking of pretreatment supply details");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }
+    Log["PopLogFolder"]();
+    
+    //Post Run
+    Log["AppendFolder"]("Post Run :: Enable all the IMT / Pretreatment tests");
+    if(!PostRunStepAsEnableAllIMTPretreatmentTests())
+    {
+      Log["Error"]("Failed to execute the post run action of enabling the assays from assay list");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;      
+    }    
+    Log["PopLogFolder"]();    
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");    
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_327700_IMTWithOneTestEnabledAndLotOrOBSExpired_01()
+{
+  try
+  {
+    
+    InitializeMetaDataHYDRA();
+  
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_327700_IMTWithOneTestEnabledAndLotOrOBSExpired_01";
+        
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: IMT & Pretreatment");
+    Log["AppendFolder"]("MIT : 327700 -  IMT, Pretreatment with atleast one test enabled and LOT/OBS expired -01")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: IMT and Pretreatment fluids are loaded in the system");
+    if(!GivenUpdateIMTAndPretreatmentFluidsUsingQuery("TC_327700"))
+    {
+      Log["Error"]("Failed to setup & load the IMT & Pretreatment fluid using sql query");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1
+    Log["AppendFolder"]("When :: Simulate a scenario with atleast one IMT test enabled");
+    if(!WhenTheAssaysAreEnabledInAssayList("TC_327700"))
+    {
+      Log["Error"]("Failed on step enabling atleast one IMT assay from Assay List ");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving();
+      Log["PopLogFolder"]();
+      return false;
+    }    
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: IMT Fluids volume should get displayed as 0");
+    if(!ThenFluidVolumeShouldBeDisplayedAsZero("TC_327700"))
+    {
+      Log["Error"]("Verification failed for verifying the IMT fluid volume displayed as zero");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Lot Expiration should display the 'Expired Date' and OBS should display as '0 days' for the IMT supplies");
+    if(!ThenVerifyTheLOTExpirationDateForFluids("TC_327700"))
+    {
+      Log["Error"]("Verification failed for Verifying the Lot Expiration Date as Expired/OBS displayed as Zero");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: OBS should display as '0 days' for the IMT supplies");
+    if(!ThenVerifyTheFluidOBSShouldBeDisplayedAsZero("TC_327700"))
+    {
+      Log["Error"]("Verification failed for Verifying OBS displayed as Zero");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Alert should be displayed for Lot expiration");
+    if(!ThenVerifyAlertDisplayedInSupplyNeedsScreenForLotExpiration("TC_327700"))
+    {
+      Log["Error"]("Failed on verification of the Lot/OBS alert displayed in alert screen");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: Alert should be displayed for OBS expiration");
+    if(!ThenVerifyAlertDisplayedInSupplyNeedsScreenForOBSExpiration("TC_327700"))
+    {
+      Log["Error"]("Failed on verification of the Lot/OBS alert displayed in alert screen");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: Operator event log should display the fluid depletion and lot expiration");
+    if(!ThenVerifyTheEventLogForFluidDepletion("TC_327700") && !ThenVerifyTheEventLogForLotExpiration("TC_327700"))
+    {
+      Log["Error"]("Failed on verification of the fluid Depletion and lot expiration message in Event log grid");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: No New IMT test should be ordered");
+    if(!ThenVerifyTheSampleProcessFailed("TC_327700"))
+    {
+      Log["Error"]("Sample Should not get process");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;    
+    }
+    Log["PopLogFolder"]()
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;    
+  }
+  catch (exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_326678_IMTOrPretreatmentWithOneTestEnabledFluidsEmptyAndLOTAndOBSNotExpired_01()  
+{
+  try
+  {
+    
+    InitializeMetaDataHYDRA();
+    
+    var featureName = "Consumables_FT278988";
+    var testcaseName = "MIT_326678_IMTOrPretreatmentWithOneTestEnabledFluidsEmptyAndLOTAndOBSNotExpired_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature 278988 :: IMT & Pretreatment");
+    Log["AppendFolder"]("IMT : 326678 - IMT, Pretreatment with one test enabled, fluids empty and LOT/OBS not expired")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Execute the SQL query to refill the supplies");
+    if(!GivenUpdateIMTAndPretreatmentFluidsUsingQuery("TC_326678"))
+    {
+      Log["Error"]("Failed to refill supplies");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN 1    
+    Log["AppendFolder"]("When :: Enable an IMT Test in Assay List")
+    if(!WhenTheAssaysAreEnabledInAssayList("TC_326678")) 
+    {
+      Log["Error"]("Failed to enable an IMT Test");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: IMT Fluids volume should get displayed as 0");
+    if(!ThenFluidVolumeShouldBeDisplayedAsZero("TC_326678"))
+    {
+      Log["Error"]("Verification failed for verifying the IMT fluid volume displayed as zero");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Lot Expiration should display the 'Expiration Date' and OBS should display remaining days'");
+    if(!ThenVerifyTheLOTExpirationDateForFluids("TC_326678"))
+    {
+      Log["Error"]("Verification failed for Verifying the Lot 'Expiration Date' displayed'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]()
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: OBS should display remaining days'");
+    if(!ThenVerifyTheOBSForFluids("TC_326678"))
+    {
+      Log["Error"]("Verification failed for Verifying the OBS should display remaining days'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: Alert should be displayed for Lot / Obs expiration");
+    if(!ThenVerifyAlertDisplayedInSupplyNeedsScreenForLotExpiration("TC_326678") && !ThenVerifyAlertDisplayedInSupplyNeedsScreenForOBSExpiration("TC_326678") )
+    {
+      Log["Error"]("Failed on verification of the Lot/OBS alert displayed in alert screen");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 4
+    Log["AppendFolder"]("Then :: Operator event log should be generated for fluid depletion");
+    if(!ThenVerifyTheEventLogForFluidDepletion("TC_326678"))
+    {
+      Log["Error"]("Verification of operator event log of Pretreatment fluid depletion, failed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: No New IMT test should be ordered");
+    if(!ThenVerifyTheSampleProcessFailed("TC_326678"))
+    {
+      Log["Error"]("Sample Should not get process");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;    
+    }
+    Log["PopLogFolder"](); 
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+
+

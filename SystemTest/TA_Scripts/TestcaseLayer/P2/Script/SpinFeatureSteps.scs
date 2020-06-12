@@ -1,0 +1,2203 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+function GivenSQCConfiguredOnSystem_GWT233562()
+{
+  if(!StepVerifyAvailableSQC(1,2))
+    return false;
+
+ //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchPanel");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpinMismatchPanel"))
+      return false;
+
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233562()
+{
+  //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233562_01"))
+    return false;
+  else
+    return true;
+}
+
+function WhenSQCCentrifugationDeterminationIsUnspun_GWT233562()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233562_01");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;
+}
+
+function WhenSortAreaConfiguredAndSpecimenTypeIsOther_GWT233562()
+{  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchPanel");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+  else
+    return true;
+  
+  //Verify sample type as OTHER  
+}
+
+function ThenProcessTheOrder_GWT233562()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233562_01");  
+  var dictColumn = arrTestData[0];
+
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+    
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+  else
+    return true;
+}
+
+function ThenSampleIsUnloadedToTheOutputArea_GWT233562()
+{
+    //Verify sample unloading location  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233562_01");
+  var dictColumn=arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded to holding area
+  var boolValue =  StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233562_01", "F");
+    return false;  
+  }
+}
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233556_01()
+{
+  //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233556_01"))
+    return false;
+  else
+    return true;
+}
+
+function GivenSQCConfiguredOnSystem_GWT233556()
+{
+  if(!StepVerifyAvailableSQC(1,2))
+    return false;
+
+ //Configure SH  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchWithHolding");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpinMismatchWithHolding"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+ 
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function WhenSQCCentrifugationDeterminationIsUnspun_GWT233556_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233556_01");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+
+  if(!StepPlaceOutputTray())
+    return false;
+
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+
+  if(!StepPlaceSample("Plain"))
+    return false;
+
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;
+}
+
+function WhenSortAreaConfiguredAndSpecimenTypeIsSerum_GWT233556_01()
+{
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchWithHolding");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+  else
+    return true;
+}
+
+function ThenOrderIsNotProcessed_GWT233556_01()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "GWT233556_01");
+  var dictColumn  = arrTestData[0];
+  var SampleId    = dictColumn["Item"]("SampleId");
+  var SampleStatus  = dictColumn["Item"]("SampleStatus");
+  //var SampleProblem = dictColumn["Item"]("SampleProblem");
+  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+}
+
+function ThenSampleIsUnloadedToHoldingArea_GWT233556_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233556_01");
+  var dictColumn  = arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded to holding area
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function ThenEventLogIsGenerated_GWT233556_01()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233556_01");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  
+  var sEvent="Sample {0} has error: {1}. Resolve the appropriate issue.";
+  var transsEvent=GetTranslatedString(sEvent,""); 
+  transsEvent = ReplaceString(transsEvent, "{0}", SampleId, true);
+  transsEvent = ReplaceString(transsEvent, "{1}", "Vision Spin Mismatch", true);
+
+  var boolValue = StepVerifyEventLogWithParams("2 Hours", "All", transsEvent)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_01", "F");
+    return false;  
+  }
+}
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233556_02()
+{
+  //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233556_02"))
+    return false;
+  else
+    return true;
+}
+
+function WhenSQCCentrifugationDeterminationIsUnspun_GWT233556_02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233556_02");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+
+  if(!StepPlaceOutputTray())
+    return false;
+
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+
+  if(!StepPlaceSample("Plain"))
+    return false;
+
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;
+}
+
+function WhenSortAreaConfiguredAndSpecimenTypeIsSerum_GWT233556_02()
+{
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1", "SpinMismatchWithHolding");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233556_02")
+  var dictColumn  = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+    
+  if(StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber, DrawerZone, DrawerPanels, RowNumbers))
+    return false;
+
+  var dictColumn  = arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  if(StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber, DrawerZone, DrawerPanels, RowNumbers))
+    return false;
+  else
+    return true;
+        
+}
+
+function ThenOrderIsNotProcessed_GWT233556_02()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "GWT233556_02");
+  var dictColumn  = arrTestData[0];
+  var SampleId    = dictColumn["Item"]("SampleId");
+  var SampleStatus  = dictColumn["Item"]("SampleStatus");
+  //var SampleProblem = dictColumn["Item"]("SampleProblem");
+  
+  return StepWaitForSampleStatus(SampleId, SampleStatus);
+}
+
+function ThenSampleIsUnloadedToHoldingArea_GWT233556_02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233556_02");
+  var dictColumn  = arrTestData[2];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded back to Input area since sort area and holding are full 
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function ThenEventLogIsGenerated_GWT233556_02()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233556_02");
+  var dictColumn           = arrTestData[0];
+  var SampleId             = dictColumn["Item"]("SampleId");
+  
+  var sEvent="Sample {0} has error: {1}. Resolve the appropriate issue.";
+  var transsEvent=GetTranslatedString(sEvent,""); 
+  transsEvent = ReplaceString(transsEvent, "{0}", SampleId, true);
+  transsEvent = ReplaceString(transsEvent, "{1}", "Vision Spin Mismatch", true);
+
+  var boolValue = StepVerifyEventLogWithParams("2 Hours", "All", transsEvent)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233556_02", "F");
+    return false;  
+  }
+}
+
+function GivenGlobalOverrideSettingSetToProcessSamples()
+{
+  //Configure SH  
+  //var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","GWT234377_01");    //GWT234377_01 sort configuration with Input and Output Normal
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile, "SortConfig", "GWT234409_Scenario01"); 
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "GWT234409_Scenario01"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("No"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+ else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("No"))
+      return false;
+ 
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  } 
+  return true; 
+}
+ 
+ 
+function WhenSampleTypeIsPatient_GWT238286_01()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT238286_01");
+  var dictColumn           = arrTestData[0];
+  
+  //Get the data and create workorder for first sample
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  //Update AnalysisData xml with both the sample data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT238286_01"))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+function ThenSampleSentToAnalyzerAndUnloadedToOutputArea_GWT238286_01()
+{
+  InitializeMetaData();
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT238286_01")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Decapped", 45000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  
+  var sEvent="Sample {0} has error: {1}. Resolve the appropriate issue.";
+  var transsEvent=GetTranslatedString(sEvent,""); 
+  transsEvent = ReplaceString(transsEvent, "{0}", SampleID, true);
+  transsEvent = ReplaceString(transsEvent, "{1}", "Vision Spin Error", true);
+  
+   //Verify Vision Spin Error is not generated in Event Log
+  //if(StepVerifySystemMessageLog("", transsEvent))
+  if(StepVerifyEventLogWithParams("2 Hours", "All", transsEvent))
+      return false;
+  
+  //Verify sample unloading location for first sample
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238286_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+    
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238286_01", "F");
+    return false;  
+  }
+} 
+
+
+//*****************************************************************************
+function GivenDoNotProcessSampleWithLowVolume_GWT238287_01()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "GWT238287_01");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+      
+  if(!StepAddPanel(PanelName))        // added after feature set up came into picture
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "GWT238287_01"))
+    return false;
+    
+  if(!StepSetTCSSettingsForSampleLowVolume("No"))  //Deselecting TCSSettings Sample Low Volume
+    return false;
+
+  if(!StepStartAnalyzer("SH"))
+    return false;
+    
+  return GivenAtellicaInitialized();
+  
+}
+
+function WhenNonExceptionControlSampleWithSpinError_GWT238287_01()
+{
+   //create QC definition and order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  //Update analysis data
+ 
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT238287_01"))
+    return false;
+  
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSamplePrcessedAndUnloadedOutput_GWT238287_01()
+{
+   var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+//  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var SampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "NoCap", 90000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238287_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+    //Verify sample gets unloaded to Holding area 
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+ 
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_01", "F");
+    return false;
+  }
+    
+}
+
+function GivenGlobalOverrideSettingSetNOTToProcessSamples()
+{
+  //Configure SH  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile, "SortConfig", "GWT234409_Scenario01"); 
+
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  
+  if (!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "GWT234409_Scenario01"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("No"))
+      return false;
+
+    return StepStartAnalyzer("SH");
+  }
+  
+  //The below code block is needed when Sort Panel is already active and TCS setting for sample vol has to be performed
+  else if(!StepVerifyTCSSettingsForVisionSpinError("No"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("No"))
+      return false;
+    
+    return StepStartAnalyzer("SH");
+  } 
+  return true; 
+ }
+
+
+function GivenDoNotProcessSampleWithLowVolume_GWT238287_02()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "GWT238287_02");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  
+  if (StepVerifySortPanelActive(PanelName))     // added after feature set up came into picture
+    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+      
+  if(!StepAddPanel(PanelName))        // added after feature set up came into picture
+    return false;
+    
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "GWT238287_02"))
+    return false;
+    
+  if(!StepSetTCSSettingsForSampleLowVolume("No"))  //Deselecting TCSSettings Sample Low Volume
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))
+    return false;
+
+  return GivenAtellicaInitialized();
+  
+}
+
+function WhenNonExceptionControlSampleWithSpinError_GWT238287_02()
+{
+   //create QC definition and order
+  var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var QCSampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  //Update analysis data
+ 
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT238287_02"))
+    return false;
+  
+  if(!StepCreateQCDefinition("Chol_2"))
+    return false;
+  
+  if(!StepCreateQCOrder("Chol_2", QCControlID))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSamplePrcessedAndUnloadedOutput_GWT238287_02()
+{
+   var QCDefList=GetTestItemsByTestName_New(TestDataFile,"QCDefinition","Chol_2");
+//  var QCControlID=QCDefList["Fields"]("ControlID").Value;
+  var SampleID=QCDefList["Fields"]("QCSampleID").Value;
+  
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "NoCap", 90000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  //Verify sample unloading location
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238287_02")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+    //Verify sample gets unloaded to Holding area 
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+ 
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238287_02", "F");
+    return false;
+  }
+    
+}
+
+function GivenSQCConfiguredOnSystem_GWT233557()
+{
+  if(!StepVerifyAvailableSQC(1,2))
+    return false;
+
+ //Configure SH
+  var arrDrawers  = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName   = arrDrawers[0]["Item"]("Panel");
+    
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+ 
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+} 
+
+function GivenSQCConfiguredOnSystem()
+{
+  if(!StepVerifyAvailableSQC(1,2))
+    return false;
+
+ //Configure SH
+  var arrDrawers  = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName   = arrDrawers[0]["Item"]("Panel");
+    
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+} 
+
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck()
+{    
+  //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233557_01"))
+    return false;
+  else
+    return true;
+} 
+
+function WhenSQCCentrifugationDeterminationIsUnspun()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233557_01");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;
+} 
+
+function WhenSortAreaIsNotConfiguredAndSpecimenTypeIsSerum()
+{  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+  else
+    return true;  
+} 
+
+function ThenDonotProcessTheOrderAndSampleStatusIsVisionUnspun()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233557_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+  
+  if(!StepVerifySampleProblemsAssociated(SampleId, SampleProblem))
+    return false;
+  else
+    return true;
+} 
+
+function ThenSampleIsUnloadedToTheOutputArea()
+{
+    //Verify sample unloading location  
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233557_01");
+    var dictColumn=arrTestData[0];
+  
+    var TrayType             = dictColumn["Item"]("TrayType");
+    var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+    var DrawerZone           = dictColumn["Item"]("DrawerZone");
+    var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+    var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+    var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+    // Verify the sample gets unloaded to holding area
+    return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+   
+} 
+
+function ThenOpearatorEventLogShowsVisionUnspunFlagForTheTest()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233557_01");  
+  var dictColumn = arrTestData[0];
+  var SampleId     = dictColumn["Item"]("SampleId");
+
+
+  var sEvent="Sample {0} has error: {1}. Resolve the appropriate issue.";
+  var transsEvent=GetTranslatedString(sEvent,""); 
+  transsEvent = ReplaceString(transsEvent, "{0}", SampleId, true);
+  transsEvent = ReplaceString(transsEvent, "{1}", "Vision Spin Mismatch", true)
+  
+    var boolValue =  StepVerifyEventLogWithParams("2 Hours", "All", transsEvent);//StepVerifySystemMessageLog("", transsEvent)
+    
+  
+    var attr = Log["CreateNewAttributes"]();
+    attr["Bold"] = true;
+    attr["Italic"] = true;
+    if(boolValue == true)
+    {
+      attr["FontColor"] = clGreen
+       Log["Message"]("Test Passed",null,pmNormal,attr);
+
+      ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "P");
+      return true;
+    }
+    else
+    {
+      attr["FontColor"] = clRed
+      Log["Message"]("Test Failed",null,pmNormal,attr);
+
+      ReportTestStatusToResultXML("SQC-Spin", "GWT233557_01", "F");
+      return false;  
+    } 
+} 
+
+
+function GivenSQCConfiguredOnSystem_GWT233555_01()
+{
+  if(!StepVerifyAvailableSQC(1,2))
+    return false;
+
+ //Configure SH  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchPanel");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+    
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpinMismatchPanel"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+ 
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  } 
+  else
+    return true;
+}
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233555_01()
+{
+   //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233555_01"))
+    return false;
+  else
+    return true;
+} 
+
+function WhenSQCCentrifugationDeterminationIsUnspun_GWT233555_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233555_01");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;  
+} 
+
+function WhenSortAreaIsConfiguredAndSpecimenTypeIsPlasma_GWT233555_01()
+{  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchPanel");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+  else
+    return true;
+} 
+
+
+function ThenDonotProcessTheOrderAndSampleStatusIsVisionUnspun_GWT233555_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233555_01");  
+  var dictColumn = arrTestData[0];
+ 
+  var Assay        = dictColumn["Item"]("Assay");
+  var SampleId     = dictColumn["Item"]("SampleId");
+
+  var SampleStatus = dictColumn["Item"]("SampleStatus");
+  var SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+  
+  if(!StepVerifySampleProblemsAssociated(SampleId, SampleProblem))
+    return false;
+  else
+    return true;
+} 
+
+function ThenSampleIsUnloadedToTheVisionUnspunSortArea_GWT233555_01()
+{
+    //Verify sample unloading location  
+    var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233555_01");
+    var dictColumn=arrTestData[0];
+  
+    var TrayType             = dictColumn["Item"]("TrayType");
+    var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+    var DrawerZone           = dictColumn["Item"]("DrawerZone");
+    var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+    var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+    var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+    // Verify the sample gets unloaded to holding area
+    return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+   
+} 
+
+function ThenOpearatorEventLogShowsVisionUnspunFlagForTheTest_GWT233555_01()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233555_01");  
+  var dictColumn = arrTestData[0];
+  var SampleId     = dictColumn["Item"]("SampleId");
+
+
+  var sEvent="Sample {0} has error: {1}. Resolve the appropriate issue.";
+  var transsEvent=GetTranslatedString(sEvent,""); 
+  transsEvent = ReplaceString(transsEvent, "{0}", SampleId, true);
+  transsEvent = ReplaceString(transsEvent, "{1}", "Vision Spin Mismatch", true)
+  
+   //Verify system message log for the sample which is having H I L errors in system message log page
+    //var boolValue =  StepVerifySystemMessageLog("", transsEvent)
+    return StepVerifyEventLogWithParams("2 Hours", "All", transsEvent);
+} 
+
+function ThenAddOnOrderShowsVisionSpinError_GWT233555_01()
+{
+  var arrTestData          = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233555_01");
+  var dictColumn           = arrTestData[1];
+  //add on order
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  
+  if(!StepCreateAnAddOnPatientOrder(Assay, SampleId, Analyzer))
+    return false;
+  
+  if(StepVerifySampleLocationInSampleList(SampleId, SampleLocation))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots", "GWT233555_01")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+     Log["Message"]("Test Passed",null,pmNormal,attr);
+
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233555_01", "F");
+    return false;  
+  } 
+} 
+
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233549_01()
+{
+   //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233549_01"))
+    return false;
+  else
+    return true;
+} 
+
+function WhenSQCCentrifugationDeterminationIsSpun_GWT233549_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233549_01");
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn = arrTestData[i];
+    var Assay                = dictColumn["Item"]("Assay");
+    var SampleId             = dictColumn["Item"]("SampleId");
+    var Specimen             = dictColumn["Item"]("Specimen");
+    var Analyzer             = dictColumn["Item"]("Analyzer");
+    var Priority             = dictColumn["Item"]("Priority");
+  
+    //Load patient order
+    if(StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+        iPass=iPass+1;
+  }
+  if(!(iPass==3))
+  {
+    return false;
+  } 
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;  
+} 
+
+function WhenSortAreaIsConfiguredAndSpecimenTypeIsSerumOrPlasma_GWT233549_01()
+{  
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchPanel");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+  else
+    return true;
+} 
+
+
+function ThenProcessTheOrder_GWT233549_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233549_01");  
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn = arrTestData[i];
+ 
+    var Assay        = dictColumn["Item"]("Assay");
+    var SampleId     = dictColumn["Item"]("SampleId");
+
+    var SampleStatus = dictColumn["Item"]("SampleStatus");
+    var SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+    if(StepWaitForSampleStatus(SampleId, SampleStatus))
+    {
+      iPass=iPass+1;
+    } 
+  } 
+  
+  if(iPass==3)
+    return true;
+  else
+    return false;
+ 
+} 
+
+function ThenSampleIsUnloadedToOutputArea_GWT233549_01()
+{
+  //Verify sample unloading location  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233549_01");
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn=arrTestData[i];
+    var TrayType             = dictColumn["Item"]("TrayType");
+    var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+    var DrawerZone           = dictColumn["Item"]("DrawerZone");
+    var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+    var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+    var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+    // Verify the sample gets unloaded to output area
+    if(StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+      iPass=iPass+1;
+  } 
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(iPass == 3)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT233549_01", "F");
+    return false;  
+  } 
+} 
+
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233549_02()
+{
+   //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233549_02"))
+    return false;
+  else
+    return true;
+} 
+
+function WhenSQCCentrifugationDeterminationIsSpun_GWT233549_02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233549_02");
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn = arrTestData[i];
+    var Assay                = dictColumn["Item"]("Assay");
+    var SampleId             = dictColumn["Item"]("SampleId");
+    var Specimen             = dictColumn["Item"]("Specimen");
+    var Analyzer             = dictColumn["Item"]("Analyzer");
+    var Priority             = dictColumn["Item"]("Priority");
+  
+    //Load patient order
+    if(StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+        iPass=iPass+1;
+  }
+  if(!(iPass==3))
+  {
+    return false;
+  } 
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;  
+} 
+
+
+
+
+function ThenProcessTheOrder_GWT233549_02()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233549_02");  
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn = arrTestData[i];
+ 
+    var Assay        = dictColumn["Item"]("Assay");
+    var SampleId     = dictColumn["Item"]("SampleId");
+
+    var SampleStatus = dictColumn["Item"]("SampleStatus");
+    var SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+    if(StepWaitForSampleStatus(SampleId, SampleStatus))
+    {
+      iPass=iPass+1;
+    } 
+  } 
+  
+  if(iPass==3)
+    return true;
+  else
+    return false;
+  
+ 
+} 
+
+function ThenSampleIsUnloadedToOutputArea_GWT233549_02()
+{
+    //Verify sample unloading location  
+   var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233549_02");
+   var iPass=0;
+   for(var i=0;i<arrTestData["length"];i++)
+   {
+      var dictColumn=arrTestData[i];
+  
+      var TrayType             = dictColumn["Item"]("TrayType");
+      var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+      var DrawerZone           = dictColumn["Item"]("DrawerZone");
+      var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+      var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+      var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+      // Verify the sample gets unloaded to output area
+      if(StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+        iPass=iPass+1;
+   } 
+   
+    
+    
+   var attr = Log["CreateNewAttributes"]();
+    attr["Bold"] = true;
+    attr["Italic"] = true;
+    if(iPass == 3)
+    {
+      attr["FontColor"] = clGreen
+       Log["Message"]("Test Passed",null,pmNormal,attr);
+
+      ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "P");
+      return true;
+    }
+    else
+    {
+      attr["FontColor"] = clRed
+      Log["Message"]("Test Failed",null,pmNormal,attr);
+
+      ReportTestStatusToResultXML("SQC-Spin", "GWT233549_02", "F");
+      return false;  
+    } 
+} 
+
+function GivenSQCConfiguredOnSystem_GWT233549_03()
+{
+  if(!StepVerifyAvailableSQC(1,2))
+    return false;
+
+ //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+      
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+         
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+ 
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  } 
+  else
+    return true;
+} 
+
+
+function GivenTCS2PerformedSQCSampleCentrifugationCheck_GWT233549_03()
+{
+   //Update analysis data
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT233549_03"))
+    return false;
+  else
+    return true;
+} 
+
+function WhenSortAreaIsNotConfiguredAndSpecimenTypeIsSerumOrPlasma_GWT233549_03()
+{
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig","SampleParking");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+ 
+  if(!StepVerifySortPanelActive(PanelName))
+    return false;
+  else
+    return true;
+} 
+
+
+function WhenSQCCentrifugationDeterminationIsSpun_GWT233549_03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233549_03");
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn = arrTestData[i];
+    var Assay                = dictColumn["Item"]("Assay");
+    var SampleId             = dictColumn["Item"]("SampleId");
+    var Specimen             = dictColumn["Item"]("Specimen");
+    var Analyzer             = dictColumn["Item"]("Analyzer");
+    var Priority             = dictColumn["Item"]("Priority");
+  
+    //Load patient order
+    if(StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+        iPass=iPass+1;
+  }
+  if(!(iPass==3))
+  {
+    return false;
+  } 
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false; 
+  else
+    return true;  
+} 
+
+
+
+
+function ThenProcessTheOrder_GWT233549_03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT233549_03");  
+  var iPass=0;
+  for(var i=0;i<arrTestData["length"];i++)
+  {
+    var dictColumn = arrTestData[i];
+ 
+    var Assay        = dictColumn["Item"]("Assay");
+    var SampleId     = dictColumn["Item"]("SampleId");
+
+    var SampleStatus = dictColumn["Item"]("SampleStatus");
+    var SampleProblem = dictColumn["Item"]("SampleProblem");
+    
+    if(StepWaitForSampleStatus(SampleId, SampleStatus))
+    {
+      iPass=iPass+1;
+    } 
+  } 
+  
+  if(iPass==3)
+    return true;
+  else
+    return false;
+ 
+} 
+
+function ThenSampleIsUnloadedToOutputArea_GWT233549_03()
+{
+    //Verify sample unloading location  
+   var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT233549_03");
+   var iPass=0;
+   for(var i=0;i<arrTestData["length"];i++)
+   {
+      var dictColumn=arrTestData[i];
+  
+      var TrayType             = dictColumn["Item"]("TrayType");
+      var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+      var DrawerZone           = dictColumn["Item"]("DrawerZone");
+      var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+      var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+      var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+      // Verify the sample gets unloaded to output area
+      if(StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+        iPass=iPass+1;
+   } 
+   
+   var attr = Log["CreateNewAttributes"]();
+    attr["Bold"] = true;
+    attr["Italic"] = true;
+    if(iPass == 3)
+    {
+      attr["FontColor"] = clGreen
+       Log["Message"]("Test Passed",null,pmNormal,attr);
+
+      ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "P");
+      return true;
+    }
+    else
+    {
+      attr["FontColor"] = clRed
+      Log["Message"]("Test Failed",null,pmNormal,attr);
+
+      ReportTestStatusToResultXML("SQC-Spin", "GWT233549_03", "F");
+      return false;  
+    } 
+} 
+
+function GivenSystemIsConfiguredToUseSQC_GWT257382()
+{
+  return StepVerifyAvailableSQC(1,2);
+} 
+
+function GivenSortAreaIsConfiguredWithVisionSpinError_GWT257382()
+{
+   //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchWithHolding");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpinMismatchWithHolding"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+ 
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function GivenInitialSampleScanShowsSpinIssue_GWT257382()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT257382");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT257382"))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+
+  if(!StepPlaceOutputTray())
+    return false;
+
+  if(!StepPlaceSample("Plain"))
+    return false;
+
+  if(!StepLoadSample())
+    return false; 
+  
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT257382");
+  var dictColumn  = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded back to Error sort area
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+    
+}
+
+function WhenSampleIsReintroduced_GWT257382()
+{
+  NetworkSuite["Variables"]["SHScenario"] = "GWT257382_02";
+  
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT257382_02"))
+    return false;
+  
+  if(!StepStopAnalyzer("CC"))
+    return false;
+    
+  return StepLoadSample();
+}
+
+function WhenSQCSpinRedeterminationShowsNoIssues_GWT257382()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "GWT257382");
+  var dictColumn  = arrTestData[0];
+  var SampleId    = dictColumn["Item"]("SampleId");
+  
+  return StepWaitForSampleStatus(SampleId, "Assay error");
+}
+
+function ThenSampleUnloadedToHoldingArea_GWT257382()
+{
+  //Verify sample unloading location  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT257382");
+  var dictColumn=arrTestData[1];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded to holding area
+  return StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function ThenNoLogEntryForSampleOverride_GWT257382()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","GWT257382")
+  var dictColumn=arrTestData[0];
+  var SampleId = dictColumn["Item"]("SampleId");
+  sTime = "30 Minutes";
+  var sModuleSerialNumber="All"
+  var sEvent = "Sample with unique identifer {0}, sample ID {1} will be processed due to implicit vision SQC override."
+  
+  var boolValue = StepVerifyOperatorEventLog(sTime, sModuleSerialNumber, sEvent, SampleId);
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+
+  if(boolValue == false)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("SQC-Spin", "GWT257382_01", "F");
+    return false;
+  }
+} 
+
+function TearDown_ResumeCC()
+{
+  return StartAnalyzer("CC")
+}
+ 
+
+function GivenSortAreaIsConfiguredWithVisionSpinError_SpinRegSc03()
+{
+   //Configure SH
+  var arrDrawers      = GetTestItemsByTestName(TestDataFile,"SortConfig_1","SpinMismatchWithArchive");
+  var PanelName       = arrDrawers[0]["Item"]("Panel");
+  var sErrorStatus    = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName  = arrDrawers[0]["Item"]("SortGroupName");
+  
+  if(!StepVerifySortPanelActive(PanelName))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;
+      
+    if(!StepAddAnErrorSortGroup(sErrorStatus, sSortGroupName))
+      return false;
+      
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig_1", "SpinMismatchWithArchive"))
+      return false;
+    
+    if(!StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig_1", "SpinMismatchWithArchive"))
+      return false;
+    
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else if(!StepVerifyTCSSettingsForVisionSpinError("Yes"))
+  {
+    if(!StepStopAnalyzer("SH"))
+      return false;
+
+    if(!StepSetTCSSettingsForVisionSpinError("Yes"))
+      return false;
+  
+    if(!StepSetWaitForResultsWorkflowSettings(TestDataFile, "SortConfig_1", "SpinMismatchWithArchive"))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  }
+  else
+    return true;
+}
+
+function GivenInitialSampleScanShowsSpinIssue_SpinRegSc03()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","SpinRegSc03");
+  var dictColumn = arrTestData[0];
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");
+  
+  //Load patient order
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+  
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SpinRegSc03"))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+
+  if(!StepPlaceOutputTray())
+    return false;
+  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+  
+  if(!StepPlaceSample("Plain"))
+    return false;
+
+  if(!StepLoadSample())
+    return false; 
+  
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots_1", "SpinRegSc03");
+  var dictColumn  = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  
+  // Verify the sample gets unloaded to holding area
+  return StepVerifySampleLocation(SampleId,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers); 
+}
+
+function WhenSpotIsAvailable_SpinRegSc03()
+{
+  NetworkSuite["Variables"]["SHScenario"] = "SpinSc03EmptySortArea";
+  
+  if(!StepRemoveTray())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+  
+  if(!StepLoadSample())
+    return false; 
+    
+  var arrTestData = GetTestItemsByTestName( TestDataFile, "SHTraysEmptySlots_1", "SpinRegSc03" );
+  var dictColumn  = arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  var SampleId             = dictColumn["Item"]("SampleIDs"); 
+  
+  // Verify the sample gets unloaded to holding area
+  return StepVerifySampleLocation(SampleId,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers); 
+} 
+
+function WhenSampleIsReintroduced_SpinRegSc03()
+{
+  NetworkSuite["Variables"]["SHScenario"] = "SpinSc03ReloadSample";
+  
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "SpinRegSc03"))
+    return false;
+
+  if(!StepRemoveTray())
+    return false;
+
+  if(!StepPlaceSample("Plain"))
+    return false;
+
+  if(!StepLoadSample())
+    return false;
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "PatientOrder", "SpinRegSc03");
+  var dictColumn  = arrTestData[0];
+  var SampleId    = dictColumn["Item"]("SampleId");
+  
+  return StepWaitForSampleStatus(SampleId, "Aspirated");
+}
+
+function ThenSampleUnloadedToHoldingArea_SpinRegSc03()
+{
+  //Verify sample unloading location  
+  var arrTestData = GetTestItemsByTestName(TestDataFile, "SHTraysEmptySlots_1", "SpinRegSc03");
+  var dictColumn=arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded to holding area
+  if(!StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  if(!StepVerifyOrderHasCompletedProcessingInWorklist(SampleIDs))
+    return false;
+    
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig_1", "SpinMismatchWithArchive");
+  var sArchivalTimeout=arrDrawers[0]["Item"]("ArchivalTimeout");
+  aTimeOut=sArchivalTimeout["split"](" ");
+  intArchiveTimeout=aTimeOut[0];
+  
+  if(!StepVerifyConfiguredTimerExpires(intArchiveTimeout))
+    return false;
+    
+  var dictColumn=arrTestData[2];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+
+  // Verify the sample gets unloaded to Archive
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Error"]("Test Failed",null,pmNormal,attr);  
+    ReportTestStatusToResultXML("SQC-Spin", "SpinRegCharterSc03", "F");
+    return false;
+  }
+  
+}
+
+function WhenNonExceptionCalibrationSampleWithSpinError_GWT238288_01()
+{
+
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT238288_01"))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","GWT238288_01")
+  var dictColumn=arrTestData[0];
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");
+  
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+	
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238288_01")
+  var dictColumn=arrTestData[0];
+  var SampleId=dictColumn["Item"]("SampleIDs");
+  
+  var Nodepath = "Instruments//Instrument";
+  var InstrumentsArray = ReadConfigFile(sConfigPath,Nodepath)
+  var Analyzer = GetInstrumentName(InstrumentsArray,"CH")
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+  
+  if(!StepVerfiyCalibrationOrder("Assay" ,Assay,"Ordered"))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSamplePrcessedAndUnloadedOutput_GWT238288_01()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238288_01")
+  var dictColumn=arrTestData[0];
+  var SampleID=dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "NoCap", 90000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  //Verify sample unloading location
+
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+ // var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+    //Verify sample gets unloaded to Holding area 
+  var boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+ 
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_01", "F");
+    return false;
+  }
+}
+
+function WhenNonExceptionCalibrationSampleWithSpinError_GWT238288_02()
+{
+  if(!StepUpdateAnalysisData(TestDataFile, "AnalysisData", "GWT238288_02"))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"CalibrationDefinition","GWT238288_01")
+  var dictColumn=arrTestData[0];
+  Assay = dictColumn["Item"]("Assay");
+  AssayType = dictColumn["Item"]("AssayType");
+  CalMaterialName =dictColumn["Item"]("Material");
+  
+  if(!StepAddCalibratorDefinition(dictColumn))
+    return false;
+	
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238288_02")
+  var dictColumn=arrTestData[0];
+  var SampleId=dictColumn["Item"]("SampleIDs");
+  
+  var Nodepath = "Instruments//Instrument";
+  var InstrumentsArray = ReadConfigFile(sConfigPath,Nodepath)
+  var Analyzer = GetInstrumentName(InstrumentsArray,"CH")
+  
+  if(!StepPlaceCalibrationOrder(Assay, Analyzer, CalMaterialName))
+    return false;
+  
+  if(!StepVerfiyCalibrationOrder("Assay" ,Assay,"Ordered"))
+    return false;
+  
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Plain"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenSamplePrcessedAndUnloadedOutput_GWT238288_02()
+{
+InitializeMetaData();
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","GWT238288_02")
+  var dictColumn=arrTestData[0];
+  var SampleID=dictColumn["Item"]("SampleIDs");
+  
+  if(!StepWaitForSampleProperty(SampleID, "CapStatus", "NoCap", 90000))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, "Aspirated"))
+    return false;
+  //Verify sample unloading location
+
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+ // var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+    //Verify sample gets unloaded to Holding area 
+  var boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+ 
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("SQC-Spin", "GWT238288_02", "F");
+    return false;
+  }
+} 

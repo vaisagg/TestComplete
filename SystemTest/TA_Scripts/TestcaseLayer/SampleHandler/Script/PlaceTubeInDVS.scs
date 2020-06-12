@@ -1,0 +1,40 @@
+﻿//USEUNIT DVSSimulator
+//USEUNIT PlaceOrRemoveTrayInDrawer
+//USEUNIT TCNativeLibraries
+//USEUNIT WorkflowNavigator
+
+var strWorkflowXMLPath=Project["Path"]+"TestData\\SHWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\SHControls.xml";
+
+function PlaceInputTubeInDVS()
+{
+try
+{
+  if(SelectPlaceInputTrayInDrawer())
+    NetworkSuite["Variables"]["TaskStatus"] = "True";
+  else
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+  Log["AppendFolder"]("Placing the Sample Tube in the Simualtor");
+  if(PlaceSampleTube())
+    NetworkSuite["Variables"]["TaskStatus"] = "True";
+  else
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+  Log["PopLogFolder"]();
+}
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    Log["PopLogFolder"]();
+  }
+}
+
+
+//function PlaceOutputTubeInDVS()
+//{
+//  SelectPlaceOutputTrayInDrawer()
+//  Log["AppendFolder"]("Placing the Sample Tube in the Simualtor");
+//  PlaceSampleTube();
+//  Log["PopLogFolder"]();
+//
+//}

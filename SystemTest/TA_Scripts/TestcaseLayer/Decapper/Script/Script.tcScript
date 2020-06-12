@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<child name="CommonUtilities" key="{8CEEF7F4-4D1E-4112-8D42-ADB32F7EDF46}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+		</child>
+		<child name="LocalizationUtilities" key="{A5C72382-E566-486B-BAFB-33B2630B935A}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+		</child>
+		<child name="SQLUtilities" key="{E0178ACF-AD6F-4573-859B-7502B6FFD572}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+		</child>
+		<child name="ControlAccessLibrary" key="{FD256D35-7331-4344-A8CB-1084DAF7A8DD}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+		</child>
+		<child name="TCNativeLibraries" key="{32BED350-BA9C-4E72-A1FB-A937F7B4367A}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+		</child>
+		<child name="WorkflowNavigator" key="{EFC691E2-8AB8-4131-95A4-6318F2691F9A}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+		</child>
+		<child name="DCapModuleManager" key="{9DAECC12-6D30-4EBA-8A2F-09DD15B51E54}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="DCapModuleManager.scs" />
+		</child>
+		<child name="NetworkSuiteLibrary" key="{1C1DA46F-BF81-4EB7-96DF-95D78091AD60}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\NetworkSuiteLibrary.scs" />
+		</child>
+		<child name="DecapperLibrary" key="{0DB21D70-D3E9-45F0-9AC6-DB5CD2DC311C}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Decapper\DecapperLibrary.scs" />
+		</child>
+		<child name="DecapperSimulator" key="{55DEC89C-EEE5-4C62-B9FD-5D330971301E}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Decapper\DecapperSimulator.scs" />
+		</child>
+	</children>
+	<folders>
+		<folder caption="TaskLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="CommonLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{8CEEF7F4-4D1E-4112-8D42-ADB32F7EDF46}" />
+						<ref key="{A5C72382-E566-486B-BAFB-33B2630B935A}" />
+						<ref key="{E0178ACF-AD6F-4573-859B-7502B6FFD572}" />
+						<ref key="{1C1DA46F-BF81-4EB7-96DF-95D78091AD60}" />
+					</references>
+				</folder>
+				<folder caption="GUIAccessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="ControlAcessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{FD256D35-7331-4344-A8CB-1084DAF7A8DD}" />
+							</references>
+						</folder>
+						<folder caption="TCNativeLibraries" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{32BED350-BA9C-4E72-A1FB-A937F7B4367A}" />
+							</references>
+						</folder>
+						<folder caption="WorkflowNavigator" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{EFC691E2-8AB8-4131-95A4-6318F2691F9A}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+				<folder caption="Modules" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="Decapper" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{0DB21D70-D3E9-45F0-9AC6-DB5CD2DC311C}" />
+								<ref key="{55DEC89C-EEE5-4C62-B9FD-5D330971301E}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+			</folders>
+		</folder>
+		<folder caption="TestCaseLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="Scenarios" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{9DAECC12-6D30-4EBA-8A2F-09DD15B51E54}" />
+					</references>
+				</folder>
+			</folders>
+		</folder>
+	</folders>
+</Root>

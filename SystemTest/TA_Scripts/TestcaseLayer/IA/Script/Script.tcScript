@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<child name="ControlAccessLibrary" key="{6345D3E0-F627-4CB8-94BC-3408DFAA10C5}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+		</child>
+		<child name="TCNativeLibraries" key="{263FD3EC-08F0-49B1-AF4E-810529978736}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+		</child>
+		<child name="WorkflowNavigator" key="{9688D9D0-2DFE-482E-94BB-7DDE6E584EF1}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+		</child>
+		<child name="IASimulator" key="{AFB120FF-967C-4929-AB1D-14F07CFD8D5E}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="IASimulator.scs" />
+		</child>
+		<child name="CommonUtilities" key="{D69E8288-11B2-440D-8925-04B5B7FACDAC}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+		</child>
+		<child name="LocalizationUtilities" key="{014970F3-B75A-4BA2-A96A-F18A19A55720}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+		</child>
+		<child name="NetworkSuiteLibrary" key="{56DEC662-55F2-4A68-806E-334CFD13FB40}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\NetworkSuiteLibrary.scs" />
+		</child>
+		<child name="SQLUtilities" key="{3A34EFB2-6325-4219-9EC1-D1589387C96B}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+		</child>
+	</children>
+	<folders>
+		<folder caption="TaskLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="CommonLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{D69E8288-11B2-440D-8925-04B5B7FACDAC}" />
+						<ref key="{014970F3-B75A-4BA2-A96A-F18A19A55720}" />
+						<ref key="{56DEC662-55F2-4A68-806E-334CFD13FB40}" />
+						<ref key="{3A34EFB2-6325-4219-9EC1-D1589387C96B}" />
+					</references>
+				</folder>
+				<folder caption="GUIAccessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="ControlAcessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{6345D3E0-F627-4CB8-94BC-3408DFAA10C5}" />
+							</references>
+						</folder>
+						<folder caption="TCNativeLibraries" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{263FD3EC-08F0-49B1-AF4E-810529978736}" />
+							</references>
+						</folder>
+						<folder caption="WorkflowNavigator" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{9688D9D0-2DFE-482E-94BB-7DDE6E584EF1}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+			</folders>
+		</folder>
+		<folder caption="TestCaseLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="Scenarios" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{AFB120FF-967C-4929-AB1D-14F07CFD8D5E}" />
+					</references>
+				</folder>
+			</folders>
+		</folder>
+	</folders>
+</Root>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Root signature="{24B6FA0B-0143-461A-9758-AEB9E9A9428B}" version="12.0" key="{C867F943-C2A6-4EEC-B48E-DB814FA4BF9C}">
+	<children>
+		<child name="Initialization" key="{3D502B8D-9960-467E-8C06-A0DCFEF83295}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\Initialization\Initialization.mds" />
+		</child>
+		<child name="InvokeSimApps" key="{B6DB8E51-4EE4-4B25-840F-8BE78E1F69AE}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\InvokeSimApps\InvokeSimApps.mds" />
+		</child>
+		<child name="SampleHandler" key="{610332C4-E149-4269-857E-7712DFF26E43}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\SampleHandler\SampleHandler.mds" />
+		</child>
+		<child name="Decapper" key="{0BD10FB3-4B43-4C9E-BD32-21D10563B013}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\Decapper\Decapper.mds" />
+		</child>
+		<child name="P2" key="{16AE3AE8-ACA2-4F55-94B5-8558F69DFF3B}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\P2\P2.mds" />
+		</child>
+		<child name="IA" key="{54353910-B82A-4084-9B6D-59C3A2CCB023}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\IA\IA.mds" />
+		</child>
+		<child name="Sealer" key="{D01B4AC3-5E46-4B8C-9569-F973B960C763}" type="Project" typeId="{362A8EE5-675E-43A9-869D-06ECE80B0CB4}" pluginName="">
+			<data path="..\TestcaseLayer\Sealer\Sealer.mds" />
+		</child>
+	</children>
+	<folders />
+	<testItems key="{19451B31-79EE-4DDC-A496-B3F3C6700269}">
+		<children>
+			<testItem key="{3D502B8D-9960-467E-8C06-A0DCFEF83295}" enabled="False" timeout="0" stopOnError="False" description="" />
+			<testItem key="{B6DB8E51-4EE4-4B25-840F-8BE78E1F69AE}" enabled="False" timeout="0" stopOnError="False" description="" />
+			<testItem key="{610332C4-E149-4269-857E-7712DFF26E43}" enabled="False" timeout="0" stopOnError="False" description="" />
+			<testItem key="{0BD10FB3-4B43-4C9E-BD32-21D10563B013}" enabled="False" timeout="0" stopOnError="False" description="" />
+			<testItem key="{16AE3AE8-ACA2-4F55-94B5-8558F69DFF3B}" enabled="True" timeout="0" stopOnError="True" description="" />
+			<testItem key="{54353910-B82A-4084-9B6D-59C3A2CCB023}" enabled="True" timeout="0" stopOnError="True" description="" />
+			<testItem key="{D01B4AC3-5E46-4B8C-9569-F973B960C763}" enabled="True" timeout="0" stopOnError="True" description="" />
+		</children>
+	</testItems>
+	<variables key="{7C98BF19-14D2-4006-8290-51CCF8953E6C}">
+		<data Version="3">
+			<Items>
+				<Variable Name="StartCCStatus" Type="{D25FDC80-E78F-4209-88B6-6FE2B0771206}" Local="True">
+					<DefValue BoolValue="False" />
+				</Variable>
+				<Variable Name="ShutdownCCStatus" Type="{D25FDC80-E78F-4209-88B6-6FE2B0771206}" Local="True">
+					<DefValue BoolValue="False" />
+				</Variable>
+			</Items>
+		</data>
+	</variables>
+	<analysis key="{900F3CC6-8B31-41E8-9600-3DB1B799B6E9}" />
+	<scc key="{00000000-0000-0000-0000-000000000000}" name="">
+		<data />
+	</scc>
+	<extender key="{1A3FC97E-9A66-4716-B166-35D10B4146E0}" />
+</Root>

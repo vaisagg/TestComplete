@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Root signature="{9252F941-DB23-4FCA-AA50-858B33BB4A19}" version="11.40">
+	<children>
+		<child name="InitializePCC" key="{5DB755BC-6574-4DC5-AC0B-8F5930DC5E2A}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InitializePCC.scs" />
+		</child>
+		<child name="TCNativeLibraries" key="{1EF6600A-37FC-41E5-9E10-73976AF36A25}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\TCNativeLib\TCNativeLibraries.scs" />
+		</child>
+		<child name="CommonUtilities" key="{94AE8AA4-493D-4E08-BCB9-258AAA810176}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\CommonUtilities.scs" />
+		</child>
+		<child name="SQLUtilities" key="{621EEFCD-CB7C-40D8-B1AF-CA597976978C}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\SQLUtilities.scs" />
+		</child>
+		<child name="Authentication" key="{809B003C-E81A-4200-A7D8-243FE33D817A}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\PCC\Authentication\Authentication.scs" />
+		</child>
+		<child name="TCCSConfigLibrary" key="{94FFBD52-A185-49EC-B42A-A93A3F833864}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\PCC\TCCSConfigLibrary.scs" />
+		</child>
+		<child name="ControlAccessLibrary" key="{CA1C23DC-AA92-431A-9633-AA2F9D8245EF}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\ControlAccess\ControlAccessLibrary.scs" />
+		</child>
+		<child name="WorkflowNavigator" key="{B2E39DB8-E283-4611-B6F5-9F7BA956F2C2}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\GUIAccessLibrary\WorkflowNavigator\WorkflowNavigator.scs" />
+		</child>
+		<child name="InitializeTCCSConfiguration" key="{B4F30169-3876-4DE2-99B4-BA584AC81B0F}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InitializeTCCSConfiguration.scs" />
+		</child>
+		<child name="InvokeSimulators" key="{4F9C0AE6-5C04-4185-9B69-ACD00B99AD37}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InvokeSimulators.scs" />
+		</child>
+		<child name="System" key="{AD8EF02F-C1AE-4D06-AB4F-C25801EBEC39}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\PCC\System\System.scs" />
+		</child>
+		<child name="ConfigureCHModule" key="{99567C00-59AE-4471-94BE-C0FAF36B06AD}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="ConfigureCHModule.scs" />
+		</child>
+		<child name="LoadReagents" key="{0F50F844-DF11-444F-BF1D-0F141939236D}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="LoadReagents.scs" />
+		</child>
+		<child name="Inventory" key="{199C2B4F-7CB5-45C8-A01B-8254BB03F1CE}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\PCC\Inventory\Inventory.scs" />
+		</child>
+		<child name="Setup" key="{51D4BC37-A8D4-4FD7-922F-655C931D642B}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\PCC\Setup\Setup.scs" />
+		</child>
+		<child name="LoadSupplies" key="{412A249F-7DF8-4781-AB06-5AB92E10526D}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="LoadSupplies.scs" />
+		</child>
+		<child name="LocalizationUtilities" key="{99062778-4BDB-42B8-94BC-CF7F90E5483D}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\LocalizationUtilities.scs" />
+		</child>
+		<child name="SHConfiguration" key="{D5A56DAF-50F9-4074-B907-7787D9A3D938}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="SHConfiguration.scs" />
+		</child>
+		<child name="DecapperLibrary" key="{45034798-E2AD-47C3-8A56-B4A1472E4BA9}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Decapper\DecapperLibrary.scs" />
+		</child>
+		<child name="NetworkSuiteLibrary" key="{43A68D68-A427-4603-A75C-4014DE174A0C}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\CommonLibrary\NetworkSuiteLibrary.scs" />
+		</child>
+		<child name="DisableOnscreenKeyboard" key="{5CFC6819-849F-4900-A6AA-8EDB4B39D434}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="DisableOnscreenKeyboard.scs" />
+		</child>
+		<child name="InitializeAtellica" key="{BF48227B-9793-4DA8-BEEE-638548906962}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="InitializeAtellica.scs" />
+		</child>
+		<child name="PostponeMaintenance" key="{111D4982-45CA-459C-9265-E96650D8E73F}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="PostponeMaintenance.scs" />
+		</child>
+		<child name="Maintenance" key="{1384E612-E58A-4A6C-AB65-910540519CEB}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\PCC\Maintenance\Maintenance.scs" />
+		</child>
+		<child name="IALibrary" key="{E752295D-2978-40E3-A6D5-29B87981F30B}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\IA\IALibrary.scs" />
+		</child>
+		<child name="SealerLibrary" key="{6BAD1E47-93B9-4C48-BF8F-FA0DF4F260C0}" type="Script Unit" typeId="{291CAE9C-4D20-4F33-8B5F-D48B587F3D65}" pluginName="Script">
+			<data path="..\..\..\TaskLayer\Sealer\SealerLibrary.scs" />
+		</child>
+	</children>
+	<folders>
+		<folder caption="TaskLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<folders>
+				<folder caption="CommonLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<references>
+						<ref key="{94AE8AA4-493D-4E08-BCB9-258AAA810176}" />
+						<ref key="{621EEFCD-CB7C-40D8-B1AF-CA597976978C}" />
+						<ref key="{94FFBD52-A185-49EC-B42A-A93A3F833864}" />
+						<ref key="{99062778-4BDB-42B8-94BC-CF7F90E5483D}" />
+						<ref key="{43A68D68-A427-4603-A75C-4014DE174A0C}" />
+					</references>
+				</folder>
+				<folder caption="GUIAccessLibrary" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="ControlAccess" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{CA1C23DC-AA92-431A-9633-AA2F9D8245EF}" />
+							</references>
+						</folder>
+						<folder caption="WorkflowNavigator" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{B2E39DB8-E283-4611-B6F5-9F7BA956F2C2}" />
+							</references>
+						</folder>
+						<folder caption="TCNativeLib" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{1EF6600A-37FC-41E5-9E10-73976AF36A25}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+				<folder caption="Modules" description="A logical folder that is used to organize project items and elements." moniker="">
+					<folders>
+						<folder caption="PCC" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{AD8EF02F-C1AE-4D06-AB4F-C25801EBEC39}" />
+								<ref key="{809B003C-E81A-4200-A7D8-243FE33D817A}" />
+								<ref key="{199C2B4F-7CB5-45C8-A01B-8254BB03F1CE}" />
+								<ref key="{51D4BC37-A8D4-4FD7-922F-655C931D642B}" />
+								<ref key="{1384E612-E58A-4A6C-AB65-910540519CEB}" />
+							</references>
+						</folder>
+						<folder caption="DC" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{45034798-E2AD-47C3-8A56-B4A1472E4BA9}" />
+							</references>
+						</folder>
+						<folder caption="IA" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{E752295D-2978-40E3-A6D5-29B87981F30B}" />
+							</references>
+						</folder>
+						<folder caption="Sealer" description="A logical folder that is used to organize project items and elements." moniker="">
+							<references>
+								<ref key="{6BAD1E47-93B9-4C48-BF8F-FA0DF4F260C0}" />
+							</references>
+						</folder>
+					</folders>
+				</folder>
+			</folders>
+		</folder>
+		<folder caption="TestCaseLayer" description="A logical folder that is used to organize project items and elements." moniker="">
+			<references>
+				<ref key="{5DB755BC-6574-4DC5-AC0B-8F5930DC5E2A}" />
+				<ref key="{B4F30169-3876-4DE2-99B4-BA584AC81B0F}" />
+				<ref key="{4F9C0AE6-5C04-4185-9B69-ACD00B99AD37}" />
+				<ref key="{99567C00-59AE-4471-94BE-C0FAF36B06AD}" />
+				<ref key="{0F50F844-DF11-444F-BF1D-0F141939236D}" />
+				<ref key="{412A249F-7DF8-4781-AB06-5AB92E10526D}" />
+				<ref key="{D5A56DAF-50F9-4074-B907-7787D9A3D938}" />
+				<ref key="{5CFC6819-849F-4900-A6AA-8EDB4B39D434}" />
+				<ref key="{BF48227B-9793-4DA8-BEEE-638548906962}" />
+				<ref key="{111D4982-45CA-459C-9265-E96650D8E73F}" />
+			</references>
+		</folder>
+	</folders>
+</Root>

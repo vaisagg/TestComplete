@@ -1,0 +1,2394 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT AdvanceSortingFeatureSteps
+
+var strWorkflowXMLPath=Project["Path"]+"TestData\\TrinidadWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\TrinidadControls.xml";
+
+function SampleParking()
+{
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Feature: Park samples with Impediment"); 
+  
+  Log["AppendFolder"]("Setup: Park samples with Impediment");
+  if(!SampleParkingSetup())
+  {
+    Log["Error"]("Setup failed");
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "F");
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  GWT196841_01_SampleParkingCCStopped();
+ 
+  GWT196841_02_SampleParkingAssayNotCalibrated();
+  
+  GWT196841_03_SampleParkingReagentNotLoaded();
+
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Teardown: Sample parking");
+  SampleParkingTeardown();
+  Log["PopLogFolder"](); 
+
+}
+
+function ArchivalCriteriaNotMet()
+{
+  InitializeMetaData();
+
+  Log["AppendFolder"]("Feature: Do not archive samples- STAT, False Bottom Tubes, TTSC");
+ 
+  Log["AppendFolder"]("Setup: Do not archive samples- STAT, False Bottom Tubes, TTSC");
+  if(!ConfigureNoArchivingSortArea())
+  {  
+    Log["Error"]("Setup failed");
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "F");
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  GWT187408_01_ArchivalCriteriaNotMetForFalseBottomTubes();
+  GWT187268_01_ArchivalCriteriaNotMetForSTATSamples();
+  GWT187410_01_ArchivalCriteriaNotMetForTubeTopCupSample();
+  GWT187411_01_ArchivalCriteriaNotMetForCalStorageSample();
+  
+  Log["PopLogFolder"]();// end of feature
+  
+  Log["AppendFolder"]("Teardown: Do not archive samples- STAT, False Bottom Tubes, TTSC");
+  NotArchiveSamplesTeardown();
+  Log["PopLogFolder"]();
+}
+
+function SampleHoldingandArchiving()
+{
+  InitializeMetaData();
+ 
+  Log["AppendFolder"]("Feature: Sample Holding and Archiving"); 
+  
+    GWT186741_01_ArchivingWithoutHolding();
+  
+    GWT186744_01_HoldAndArchive();
+  
+    GWT188274_01_SortedSTATNotArchived();
+
+    GWT188276_01_STATSamplesNotArchived();
+  
+    GWT188276_02_STATSampleNotArchivedStaysOnTrack();
+  
+	Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Teardown: Sample Holding and Archiving");
+    if(!SampleHoldingandArchivingTeardown())
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"](); 
+}
+
+
+
+function GWT187408_01_ArchivalCriteriaNotMetForFalseBottomTubes()
+{
+    Log["AppendFolder"]("GWT187408_01: False bottom tubes not archived");
+    NetworkSuite["Variables"]["SHScenario"] = "NotArchiveFalseBottomTubes";
+  
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "I"); 
+  
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+ 
+
+    Log["AppendFolder"]("And Sample archiving is configured");
+    if(!IsSHConfiguredForNotArchiveSamples())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("When a false bottom tube has completed processing");
+    if(!IsFalseBottomSampleLoaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+         
+    Log["AppendFolder"]("Then false bottom tube is unloaded back to the false bottom tray");
+    if(!IsFalseBottomSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187408_01_FalseBottomTube", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }         
+    Log["PopLogFolder"]();  
+    Log["PopLogFolder"]();
+
+ }
+
+
+function GWT187268_01_ArchivalCriteriaNotMetForSTATSamples()
+{
+  Log["AppendFolder"]("GWT187268_01: STAT samples not archived");
+  NetworkSuite["Variables"]["SHScenario"] = "NotArchiveSTATSample";
+  
+  ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "I");
+  
+	Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And sample archiving is configured");
+    if(!IsSHConfiguredForNotArchiveSamples())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT sample meets a sort criteria");
+    if(!IsSTATSampleLoaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And sort area is available");
+    if(!IsSTATSortAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+      
+    Log["AppendFolder"]("Then STAT sample is sorted to the sort area");
+    if(!IsSTATSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187268_01_STATSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+    
+  Log["PopLogFolder"]();
+}
+
+function GWT187410_01_ArchivalCriteriaNotMetForTubeTopCupSample()
+{
+  Log["AppendFolder"]("GWT187410_01: Tube top cup sample not archived");
+  NetworkSuite["Variables"]["SHScenario"] = "NotArchiveTTSCSample";
+    
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "I");
+  
+	  Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And sample archiving is configured");
+    if(!IsSHConfiguredForNotArchiveSamples())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }   
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When a tube top cup sample has completed processing and sample does not meet any sort criteria");
+    if(!IsTTSCSampleLoaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And output tray has available slots");
+    if(!IsTTSCOutputTrayHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then tube top cup sample is unloaded to output tray");
+    if(!IsTTSCSampleUnloaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187410_01_TTSC", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+	
+  Log["PopLogFolder"]();
+}
+
+function GWT187411_01_ArchivalCriteriaNotMetForCalStorageSample()
+{
+  Log["AppendFolder"]("GWT187411_01: Cal/QC storage sample not archived");
+  NetworkSuite["Variables"]["SHScenario"] = "NotArchiveStorableCalSample";
+	  
+    ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And SH is configured");
+    if(!IsSHConfiguredForNotArchiveSamples())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When a Cal sample has completed processing");
+    if(!IsCalSampleLoaded())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Cal/QC storage has available spot");
+    if(!IsCalQCStorageHasAvailableSpot())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("Then Calibrator/QC sample is unloaded to Cal/QC storage");
+    if(!IsCalSampleUnloadedToStorage())
+    {
+      ReportTestStatusToResultXML("ArchivalCriteriaNotMet", "GWT187411_01_CalStorageSample", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+
+
+
+function GWT196841_01_SampleParkingCCStopped()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT196841_01: Park samples with impediment CC module stopped ");
+  NetworkSuite["Variables"]["SHScenario"] = "SampleParking";
+  
+  ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "I");
+  
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+   ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+   Log["Error"]("Test failed");
+   Log["PopLogFolder"]();
+   Log["PopLogFolder"]();
+   return false;
+  } 
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SH is configured");
+  if(!IsSHConfigured())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the test has impediment");
+  if(!IsTestHasImpedimentCCStopped())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("When sample with specific test loaded");
+  if(!IsCCStoppedSampleLoaded())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    SampleParkingTeardownForCCStopped();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then system parks the sample");
+  if(!IsCCStoppedSampleParked())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_01_CCStopped", "F");
+    Log["Error"]("Test failed");
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Teardown: Sample parking CC module stopped");
+  if(!SampleParkingTeardownForCCStopped())
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196841_02_SampleParkingAssayNotCalibrated()
+{
+  Log["AppendFolder"]("GWT196841_02: Park samples with impediment Assay not calibrated ");
+  NetworkSuite["Variables"]["SHScenario"] = "SampleParking";
+  
+  ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "I");
+  
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the test has impediment");
+  if(!IsTestHasImpedimentAssayNotCalibrated())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    SampleParkingTeardownForAssayNotCalibrated();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sample with specific test loaded");
+  if(!IsAssayNotCalibratedSampleLoaded())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    SampleParkingTeardownForAssayNotCalibrated();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then system parks the sample");
+  if(!IsAssayNotCalibratedSampleParked())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_02_AssayNotCalibrated", "F");
+	  Log["Error"]("Test failed");
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Teardown: Sample parking Assay not calibrated");
+  if(!SampleParkingTeardownForAssayNotCalibrated())
+  {
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function GWT196841_03_SampleParkingReagentNotLoaded()
+{
+  Log["AppendFolder"]("GWT196841_03: Park samples with impediment test reagent is not loaded ");
+  NetworkSuite["Variables"]["SHScenario"] = "SampleParking";
+  
+  ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "I");
+  
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SH is configured");
+  if(!IsSHConfigured())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And the test has impediment");
+  if(!IsTestHasImpedimentReagentsNotLoaded())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+ 
+  Log["AppendFolder"]("When sample with specific test loaded");
+  if(!IsSampleLoadedForNoReagent())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    SampleParkingNoReagentTeardown();
+    return false;
+  }
+  Log["PopLogFolder"]();
+ 
+  Log["AppendFolder"]("Then system parks the sample");
+  if(!IsSampleParkedWithoutReagents())
+  {
+    ReportTestStatusToResultXML("Sample Parking", "GWT196841_03_ReagentUnavailable", "F");
+	  Log["Error"]("Test failed");
+  }
+  Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Teardown: Sample parking for no assay reagent");
+  if(!SampleParkingNoReagentTeardown())
+  {
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+}
+
+
+function GWT186741_01_ArchivingWithoutHolding()
+{
+  Log["AppendFolder"]("GWT186741_01: Archivable sample is archived from the input area");
+    NetworkSuite["Variables"]["SHScenario"] = "ArchivingWithoutHolding";
+  
+    ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And Sample archiving is configured");
+    if(!ConfigureArchivingArea())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Holding area is not configured");
+    if(HoldingAreaIsNotConfigured())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When sample has workorder and sample is a candidate for archival");
+    if(!IsArchivableSampleLoaded())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archivable spot is available");
+    if(!IsArchiveAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then sample is unloaded to the input area");
+    if(!IsArchivableSampleUnloadedToInput())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And once configured timer expires after all the results have come in, sample is relocated to Archive zone and sample status is complete");
+    if(!IsArchivableSampleUnloadedToArchiveZone())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186741_01_ArchivingWithoutHolding", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+ 
+  Log["PopLogFolder"]();
+}
+
+function GWT186744_01_HoldAndArchive()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT186744_01: Archivable sample is archived from the hold area");
+    NetworkSuite["Variables"]["SHScenario"] = "186744_01_HoldingAndArchiving";
+    
+    ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And Sample holding and archiving is configured");
+    if(!ConfigureHoldingAndArchiving())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("When sample has workorder and sample is a candidate for archival");
+    if(!IsHoldAndArchivableSampleLoaded())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And holding spot is available");
+    if(!HoldingAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archive spot is available");
+    if(!IsArchiveAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("Then sample is unloaded to the holding area");
+    if(!IsArchivableSampleUnloadedToHolding())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("And once configured timer expires after all the results have come in, sample is relocated to Archive zone and sample status is complete");
+    if(!IsHoldSampleUnloadedToArchiveZone())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT186744_01_HoldAndArchive", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+ 
+  Log["PopLogFolder"]();
+}
+
+
+function GWT188274_01_SortedSTATNotArchived()
+{
+  Log["AppendFolder"]("GWT188274_01: Sort samples are not archived when they are patient samples and sort spot available");
+    NetworkSuite["Variables"]["SHScenario"] = "SortedSTATNotArchived";
+  
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "I");
+      
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archiving and sort area is configured");
+    if(!ConfigureArchivingAndSortArea())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And STATs are configured not to be archived");
+    if(!ConfigureSTATsNotToBeArchived())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Holding area is not configured");
+    if(HoldingAreaIsNotConfigured())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT sample meets a sort criteria");
+    if(!STATMeetsSortCriteria())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And corresponding sort area is available");
+    if(!STATSortAreaHasEmptySlots())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then STAT sample is sorted to sort area");
+    if(!IsSTATSampleSorted())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And remains there after the archive timeout is met");
+    if(!IsSampleInSortAreaAfterArchivalTimeout())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188274_01_SortedSTATNotArchived", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function GWT188276_01_STATSamplesNotArchived()
+{
+  Log["AppendFolder"]("GWT188276_01: Sort samples are not archived when thay are patient samples and sort spot not available-If input area has empty slots");
+    NetworkSuite["Variables"]["SHScenario"] = "NotArchivedSortSamples";
+    
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archiving and sort area is configured");
+    if(!ConfigureArchivingAndSortArea())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And STATs are configured not to be archived");
+    if(!ConfigureSTATsNotToBeArchived())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Holding area is not configured");
+    if(HoldingAreaIsNotConfigured())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT sample meets a sort criteria");
+    if(!IsSampleNotForArchivingLoaded())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And sort area is not available");
+    if(!IsSortAreaNotAvailable())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then STAT sample is moved to input area if input area has empty slots");
+    if(!IsSortSampleUnloadedToInput())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_01_STATSamplesNotArchived", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function GWT188276_02_STATSampleNotArchivedStaysOnTrack()
+{
+
+  Log["AppendFolder"]("GWT188276_02: Sort samples are not archived when thay are patient samples and sort spot not available-If input area is not available");
+    NetworkSuite["Variables"]["SHScenario"] = "NotArchivedSortSamples";
+    
+    ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archiving and sort area is configured");
+    if(!ConfigureArchivingAndSortArea())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And STATs are configured not to be archived");
+    if(!ConfigureSTATsNotToBeArchived())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Holding area is not configured");
+    if(HoldingAreaIsNotConfigured())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT sample meets a sort criteria");
+    if(!IsSampleMeetsSortCriteriaLoaded())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+      
+    NetworkSuite["Variables"]["SHScenario"] = "NotArchivedOnTrackSortSamples";
+    Log["AppendFolder"]("And input area has no empty slots");
+    if(!IsInputAreaNotEmpty())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And sort area is not available");
+    if(!IsSortAreaNotAvailable())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+	
+    Log["AppendFolder"]("Then STAT sample stays on track");
+    if(!IsSortSampleStaysOnTrack())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "GWT188276_02_STATSampleNotArchivedStaysOnTrack", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+
+
+function SortingScenario02()
+{
+  Log["AppendFolder"]("Scenario: Sorting Scenario02");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario02";
+    InitializeMetaData();
+    
+    ReportTestStatusToResultXML("Sorting", "SortingScenario02", "I")   
+    
+    Log["AppendFolder"]("Given One Sample Handler Available");    
+    if(!GivenOneSampleHandlerAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And non atellica sort area is configured with Combined I/O drawers with sorting enbled");
+    if(!GivenSHConfiguredWithNonAtellicaSortAreaSc02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    Log["PopLogFolder"](); 
+    
+    Log["AppendFolder"]("And Cal-qc storage spot is not available");
+    if(!GivenCalQCStorageAreaNotAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And CH analyzer is not available");
+    if(!GivenCHAnalyzerNotAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+           
+     // Log["AppendFolder"]("And archive tray is loaded");
+    Log["AppendFolder"]("When STAT, Routine and Calibrator samples are loaded");
+    if(!WhenSTATRoutineAndControlSamplesLoadedSc02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    
+    Log["AppendFolder"]("Then Routine sample unloaded to NonAtellicaSortArea");
+    if(!ThenRoutineSampleUnloadedToNonAtellicaSortAreaSc02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then STAT sample unloaded to Input Area");
+    if(!ThenSTATSampleUnloadedToInputAreaSc02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then Control sample unloaded to input area");
+    if(!ThenControlSampleUnloadedtoInputAreaSc02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then STAT And Control Samples Unloaded To OutpurArea After Resuming Analyzer");
+    if(!ThenSTATAndControlSamplesReloadedAndRoutedToTheAnalyzerSc02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();   
+  Log["PopLogFolder"](); 
+}
+
+function SortingScenario05()
+{
+    Log["AppendFolder"]("Scenario: SortingScenario05");
+    NetworkSuite["Variables"]["SHScenario"] = "SortingScenario05";
+    
+    InitializeMetaData();
+    
+    ReportTestStatusToResultXML("Sorting", "SortingScenario05", "I")   
+    
+    Log["AppendFolder"]("Given One Sample Handler Available");    
+    if(!GivenOneSampleHandlerAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+       Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And test based sort area is configured with Combined I/O drawers with sorting disabled");
+    if(!GivenSHConfiguredWithTestBasedSortAreaAndSortingDisabled())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And Cal-qc storage spot is not available");
+    if(!GivenCalQCStorageAreaNotAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And CH analyzer is not available");
+    if(!GivenCHAnalyzerNotAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT, Routine and Calibrator samples are loaded");
+    if(!WhenSTATRoutineAndCalibratorSamplesLoadedSc05())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    Log["AppendFolder"]("Then Routine sample unloaded to output area");
+    if(!ThenRoutineSampleUnloadedToOutputAreaSc05())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then STAT sample unloaded to Input Area");
+    if(!ThenSTATSampleUnloadedToInputAreaSc05())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then Calibrator sample unloaded to input area");
+    if(!ThenCalibratorSampleUnloadedtoInputAreaSc05())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then STAT And Calibrator Samples Unloaded To OutpurArea After Resuming Analyzer");
+    if(!ThenSTATAndCalibratorSamplesReloadedAndRoutedToTheAnalyzerSc05())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+} 
+
+ 
+function SortingScenario16()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Sorting Scenario: 16 ");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario16";
+    
+  ReportTestStatusToResultXML("AdvanceSorting", "Scenario16", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And SH drawer is configured");
+  if(!GivenSHDrawerIsConfiguredSc16())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And spot is available in Cal/QC storage inventory");
+  if(!GivenSpotAvailableInCalQCStorageInventory())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And reagent for Test based sorting is not loaded on Analyzer");
+  if(!GivenReagentForTestBasedSortingNotLoadedSc16())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When STAT, Routine and control samples are loaded");
+  if(!WhenSTATRoutineControlSamplesAreLoadedSc16())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then STAT sample will be routed to analyzer and unloaded to Combined Input/Output Area");
+  if(!ThenSTATUnloadedToCombinedInputOutputAreaSc16())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And routine sample will be not be routed to analyzer and unloaded to Combined Input/Output Area");
+  if(!ThenRoutineUnloadedToCombinedInputOutputAreaSc16())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And control sample will be not be routed to analyzer and unloaded to Cal-QC storage area");
+  if(!ThenControlSampleUnloadedToCalQCStorageAreaSc16())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  //Call TearDown (Clear sample data and load back the reagent)
+  Log["AppendFolder"]("Teardown: Advance Sorting: Scenario 16");
+  if(!AdvanceSortingTeardownSc16())
+  {
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+  }
+  Log["PopLogFolder"]();
+}
+
+
+function SortingScenario06()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Sorting Scenario: 06");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario06";
+    
+  ReportTestStatusToResultXML("AdvanceSorting", "Scenario06", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And SH drawer is configured");
+  if(!GivenSHDrawerIsConfiguredSc06())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And spot is available in Cal/QC storage inventory");
+  if(!GivenSpotAvailableInCalQCStorageInventory())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When STAT, Routine and control samples are loaded");
+  if(!WhenSTATRoutineControlSamplesAreLoadedSc06())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then routine sample with non-Atellica sort code is unloaded to Output Area");
+  if(!ThenNonAtellicaOrderUnloadedToOutputAreaSc06())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And STAT sample will be routed to analyzer and unloaded to Output Area");
+  if(!ThenSTATUnloadedToOutputAreaSc06())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  
+  Log["AppendFolder"]("And control sample will be be routed to analyzer and unloaded to Cal-QC storage area");
+  if(!ThenControlSampleUnloadedToCalQCStorageAreaSc06())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function SortingScenario11()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Sorting Scenario: 11");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario11";
+    
+  ReportTestStatusToResultXML("AdvanceSorting", "Scenario11", "I");
+    
+  Log["AppendFolder"]("Given Trinidad Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And SH drawer is configured");
+  if(!GivenSHDrawerIsConfiguredSc11())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And spot is available in Cal/QC storage inventory");
+  if(!GivenSpotAvailableInCalQCStorageInventory())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When STAT, Routine and control samples are loaded");
+  if(!WhenSTATRoutineControlSamplesAreLoadedSc11())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then STAT sample will be routed to analyzer and unloaded to Combined Input/Output Area");
+  if(!ThenSTATUnloadedToCombinedInputOutputAreaSc11())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And routine sample is unloaded to Combined Input/Output Area");
+  if(!ThenRoutineUnloadedToCombinedInputOutputAreaSc11())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And control sample will be not be routed to analyzer and unloaded to Cal-QC storage area");
+  if(!ThenControlSampleUnloadedToCalQCStorageAreaSc11())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And once the archival timeout expires, STAT sample is not relocated to Archive tray");
+  if(!ThenSTATNotRelocatedToArchiveTraySc11())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  //Call TearDown (Clear sample data and load back the reagent)
+  Log["AppendFolder"]("Teardown: Advance Sorting: Scenario 11");
+  if(!SampleParkingTeardown())
+  {
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    
+  }
+  Log["PopLogFolder"]();
+}
+
+
+function SortingScenario01()
+{
+//Setup : SC
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario:Sorting Scenario 01");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario01";
+
+  ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario01", "I");  
+  
+  Log["AppendFolder"]("Given One Sample Handler Available");    
+  if(!GivenOneSampleHandlerAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given SH is configured with Non Atellica Sort Area and Test Based Sort Area and Archive Area and STATs are configured to be archived"); 
+  if(!GivenSHIsConfiguredForSortingScenario01())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And CC analyzer is available"); 
+  if(!CHAnalyzerIsAvailable())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When STAT Non Atellica sort code , Routine Test Based sort Patient samples and Calibrator samples are loaded"); 
+  if(!WhenPatientAndCalibratorSamplesForSortingScenario01AreLoaded())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();    
+
+  Log["AppendFolder"]("And non atellica sort area and test based sort area is available"); 
+  if(!WhenAllSortAreaForSortingScenario01AreAvailable())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Cal QC storage spot is available is available"); 
+  if(!IsCalQCStorageHasAvailableSpot())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then all samples are resulted"); 
+  if(!WhenPatientAndCalibratorSamplesForSortingScenario01AreCompleted())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then patient samples are unloaded to respective sort area and calibrator sample is unloaded to Cal QC storage area"); 
+  if(!ThenPatientAndCalibratorSamplesForSortingScenario01AreUnloaded())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  // reload fucntionality not working
+  /*
+  Log["AppendFolder"]("And after placing add on order for Routine and Calibrator sample - samples should be reloaded to track and should be unloaded to respective sort area and not go to archive area"); 
+  if(!ThenAfterAddOnOrderSamplesAreNotGoingToArchiveAreaButUnloadedToRespectiveSortArea())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  */
+  Log["PopLogFolder"]();
+}
+
+function SortingScenario15()
+{
+//Setup : SC
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario:Sorting Scenario 15");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario15";
+
+  ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario15", "I");  
+  
+  Log["AppendFolder"]("Given One Sample Handler Available");    
+    if(!GivenOneSampleHandlerAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given SH is configured with Hold and Archive Area and STATs are not configured to be archived"); 
+  if(!GivenSHIsConfiguredForSortingScenario15())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When CC analyzer is not available"); 
+  if(!CHAnalyzerIsNotAvailable())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And 1 STAT and 1 Routine patient samples with Test Based sort and 1 patient sample with non atellica sort code and 1 Calibrator samples are loaded"); 
+  if(!WhenPatientAndCalibratorSamplesForSortingScenario15AreLoaded())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();    
+
+  Log["AppendFolder"]("And cal QC storage is not available"); 
+  if(WhenCalQCSpotIsNotAvailable())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then all samples will not be routed to Analyzer and status is Assay Error\Overflow\Complete "); 
+  if(!WhenPatientAndCalibratorSamplesForSortingScenario15AreNotSentToAnalyzer())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then all samples are unloaded to hold area or output area"); 
+  if(!ThenPatientAndCalibratorSampleForSortingScenario15AreUnloaded())
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  
+  //script are written upto reload --- after reload will write once it will work in vapp 
+  Log["PopLogFolder"]();
+
+}
+//////////////////////////////Sorting scenarioes deals with archival rack /////////////////////////////////////////
+
+
+function SortingScenario_01()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario:SortingScenario_01");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario_01";
+
+  ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_01", "I");  
+  
+  Log["AppendFolder"]("Given sorting is configured with archive zone and hold area available");    
+    if(!GivenSortingIsconfiguredwithArchiveZoneAndHoldAreaAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When archive rack is loaded in to archive zone");    
+    if(!WhenArchiveRackIsLoadedToarchiveZone())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And archive rack is empty");    
+    if(!WhenArchiveRackIsEmpty())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And STAT sample is loaded through input tray");    
+    if(!WhenSTATSampleLoadedThroughInputTray())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample gets aspirated");    
+    if(!ThenSampleGetsAspirated())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample unloaded to holding area and waits untill archival timeout");    
+    if(!ThenSampleGetsUnlodedToHoldareaUntillArchivalTimeout())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then sample is relocated to archive rack");    
+    if(!ThenSampleIsUnloadedToArchivalRack())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+} 
+
+function SortingScenario_02()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario:SortingScenario_02");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario_02";
+
+  ReportTestStatusToResultXML("Sorting Scenarios", "SortingScenario_02", "I");  
+  
+  Log["AppendFolder"]("Given sorting is configured with archive zone and hold area not  available");    
+    if(!GivenSortingIsconfiguredwithArchiveZoneAndHoldAreaNotAvailable())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When archive rack is loaded in to non archive zone");    
+    if(!WhenArchiveRackIsLoadedToNonArchiveZone())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And archive rack is empty");    
+    if(!WhenArchiveRackIsEmpty())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And STAT sample is loaded through input tray");    
+    if(!WhenSTATSampleLoadedThroughInputTray_02())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample gets resulted but waiting to archive in input area");    
+    if(!ThenSampleGetsResultedAndWaitingToBeArchiveInInputArea())
+
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample receives an add on order");    
+    if(!AndSampleReceivesAnAddOnOrder())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then sample is aspirated again unloaded to input area until archival timeout");    
+    if(!ThenSampleIsAspiratedAndUnloadedToInputarea())
+
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then sample is relocated to archival rack");    
+    if(!ThenSampleIsRelocatedToArchivalRack())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+} 
+
+function Sorting_Scenario08()
+{
+
+  InitializeMetaData();
+  
+  Log["AppendFolder"]("Scenario:SortingScenario_08");
+  NetworkSuite["Variables"]["SHScenario"] = "SortingScenario_08";
+
+
+  ReportTestStatusToResultXML("Advanced sorting", "SortingScenario_08", "I");  
+  
+  Log["AppendFolder"]("Given sorting is configured with archive zone and exception sort area");    
+    if(!GivenSortingIsconfiguredwithArchiveZoneAndexceptionsortArea())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Advanced sorting", "SortingScenario_08", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When archive rack is loaded in to archive zone");    
+    if(!WhenArchiveRackIsLoadedToArchiveZone_Sc08())
+    {
+      Log["Error"]("Test failed");  
+      ReportTestStatusToResultXML("Advanced sorting", "SortingScenario_08", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+
+   Log["AppendFolder"]("And archive rack is empty");    
+    if(!WhenArchiveRackIsEmpty())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Advanced sorting", "SortingScenario_08", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And routine patient sample is loaded through input tray");    
+    if(!WhenRoutineSampleLoadedThroughInputTray_08())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Advanced sorting", "SortingScenario_08", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then sample is marked with respective exception");    
+    if(!ThenSampleIsMarkedWithRespectiveException())
+    {
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is unloaded to exception sort area");    
+    if(!ThenSampleIsUnloadedToExceptionSortArea())
+
+    {
+
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+  Log["PopLogFolder"]();
+  
+
+  Log["AppendFolder"]("And sample is not archived after archival timeout");    
+    if(!AndSampleIsNotArchivedAfterArchivalTimeOut())
+
+    {
+
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+
+  Log["PopLogFolder"]();
+
+
+  Log["PopLogFolder"]();
+
+}
+function AdvanceSortingScenario05()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 05");
+    NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc05";
+    
+    ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario05", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario05", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archiving and sort area is configured");
+    if(!ConfigureArchivingAndSortArea_Scenario05())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario05", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT sample is loaded through combined I/O tray");
+    if(!STATSampleIsLoaded())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario05", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then STAT sample is moved to combined I/O area and moved to Archive area after timeout");
+    if(!ThenSTATUnloadedToCombinedIOThenToArchive())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario05", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function AdvanceSortingScenario06()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 06");
+    NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc06";
+    
+    ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario06", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario06", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archiving and sort area is configured");
+    if(!ConfigureArchivingAndSortArea_Scenario06())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario06", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When Routine sample is loaded through combined I/O tray");
+    if(!RoutineSampleIsLoaded())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario06", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("And receives an add-on workorder while waiting to be archived in combined I/O area");
+    if(!WhenRecievesAnAddonWorkOrderWhileWaitingToBeArchived())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario06", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then Routine sample is moved to combined I/O area and moved to Archive area after timeout");
+    if(!ThenSTATUnloadedToCombinedIOThenToArchiveRack())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario06", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function AdvanceSortingScenario03()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 03");
+  NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc03";
+
+  ReportTestStatusToResultXML("Advance Sorting", "Scenario03", "I");  
+  
+  Log["AppendFolder"]("Given SH is configured with Archive Area and STATs are configured to be archived"); 
+  if(!GivenSHIsConfiguredSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When archive rack is loaded to the archive zone"); 
+  if(!WhenArchiveRackIsLoadedSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And archive rack is empty");    
+  if(!WhenArchiveRackIsEmpty())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And a routine sample is loaded and sample is resulted but waiting to archive"); 
+  if(!WhenRoutineSampleIsLoadedSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample receives an add on order"); 
+  if(!WhenSampleReceivesAddOnOrderSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is aspirated again and unloaded to input area"); 
+  if(!ThenSampleIsAspiratedAgainSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the sample is relocated to archive rack once the archival timeout elapses"); 
+  if(!ThenSampleIsRelocatedToArchiveRackSc03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario3", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function AdvanceSortingScenario04()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 04");
+  NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc04";
+
+  ReportTestStatusToResultXML("Advance Sorting", "Scenario03", "I");  
+  
+  Log["AppendFolder"]("Given SH is configured with Archive Area and STATs are configured to be archived and holding area not configured"); 
+  if(!GivenSHIsConfiguredSc04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario4", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When archive rack is loaded to the archive zone"); 
+  if(!WhenArchiveRackIsLoadedSc04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario4", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And archive rack is full and a routine sample is loaded through an input tray");    
+  if(!WhenArchiveRackIsFull())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario4", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample gets aspirated and unloaded to input area"); 
+  if(!ThenSampleGetsAspiratedAndUnloadedToInputAreaSc04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario4", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the sample waits in the input area until archival timeout elapses and is not retrieved from input area"); 
+  if(!ThenSampleWaitsInInputAreaSc04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario4", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function AdvanceSortingScenario07()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 07");
+  NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc07";
+
+  ReportTestStatusToResultXML("Advance Sorting", "Scenario07", "I");  
+  
+  Log["AppendFolder"]("Given SH is configured with Archive and hold Area"); 
+  if(!GivenSHIsConfiguredSc07())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario7", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When calibration, control and TTSC samples are loaded"); 
+  if(!WhenSamplesAreLoadedSc07())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario7", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then all the samples are aspirated and unloaded to output normal"); 
+  if(!ThenAllSamplesAreAspiratedSc07())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario7", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And the samples are not archived after archival timeout"); 
+  if(!ThenSamplesAreNotArchivedSc07())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("AdvanceSorting-Archiving", "Scenario7", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+}
+
+function AdvanceSortingScenario09()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 09");
+    NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc09";
+    
+    ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario09", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario09", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And archiving and sort area is configured");
+    if(!ConfigureArchivingAndFalseBottomTray_Scenario09())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario09", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When Routine sample is loaded through combined I/O tray");
+    if(!RoutineSampleIsLoaded_Sc09())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario09", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+    Log["AppendFolder"]("Then sample is moved to False Bottom tray and NOT moved to Archive area after timeout");
+    if(!ThenSampleUnloadedToFalseBottomTrayThenNOTToArchiveRack())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario09", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+
+function AdvanceSortingScenario10()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("Scenario: Advance Sorting Scenario 10");
+    NetworkSuite["Variables"]["SHScenario"] = "AdvSortSc10";
+    
+    ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario10", "I");
+    
+    Log["AppendFolder"]("Given Trinidad Is Initialized");
+    if(!GivenAtellicaInitialized())
+    {
+      ReportTestStatusToResultXML("ArchivingRack", "ArchiveRack_Scenario10", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("And system is configured not to Archive STAT samples");
+    if(!ConfigureArchivingAndSortArea_Scenario10())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario10", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("When STAT sample is loaded through combined I/O tray");
+    if(!STATSampleIsLoaded_Sc10())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario10", "F");
+      Log["Error"]("Test failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then STAT sample is moved to combined I/O area and moved to Archive area after timeout");
+    if(!ThenSTATUnloadedToCombinedIOAndNotArchived())
+    {
+      ReportTestStatusToResultXML("SampleArchiving", "ArchiveRack_Scenario10", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+
+  Log["PopLogFolder"]();
+}
+ 

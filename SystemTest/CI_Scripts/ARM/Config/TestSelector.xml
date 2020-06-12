@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Tests>
+  <Deployment name="SCI">
+    <Test>
+      <!-- TCCS Config on PCC & Remoting on other nodes -->
+      <TestSource>F:\Installer\Files\TA_Scripts\Trinidad\Trinidad.pjs</TestSource>
+      <ProjectName>IntegrationTest</ProjectName>
+      <TestName>NA</TestName>
+      <Timeout>30000</Timeout>
+	  <ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+
+    <Test>
+      <!-- Integration tests for SCI -->
+      <TestSource>F:\Installer\Files\TA_Scripts\WORKFLOW\PCC\ValidationProtocol.pjs</TestSource>
+      <ProjectName>PCC</ProjectName>
+      <TestName>NA</TestName>
+      <Timeout>30000</Timeout>
+	  <ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+  </Deployment>
+
+<Deployment name="SCD">
+    <Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Atellica\Atellica.pjs</TestSource>
+    	<ProjectName>Initialization</ProjectName>
+		<UnitName>NA</UnitName>
+    	<TestName>NA</TestName>
+    	<Timeout>30000</Timeout>
+		<ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+	
+	<Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Atellica\Atellica.pjs</TestSource>
+    	<ProjectName>P2</ProjectName>
+		<UnitName>NA</UnitName>
+    	<TestName>NA</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+</Deployment>
+<Deployment name="HYDRA">
+<TestType Type ="Integration">
+    <Test>
+     	<TestSource>F:\SystemTest\TA_Scripts\Hydra\Hydra.pjs</TestSource>
+    	<ProjectName>InitializationARM</ProjectName>
+		<UnitName>Initialize</UnitName>
+    	<TestName>InitializeAppWithPreSetup</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>True</ProceedOnFailure>
+    </Test>
+    <Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Hydra\Hydra.pjs</TestSource>
+    	<ProjectName>ARM</ProjectName>
+		<UnitName>InventoryFeature</UnitName>
+    	<TestName>CI_ReagentScenarios</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>True</ProceedOnFailure>
+    </Test>
+    <Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Hydra\Hydra.pjs</TestSource>
+    	<ProjectName>ARM</ProjectName>
+		<UnitName>InventoryFeature</UnitName>
+    	<TestName>CI_SuppliesScenarios</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>True</ProceedOnFailure>
+    </Test>
+    <Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Hydra\Hydra.pjs</TestSource>
+    	<ProjectName>ARM</ProjectName>
+		<UnitName>SetupFeature</UnitName>
+    	<TestName>CI_TestDefinitionScenarios</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>True</ProceedOnFailure>
+    </Test>
+</TestType>
+<TestType Type ="RoundTrip">
+    <Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Hydra\Hydra.pjs</TestSource>
+    	<ProjectName>InitializationARM</ProjectName>
+		<UnitName>Initialize</UnitName>
+    	<TestName>InitializeApp</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+    <Test>
+    	<TestSource>F:\SystemTest\TA_Scripts\Hydra\Hydra.pjs</TestSource>
+    	<ProjectName>ARM</ProjectName>
+		<UnitName>RoundTripE2E</UnitName>
+    	<TestName>RoundTripE2E</TestName>
+    	<Timeout>80000</Timeout>
+		<ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+</TestType>
+</Deployment>
+
+
+  <Deployment name="Default">
+    <Test>
+      <!-- TCCS Config on PCC & Remoting on other nodes -->
+      <TestSource>F:\Installer\Files\TA_Scripts\Trinidad\Trinidad.pjs</TestSource>
+      <ProjectName>IntegrationTest</ProjectName>
+      <TestName>NA</TestName>
+      <Timeout>30000</Timeout>
+	  <ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+
+    <Test>
+      <!-- Integration tests for SCI -->
+      <TestSource>F:\Installer\Files\TA_Scripts\WORKFLOW\PCC\PCC.pjs</TestSource>
+      <ProjectName>PCC</ProjectName>
+      <TestName>NA</TestName>
+      <Timeout>30000</Timeout>
+	  <ProceedOnFailure>False</ProceedOnFailure>
+    </Test>
+  </Deployment>	
+ </Tests>

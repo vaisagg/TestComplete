@@ -1,0 +1,3341 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT TubeCharacteristicFeatureSteps
+
+function TubeCharacteristicIntegration()
+{
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263862: Tube Characteristics");
+  
+  FeatureSetupTubeCharacteristic();
+  
+  GWT227874_TCS2DeterminationWithinLimits();
+  GWT227879_TCS2DeterminationExceedLimits();
+  
+  Log["PopLogFolder"]();
+}
+
+function TubeCharacteristicRegression()
+{
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263862: Tube Characteristics");
+
+  RegCharterSc011();
+  
+  GWT227879_TCS2DeterminationExceedLimits();
+  
+  GWT237057_01_CapPresenceMismatch();
+  
+  GWT237062_01_CapPresenceMismatch();
+  
+  RegCharterSc02();
+  
+  GWT227765_01_BarcodeError();
+ 
+  RegCharterSc012();
+ 
+  RegCharterSc013();
+ 
+  Log["PopLogFolder"]();
+} 
+
+function TubeCharacteristicFeature()
+{
+//This contains all the Spin scenarios that were automated
+  InitializeMetaData();  
+  
+  Log["AppendFolder"]("Feature#263862: Tube Characteristics");
+
+  GWT227874_TCS2DeterminationWithinLimits();
+  
+  GWT227875_TCS2DeterminationWithinLimits();
+  
+  GWT227876_TCS2DeterminationWithinLimits();
+  
+  GWT227879_TCS2DeterminationExceedLimits();
+
+  GWT234413_Scenario01();
+
+  GWT234408_Scenario01();
+  GWT234408_Scenario02();
+  GWT234408_Scenario03();
+
+  GWT234409_Scenario01();
+
+  GWT205681_01_TubeCharacteristics();
+
+  GWT227261_01_TubeCharacteristics();
+
+  GWT228913_02_TubeCharacteristics();
+
+  GWT228913_01_TubeCharacteristics();
+  GWT228913_03_TubeCharacteristics();
+  
+  GWT182940();  //Contains 4 scenarios with Tear-Down
+
+  GWT227765_01_BarcodeError();
+
+  GWT237057_01_CapPresenceMismatch();
+  
+  GWT237057_02_CapPresenceMismatch();
+  GWT237057_03_CapPresenceMismatch();
+  
+  GWT237062_01_CapPresenceMismatch();
+  GWT237062_02_CapPresenceMismatch();
+  
+  GWT237062_03_CapPresenceMismatch();
+  
+  GWT237067_CapPresenceMismatch();  //Contains 3 scenarios with Tear-Down
+  
+  GWT234414_01_CapPresenceMatch();
+  
+  GWT234415_CapPresenceDetermination();
+  
+  GWT175944_01_CappedExceptionSample();
+  GWT175944_02_CappedExceptionSample();
+
+  GWT227877_TubeCharacteristicExceedsLimits();
+
+//  GWT175945_01_TubeCharacteristics(); //Redesign needed - Lingaraju
+//  GWT175945_02_TubeCharacteristics(); //Redesign needed - Lingaraju
+  
+  Log["PopLogFolder"]();
+  
+} 
+
+function GWT182940()//All the scenarios of GWT#182940 are kept in this method to optimize decapper disbling and reduce number of restarts
+{ 
+  GWT182940_01_TubeCharacteristics();
+  GWT182940_03_TubeCharacteristics();
+  GWT182940_02_TubeCharacteristics();
+  GWT182940_04_TubeCharacteristics();
+
+  TearDownEnableDecapper();
+}
+
+function GWT237067_CapPresenceMismatch()//GWT where Decapper is not configured - keep this as an entry in Test items
+{ 
+  GWT237067_01_CapPresenceMismatch()
+  GWT237067_02_CapPresenceMismatch()
+  GWT237067_03_CapPresenceMismatch()
+     
+  TearDownEnableDecapper();
+}
+
+function GWT227874_TCS2DeterminationWithinLimits()
+{
+  Log["AppendFolder"]("GWT#227874: TCS2 determination - Within limits and sort configured with spot available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227874";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And TCS2 performed the SQC tube characteristic check");
+  if(!GivenTCS2PerformedTubeCharacteristicCheckGWT227874())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC TCS2 determination within limits and sort area configured and spot available");
+  if(!WhenSortAreaConfiguredAndSpotAvailableGWT227874())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample loaded to TCS2 and recognized as supported tube and all tests are processed");
+  if(!ThenSampleLoadedAndProcessedGWT227874())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample is unloaded to Output area");
+  if(!ThenSampleUnloadedToOutputAreaGWT227874())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And system message log created for tube characteristic check");
+  if(!ThenSystemMessageLogCreatedGWT227874())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227874_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT227875_TCS2DeterminationWithinLimits()
+{
+  Log["AppendFolder"]("GWT#227875: TCS2 determination - Within limits and sort configured with spot not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227875";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And TCS2 performed the SQC tube characteristic check");
+  if(!GivenTCS2PerformedTubeCharacteristicCheckGWT227875())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC TCS2 determination within limits and sort area configured and spot not available");
+  if(!WhenSortAreaConfiguredAndSpotNotAvailableGWT227875())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample loaded to TCS2 and recognized as supported tube and all tests are processed");
+  if(!ThenSampleLoadedAndProcessedGWT227875())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample is unloaded to Output area");
+  if(!ThenSampleUnloadedToOutputAreaGWT227875())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And system message log created for tube characteristic check");
+  if(!ThenSystemMessageLogCreatedGWT227875())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227875_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT227876_TCS2DeterminationWithinLimits()
+{
+  
+  Log["AppendFolder"]("GWT#227876: TCS2 determination - Within limits and sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227876";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC configured on system");
+  if(!GivenSQCConfiguredOnSystemGWT227876())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And TCS2 performed the SQC tube characteristic check");
+  if(!GivenTCS2PerformedTubeCharacteristicCheckGWT227876())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC TCS2 determination within limits and sort area not configured");
+  if(!WhenSortAreaNotConfiguredGWT227876())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample loaded to TCS2 and all tests are processed");
+  if(!ThenSampleLoadedAndProcessedGWT227876())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample is unloaded to Output area");
+  if(!ThenSampleUnloadedToOutputAreaGWT227876())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+  Log["PopLogFolder"]();
+}
+
+
+function GWT205681_01_TubeCharacteristics()
+{
+  
+  Log["AppendFolder"]("GWT205681_01: Automatically process the samples with no pre analytical exception identified");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT205681_01";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT205681_01_TubeCharacteristics", "I");  
+  
+  Log["AppendFolder"]("Given that sample with successfull barcode read and have no pre analytical issues"); 
+  if(!GivenSampleWithSuccessfullBarcodeRead_GWT205681_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT205681_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("When analyzer is available for processing");
+  if(!WhenAnalyzerIsAvailableForProcessing_GWT205681_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT205681_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then samples with valid work orders send to the analyzer for aspiration");
+  if(!ThenSamplesSendToTheAnalyzerForAspiration_GWT205681_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT205681_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  } 
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unloaded to sample handler");
+  if(!AndUnloadedToSampleHandler_GWT205681_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT205681_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+Log["PopLogFolder"]();
+
+
+} 
+
+function GWT227261_01_TubeCharacteristics()
+{
+  Log["AppendFolder"]("GWT227261_01: TCS2 Identifies the loaded sample types(Patient/Calibrator/Control)");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227261_01";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "I");  
+  
+  Log["AppendFolder"]("Given that sample with successfull barcode read and have no pre analytical issues"); 
+  if(!GivenSQCAndSHIsConfiguredAndOperational_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When load a patient sample"); 
+  if(!WhenLoadAPatientSample_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And load a calibrator sample"); 
+  if(!WhenLoadACalibratorSample_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And load a control sample"); 
+  if(!WhenLoadAControlSample_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then patient/calibrator/control samples loaded from SH to TCS2"); 
+  if(!ThenPatientOrCalibratorOrControlSamplesLoadedFromSHToTCS2_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 identified the sample as Patient/Calibrator/Control"); 
+  if(!ThenTCS2IdentifiedThesampleAsPatientOrCalibratorOrControl_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And System event log displayed about the tube characteristics"); 
+  if(!ThenSystemEventLogDisplayedAboutTubeCharacteristics_GWT227261_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT227261_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["PopLogFolder"]();
+} 
+
+
+function GWT228913_01_TubeCharacteristics()
+{
+
+  Log["AppendFolder"]("GWT228913_01: Cap presence determination- Capped : DVS/TCS read match :Sort area configured for cap error and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT228913_01"; 
+  
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "I"); 
+  
+  Log["AppendFolder"]("Given a Capped sample is laoded into the system"); 
+  if(!GivenACappedSampleIsLoadedIntotheSystem_GWT228913_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ 
+  Log["AppendFolder"]("When SQC Cap presence determines the sample is capped and DVS/TCS reads a match for cap presence");
+  if(!WhenSQCCapPresenceDeterminesTheSampleIsCapped_GWT228913_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort is configured for cap error and spot available ");
+  if(!WhenSortAreaIsConfiguredForCapErrorAndSpotAvailable_GWT228913_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!WhenDecapperIsConfiguredAndAvailable_GWT228913_01())
+  {
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "F");
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample routed to the decapper for decapping the tube");
+  if(!ThenSampleroutedToTheDecapperForDecappingTheTube_GWT228913_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unloaded to output area after successfull decap cap status is displayed as Decapped");
+  if(!ThenUnloadedTooutputAreaAfterSuccessfullDecap_GWT228913_01())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();  
+  
+} 
+
+function GWT228913_02_TubeCharacteristics()
+{
+  Log["AppendFolder"]("GWT228913_02: Cap presence determination- Capped : DVS/TCS read match :Sort area configured for cap error and not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT228913_02"; 
+  
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "I"); 
+  
+  Log["AppendFolder"]("Given a Capped sample is laoded into the system"); 
+  if(!GivenACappedSampleIsLoadedIntotheSystem_GWT228913_02())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ 
+  Log["AppendFolder"]("When SQC Cap presence determines the sample is capped and DVS/TCS reads a match for cap presence");
+  if(!WhenSQCCapPresenceDeterminesTheSampleIsCapped_GWT228913_02())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort is configured for cap error and spot not available ");
+  if(!WhenSortAreaIsConfiguredForCapErrorAndSpotNotAvailable_GWT228913_02())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!WhenDecapperIsConfiguredAndAvailable_GWT228913_02())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample routed to the decapper for decapping the tube");
+  if(!ThenSampleroutedToTheDecapperForDecappingTheTube_GWT228913_02())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unloaded to output area after successfull decap cap status is displayed as Decapped");
+  if(!ThenUnloadedTooutputAreaAfterSuccessfullDecap_GWT228913_02())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();  
+} 
+
+
+function GWT228913_03_TubeCharacteristics()
+{
+  Log["AppendFolder"]("GWT228913_03: Cap presence determination- Capped : DVS/TCS read match :Sort area not configured for cap error");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT228913_03"; 
+  
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "I"); 
+  
+  Log["AppendFolder"]("Given a Capped sample is laoded into the system"); 
+  if(!GivenACappedSampleIsLoadedIntotheSystem_GWT228913_03())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ 
+  Log["AppendFolder"]("When SQC Cap presence determines the sample is capped and DVS/TCS reads a match for cap presence");
+  if(!WhenSQCCapPresenceDeterminesTheSampleIsCapped_GWT228913_03())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort is not configured for cap error");
+  if(!WhenSortAreaIsNotConfiguredForCapError_GWT228913_03())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!WhenDecapperIsConfiguredAndAvailable_GWT228913_03())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample routed to the decapper for decapping the tube");
+  if(!ThenSampleroutedToTheDecapperForDecappingTheTube_GWT228913_03())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And unloaded to output area after successfull decap cap status is displayed as Decapped");
+  if(!ThenUnloadedTooutputAreaAfterSuccessfullDecap_GWT228913_03())
+  {
+    Log["Error"]("Test failed");
+	ReportTestStatusToResultXML("Tube Characteristics", "GWT228913_03_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();  
+} 
+
+function GWT234408_Scenario01()
+{
+
+  Log["AppendFolder"]("GWT234408_Scenario: 01");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234408_Scenario01";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotAvailable_GWT234408_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+     Log["AppendFolder"]("When decapper is configure but not available"); 
+  if(!WhenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("When Capped Patient sample is loaded");
+ 
+  if(!WhenCappedSampleIsLoaded_GWT234408_Scenario01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then TCS2 determines sample is capped");
+    if(!ThenTCS2DeterminesSampleisCapped_GWT234408_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "F");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample is not routed to Decapper and Unloaded to Holding Area");
+    if(!ThenSampleUnloadedToHoldAreaWithDCapPending_GWT234408_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario01", "F");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("TearDown-Start Decapper Module"); 
+    if(!StartDecapper_TearDown())
+    {
+      Log["Error"]("GWT234408_Scenario01 TearDown failed");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+
+ }
+ 
+ 
+function GWT234408_Scenario02()
+{
+
+  Log["AppendFolder"]("GWT234408_Scenario: 02");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234408_Scenario02";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotNotAvailable_GWT234408_Scenario02())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+     Log["AppendFolder"]("When decapper is configure but not available"); 
+  if(!WhenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("When Capped Patient sample is loaded");
+ if(!WhenCappedSampleIsLoaded_GWT234408_Scenario02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When Spot is not available in Sort area");
+ if(!WhenSpotNotAvailableinSortArea_GWT234408_Scenario02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then TCS2 determines sample is capped");
+   if(!ThenTCS2DeterminesSampleisCapped_GWT234408_Scenario02())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample not routed to Decapper and Unloaded to Holding Area");
+    if(!ThenSampleUnloadedToHoldAreaWithDCapPending_GWT234408_Scenario02())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario02", "F");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("TearDown-Start Decapper Module");
+    if(!StartDecapper_TearDown())
+    {
+      Log["Error"]("GWT234408_Scenario02 TearDown failed");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+
+ }
+ 
+function GWT234408_Scenario03()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("GWT234408_Scenario: 03");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234408_Scenario03";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario03", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is not configured");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotNotAvailable_GWT234408_Scenario03())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario03", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+     Log["AppendFolder"]("When decapper is configure but not available"); 
+  if(!WhenDecapperIsInStoppedState())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario03", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("When Capped Patient sample is loaded");
+ 
+  if(!WhenCappedSampleIsLoaded_GWT234408_Scenario03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario03", "F");
+    StepStartAnalyzer("DECAPPER");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample not routed to Decapper and Unloaded to Holding Area");
+    if(!ThenSampleUnloadedToHoldAreaWithDCapPending_GWT234408_Scenario03())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234408_Scenario03", "F");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("TearDown-Start Decapper Module");
+    if(!StartDecapper_TearDown())
+    {
+      Log["Error"]("GWT234408_Scenario03 TearDown failed");
+      StepStartAnalyzer("DECAPPER");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+
+ }
+ 
+function GWT234409_Scenario01()
+{
+  Log["AppendFolder"]("GWT234409_Scenario: 01");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234409_Scenario01";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotAvailable_GWT234409_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("When Capped Patient sample is loaded");
+ 
+  if(!WhenCappedSampleIsLoaded_GWT234409_Scenario01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("Then TCS2 determines sample is capped");
+    if(!ThenTCS2DeterminesSampleisCapped_GWT234409_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample Unloaded to Sort area with status as Cap Error");
+    if(!ThenSampleUnloadedToOutputAreaWithStatusCapError_GWT234409_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("TearDown-Enable Decapper Module");         
+  if(EnableDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();    
+    Log["PopLogFolder"]();
+
+}
+ 
+function GWT234413_Scenario01()
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("GWT234413_Scenario: 01");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234413_Scenario01";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotNotAvailable_GWT234413_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+   
+   
+   Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_Scenario01", "F");
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("When Capped Patient sample is loaded");
+ if(!WhenCappedSampleIsLoaded_GWT234413_Scenario01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When Spot is not available in Sort area");
+ if(!WhenSpotNotAvailableinSortArea_GWT234413_Scenario01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("When Spot is not available in Hold area");
+ if(!WhenSpotNotAvailableinHoldArea_GWT234413_Scenario01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+    EnableDecapper_TearDown();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("Then TCS2 determines sample is capped");
+   if(!ThenTCS2DeterminesSampleisCapped_GWT234413_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+      EnableDecapper_TearDown();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample not routed to Decapper and Unloaded to Holding Area");
+    if(!ThenSampleUnloadedToInputAreaWithDCapPending_GWT234413_Scenario01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234413_Scenario01", "F");
+      EnableDecapper_TearDown;
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("TearDown-Enable Decapper Module");         
+  if(EnableDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown-Enabling Decapper Module Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function RegCharterSc011()
+{
+  Log["AppendFolder"]("Reg Charter Sc 1.1 - Barcode mismatch exception");
+  NetworkSuite["Variables"]["SHScenario"] = "TubeRegSc011";
+  
+  ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "I");
+  
+  Log["AppendFolder"]("Setup: Set App Config xml file");
+  if(!SetAppConfigFileForBarcodeMismatch())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SH is configured with Barcode error sort area");
+  if(!GivenSHConfiguredWithBarcodeErrorSortArea())
+  {
+    Log["Error"]("Test failed");   
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample has barcode mismatch exception"); 
+  if(!WhenSampleHasBarcodeMismatchException())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is marked with barcode mismatch error"); 
+  if(!ThenSampleIsMarkedWithBarocdeMismatchError())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample unloaded to barcode error sort area on SH"); 
+  if(!ThenBarcodeMismatchSampleUnloadedToSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And operator event log is generated"); 
+  if(!ThenOperatorEventLogGeneratedForBarocdeMismatch())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc011", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Tear-Down: Set App Config xml file");
+  if(!TearDownAppConfigFileForBarcodeMismatch())
+  {
+    Log["Warning"]("Tear-Down failed");
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function RegCharterSc012()
+{
+  Log["AppendFolder"]("Reg Charter Sc 1.2 - Unreadable/missing barcode exception");
+  NetworkSuite["Variables"]["SHScenario"] = "TubeRegSc013";
+  
+  ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SH is configured with Barcode error sort area");
+  if(!GivenSHConfiguredWithBarcodeErrorSortArea())
+  {
+    Log["Error"]("Test failed");   
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample has unreadable/missing barcode exception"); 
+  if(!WhenSampleHasUnreadableBarcodeException())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is marked with unreadable barcode error"); 
+  if(!ThenSampleIsMarkedWithUnreadableBarocdeError())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample unloaded to barcode error sort area on SH"); 
+  if(!ThenUnreadableBarcodeSampleUnloadedToSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And operator event log is generated"); 
+  if(!ThenOperatorEventLogGeneratedForUnreadableBarocde())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc012", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+
+function RegCharterSc013()
+{
+  Log["AppendFolder"]("Reg Charter Sc 1.3 - Invalid barcode exception");
+  NetworkSuite["Variables"]["SHScenario"] = "TubeRegSc013";
+  
+  ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SH is configured with Barcode error sort area");
+  if(!GivenSHConfiguredWithBarcodeErrorSortArea())
+  {
+    Log["Error"]("Test failed");   
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When Sample has invalid barcode exception"); 
+  if(!WhenSampleHasInvalidBarcodeException())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is marked with invalid barcode error"); 
+  if(!ThenSampleIsMarkedWithInvalidBarocdeError())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sample unloaded to barcode error sort area on SH"); 
+  if(!ThenInvalidBarcodeSampleUnloadedToSortArea())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And operator event log is generated"); 
+  if(!ThenOperatorEventLogGeneratedForInvalidBarocde())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc013", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+ 
+function GWT227765_01_BarcodeError()
+{
+  // Append the folder in log 
+  Log["AppendFolder"]("GWT#227765: TCS2 determination - Sample has only one exception - Sorting configured for each individual exception");
+  // Create network variable uder global variable name SHScenario
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227765_01";
+  // Report the results to XML
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227765_01", "I");  
+  // Append the given statement to log
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227876_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC is configured and operational"); 
+  // ## Given part of the GWT ##//
+  if(!GivenSQCConfiguredAndOperational())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227765_01", "F"); // Report the failed results to XML
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Given SH & Sorting Configured on the System");   // Function for "and" part of the given statement
+  if(!GivenSHAndSortingConfiguredOnTheSystem())
+  {
+    Log["Error"]("Test failed");   
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227765_01", "F"); //Log errror report to xml
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  //## When part of the GWT##//
+  Log["AppendFolder"]("When Sample has only one exception"); 
+  if(!WhenSampleHasOnlyOneException())   //Function for When condition
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227765_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+  
+//## "Then" part of the GWT"//
+  Log["AppendFolder"]("Then sample is loaded to track And TCS2 scan successful with one exception"); 
+  if(!ThenSampleIsLoadedToTrackAndTCS2ScanSuccessfulWithOneException()) // Function for first then
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sample unloaded to sort area on SH "); 
+  if(!ThenSampleUnloadedToSortAreaOnSH())  // Function for 3rd then
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And duplicate barcode error displayed on sample details "); 
+  if(!ThenDuplicateBarcodeErrorDisplayedOnSampleDetails())  // Function for 4th then
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And operator event log generated for error "); 
+  if(!ThenOperatorEventLogGeneratedForError())  // Function for 4th then
+  {
+    Log["Error"]("Test failed");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+} 
+
+
+
+function GWT237057_01_CapPresenceMismatch()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("GWT237057_01: DVS/TCS Cap Presence mismatch-Various sort configurations & Decapper configured and available-Cap Error sort area configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237057Scenario01";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+   
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!DecapperConfiguredAndStatus())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+
+  Log["AppendFolder"]("And cap error sort area is configured and available");
+  if(!GivenCapErrorSortPanelWithHoldAndArchiveGWT237057GWT237062GWT237067Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237057Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch");
+  if(!WhenCapPresenceMismatchedGWT237057Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to decapper and analyzer and unloaded to cap error sort area");
+  if(!ThenPatientSampleUnloadedGWT237057Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["PopLogFolder"]();  
+}
+
+function GWT237057_02_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237057_02: DVS/TCS Cap Presence mismatch-Various sort configurations & Decapper configured and available-Cap Error sort area configured but spot not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237057Scenario02";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!DecapperConfiguredAndStatus())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+
+  Log["AppendFolder"]("And cap error sort area is configured and not available");
+  if(!GivenCapErrorSortPanelWithHoldAndArchiveGWT237057GWT237062GWT237067Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded and cap error spot not available");
+  if(!WhenPatientSampleGWT237057Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch");
+  if(!WhenCapPresenceMismatchedGWT237057Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to decapper and analyzer and unloaded to holding area");
+  if(!ThenPatientSampleUnloadedGWT237057Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["PopLogFolder"]();  
+}
+
+function GWT237057_03_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237057_03: DVS/TCS Cap Presence mismatch-Various sort configurations & Decapper configured and available-Cap Error sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237057Scenario03";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!DecapperConfiguredAndStatus())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+
+  Log["AppendFolder"]("And cap error sort area is not configured");
+  if(!GivenSHPanelWithHoldAndArchiveGWT237057GWT237062GWT237067Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237057Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch");
+  if(!WhenCapPresenceMismatchedGWT237057Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to decapper and analyzer and unloaded to output normal area");
+  if(!ThenPatientSampleUnloadedGWT237057Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237057_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["PopLogFolder"]();  
+}
+
+
+function GWT237062_01_CapPresenceMismatch()
+{
+InitializeMetaData();
+  Log["AppendFolder"]("GWT237062_01: DVS/TCS Cap Presence mismatch-Various sort configurations & Decapper configured but not available-Cap Error sort area configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237062Scenario01";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And cap error sort area is configured and available");
+  if(!GivenCapErrorSortPanelWithHoldAndArchiveGWT237057GWT237062GWT237067Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+//  Log["AppendFolder"]("And decapper is configured and not available");
+//  if(!DecapperConfiguredButStopped())
+//  {
+//    Log["Error"]("Test failed");
+//    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+//    Log["PopLogFolder"]();
+//    StartDecapper_TearDown();
+//    Log["PopLogFolder"]();
+//    return false;
+//  }
+//  Log["PopLogFolder"]();   
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237062Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+//    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch");
+  if(!WhenCapPresenceMismatchedGWT237062Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+//    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to decapper and analyzer and unloaded to cap error sort area");
+  if(!ThenPatientSampleUnloadedGWT237062Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+//    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+  
+//  Log["AppendFolder"]("TearDown - Start Decapper Module");
+//   if(!StartDecapper_TearDown())
+//   {
+//      Log["Warning"]("TearDown Failed");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//   Log["PopLogFolder"]();
+   
+   Log["PopLogFolder"]();
+}
+
+function GWT237062_02_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237062_02: DVS/TCS Cap Presence mismatch-Various sort configurations & Decapper configured but not available-Cap Error sort area configured but spot not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237062Scenario02";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And cap error sort area is configured and not available");
+  if(!GivenCapErrorSortPanelWithHoldAndArchiveGWT237057GWT237062GWT237067Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And decapper is configured and not available");
+  if(!DecapperConfiguredButStopped())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237062Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch");
+  if(!WhenCapPresenceMismatchedGWT237062Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to decapper and analyzer and unloaded to holding area");
+  if(!ThenPatientSampleUnloadedGWT237062Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+  
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   
+   Log["PopLogFolder"]();
+}
+
+function GWT237062_03_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237062_03: DVS/TCS Cap Presence mismatch-Various sort configurations & Decapper configured but not available-Cap Error sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237062Scenario03";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And cap error sort area is not configured");
+  if(!GivenSHPanelWithHoldAndArchiveGWT237057GWT237062GWT237067Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And decapper is configured and not available");
+  if(!DecapperConfiguredButStopped())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237062Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch");
+  if(!WhenCapPresenceMismatchedGWT237062Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to decapper and analyzer and unloaded to output normal area");
+  if(!ThenPatientSampleUnloadedGWT237062Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237062_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    StartDecapper_TearDown();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();   
+  
+  Log["AppendFolder"]("TearDown - Start Decapper Module");
+   if(!StartDecapper_TearDown())
+   {
+      Log["Warning"]("TearDown Failed");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+   Log["PopLogFolder"]();
+   
+   Log["PopLogFolder"]();
+}
+
+
+function GWT237067_01_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237067_01: DVS/TCS Cap Presence Mismatch(DVS-Uncapped,TCS Capped)-Various sort configurations & Decapper not configured-Cap Error sort area configured and available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237067Scenario01";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And cap error sort area is configured and available");
+  if(!GivenSHPanelCapErrorSortWithHoldAndArchiveGWT237067Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapper not configured");
+  if(!GivenDecaperNotConfiguredGWT237067())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237067Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch(DVS says Uncapped,TCS says Capped)");
+  if(!WhenCapPresenceMismatchedGWT237067Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample not routed to decapper and analyzer and unloaded to cap error sort area");
+  if(!ThenPatientSampleUnloadedGWT237067Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_01_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+ 
+ Log["PopLogFolder"](); 
+  
+}
+
+function GWT237067_02_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237067_02: DVS/TCS Cap Presence Mismatch(DVS-Uncapped,TCS Capped)-Various sort configurations & Decapper not configured-Cap Error sort area configured but spot not available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237067Scenario02";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And cap error sort area is configured and not available");
+  if(!GivenSHPanelCapErrorSortWithHoldAndArchiveGWT237067Sce0102())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And decapper not configured");
+  if(!GivenDecaperNotConfiguredGWT237067())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237067Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch(DVS says Uncapped,TCS says Capped)");
+  if(!WhenCapPresenceMismatchedGWT237067Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample not routed to decapper and analyzer and unloaded to holding area");
+  if(!ThenPatientSampleUnloadedGWT237067Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_02_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+
+ Log["PopLogFolder"](); 
+  
+}
+
+function GWT237067_03_CapPresenceMismatch()
+{
+  Log["AppendFolder"]("GWT237067_03: DVS/TCS Cap Presence Mismatch(DVS-Uncapped,TCS Capped)-Various sort configurations & Decapper not configured-Cap Error sort area not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT237067Scenario03";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "I");
+  
+  Log["AppendFolder"]("Given SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "I");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And cap error sort area not configured And decapper not configured");
+  if(!GivenSHPanelWithHoldAndArchiveGWT237067Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "I");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapper not configured");
+  if(!GivenDecaperNotConfiguredGWT237067())  
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When uncapped sample tube is loaded");
+  if(!WhenPatientSampleGWT237067Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "I");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC successfully performed cap presence check and DVS/TCS reads mismatch(DVS says Uncapped,TCS says Capped)");
+  if(!WhenCapPresenceMismatchedGWT237067Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "I");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample not routed to decapper and analyzer and unloaded to output normal tray");
+  if(!ThenPatientSampleUnloadedGWT237067Sce03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT237067_03_CapPresenceMismatch", "I");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();  
+ 
+ Log["PopLogFolder"](); 
+  
+}
+
+
+function GWT234414_01_CapPresenceMatch()
+{
+  Log["AppendFolder"]("GWT234414: Cap Presence determination: Capped DVS/TCS read match: Sort area not configured: Decapper not conifgured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234414";
+
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "I");
+  
+  Log["AppendFolder"]("Given atellica is initialized "); 
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And SQC TCS2 is confgiured");
+  if(!OneSQCIsConfigured())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  Log["AppendFolder"]("And a capped sample is loaded into the system");
+  if(!GivenSHPanelGWT234414())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecaperNotConfiguredGWT237067())  // using feature step of GWT237067 to verify decapper not configured
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC cap presence determines the sample is capped and DVS/TCS reads a match for cap presence");
+  if(!WhenCapPresenceMatchesGWT234414())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area is not configured");
+  if(!WhenVerifyNoSortAreaGWT234414())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample not routed to decapper as not configured and unloaded to output area as sort area is not configured");
+  if(!ThenPatientSampleUnloadedGWT234414())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234414_01_CapPresenceMatch", "F");
+    Log["PopLogFolder"]();
+    TearDownEnableDecapper();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"](); 
+  
+  TearDownEnableDecapper()
+ 
+ Log["PopLogFolder"](); 
+  
+}
+
+
+function GWT234415_CapPresenceDetermination()
+{
+  Log["AppendFolder"]("Tube characteristic GWT#234415: Cap presence determination - Uncapped DVS/TCS read match, sort area configured with spot available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT234415";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Hold not configured");
+  if(!GivenHoldNotConfiguredGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And an uncapped sample is loaded into the system");
+  if(!GivenUncappedSampleLoadedToSystemGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC cap presence determines the sample is uncapped and DVS/TCS reads a match for cap not present");
+  if(!WhenSQCDeterminesSampleIsUncappedGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And sort area is configured for cap error and spot available");
+  if(!WhenSortAreaConfiguredForCapErrorWithSpotAvailableGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And decapper is configured and available");
+  if(!WhenDecapperConfiguredAndAvailableGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample is not routed to Decapper for decapping the tube and unloaded to output area");
+  if(!ThenSampleUnloadaedToOutputAreaGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample status in sample details screen is aspirtaed and changes to complete");
+  if(!ThenSampleStatusIsCompleteGWT234415())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT234415_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();  
+}
+
+function GWT227877_TubeCharacteristicExceedsLimits()
+{
+
+  Log["AppendFolder"]("Tube characteristic GWT#227877: Tube characteristic check - TCS2 determination exceeds limits and sort configured and spot available");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227877";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC tube characteristic check");
+  if(!GivenTCS2PerformedTubeCharacteristicCheckGWT227877())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC TCS2 determination exceeds limits");
+  if(!WhenTCS2DeterminationExceedsLimitsGWT227877())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sort area configured and spot available");
+  if(!WhenSortAreaHasSpotAvailableGWT227877())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then tests not processed and sample unloaded to configured sort area");
+  if(!ThenSampleUnloadedToSortAreaGWT227877())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And operator event log generates error");
+  if(!ThenOperatorEventLogGeneratesErrorGWT227877())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227877_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+}
+
+function GWT175944_01_CappedExceptionSample()
+{
+
+  Log["AppendFolder"]("Tube Characteristics GWT175944 : Capped Exception Sample- No reloading of capped samples marked wth exception-No sort area configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT175944Scenario01";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_01_CappedExceptionSample", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_01_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And Given that there is a capped exception sample");
+  if(!GivenCappedExceptionSampleGWT175944Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_01_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When new work arrives");
+  if(!WhenAddOnOrderCappedExceptionSampleGWT175944Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_01_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample will not be reloaded to the track");
+  if(!ThenCappedExceptionSampleNotReloadedGWT175944Sce01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_01_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT175944_02_CappedExceptionSample()
+{
+  Log["AppendFolder"]("Tube Characteristics GWT175944 : Capped Exception Sample- No reloading of capped samples marked wth exception-Invalid tube sort area configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT175944Scenario02";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_02_CappedExceptionSample", "I");
+    
+  Log["AppendFolder"]("Given Atellica Is Initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_02_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And Given that there is a capped exception sample");
+  if(!GivenCappedExceptionSampleGWT175944Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_02_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When new work arrives");
+  if(!WhenAddOnOrderCappedExceptionSampleGWT175944Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_02_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample will not be reloaded to track");
+  if(!ThenCappedExceptionSampleNotReloadedGWT175944Sce02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175944_02_CappedExceptionSample", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+}
+
+function GWT227879_TCS2DeterminationExceedLimits()
+{
+  Log["AppendFolder"]("GWT#227879: TCS2 determination - Exceeds limits and sort not configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227879_01";
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+
+  Log["AppendFolder"]("And TCS2 performed the SQC tube characteristic check");
+  if(!GivenTCS2PerformedTubeCharacteristicCheckGWT227879_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC TCS2 determination exceeds limits");
+  if(!WhenSQCTCS2DeterminationExceedsLimitsGWT227879_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then tube is unloaded to output area");
+  if(!ThenSampleUnloadedToOutputAreaGWT227879_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And system message log created for tube characteristic check");
+  if(!ThenSystemMessageLogCreatedGWT227879_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT227879_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["PopLogFolder"]();
+} 
+
+
+function GWT182940_01_TubeCharacteristics()
+{
+  Log["AppendFolder"]("GWT182940_Scenario01 : Test on sorting samples the system could not decap : Cap error yes/No mismatch between DVS and TCS and sorting is configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT182940_01";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+  if(!GivenCapErrorSortAreaIsConfiguredAndSpotAvailable_GWT182940_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+    
+  Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("And Patient samples are loaded");
+ 
+  if(!GivenCappedSamplesAreLoaded_GWT182940_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When TCS2 determines sample is capped");
+   if(!WhenSamplesAreMarkedAsCapError_GWT182940_01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then the sample Unloaded to Sort area with status as Cap Error");
+    if(!ThenSampleUnloadedToSortAreaAndInputAreaWithStatusCapError_GWT182940_01())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_01", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+
+function GWT182940_03_TubeCharacteristics()              //Scenario 1 and 3 having same sort configuration
+{
+  Log["AppendFolder"]("GWT182940_Scenario03 : Test on sorting samples the system could not decap : Cap error -> Cap present with no Decapper confugred and sorting configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT182940_03";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error");
+    if(!GivenCapErrorSortAreaIsConfigured_GWT182940_03())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("And Patient samples are loaded");
+ 
+  if(!GivenCappedSamplesAreLoaded_GWT182940_03())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When TCS2 determines sample is capped");
+   if(!WhenSamplesAreMarkedAsCapError_GWT182940_03())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+    Log["AppendFolder"]("Then the sample Unloaded to Sort area with status as Cap Error");
+    if(!ThenSampleUnloadedToSortAreaAndInputAreaWithStatusCapError_GWT182940_03())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_03", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+ 
+function GWT182940_02_TubeCharacteristics()
+{
+  
+  Log["AppendFolder"]("GWT182940_Scenario02 : Test on sorting samples the system could not decap : Cap error yes/No mismatch between DVS and TCS and sorting is configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT182940_02";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_02", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotAvailable_GWT182940_02())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_02", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("And Patient samples are loaded");
+ 
+  if(!GivenCappedSamplesAreLoaded_GWT182940_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When TCS2 determines sample is capped");
+   if(!WhenSamplesAreMarkedAsCapError_GWT182940_02())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_02", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample Unloaded to Sort area with status as Cap Error");
+    if(!ThenSampleUnloadedToSortAreaAndInputAreaWithStatusCapError_GWT182940_02())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_02", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+}
+ 
+function GWT182940_04_TubeCharacteristics()
+{
+  Log["AppendFolder"]("GWT182940_Scenario04 : Test on sorting samples the system could not decap : Cap error -> Cap present with no Decapper confugred and sorting configured");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT182940_04";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_04", "I");
+   
+  Log["AppendFolder"]("Given Trinidad Is Initialized with TCS2");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("And Sort Error group is Created for Cap Error and spot available");
+    if(!GivenCapErrorSortAreaIsConfiguredAndSpotAvailable_GWT182940_04())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_04", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   Log["AppendFolder"]("And decapper is not configured");
+  if(!GivenDecapperNotConfigured())
+  {
+    Log["Error"]("Test failed : Precondition Failed - Decapper Configuration Failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+      
+ Log["AppendFolder"]("And Patient samples are loaded");
+ 
+  if(!GivenCappedSamplesAreLoaded_GWT182940_04())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_04", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+   Log["AppendFolder"]("When TCS2 determines sample is capped");
+   if(!WhenSamplesAreMarkedAsCapError_GWT182940_04())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT234409_04", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then the sample Unloaded to Sort area with status as Cap Error");
+    if(!ThenSampleUnloadedToSortAreaAndInputAreaWithStatusCapError_GWT182940_04())
+    {
+      Log["Error"]("Test failed");
+      ReportTestStatusToResultXML("Tube Characteristics", "GWT182940_04", "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+} 
+
+ function GWT175945_01_TubeCharacteristics()
+ {
+  
+  
+  Log["AppendFolder"]("GWT175945_01:Uncapped exception sample");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT175945_01";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_01_TubeCharacteristics", "I");
+   
+  Log["AppendFolder"]("Given that there is a uncapped exception sample");
+  if(!GivenThatThereIsAUncappedExceptionSample_GWT175945_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When new work arrives");
+ if(!WhenNewWorkArrives_GWT175945_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample will not be reloaded to the track");
+   if(!ThenSampleWillNotBeReloadedTotheTrack_GWT175945_01())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_01_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ }
+
+ function GWT175945_02_TubeCharacteristics()
+ {
+  //Combined IO trays
+  
+  Log["AppendFolder"]("GWT175945_01:Uncapped exception sample");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT175945_02";
+    
+  ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_02_TubeCharacteristics", "I");
+   
+  Log["AppendFolder"]("Given that there is a uncapped exception sample");
+  if(!GivenThatThereIsAUncappedExceptionSample_GWT175945_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ Log["AppendFolder"]("When new work arrives");
+ if(!WhenNewWorkArrives_GWT175945_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then sample will not be reloaded to the track");
+   if(!ThenSampleWillNotBeReloadedTotheTrack_GWT175945_02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "GWT175945_02_TubeCharacteristics", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+ }
+ 
+function RegCharterSc02() 
+{
+  InitializeMetaData();
+  Log["AppendFolder"]("Tube characteristic regression charter Sc 02: Cup mismatch exception");
+  NetworkSuite["Variables"]["SHScenario"] = "GWT227877";
+  ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "I");
+  
+  Log["AppendFolder"]("Given Atellica is initialized");
+  if(!GivenAtellicaInitialized())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And SQC configured on system");
+  if(!GivenSQCConfiguredOnSystem())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And TCS2 performed the SQC tube characteristic check");
+  if(!GivenTCS2PerformedTubeCharacteristicCheckRegSc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When SQC TCS2 determines cup mismatch");
+  if(!WhenTCS2DeterminesCupMismatchRegSc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("When sort area configured and spot available");
+  if(!WhenSortAreaHasSpotAvailableGWT227877())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("Then tests not processed and sample unloaded to configured sort area");
+  if(!ThenSampleUnloadedToSortAreaRegSc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  
+  Log["AppendFolder"]("And operator event log generates error");
+  if(!ThenOperatorEventLogGeneratesErrorRegSc02())
+  {
+    Log["Error"]("Test failed");
+    ReportTestStatusToResultXML("Tube Characteristics", "RegCharterSc02", "F");
+    Log["PopLogFolder"]();
+    Log["PopLogFolder"]();
+    return false;
+  }
+  Log["PopLogFolder"]();
+  Log["PopLogFolder"]();
+  
+}

@@ -1,0 +1,31 @@
+// Input Key    Temperature Status  DutyCycle   Current
+CHReactionRingTED	36.8	0	85	1000
+CHReactionRingThermistors.0.Verify	37.15	0	0	0
+CHReactionRingThermistors.2.Control	37.18	0	0	0
+IMWashFluidTED	34.01	0	22	400
+IMFluidsThermistors.0.WashVerify	34.11	0	0	0
+IMFluidsThermistors.1.WashControl	34.21	0	0	0
+IMBaseFluidTED	34.02	0	11	500
+IMFluidsThermistors.2.BaseControl	34.12	0	0	0
+IMFluidsThermistors.3.BaseVerify	34.22	0	0	0
+CHReagentTED1	8.2	0	99	999
+CHReagentTED2	8.1	0	88	680
+IMIncubationTED1	37.1	0	55	999
+IMIncubationTED2	36.9	0	44	1001
+IMPrimaryReagentTED	4.66	0	75	1234
+IMAncillaryReagentTED	4.04	0	0	0
+AirHeaterThermistors.0.LeftFarField	33.33	0	0	0
+AirHeaterThermistors.1.LeftControl	33.44	0	0	0
+IncubationThermistors.2.RightFarField	33.55	0	0	0
+AirHeaterThermistors.2.RightControl	33.66	0	0	0
+LumoTED	29.23	0	75	1000
+LysingAgentTED	36	0	0	0
+AirHeaterThermistors.3.LowerDeck	33	0	0	0
+WaterThermistors.2.Inlet	15	0	0	0
+WaterThermistors.4.Tank	33.22	0	0	0
+WaterThermistors.0.Heater	43.21	0	0	0
+IMTThermistor.0.Manifold	33	0	0	0
+IMSampleArmTemp.0.Control	34.4	0	0	0
+
+
+

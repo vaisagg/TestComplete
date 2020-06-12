@@ -1,0 +1,630 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT NetworkSuiteLibrary
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeSH
+//*
+//*  Description: Invoke SH application
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeSH()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeSH(strAppName,strAppPath,Testobj,strProcessName)
+{
+   try
+   {
+       var strpath = strAppPath// + strAppName;
+       var objWS = Sys["OleObject"]("WScript.Shell")
+        var oShell=Sys["OleObject"]("Shell.Application");
+        oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5);
+        //oShell.ShellExecute(strpath,strAppName,"C:\\hydra.dev\\drop\\Bin","runas",5)
+       //Waits for the Shell Process to initialize. Max waiting time : 30 seconds
+        aqUtils.Delay(5000)
+       
+       if(strProcessName!="")
+       {
+          if(Sys["WaitProcess"](strProcessName,100000)["Exists"] == true)
+          {
+         
+            Sys.Process(strProcessName)["Refresh"]();
+      
+            Log["Message"]("The Process "+strProcessName+" has started successfully");
+            for(i=1;i<=100;i++)
+            {
+              if (Testobj!="")
+              {
+                if(Testobj["Exists"]==true)
+                { 
+                  break;    
+                }
+              }
+            }
+            if (Testobj!="")
+            {
+              if(Testobj["Exists"])
+              {
+                Log["Message"]("The Application "+strAppName+" launched successfully");
+                return true;
+              }
+            
+              else
+              {
+                Log["Message"]("Unable to launch the Application "+strAppName);
+                return false;
+              }
+            }
+          }
+          else
+          {
+            Log["Error"]("Unable to start the process "+strProcessName);
+            return false;
+          }
+       }
+   }
+   catch(exp)
+   {
+      Log["Error"]("Exception",exp["description"]);    
+   }
+}
+//************************************************************************************************************************************************************************************
+//*  FunctionName : SHShutdown
+//*
+//*  Description: Shutdown SH Simulator App
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: SHShutdown()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function SHShutdown()
+{
+  try
+  {
+    var oShell=Sys["OleObject"]("Shell.Application");
+    var strshutdownPath = "C:\\Siemens\\Bin\\SH_Shutdown.bat" 
+    oShell.ShellExecute(strshutdownPath,"","C:\\Siemens\\Bin","runas",5);
+    aqUtils.Delay(1000)
+    boolFlag = false;
+    var intStartTime = aqDateTime["Time"]();
+    var intElapsedTime = 0;
+    while(!boolFlag && intElapsedTime < 480000)
+    {
+      RAMPServiceState = GetServiceState("RAMP Service")
+      SHMMServiceState = GetServiceState("SHMMService")
+      if(RAMPServiceState == "Stopped" && SHMMServiceState == "Stopped")
+      {
+        if(Sys["WaitProcess"]("SH.ModuleManager",20000)["Exists"] == false)
+        {
+          boolFlag = true;
+          Log["Message"]("SH is shutdown");
+        }
+      }
+      aqUtils.Delay(2000, "Waiting for SH to shutdown");
+      intElapsedTime = aqDateTime["Time"]() - intStartTime
+    }
+//    var Proparray=["wndClass","WndCaption","index"];
+//    var Propvalues=["ConsoleWindowClass","Administrator: Windows PowerShell","1"];
+//    
+//    var objWindow=Sys["Find"](Proparray,Propvalues,35)
+//   // Sys.Process("cmd").Window("ConsoleWindowClass", "Administrator: Windows PowerShell", 1)
+////   Sys.Process("cmd").Window("ConsoleWindowClass", "Administrator: Windows PowerShell", 1)//Sys.Process("cmd", 2).Window("ConsoleWindowClass", "Administrator: Windows PowerShell", 1) 
+//    while(objWindow["Exists"])
+//    {
+//      aqUtils.Delay(5000,"Waiting for SH to shut down")
+//    }
+//    if (!objWindow["Exists"])
+//    {
+//      return true;
+//    }
+//    else
+//    {
+//      return false;
+//    }
+
+
+	//Added to sclose TCS2 software
+    if (Sys["WaitProcess"]("TCS2.MainProject",2000)["Exists"] == false)
+      return true;
+    else if (Sys["WaitProcess"]("TCS2.MainProject",2000)["Exists"] == true)
+    {
+      Sys["Process"]("TCS2.MainProject")["Terminate"]()
+      if (Sys["WaitProcess"]("TCS2.MainProject",2000)["Exists"] == false)
+        Log["Message"]("TCS2 software is shutdown in SH box");
+      else
+        Log["Message"]("TCS2 software is not shutdown in SH box");
+    }
+    // Added to close TCS2 software
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+
+function LaunchDVS()
+{
+  
+  try
+  {
+  Log["AppendFolder"]("SH::LaunchDVS");
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("LaunchDVS").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("LaunchDVS").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Launching DVS simulator is completed")
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("Launching in DVS simulator is Failed");
+    Log.PopLogFolder();
+    return false;
+  }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function PlaceOutputTrayAndSave()
+{
+  
+  try
+  {
+  Log["AppendFolder"]("SH::PlaceOutputTray");
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceOutputTray").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceOutputTray").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Placing Output Tray in DVS simulator is completed")
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("Placing Output Tray in DVS simulator is Failed")
+    Log.PopLogFolder();
+    return false;
+  }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+//function LoadSample(DrawerNumber, DrawerZone, DrawerPanel, TrayType, TubeType)
+function LoadSample()
+{
+  try
+  {
+  Log["AppendFolder"]("SH::LoadSample"); 
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceTube").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceTube").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Loading Sample in SH Machine is completed")
+  }
+  else
+  {
+    Log.Error("Loading Sample in SH Machine is Failed")
+    Log.PopLogFolder();
+    return false;
+  }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function PlaceSampleAndSave(SampleType)
+//function PlaceCappedSampleAndSave()
+{
+  
+  try
+  {
+  if(SampleType=="Capped")
+  {
+    Log["AppendFolder"]("SH::PlaceSampleAndSave");
+  }
+  else if(SampleType=="Plain")
+  {
+    Log["AppendFolder"]("SH::PlaceSampleAndSave");
+  }
+  else if(SampleType=="TTSC")
+  {
+    Log["AppendFolder"]("SH::PlaceSampleAndSave");
+  }
+  
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceTube").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceTube").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    if(SampleType=="Capped")
+    {
+      Log.Message("Placing capped sample and saved it in DVS simulator in SH Machine is completed")
+    }
+    else if(SampleType=="Plain")
+    {
+      Log.Message("Placing plain sample and saved it in DVS simulator in SH Machine is completed")
+    }
+    else if(SampleType=="TTSC")
+    {
+      Log.Message("Placing TTSC sample and saved it in DVS simulator in SH Machine is completed")
+    }
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    if(SampleType=="Capped")
+    {
+      Log.Error("Placing capped sample and saved it in DVS simulator in SH Machine is Failed")
+    }
+    else if(SampleType=="Plain")
+    {
+      Log.Error("Placing plain sample and saved it in DVS simulator in SH Machine is Failed")
+    }
+    else if(SampleType=="TTSC")
+    {
+      Log.Message("Placing TTSC sample and saved it in DVS simulator in SH Machine is Failed")
+    }
+    Log.PopLogFolder();
+    return false;
+  }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+
+}
+function PlaceCappedSampleAndSave()
+{
+  
+  try
+  {
+  Log["AppendFolder"]("SH::PlaceCappedSampleAndSave");
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceTube").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceTube").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Placing capped sample and saved it in DVS simulator in SH Machine is completed")
+    Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("Placing capped sample and saved it in DVS simulator in SH Machine is completed")
+    Log.PopLogFolder();
+    return false;
+  }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+function OpenCloseDrawer()
+{
+  
+  try
+  {
+  Log["AppendFolder"]("SH::OpenCloseDrawer");
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("OpenCloseDrawer").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("OpenCloseDrawer").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Open and close drawer in SH Machine is completed")
+     Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("Open and close drawer in SH Machine is Failed")
+     Log.PopLogFolder();
+    return false;
+  }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function RemoveTrayAndSave()
+{
+  
+  try
+  {
+  Log["AppendFolder"]("SH::RemoveTrayAndSave");
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("RemoveTray").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("RemoveTray").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Removing Trays in DVS simulator is completed")
+     Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("Removing Trays in DVS simulator is Failed")
+     Log.PopLogFolder();
+    return false;
+  }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+  
+}
+
+function PlaceFullyPopulatedTray()
+{
+  
+  try
+  {
+  Log["AppendFolder"]("SH::PlaceFullyPopulatedTray");
+  NetworkSuite["Variables"]["TaskStatus"]=="False";
+  NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceFullyPopulatedTray").Run(true);
+  var TaskStatus = NetworkSuite.Jobs.Items(0).Tasks.ItemByName("PlaceFullyPopulatedTray").State;
+  if (NetworkSuite["Variables"]["TaskStatus"]=="True")
+  //if(TaskStatus==1)
+  {
+    Log.Message("Placing FullyPopulated tray in DVS simulator is completed")
+     Log.PopLogFolder();
+    return true;
+  }
+  else
+  {
+    Log.Error("Placing FullyPopulated tray in DVS simulator is Failed")
+     Log.PopLogFolder();
+    return false;
+  }
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+function LaunchDVSForMultipleSH(sTaskName)
+{
+  try
+  {
+    Log["AppendFolder"]("SH::LaunchDVSForMultipleSH");
+    blnRes = InvokeTaskFromNetworkSuite(sTaskName);
+    if(blnRes==1)
+    {
+      Log.Message("Launching DVS simulator is completed")
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("Launching in DVS simulator is Failed");
+      Log.PopLogFolder();
+      return false;
+    }
+  
+    Log.PopLogFolder();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+
+function PlaceOutputTrayAndSaveForMultipleSH(sTaskName)
+{
+  try
+  {
+    Log["AppendFolder"]("SH::PlaceOutputTrayAndSaveForMultipleSH");
+    blnRes = InvokeTaskFromNetworkSuite(sTaskName);
+    if(blnRes==1)
+    {
+      Log.Message("Placing Output Tray in DVS simulator is completed")
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("Placing Output Tray in DVS simulator is Failed")
+      Log.PopLogFolder();
+      return false;
+    }
+  
+    Log.PopLogFolder();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+
+function OpenCloseDrawerForMultipleSH(sTaskName)
+{
+  try
+  {
+    Log["AppendFolder"]("SH::OpenCloseDrawerForMultipleSH");
+    blnRes = InvokeTaskFromNetworkSuite(sTaskName);
+    if(blnRes==1)
+    {
+      Log.Message("Open and close drawer in SH Machine is completed")
+       Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("Open and close drawer in SH Machine is Failed")
+       Log.PopLogFolder();
+      return false;
+    }
+  
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+function SetTCS2SWMainConfigFile()
+{
+  try
+  {
+    Log["AppendFolder"]("SH::SetTCS2SWMainConfigFile");
+    blnRes = InvokeTaskFromNetworkSuite("UpdateTCS2MainConfigFile");
+    if(blnRes==1)
+    {
+      Log.Message("TCS2.MainProject.exe.config for TCS2 Software is updated")
+      Log.PopLogFolder();
+      return true;
+    }
+    else
+    {
+      Log.Error("TCS2.MainProject.exe.config for TCS2 Software cannot be updated")
+      Log.PopLogFolder();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}
+
+
+function PlaceSampleAndSaveForMultipleSH(sTaskName)
+{
+  try
+  {
+    
+    if(SampleType=="Capped")
+    {
+      Log["AppendFolder"]("SH::PlaceSampleAndSaveForMultipleSH");
+    }
+    else if(SampleType=="Plain")
+    {
+      Log["AppendFolder"]("SH::PlaceSampleAndSaveForMultipleSH");
+    }
+    else if(SampleType=="TTSC")
+    {
+      Log["AppendFolder"]("SH::PlaceSampleAndSaveForMultipleSH");
+    }
+    
+    
+    blnRes = InvokeTaskFromNetworkSuite(sTaskName);
+    if(blnRes ==1)
+      {
+        if(SampleType=="Capped")
+        {
+          Log.Message("Placing capped sample and saved it in DVS simulator in SH Machine is completed")
+        }
+        else if(SampleType=="Plain")
+        {
+          Log.Message("Placing plain sample and saved it in DVS simulator in SH Machine is completed")
+        }
+        else if(SampleType=="TTSC")
+        {
+          Log.Message("Placing TTSC sample and saved it in DVS simulator in SH Machine is completed")
+        }
+        Log.PopLogFolder();
+        return true;
+      }
+    else
+      {
+        if(SampleType=="Capped")
+        {
+          Log.Error("Placing capped sample and saved it in DVS simulator in SH Machine is Failed")
+        }
+        else if(SampleType=="Plain")
+        {
+          Log.Error("Placing plain sample and saved it in DVS simulator in SH Machine is Failed")
+        }
+        else if(SampleType=="TTSC")
+        {
+          Log.Message("Placing TTSC sample and saved it in DVS simulator in SH Machine is Failed")
+        }
+        Log.PopLogFolder();
+        return false;
+    }
+  
+    Log.PopLogFolder();
+  }
+  
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }  
+}

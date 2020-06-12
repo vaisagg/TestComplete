@@ -1,0 +1,10 @@
+0 IAPrimaryReagentDoor
+0 IAAncillaryReagentDoor
+0 CCAutoLoaderStationDoor
+0 TipTray1
+0 TipTray2
+0 TipTray3
+0 TipTray4
+0 FrontCover
+0 BackCover
+0 

@@ -1,0 +1,4652 @@
+﻿//USEUNIT PrimeDispAuthentication
+//USEUNIT PrimeDispTestDefinitionFeatureSteps
+
+//******************************************************************************
+//                              CI pipeline
+//******************************************************************************
+function CI_TestDefinition_Scenarios()
+{
+  try
+  {
+     //Initialize Metadata
+     Log["AppendFolder"]("Initialize datafile and XML's")
+     InitializeMetaDataHYDRA();
+     Log["PopLogFolder"]();
+     
+     Log["AppendFolder"]("CI Pipeline :: Test Definition Scenarios");
+     
+     //Feature - 227348 - Moifying TDef
+     FT_227348_ModifyingTDefs();
+     
+     //Feature - 227355 - Calculation Paramenters
+     FT_227355_Calculation_Parameters();
+     
+     //Feature - 227356 - Calibration Parameters
+     FT_227356_Calibration_Parameters();
+     
+     //Feature 227357 - TDef Reagent Parameters
+     FT_227357_TDefReagentParameters();
+     Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+
+
+
+/*>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                                                FEATURES  
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>*/       
+
+//******************************************************************************
+//                    FEATURE : 227348 : Modifying TDefs
+//******************************************************************************
+function FT_227348_ModifyingTDefs()
+{
+  try
+  {     
+    Log["AppendFolder"]("Feature 227357 :: Modifying Tdefs");
+
+    //MIT 353848 - 1
+    MIT_353848_ModifyingTDef_01();
+  
+    //MIT 353848 - 2
+    MIT_353848_ModifyingTDef_02();
+    
+    //MIT 353848 - 3
+    MIT_353848_ModifyingTDef_03();
+    
+    //MIT 353848 - 4
+    MIT_353848_ModifyingTDef_04();
+    
+    
+    
+    //MIT 353867 - 2
+    MIT_353867_ModifyingTDefCalibrationLotInterval_02();
+    
+    //MIT 353867 - 3
+    MIT_353867_ModifyingTDefCalibrationLotInterval_03();
+    
+    //MIT 353867 - 4
+    MIT_353867_ModifyingTDefCalibrationLotInterval_04();
+    
+    
+    
+    //MIT 353877 - 1
+    MIT_353877_ModifyingTDefWithWorkOrders_CalResult_QC_01();
+    
+    //MIT 353877 - 3
+    MIT_353877_ModifyingTDefWithWorkOrdersOrCalResultOrQC_03();
+    
+	  Log["PopLogFolder"]();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+//******************************************************************************
+//                    Feature  227355 :: Tdef Calculation Parameters
+//******************************************************************************
+
+function FT_227355_Calculation_Parameters()
+{
+  try
+  {
+      
+    Log["AppendFolder"]("Feature  227355 :: Calculation Parameters");
+
+    //MIT 368998
+    MIT_368998_227355_1_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Disabled_By_G0();
+
+    //MIT 368999
+    MIT_368999_227355_2_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0();
+    
+    //MIT 369002
+    MIT_369002_227355_5_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Disabled_By_G0();
+    
+    //MIT 369000
+    MIT_369000_227355_3_Calculation_Parameters_for_IA_TDef_Assay_Comparision_correlation_Is_Disabled_By_G0();
+    
+    //MIT 369001
+    MIT_369001_227355_4_Calculation_Parameters_for_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0();
+        
+    //MIT 369003
+    MIT_369003_227355_6_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0();
+    
+    //MIT 369004
+    MIT_369004_227355_7_Calculation_Parameters_for_CH_TDef();
+    
+    Log["PopLogFolder"]();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+//******************************************************************************
+//                    Feature  227356 :: Tdef Calibration Parameters
+//******************************************************************************
+
+function FT_227356_Calibration_Parameters()
+{
+  try
+  {
+      
+    Log["AppendFolder"]("Feature  227356 :: Tdef - Calibration Parameters");
+
+    //369657
+    MIT_369657_227356_1_Calibration_Parameters_for_IA_Tdef();
+    
+    //369658
+    MIT_369658_227356_2_Calibration_Parameters_for_IA_Tdef();
+    
+    //369659
+    MIT_369659_227356_3_Calibration_Parameters_for_IA_Tdef()
+    
+    //369661
+    MIT_369661_227356_4_Calibration_Parameters_for_IA_Tdef()
+    
+    Log["PopLogFolder"]();
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+  }
+}
+
+ 
+//******************************************************************************
+//                    FEATURE : 227357 : TDef Reagent Parameters
+//******************************************************************************
+function FT_227357_TDefReagentParameters()
+{
+  try
+  {     
+    Log["AppendFolder"]("Feature 227357 :: TDef Reagent Parameters");
+
+    //MIT 352498 - 1
+    MIT_352498_LookupReagentParametersPrimaryAndDiluentNOAncillary_G0();
+  
+    //MIT 352498 - 2
+    MIT_352498_LookupReagentParametersPrimaryAndDiluentNOAncillary_G1();
+  
+    //MIT 352497 - 1
+    MIT_352497_LookupReagentParametersPrimaryAncillaryAndDiluent_G0();
+  
+    //MIT 352497 - 2
+    MIT_352497_LookupReagentParametersPrimaryAncillaryAndDiluent_G1();
+  
+    //MIT 352495 - 1
+    MIT_352495_LookupReagentParametersOnlyPrimaryAndAncillaryAndNoDiluent_G0();
+  
+    //MIT 352495 - 2
+    MIT_352495_LookupReagentParametersOnlyPrimaryAndAncillaryAndNoDiluent_G1();
+  
+    //MIT 352492 - 1
+    MIT_352492_LookupReagentParametersOnlyPrimaryNoAncillaryAndDiluent_G0();
+  
+    //MIT 352492 - 2
+    MIT_352492_LookupReagentParametersOnlyPrimaryNoAncillaryAndDiluent_G1();
+  
+    Log["PopLogFolder"]();
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();  
+  }
+}
+
+
+
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//                                GWT's   
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  
+
+//******************************************************************************
+//              GWTs [FEATURE : 227348 - Modifying TDefs ]
+//******************************************************************************
+function MIT_353848_ModifyingTDef_01()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353848_ModifyingTDef_01";
+    var testCaseId= "TC_353848_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353848.1");
+    Log["AppendFolder"]("MIT : 353848 - Modifying TDef")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: CIStatus And DisplayName Is Modified With Unique Values");
+    if(!WhenCIStatusAndDisplayNameIsModified(testCaseId))
+    {
+      Log["Error"]("Failed to modify Status and Display Name");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify TDef is getting Saved")
+    if(!ThenVerifyTDefSuccessSavePopupAndExit(testCaseId))
+    {
+      Log["Error"]("Failed to verify the TDef is saved");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN2
+    Log["AppendFolder"]("Then :: Verify CIStatus and DisplayName Is Modified")
+    if(!ThenVerifyCIStatusAndDisplayNameIsModified(testCaseId))
+    {
+      Log["Error"]("Failed to verify CIStatus and DisplayName is modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353848_ModifyingTDef_02()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353848_ModifyingTDef_02";
+    var testCaseId= "TC_353848_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353848.2");
+    Log["AppendFolder"]("MIT : 353848 - Modifying TDef")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In Ready State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Display Name Is Modified With Non-Unique Values");
+    if(!WhenDisplayNameIsModified(testCaseId))
+    {
+      Log["Error"]("Failed to modify Display Name");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify tDef is not getting Saved")
+    if(!ThenVerifyTDefFailedSaveAndExit(testCaseId))
+    {
+      Log["Error"]("Failed to verify the TDef modification is not saved");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify DisplayName Is Not Modified")
+    if(!ThenVerifyDisplayNameIsNotModified(testCaseId))
+    {
+      Log["Error"]("Failed to verify DisplayName Modification");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353848_ModifyingTDef_03()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353848_ModifyingTDef_03";
+    var testCaseId= "TC_353848_03";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353848.3");
+    Log["AppendFolder"]("MIT : 353848 - Modifying TDef")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN&THEN
+    Log["AppendFolder"]("When :: Display Name Is Modified & Then :: Verify TDef Is Saved");
+    if(!WhenDisplayNameIsModifiedThenVerifyTDefISaved(testCaseId))
+    {
+      Log["Error"]("Failed to modify Display Name");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+//    //THEN1
+//    Log["AppendFolder"]("Then :: Verify tDef is getting Saved")
+//    if(!ThenVerifyTDefSuccessSavePopupAndExit(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify the TDef is saved");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+//    
+//    //THEN2
+//    Log["AppendFolder"]("Then :: Verify DisplayName Is Modified")
+//    if(!ThenVerifyDisplayNameIsModified(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify DisplayName Modification");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Reset the DisplayName to Default");
+    if(!ResetDisplayName(testCaseId))
+    {
+      Log["Error"]("Failed to Reset Display Name");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353848_ModifyingTDef_04()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353848_ModifyingTDef_04";
+    var testCaseId= "TC_353848_04";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353848.4");
+    Log["AppendFolder"]("MIT : 353848 - Modifying TDef")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In Ready State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: CBT Is In Unchecked State");
+    if(!GivenCBTIsUnchecked(testCaseId))
+    {
+      Log["Error"]("Failed to verify 'CBT' as unchecked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Tries To Modify Control Level");
+    if(!WhenUserTriesToModifyControlLevel(testCaseId))
+    {
+      Log["Error"]("Failed to modify Control Level");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Control Level Is Disabled")
+    if(!ThenVerifyControlLevelIsDisabled(testCaseId))
+    {
+      Log["Error"]("Failed to verify the control level field as disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353867_ModifyingTDefCalibrationLotInterval_02()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353867_ModifyingTDefCalibrationLotInterval_02";
+    var testCaseId= "TC_353867_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353867");
+    Log["AppendFolder"]("MIT : 353867 - Modifying TDef - Calibration Lot Interval")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Calibration Lot Interval Is Set");
+    if(!GivenCalibrationLotIntervalIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Calibration Lot Interval");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1&THEN1
+    Log["AppendFolder"]("When :: User Increases Calibration Lot Interval & Then :: Verify Calibration Lot Interval Cannot Be Increased");
+    if(!UserIncreasesCalibrationLotInterval(testCaseId))
+    {
+      Log["Error"]("Failed to verify Calibration Lot Interval modification");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353867_ModifyingTDefCalibrationLotInterval_03()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353867_ModifyingTDefCalibrationLotInterval_03";
+    var testCaseId= "TC_353867_03";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353867");
+    Log["AppendFolder"]("MIT : 353867 - Modifying TDef - Calibration Lot Interval")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Minimum Replucates Is Set To 2");
+    if(!GivenMinimumReplicatesIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Minimum Replicates");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: User Modifies Minimum Replicates To 1");
+    if(!WhenUserSetsNewReplicatesLessThanMinimumReplicates(testCaseId))
+    {
+      Log["Error"]("Failed to modify Calibration Lot Interval");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353867_ModifyingTDefCalibrationLotInterval_04()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353867_ModifyingTDefCalibrationLotInterval_04";
+    var testCaseId= "TC_353867_04";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353867");
+    Log["AppendFolder"]("MIT : 353867 - Modifying TDef - Calibration Lot Interval")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Calibration Triggers Are Checked");
+    if(!GivenCalibrationTriggersAreChecked(testCaseId))
+    {
+      Log["Error"]("Failed to chcek the Calibration Trigger Checkboxes");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1 & THEN1
+    Log["AppendFolder"]("When User Modifies Calibration Triggers Then Verify TDef Is Saved ");
+    if(!UserModifiesCalibrationTriggerAndVerifyTDefIsSaved(testCaseId))
+    {
+      Log["Error"]("Failed to verify Calibration trigger modification verification");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //WHEN2 & THEN2
+    Log["AppendFolder"]("When User Modifies Calibration Triggers Then Verify TDef Is Not Saved ");
+    if(!UserModifiesCalibrationTriggerAndVerifyTDefIsNotSaved(testCaseId))
+    {
+      Log["Error"]("Failed to verify Calibration trigger modification verification");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+//    Log["AppendFolder"]("User Modifies Calibration Trigger ");
+//    if(!UserModifiesCalibrationTrigger(testCaseId))
+//    {
+//      Log["Error"]("Failed to modify Calibration Trigger");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+//       
+//    //THEN1
+//    Log["AppendFolder"]("Then :: Verify Calibration Trigger Is Modified")
+//    if(!ThenVerifyTDefIsSaved(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify the Calibration Trigger is saved");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+      
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353877_ModifyingTDefWithWorkOrders_CalResult_QC_01()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353877_ModifyingTDefWithWorkOrders_CalResult_QC_01";
+    var testCaseId = "TC_353877_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353867");
+    Log["AppendFolder"]("MIT : 353877 - Modifying TDef - With WorkOrders/Cal Result/QC")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: There exists a test with active work order");
+    if(!GivenThereExistsATestWithActiveWorkOrder(testCaseId))
+    {
+      Log["Error"]("Failed to check if test with active work order exists");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //GIVEN 1
+    Log["AppendFolder"]("Given :: There exists a test with no active work order");
+    if(!GivenThereExistsATestWithNoActiveWorkOrder(testCaseId))
+    {
+      Log["Error"]("Failed to check if test with no active work order exists");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+         
+     //WHEN 1
+    Log["AppendFolder"]("When :: Modify display name with active work order");
+    if(!WhenModifiedDisplayNameForTestWithActiveWorkOrder(testCaseId))
+    {
+      Log["Error"]("Failed to modify test with active work order");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Tdef is not modified");
+    if(!ThenVerifyTDefFailedSaveAndExit(testCaseId))
+    {
+      Log["Error"]("Failed to verify Tdef failed save and exit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["AppendFolder"]("Then :: Verifed Tdef is modified for test with no active WorkOrder")
+    if(!ThenVerifyTDefIsModifiedForTestWithNoActiveWorkOrder(testCaseId))
+    {
+      Log["Error"]("Failed to verify Tdef is modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;  
+    }
+    Log["PopLogFolder"](); 
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Move All Samples To Histirical");
+    if(!MoveAllSamplesToHistorical())
+    {
+      Log["Error"]("Failed to Move Samples to Historical");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_353877_ModifyingTDefWithWorkOrdersOrCalResultOrQC_03()
+{
+  try
+  {
+    var featureName = "TDef_FT_227348";
+    var testcaseName = "MIT_353877_ModifyingTDefWithWorkOrdersOrCalResultOrQC_03";
+    var testCaseId= "TC_353877_03";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227348 :: TDef - 353848.3");
+    Log["AppendFolder"]("MIT : 353848 - Modifying TDef")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: User Attempts To Modify Centrifuge For Repeat");
+    if(!GivenUserAttemptsToModifyCentrifugeForRepeat(testCaseId))
+    {
+      Log["Error"]("Failed to verify Centrifuge For Repeat");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN&THEN
+    Log["AppendFolder"]("When :: Centrifuge For Repeat & Then :: Verify TDef Is Saved");
+    if(!WhenUserModifyCentrifugeForRepeatThenVerifyTDefIsSaved(testCaseId))
+    {
+      Log["Error"]("Failed to modify Centrifuge For Repeat");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 227355 - TDef Calculation Parameters ]
+//******************************************************************************
+
+function MIT_369004_227355_7_Calculation_Parameters_for_CH_TDef()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_369004_227355_7_Calculation_Parameters_for_CH_TDef ";
+    var testCaseId= "TC_369004";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 369004");
+    Log["AppendFolder"]("MIT: 227355_7 Calculation Parameters for CH TDef ")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+//    Log["AppendFolder"]("Given :: There exists a test with no active work order");
+//    if(!GivenThereExistsATestWithNoActiveWorkOrder(testCaseId))
+//    {
+//      Log["Error"]("Failed to check if test with no active work order exists");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Unit Is Editable")
+    if(!ThenVerifyUnitIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Unit Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Editable")
+    if(!ThenVerifyAssayComparisonCorrelationIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HIL Is Editable When Enabled")
+    if(!ThenVerifyHILIsEditableWhenEnabled(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369003_227355_6_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_369003_227355_6_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0 ";
+    var testCaseId= "TC_369003";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 369003");
+    Log["AppendFolder"](" MIT: 227355_6 Calculation Parameters for IA TDef - Assay comparision correlation is enabled by G0")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Units Are Same As Master Curve Unit");
+    if(!GivenUnitsAreSameAsMasterCurveUnit(testCaseId))
+    {
+      Log["Error"]("Failed to set Unit as same as Master Curve Unit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Decimal Places Are Not Locked");
+    if(!GivenDecimalPlacesAreNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Decimal places as not locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: HIL Is Disabled");
+    if(!GivenHILIsDisabled(testCaseId))
+    {
+      Log["Error"]("Failed to set HIL as disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Result Type Is Set As 'C+I'");
+    if(!GivenResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Result Type as 'C+I'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Display Result Type Is 'C+I'");
+    if(!GivenDisplayedResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Display Result Type as C+I");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Assay Comparison Correlation Is Enabled");
+    if(!GivenAssayComparisonCorrelationIsEnabledForIM(testCaseId))
+    {
+      Log["Error"]("Failed to set Assay Comparison Correlation as Enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1 - Unit is in enabled state , Madhavi will confirm
+//    Log["AppendFolder"]("Then :: Verify Unit Is Not Editable")
+//    if(!ThenVerifyUnitIsNotEditable(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify the Unit Is Not Editable");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Decimal Place Is Editable")
+    if(!ThenVerifyDecimalPlaceIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Decimal Places as Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3 - To be confirmed by Madhavi
+    Log["AppendFolder"]("Then :: Verify HIL Is Editable")
+    if(!ThenVerifyHILIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Threshold Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Display Result Type Is Editable")
+    if(!ThenVerifyDisplayResultTypeIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Display Result Type As Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN5
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Editable")
+    if(!ThenVerifyAssayComparisonCorrelationForIMIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN6
+    Log["AppendFolder"]("Then :: Verify Result Type Is Editable")
+    if(!ThenVerifyResultTypeIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Result Type As Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369001_227355_4_Calculation_Parameters_for_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_369001_227355_4_Calculation_Parameters_for_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0 ";
+    var testCaseId= "TC_369001";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 369001");
+    Log["AppendFolder"]("MIT: 227355_4 Calculation Parameters for IA TDef - Assay comparision correlation is enabled by G0")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Unit Is Not Same As Master Curve Unit");
+    if(!GivenUnitsAreNotSameAsMasterCurveUnit(testCaseId))
+    {
+      Log["Error"]("Failed to set Unit not same as Master Curve Unit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Decimal Places Are Not Locked");
+    if(!GivenDecimalPlacesAreNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Decimal places as not locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: HIL is Enabled");
+    if(!GivenHILIsEnabled(testCaseId))
+    {
+      Log["Error"]("Failed to set HIL as enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4 - To be done in standalone applcaition
+//    Log["AppendFolder"]("Given :: Display Result Type Is 'C+I'");
+//    if(!GivenDisplayedResultTypeIsSet(testCaseId))
+//    {
+//      Log["Error"]("Failed to set Display Result Type as 'C+I'");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Assay Comparison Correlation Is Enabled");
+    if(!GivenAssayComparisonCorrelationIsEnabledForIM(testCaseId))
+    {
+      Log["Error"]("Failed to set Assay Comparison Correlation as Enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Result Type Is Set As 'C'");
+    if(!GivenResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Result Type as 'C'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Unit Is Editable")
+    if(!ThenVerifyUnitIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Unit is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Conversion Is Editable")
+    if(!ThenVerifyConversionFactorIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Conversion Factor is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Decimal Places Is Editable")
+    if(!ThenVerifyDecimalPlaceIsModified(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Decimal Place is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HIL Is Editable")
+    if(!ThenVerifyHILIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Threshold is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      //return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Display Type Is Not Editable")
+    if(!ThenVerifyDisplayResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Display Type As Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN5
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Editable")
+    if(!ThenVerifyAssayComparisonCorrelationForIMIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN6
+    Log["AppendFolder"]("Then :: Verify Result Type Is Not Editable")
+    if(!ThenVerifyResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Result Type As Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369000_227355_3_Calculation_Parameters_for_IA_TDef_Assay_Comparision_correlation_Is_Disabled_By_G0()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_369001_227355_3_Calculation_Parameters_for_IA_TDef_Assay_Comparision_correlation_Is_Disabled_By_G0_units_are_not_same_as_MC ";
+    var testCaseId= "TC_369000";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 369000");
+    Log["AppendFolder"]("MIT: 227355_3 Calculation Parameters for IA TDef - Assay comparision correlation is disabled by G0, units are not same as MC")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Unit Is Not Same As Master Curve Unit");
+    if(!GivenUnitsAreNotSameAsMasterCurveUnit(testCaseId))
+    {
+      Log["Error"]("Failed to set Unit not same as Master Curve Unit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Decimal Places Are Not Locked");
+    if(!GivenDecimalPlacesAreNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Decimal places as not locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: HIL is Enabled");
+    if(!GivenHILIsEnabled(testCaseId))
+    {
+      Log["Error"]("Failed to set HIL as enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Result Type Is Set As C+I");
+    if(!GivenResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Result Type as C+I");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Display Result Type Is C+I");
+    if(!GivenDisplayedResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Display Result Type as C+I");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5 
+    Log["AppendFolder"]("Given :: Assay Comparison Correlation Is Disabled");
+    if(!GivenAssayComparisonCorrelationIsDisabledForIM(testCaseId))
+    {
+      Log["Error"]("Failed to set Assay Comparison Correlation as Disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Unit Is Editable")
+    if(!ThenVerifyUnitIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Unit Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1 -Not completed
+    Log["AppendFolder"]("Then :: Verify Conversion Factor Is Editable")
+    if(!ThenVerifyConversionFactorIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Conversion Factor Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Decimal Places Is Editable")
+    if(!ThenVerifyDecimalPlaceIsModified(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Decimal Place Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HIL Is Editable")
+    if(!ThenVerifyHILIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Threshold Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Display Type Is Editable")
+    if(!ThenVerifyDisplayResultTypeIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Display Type As Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+   
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Not Editable")
+    if(!ThenVerifyAssayComparisonCorrelationForIMIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN6
+    Log["AppendFolder"]("Then :: Verify Result Type Is Not Editable")
+    if(!ThenVerifyResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Result Type As Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369002_227355_5_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Disabled_By_G0()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_369002_227355_5_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Disabled_By_G0 ";
+    var testCaseId= "TC_369002";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 369002");
+    Log["AppendFolder"]("MIT: 227355_5 Calculation Parameters for IA TDef - Assay comparision correlation is Disabled by G0")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Units Are Same As Master Curve Unit");
+    if(!GivenUnitsAreSameAsMasterCurveUnit(testCaseId))
+    {
+      Log["Error"]("Failed to set Unit as same as Master Curve Unit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Decimal Places Are Locked");
+    if(!GivenDecimalPlacesAreLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Decimal places as locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: HIL Is Enabled");
+    if(!GivenHILIsEnabled(testCaseId))
+    {
+      Log["Error"]("Failed to set HIL as enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    
+    //GIVEN 4 - To be done in Stand alone application
+//    Log["AppendFolder"]("Given :: Display Result Type Is 'C+I'");
+//    if(!GivenDisplayedResultTypeIsSet(testCaseId))
+//    {
+//      Log["Error"]("Failed to set Display Result Type as C+I");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Assay Comparison Correlation Is Disabled");
+    if(!GivenAssayComparisonCorrelationIsDisabledForIM(testCaseId))
+    {
+      Log["Error"]("Failed to set Assay Comparison Correlation as Disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //GIVEN 6  
+    Log["AppendFolder"]("Given :: Result Type Is Set As 'I'");
+    if(!GivenResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Result Type as 'I'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1 - Unit is in enabled state , Madhavi will confirm
+//    Log["AppendFolder"]("Then :: Verify Unit Is Not Editable")
+//    if(!ThenVerifyUnitIsNotEditable(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify the Unit Is Not Editable");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Decimal Place Is Not Editable")
+    if(!ThenVerifyDecimalPlaceIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Decimal Places as not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HIL Is Editable")
+    if(!ThenVerifyHILIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Threshold Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Display Result Type Is Not Editable")
+    if(!ThenVerifyDisplayResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Display Result Type As not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN5
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Not Editable")
+    if(!ThenVerifyAssayComparisonCorrelationForIMIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN6
+    Log["AppendFolder"]("Then :: Verify Result Type Is Not Editable")
+    if(!ThenVerifyResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Result Type As Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_368999_227355_2_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_368999_227355_2_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Enabled_By_G0 ";
+    var testCaseId= "TC_368999";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 368999");
+    Log["AppendFolder"]("MIT: 227355_2 Calculation Parameters for IA TDef - Assay comparision correlation is enabled by G0")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Units Are Same As Master Curve Unit");
+    if(!GivenUnitsAreSameAsMasterCurveUnit(testCaseId))
+    {
+      Log["Error"]("Failed to set Unit as same as Master Curve Unit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Decimal Places Are Locked");
+    if(!GivenDecimalPlacesAreLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Decimal places as locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: HIL Is Disabled");
+    if(!GivenHILIsDisabled(testCaseId))
+    {
+      Log["Error"]("Failed to set HIL as disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4 - To be done in standalone as result type will reset this value
+//    Log["AppendFolder"]("Given :: Display Result Type Is Non 'C+I'");
+//    if(!GivenDisplayedResultTypeIsSet(testCaseId))
+//    {
+//      Log["Error"]("Failed to set Display Result Type as C+I");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Assay Comparison Correlation Is Enabled");
+    if(!GivenAssayComparisonCorrelationIsEnabledForIM(testCaseId))
+    {
+      Log["Error"]("Failed to set Assay Comparison Correlation as Enabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Result Type Is Set As 'I'");
+    if(!GivenResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Result Type as 'I'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1  -Unit is in enabled state , Madhavi will confirm 
+//    Log["AppendFolder"]("Then :: Verify Unit Is Not Editable")
+//    if(!ThenVerifyUnitIsNotEditable(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify the Unit Is Not Editable");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Decimal Place Is Not Editable")
+    if(!ThenVerifyDecimalPlaceIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Decimal Places as not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HIL Is Not Editable")
+    if(!ThenVerifyHILIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Threshold Is Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Display Result Type Is Not Editable")
+    if(!ThenVerifyDisplayResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Display Result Type As not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN5
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Editable")
+    if(!ThenVerifyAssayComparisonCorrelationForIMIsEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN6
+    Log["AppendFolder"]("Then :: Verify Result Type Is Not Editable")
+    if(!ThenVerifyResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Result Type As Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_368998_227355_1_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Disabled_By_G0()
+{
+  try
+  {
+    var featureName = "TDef_FT_227355";
+    var testcaseName = "MIT_368998_227355_1_Calculation_Parameters_For_IA_TDef_Assay_Comparision_Correlation_Is_Disabled_By_G0 ";
+    var testCaseId= "TC_368998";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227355 :: TDef - 368998");
+    Log["AppendFolder"]("MIT: 227355_1 Calculation Parameters for IA TDef - Assay comparision correlation is Disabled by G0 ")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //GIVEN 2
+//    Log["AppendFolder"]("Given :: There exists a test with no active work order");
+//    if(!GivenThereExistsATestWithNoActiveWorkOrder(testCaseId))
+//    {
+//      Log["Error"]("Failed to check if test with no active work order exists");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Units Are Same As Master Curve Unit");
+    if(!GivenUnitsAreSameAsMasterCurveUnit(testCaseId))
+    {
+      Log["Error"]("Failed to set Unit as same as Master Curve Unit");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Decimal Places Are Locked");
+    if(!GivenDecimalPlacesAreLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Decimal places as locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: HIL Is Disabled");
+    if(!GivenHILIsDisabled(testCaseId))
+    {
+      Log["Error"]("Failed to set HIL as disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4 - To be done in Standalone
+//    Log["AppendFolder"]("Given :: Display Result Type Is Non 'C+I'");
+//    if(!GivenDisplayedResultTypeIsSet(testCaseId))
+//    {
+//      Log["Error"]("Failed to set Display Result Type as Non 'C+I'");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Assay Comparison Correlation Is Disabled");
+    if(!GivenAssayComparisonCorrelationIsDisabledForIM(testCaseId))
+    {
+      Log["Error"]("Failed to set Assay Comparison Correlation as Disabled");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //GIVEN 7
+    Log["AppendFolder"]("Given :: Result Type Is Set As 'C'");
+    if(!GivenResultTypeIsSet(testCaseId))
+    {
+      Log["Error"]("Failed to set Result Type as 'C'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN1
+    Log["AppendFolder"]("When :: Navigate To Calculation Tab");
+    if(!WhenNavigatedToCalculationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to calculation tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN1-Unit is in enabled state , Madhavi will confirm 
+//    Log["AppendFolder"]("Then :: Verify Unit Is Not Editable")
+//    if(!ThenVerifyUnitIsNotEditable(testCaseId))
+//    {
+//      Log["Error"]("Failed to verify the Unit Is Not Editable");
+//      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+//      Log["PopLogFolder"]();
+//      ExitTDefWithoutSaving(testCaseId);
+//      Log["PopLogFolder"]();
+//      return false;
+//    }
+//    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Decimal Place Is Not Editable")
+    if(!ThenVerifyDecimalPlaceIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify the Decimal Places as not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify HIL Is Not Editable")
+    if(!ThenVerifyHILIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify HIL Threshold Is Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN4
+    Log["AppendFolder"]("Then :: Verify Display Result Type Is Not Editable")
+    if(!ThenVerifyDisplayResultTypeIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Display Result Type As not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN5
+    Log["AppendFolder"]("Then :: Verify Assay Comparison Correlation Is Not Editable")
+    if(!ThenVerifyAssayComparisonCorrelationForIMIsNotEditable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Assay Comparison Correlation Is Not Editable");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN6
+    Log["AppendFolder"]("Then :: Verify Result Type Is 'C'")
+    if(!ThenVerifyResultTypeValue(testCaseId))
+    {
+      Log["Error"]("Failed to verify Result Type As 'C'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 227356 - TDef Calibration Parameters ]
+//******************************************************************************
+
+function MIT_369661_227356_4_Calibration_Parameters_for_IA_Tdef()
+{
+  try
+  {
+    var featureName = "TDef_FT_227356";
+    var testcaseName = "MIT_369661_227356_4_Calibration_Parameters_for_IA_Tdef";
+    var testCaseId= "TC_369661";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227356 :: TDef - 369661");
+    Log["AppendFolder"](" MIT: 227356_4 Calibration Parameters for IA Tdef (Automatic acceptance is On)")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: UnRefrigerated OBS Hours Is Available");
+    if(!GivenUnRefrigeratedOBSHrsIsAvailable(testCaseId))
+    {
+      Log["Error"]("Failed to verify UnRefrigerated OBS Hrs as Avaialble");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Lot Calibration Interval Is Not Locked");
+    if(!GivenLotCalibrationIntervalIsNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Lot Calibration Interval as not Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Pack Cal Interval Is Within Internal Timeframe");
+    if(!GivenPackCalIntervalWithinInternalTimeframe(testCaseId))
+    {
+      Log["Error"]("Failed to set Pack Cal Interval Within Internal Timeframe");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Turned On");
+    if(!GivenExtendCalOptionIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as On");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Not Locked");
+    if(!GivenExtendCalOptionIsNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as Not Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 7
+    Log["AppendFolder"]("Given :: Auto exclude Option Is Turned Off");
+    if(!GivenAutoExcludeOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 8
+    Log["AppendFolder"]("Given :: Auto Exclude Option Is Locked");
+    if(!GivenAutoexcludeOptionIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude Option as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 9
+    Log["AppendFolder"]("Given :: Accept Cal Option Is Turned Off");
+    if(!GivenAcceptCalOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Accept Cal option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 10
+    Log["AppendFolder"]("Given :: Perfom QC With Calibration Option Is Turned Off");
+    if(!GivenPerfomQCWithCalibrationIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Perfom QC With Calibration option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 11
+    Log["AppendFolder"]("Given :: Automatic Acceptance Is Turned On");
+    if(!GivenAutomaticAcceptanceIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Automatic Acceptance as 'On'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //WHEN 1
+    Log["AppendFolder"]("When :: Navigate To Calibration Tab");
+    if(!WhenNavigatedToCalibrationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Calibration tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify UnRefrigerated OBS Can Be Decreased")
+    if(!ThenVerifyUnRefrigeratedOBSCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify UnRefrigerated OBS Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify UnRefrigerated OBS Hrs Cannot Be Increased")
+    if(!ThenVerifyUnRefrigeratedOBSCannotBeIncreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify UnRefrigerated OBS Hrs Cannot Be Increased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Lot Calibration Interval Can Be Decreased")
+    if(!ThenVerifyLotCalibrationIntervalCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Lot Calibration Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Pack Cal Interval Can Be Decreased")
+    if(!ThenVerifyPackCalIntervalCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Pack Cal Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN 4
+    Log["AppendFolder"]("Then :: Verify Extend Cal Option Can Be Modified")
+    if(!ThenVerifyExtendCalOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Extend Cal Option Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: Verify Auto Exclude Option Cannot Be Modified")
+    if(!ThenVerifyAutoExcludeOptionCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Auto Exclude Option Cannot Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 6
+    Log["AppendFolder"]("Then :: Verify Accept Cal Can Be Modified")
+    if(!ThenVerifyAcceptCalCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Accept Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 7
+    Log["AppendFolder"]("Then :: Verify Perform Cal Can Be Modified")
+    if(!ThenVerifyPerformQCWithCalibrationOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Perform Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 8
+    Log["AppendFolder"]("Then :: Verify Automatic Acceptance Can Be Modified")
+    if(!ThenVerifyAutomaticAcceptanceOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Automatic Acceptance Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369659_227356_3_Calibration_Parameters_for_IA_Tdef()
+{
+  try
+  {
+    var featureName = "TDef_FT_227356";
+    var testcaseName = "MIT_227356_3_Calibration_Parameters_for_IA_Tdef ";
+    var testCaseId= "TC_369659";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227356 :: TDef - 369659");
+    Log["AppendFolder"](" MIT: 227356_3 Calibration Parameters for IA Tdef (Automatic acceptance is Off)")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Refrigerated OBS Hours Is Available");
+    if(!GivenRefrigeratedOBSHrsIsAvailable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Refrigerated OBS Hrs as Avaialble");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Lot Calibration Interval Is Not Locked");
+    if(!GivenLotCalibrationIntervalIsNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Lot Calibration Interval as not Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Pack Cal Interval Is Within Internal Timeframe");
+    if(!GivenPackCalIntervalWithinInternalTimeframe(testCaseId))
+    {
+      Log["Error"]("Failed to set Pack Cal Interval Within Internal Timeframe");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Turned On");
+    if(!GivenExtendCalOptionIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as On");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Not Locked");
+    if(!GivenExtendCalOptionIsNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as Not Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 7
+    Log["AppendFolder"]("Given :: Auto exclude Option Is Turned On");
+    if(!GivenAutoExcludeOptionIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude option as 'On'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 8
+    Log["AppendFolder"]("Given :: Auto Exclude Option Is Not Locked");
+    if(!GivenAutoexcludeOptionIsNotLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude Option as Not Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 9
+    Log["AppendFolder"]("Given :: Accept Cal Option Is Turned On");
+    if(!GivenAcceptCalOptionIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Accept Cal option as 'On'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 10
+    Log["AppendFolder"]("Given :: Perfom QC With Calibration Option Is Turned Off");
+    if(!GivenPerfomQCWithCalibrationIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Perfom QC With Calibration option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 11
+    Log["AppendFolder"]("Given :: Automatic Acceptance Is Turned Off");
+    if(!GivenAutomaticAcceptanceIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Automatic Acceptance as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //WHEN 1
+    Log["AppendFolder"]("When :: Navigate To Calibration Tab");
+    if(!WhenNavigatedToCalibrationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Calibration tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Refrigerated OBS Can Be Decreased")
+    if(!ThenVerifyRefrigeratedOBSCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Refrigerated OBS Hrs Cannot Be Increased")
+    if(!ThenVerifyRefrigeratedOBSCannotBeIncreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Hrs Cannot Be Increased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Lot Calibration Interval Can Be Decreased")
+    if(!ThenVerifyLotCalibrationIntervalCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Lot Calibration Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Pack Cal Interval Can Be Decreased")
+    if(!ThenVerifyPackCalIntervalCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Pack Cal Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN 4
+    Log["AppendFolder"]("Then :: Verify Extend Cal Option Can Be Modified")
+    if(!ThenVerifyExtendCalOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Extend Cal Option Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: Verify Auto Exclude Option Can Be Modified")
+    if(!ThenVerifyAutoExcludeOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Auto Exclude Option Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 6
+    Log["AppendFolder"]("Then :: Verify Accept Cal Can Be Modified")
+    if(!ThenVerifyAcceptCalCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Accept Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 7
+    Log["AppendFolder"]("Then :: Verify Perform Cal Can Be Modified")
+    if(!ThenVerifyPerformQCWithCalibrationOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Perform Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 8
+    Log["AppendFolder"]("Then :: Verify Automatic Acceptance Can Be Modified")
+    if(!ThenVerifyAutomaticAcceptanceOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Automatic Acceptance Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369658_227356_2_Calibration_Parameters_for_IA_Tdef()
+{
+  try
+  {
+    var featureName = "TDef_FT_227356";
+    var testcaseName = "MIT_227356_2_Calibration_Parameters_for_IA_Tdef ";
+    var testCaseId= "TC_369658";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227356 :: TDef - 369658");
+    Log["AppendFolder"](" MIT:  Calibration Parameters for IA Tdef (Automatic acceptance is Off )")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Refrigerated OBS Hours Is Available");
+    if(!GivenRefrigeratedOBSHrsIsAvailable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Refrigerated OBS Hrs as Avaialble");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Lot Calibration Interval Is Locked");
+    if(!GivenLotCalibrationIntervalIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Lot Calibration Interval as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Pack Cal Interval Is Within Internal Timeframe");
+    if(!GivenPackCalIntervalWithinInternalTimeframe(testCaseId))
+    {
+      Log["Error"]("Failed to set Pack Cal Interval Within Internal Timeframe");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Turned Off");
+    if(!GivenExtendCalOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as Off");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Locked");
+    if(!GivenExtendCalOptionIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 7
+    Log["AppendFolder"]("Given :: Auto exclude Option Is Turned Off");
+    if(!GivenAutoExcludeOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 8
+    Log["AppendFolder"]("Given :: Auto Exclude Option Is Locked");
+    if(!GivenAutoexcludeOptionIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude Option as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 9
+    Log["AppendFolder"]("Given :: Accept Cal Option Is Turned Off");
+    if(!GivenAcceptCalOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Accept Cal option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 10
+    Log["AppendFolder"]("Given :: Perfom QC With Calibration Option Is Turned Off");
+    if(!GivenPerfomQCWithCalibrationIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Perfom QC With Calibration option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 11
+    Log["AppendFolder"]("Given :: Automatic Acceptance Is Turned Off");
+    if(!GivenAutomaticAcceptanceIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Automatic Acceptance as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //WHEN 1
+    Log["AppendFolder"]("When :: Navigate To Calibration Tab");
+    if(!WhenNavigatedToCalibrationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Calibration tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Refrigerated OBS Can Be Decreased")
+    if(!ThenVerifyRefrigeratedOBSCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Refrigerated OBS Hrs Cannot Be Increased")
+    if(!ThenVerifyRefrigeratedOBSCannotBeIncreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Hrs Cannot Be Increased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Lot Calibration Interval Cannot Be Modified")
+    if(!ThenVerifyLotCalibrationIntervalCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Lot Calibration Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Pack Cal Interval Can Be Decreased")
+    if(!ThenVerifyPackCalIntervalCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Pack Cal Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN 4
+    Log["AppendFolder"]("Then :: Verify Extend Cal Option Cannot Be Modified")
+    if(!ThenVerifyExtendCalOptionCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Extend Cal Option Cannot Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: Verify Auto Exclude Option Cannot Be Modified")
+    if(!ThenVerifyAutoExcludeOptionCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Auto Exclude Option Cannot Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 6
+    Log["AppendFolder"]("Then :: Verify Accept Cal Can Be Modified")
+    if(!ThenVerifyAcceptCalCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Accept Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 7
+    Log["AppendFolder"]("Then :: Verify Perform Cal Can Be Modified")
+    if(!ThenVerifyPerformQCWithCalibrationOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Perform Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 8
+    Log["AppendFolder"]("Then :: Verify Automatic Acceptance Can Be Modified")
+    if(!ThenVerifyAutomaticAcceptanceOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Automatic Acceptance Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_369657_227356_1_Calibration_Parameters_for_IA_Tdef()
+{
+  try
+  {
+    var featureName = "TDef_FT_227356";
+    var testcaseName = "MIT_ 227356_1_Calibration_Parameters_for_IA_Tdef ";
+    var testCaseId= "TC_369657";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227356 :: TDef - 369657");
+    Log["AppendFolder"]("MIT : Calibration Parameters for IA Tdef (Automatic acceptance is On ) ")
+
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN 1
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 2
+    Log["AppendFolder"]("Given :: Refrigerated OBS Hours Is Available");
+    if(!GivenRefrigeratedOBSHrsIsAvailable(testCaseId))
+    {
+      Log["Error"]("Failed to verify Refrigerated OBS Hrs as Avaialble");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 3
+    Log["AppendFolder"]("Given :: Lot Calibration Interval Is Locked");
+    if(!GivenLotCalibrationIntervalIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Lot Calibration Interval as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 4
+    Log["AppendFolder"]("Given :: Pack Cal Interval Is Within Internal Timeframe");
+    if(!GivenPackCalIntervalWithinInternalTimeframe(testCaseId))
+    {
+      Log["Error"]("Failed to set Pack Cal Interval Within Internal Timeframe");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 5
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Turned Off");
+    if(!GivenExtendCalOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as Off");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 6
+    Log["AppendFolder"]("Given :: Extend Cal Option Is Locked");
+    if(!GivenExtendCalOptionIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Extend Cal Option as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 7
+    Log["AppendFolder"]("Given :: Auto exclude Option Is Turned Off");
+    if(!GivenAutoExcludeOptionIsTurnedOff(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude option as 'Off'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 8
+    Log["AppendFolder"]("Given :: Auto Exclude Option Is Locked");
+    if(!GivenAutoexcludeOptionIsLocked(testCaseId))
+    {
+      Log["Error"]("Failed to set Auto exclude Option as Locked");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 9
+    Log["AppendFolder"]("Given :: Accept Cal Option Is Turned On");
+    if(!GivenAcceptCalOptionIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Accept Cal option as 'On'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 10
+    Log["AppendFolder"]("Given :: Perfom QC With Calibration Option Is Turned On");
+    if(!GivenPerfomQCWithCalibrationIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Perfom QC With Calibration option as 'On'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //GIVEN 11
+    Log["AppendFolder"]("Given :: Automatic Acceptance Is Turned On");
+    if(!GivenAutomaticAcceptanceIsTurnedOn(testCaseId))
+    {
+      Log["Error"]("Failed to set Automatic Acceptance as 'On'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //WHEN 1
+    Log["AppendFolder"]("When :: Navigate To Calibration Tab");
+    if(!WhenNavigatedToCalibrationTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Calibration tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId)
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+       
+    //THEN 1
+    Log["AppendFolder"]("Then :: Verify Refrigerated OBS Can Be Decreased")
+    if(!ThenVerifyRefrigeratedOBSCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 2
+    Log["AppendFolder"]("Then :: Verify Refrigerated OBS Hrs Cannot Be Increased")
+    if(!ThenVerifyRefrigeratedOBSCannotBeIncreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Refrigerated OBS Hrs Cannot Be Increased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Lot Calibration Interval Cannot Be Modified")
+    if(!ThenVerifyLotCalibrationIntervalCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Lot Calibration Interval Cannot Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 3
+    Log["AppendFolder"]("Then :: Verify Pack Cal Interval Can Be Decreased")
+    if(!ThenVerifyPackCalIntervalCanBeDecreased(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Pack Cal Interval Can Be Decreased");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    //THEN 4
+    Log["AppendFolder"]("Then :: Verify Extend Cal Option Cannot Be Modified")
+    if(!ThenVerifyExtendCalOptionCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Extend Cal Option Cannot Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 5
+    Log["AppendFolder"]("Then :: Verify Auto Exclude Option Cannot Be Modified")
+    if(!ThenVerifyAutoExcludeOptionCannotBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Auto Exclude Option Cannot Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 6
+    Log["AppendFolder"]("Then :: Verify Accept Cal Can Be Modified")
+    if(!ThenVerifyAcceptCalCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Accept Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN 7
+    Log["AppendFolder"]("Then :: Verify Perform Cal Can Be Modified")
+    if(!ThenVerifyPerformQCWithCalibrationOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Perform Cal Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN 8
+    Log["AppendFolder"]("Then :: Verify Automatic Acceptance Can Be Modified")
+    if(!ThenVerifyAutomaticAcceptanceOptionCanBeModified(testCaseId))
+    {
+      Log["Error"]("Failed to Verify Automatic Acceptance Can Be Modified");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefWithoutSaving(testCaseId);
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefWithoutSaving(testCaseId))
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+
+
+//******************************************************************************
+//              GWTs [FEATURE : 227357 - TDef Reagent Parameters ]
+//******************************************************************************
+function MIT_352498_LookupReagentParametersPrimaryAndDiluentNOAncillary_G0()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352498_LookupReagentParametersPrimaryAndDiluentNOAncillary_G0";
+    var testCaseId= "TC_352498_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352498");
+    
+    Log["AppendFolder"]("MIT - 352498 : Look up Reagent Parameters - Primary and Diluent but NO Ancillary (G0)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA();
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Ancillary reagents in Tdef are not displayed");
+    if(!ThenVerifyAncillaryDiluentReagentNotDisplayed(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary reagents in Tdef are not displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then3
+    Log["AppendFolder"]("Then :: Verify Diluent reagents in Tdef");
+    if(!ThenVerifyAncillaryDiluentReagentDetailsDisplayedG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Diluent reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_352498_LookupReagentParametersPrimaryAndDiluentNOAncillary_G1()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352498_LookupReagentParametersPrimaryAndDiluentNOAncillary_G1";
+    var testCaseId= "TC_352498_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352498");
+    
+    Log["AppendFolder"]("MIT - 352498 : Look up Reagent Parameters - Primary and Diluent but NO Ancillary (G1)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Ancillary reagents in Tdef are not displayed");
+    if(!ThenVerifyAncillaryDiluentReagentNotDisplayed(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary reagents in Tdef are not displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then3
+    Log["AppendFolder"]("Then :: Verify Ancillary reagents in Tdef");
+    if(!ThenVerifyAncillaryDiluentReagentDetailsDisplayedG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_352497_LookupReagentParametersPrimaryAncillaryAndDiluent_G0()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352497_LookupReagentParametersPrimaryAncillaryAndDiluent_G0";
+    var testCaseId= "TC_352497_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352497");
+    
+    Log["AppendFolder"]("MIT - 352497 : Look up Reagent Parameters - Primary, Ancillary and Diluent Reagents  (G0)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then2
+    Log["AppendFolder"]("Then :: Verify Ancillary and Diluent reagents in Tdef");
+    if(!ThenVerifyAncillaryDiluentReagentDetailsDisplayedG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary and Diluent reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+        
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_352497_LookupReagentParametersPrimaryAncillaryAndDiluent_G1()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352497_LookupReagentParametersPrimaryAncillaryAndDiluent_G1";
+    var testCaseId= "TC_352497_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352497");
+    
+    Log["AppendFolder"]("MIT - 352497 : Look up Reagent Parameters - Primary, Ancillary and Diluent Reagents (G1)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then2
+    Log["AppendFolder"]("Then :: Verify Ancillary and Diluent reagents in Tdef");
+    if(!ThenVerifyAncillaryDiluentReagentDetailsDisplayedG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary and Diluent reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();       
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+    
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_352495_LookupReagentParametersOnlyPrimaryAndAncillaryAndNoDiluent_G0()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352495_LookupReagentParametersOnlyPrimaryAndAncillaryAndNoDiluent_G0";
+    var testCaseId = "TC_352495_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352495");
+    
+    Log["AppendFolder"]("MIT - 352495 : Look up Reagent Parameters - Only Primary and Ancillary Reagents and no Diluent Reagent (G0)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then2
+    Log["AppendFolder"]("Then :: Verify Ancillary reagents in Tdef");
+    if(!ThenVerifyAncillaryDiluentReagentDetailsDisplayedG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify Diluent reagents in Tdef are not displayed");
+    if(!ThenVerifyAncillaryDiluentReagentNotDisplayed(testCaseId))
+    {
+      Log["Error"]("Failed to verify Diluent reagents in Tdef are not displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+     
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;     
+  }
+}
+
+function MIT_352495_LookupReagentParametersOnlyPrimaryAndAncillaryAndNoDiluent_G1()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352495_LookupReagentParametersOnlyPrimaryAndAncillaryAndNoDiluent_G1";
+    var testCaseId= "TC_352495_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352495");
+    
+    Log["AppendFolder"]("MIT - 352495 : Look up Reagent Parameters - Only Primary and Ancillary Reagents and no Diluent Reagent  (G1)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Then2
+    Log["AppendFolder"]("Then :: Verify Ancillary reagents in Tdef");
+    if(!ThenVerifyAncillaryDiluentReagentDetailsDisplayedG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify Diluent reagents in Tdef are not displayed");
+    if(!ThenVerifyAncillaryDiluentReagentNotDisplayed(testCaseId))
+    {
+      Log["Error"]("Failed to verify Diluent reagents in Tdef are not displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+ 
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;  
+  }
+}
+
+function MIT_352492_LookupReagentParametersOnlyPrimaryNoAncillaryAndDiluent_G0()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352492_LookupReagentParametersOnlyPrimaryNoAncillaryAndDiluent_G0";
+    var testCaseId= "TC_352492_01";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352492");
+    
+    Log["AppendFolder"]("MIT - 352492 : Look up Reagent Parameters - Only Primary Reagent and no Ancillary and Diluent Reagents (G0)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG0(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Cal Code and Use For Inventory")
+    if(!ThenVerifyCalCodeAndUseForInventory(testCaseId))
+    {
+      Log["Error"]("Failed to verify Cal Code and Use For Inventory");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify Ancillary and Diluent reagents in Tdef are not displayed");
+    if(!ThenVerifyAncillaryDiluentReagentNotDisplayed(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary and Diluent reagents in Tdef are not displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+ 
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function MIT_352492_LookupReagentParametersOnlyPrimaryNoAncillaryAndDiluent_G1()
+{
+  try
+  {
+    var featureName = "227357";
+    var testcaseName = "MIT_352492_LookupReagentParametersOnlyPrimaryNoAncillaryAndDiluent_G1";
+    var testCaseId= "TC_352492_02";
+    
+    //USER STORY
+    LogHighlight("Scenario : Feature - 227357 :: TDef(Reagent Parameters) - 352492");
+    
+    Log["AppendFolder"]("MIT - 352492 : Look up Reagent Parameters - Only Primary Reagent and no Ancillary and Diluent Reagents (G1)");
+    
+    //Result.xml - In Progress
+    ReportTestStatusToResultXML(featureName, testcaseName, "I"); 
+    
+    //Initialize Datafile and XML documents
+    InitializeMetaDataHYDRA(); 
+    
+    //GIVEN
+    Log["AppendFolder"]("Given :: Module Is In 'Ready' State");
+    if(!GivenModuleIsInReadyState(testCaseId))
+    {
+      Log["Error"]("Failed to verify the module state as 'Ready'");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //WHEN
+    Log["AppendFolder"]("When :: Navigate To Reagents Tab");
+    if(!WhenNavigatedToTDefTab(testCaseId))
+    {
+      Log["Error"]("Failed to Navigate to Reagents tab");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+     //THEN1
+    Log["AppendFolder"]("Then :: Verify Primary reagents in Tdef");
+    if(!ThenVerifyPrimaryReagentDetailsDisplayedForG1(testCaseId))
+    {
+      Log["Error"]("Failed to verify Primary reagents in Tdef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN2
+    Log["AppendFolder"]("Then :: Verify Cal Code and Use For Inventory")
+    if(!ThenVerifyCalCodeAndUseForInventory(testCaseId))
+    {
+      Log["Error"]("Failed to verify Cal Code and Use For Inventory");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //THEN3
+    Log["AppendFolder"]("Then :: Verify Ancillary and Diluent reagents in Tdef are not displayed");
+    if(!ThenVerifyAncillaryDiluentReagentNotDisplayed(testCaseId))
+    {
+      Log["Error"]("Failed to verify Ancillary and Diluent reagents in Tdef are not displayed");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      ExitTDefSetup();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+      
+    //POSTRUN
+    Log["AppendFolder"]("POSTRUN :: Exit TDef Setup");
+    if(!ExitTDefSetup())
+    {
+      Log["Error"]("Failed to Exit TDef");
+      ReportTestStatusToResultXML(featureName, testcaseName, "F");
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    //Result.xml - Passed
+    ReportTestStatusToResultXML(featureName, testcaseName, "P");
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception : " + e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+

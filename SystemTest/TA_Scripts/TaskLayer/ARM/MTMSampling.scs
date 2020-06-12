@@ -1,0 +1,554 @@
+﻿//USEUNIT Authentication
+//USEUNIT Inventory
+//USEUNIT InventoryFeatureSteps
+//USEUNIT TCNativeLibraries
+//USEUNIT DiagnosticsFeature
+//USEUNIT TCCSConfigLibrary
+
+                 /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        INTEGRATION  TEST
+                /*^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/            
+               
+               //TestCaseID="344945" 
+               //TestSuiteID="344930" 
+               //RootSuiteID="344928" 
+               //TestPlanID="227656" 
+        
+function DriverScriptMTM(){
+    
+    /*Create Result.xmls and Update TestPlan Details
+    TestName,FeatureName,TestCaseID,TestSuiteID,RootSuiteID,TestPlanID,TotalTestCount*/
+    UpdateTestPlanDetails("US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp","Supplies Overview","345105","344930","344928","227655","1")
+    UpdateTestPlanDetails("US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp","Supplies Overview","345106","344930","344928","227655","1")
+    UpdateTestPlanDetails("US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired","Supplies Overview","344945","345107","344928","227655","1")
+    
+    //Update Build Details
+    //fnUpdateBuildDetails()
+    
+    //TCCS ,Start UIW ,Start IoT & Load Reagent
+    //InitializeApp()
+
+    //Supplies -Master Table scenarios
+    US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp()
+    US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp()
+    US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired()           
+}
+
+
+//******************************************************************************
+//     Scenarios [FEATURE : 259953 - IMT Sensor]
+//               [FEATURE : 247523 - IMT Bulk System Fluids] 
+//               [FEATURE : 247524 - Pretreatment Consumable]    
+//******************************************************************************
+//Ramitha		
+/*------ US259970, US247541, US247569 ------*/
+function US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp(){
+
+    //USER STORY
+    Log.Message("FEATURE: 259953 - IMT Sensor")
+    Log.Message("US259970 : Tests for IMT Sensor is depleted");
+    
+    Log.Message("FEATURE: 247523 - IMT Bulk System Fluids")
+    Log.Message("US247569 : IMT System Fluid is depleted");   
+    
+    Log.Message("FEATURE: 247524 - Pretreatment Consumable") 
+    Log.Message("US247541 : Pretreatment is depleted");      
+    
+    strScenario ="US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp";
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp", "I");
+
+    //GIVEN 1
+    LogHighlight("GIVEN 1: IMT and Pretreatment fluids are loaded on the system");
+    Log["PopLogFolder"]()
+    
+    //GIVEN 2
+    LogHighlight("GIVEN : Atleast one IMT and Pretreatment test is enabled");
+    Log["Warning"]("There is an error in 'All Tests' screen")
+    Log["PopLogFolder"]()
+    
+    //GIVEN 3
+    LogHighlight("GIVEN : Fluid level is Empty");
+    Log["PopLogFolder"]()
+    
+    //GIVEN 4
+    LogHighlight("GIVEN 4: Lot and OBS Not Expired");
+    var DBExcelSheet = "IMTPreLoadedTestEnabledFluidEmptyLotOBSNotExp";
+    if(!GIVENFluidLotOBSUpdateForIMTAndPretreatmentDB(DBExcelSheet)){
+        ReportTestStatusToResultXML_MTM("InventorySuppliesIMTSensorIMTBulkSystemFluids", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;} 
+    Log["PopLogFolder"]()        
+    
+    //Launch and Login to ARM to reflect DB changes
+    LogHighlight("Restart and Login to ARM to reflect DB changes");
+    InitializeHydra()     
+    Log["PopLogFolder"]() 
+    
+    //WHEN
+    LogHighlight("WHEN : Operator Navigates to Supplies overview screen");
+    if(!WHENOperatorChecksForSupplies()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;}
+    Log["PopLogFolder"]()
+
+    //THEN 1
+    LogHighlight("THEN : Fluid volume display as 0");
+    Log["PopLogFolder"]()
+    
+    //THEN 2
+    LogHighlight("THEN :LOT Expiration should display the expiration Date");
+    Log["Warning"]("Currently not checking OBS remaining days")
+    if(!THENVerifyPretreatmentAndIMTWithVolumeAndLotDataDB()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;}
+    Log["PopLogFolder"]()
+    
+    //THEN 3
+    LogHighlight("THEN :No visual indication on the UI (ex: highlighting in Red) that the LOT/OBS has expired");
+    var boolFlag = false;
+    if(!THENVerifyVisualIndicationForLotAndOBS(boolFlag)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;}
+    Log["PopLogFolder"]()
+    
+	  //THEN 4
+    LogHighlight("THEN : Operator event log generated for fluid depletion ");
+    var thresholdIndicator="Depleted"
+    if(!THENVerifyOperatorEventLogWhenVolumeBelowThreshold(thresholdIndicator)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP15_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidAboveThresAndLotOBSBelowThreshold", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;}
+    Log["PopLogFolder"]()	
+    
+    //Result.xml -Pass
+    ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidEmptyLotOBSNotExp", "P");
+    ScenarioCompleted(strScenario);
+
+}
+
+/*------ US259969, US247534, US247568 ------*/
+function US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp(){
+
+    //USER STORY
+    Log.Message("FEATURE: 259953 - IMT Sensor")
+    Log.Message("US259969 : IMT Sensor tests remaining meets/is below user configured threshold");
+    
+    Log.Message("FEATURE: 247523 - IMT Bulk System Fluids") 
+    Log.Message("US247568 : IMT System Fluids volume remaining meets/is below user configured threshold"); 
+    
+    Log.Message("FEATURE: 247524 - Pretreatment Consumable") 
+    Log.Message("US247534 :  Pretreatment volume remaining meets/is below user configured threshold");      
+    
+    strScenario ="US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp";
+        
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "I");
+
+    //GIVEN 1
+    LogHighlight("GIVEN 1: IMT and Pretreatment fluids are loaded on the system");
+    Log["PopLogFolder"]()
+    
+    //GIVEN 2
+    LogHighlight("GIVEN : Atleast one IMT and Pretreatment test is enabled");
+    Log["Warning"]("There is an error in 'All Tests' screen")
+    Log["PopLogFolder"]()    
+        
+    //GIVEN 3
+    LogHighlight("GIVEN 4: Lot and OBS Not Expired");
+    var DBExcelSheet="IMTPreLoadedTestEnabledFluidBelowThresholdLotOBSNotExp";
+    if(!GIVENFluidLotOBSUpdateForIMTAndPretreatmentDB(DBExcelSheet)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;}          
+    Log["PopLogFolder"]()
+        
+    //GIVEN 4
+    LogHighlight("GIVEN : Fluid level meets or goes below Threshold");
+    if(!GIVENFluidLevelAboveBelowThresolhdDB("Below Threshold")){
+        ReportTestStatusToResultXML_MTM("InventorySuppliesIMTSensorIMTBulkSystemFluids", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;} 
+        //Launch and Login to ARM to reflect DB changes
+    LogHighlight("Restart and Login to ARM to reflect DB changes");
+        InitializeHydra()
+    Log["PopLogFolder"]() 
+      
+    //WHEN
+    LogHighlight("WHEN : Operator Navigates to Supplies overview screen");
+    if(!WHENOperatorChecksForSupplies()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;} 
+    Log["PopLogFolder"]()
+
+    //THEN 1
+    LogHighlight("THEN : Fluid volume should display in percentage of 5% along with LOT");
+    Log["Warning"]("Currently not checking OBS remaining days")
+    if(!THENVerifyPretreatmentAndIMTWithVolumeAndLotDataDB()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;} 
+    Log["PopLogFolder"]()
+    
+    //THEN 2
+    LogHighlight("THEN :There should be a visual indication on the UI (ex: highlighting in Red) that the fluid volume is below user threshold.");
+    var boolFlag = true;
+    if(!THENVerifyVisualIndicationForFluidVolume(boolFlag)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;} 
+    Log["PopLogFolder"]()
+    //THEN 3
+    LogHighlight("THEN : Operator event log generated for fluid depletion ");
+    var thresholdIndicator="Not Depleted"
+    if(!THENVerifyOperatorEventLogWhenVolumeBelowThreshold(thresholdIndicator)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP15_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidAboveThresAndLotOBSBelowThreshold", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;} 
+    Log["PopLogFolder"]()		
+																			 
+    //Result.xml -Pass
+    ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP03_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidBelowThresLotOBSNotExp", "P");
+
+}
+
+
+/*------ US259973, US259974, US259976, US259977, US247570, US247571, US259381, US259382 ------*/
+function US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired(){
+
+    //USER STORY
+    Log.Message("FEATURE: 259953 - IMT Sensor")
+    Log.Message("US259973 : OBS Expiration for IMT Sensor");
+    Log.Message("US259974 : Lot Expiration for IMT Sensor");
+    Log.Message("US259976 : Prevent Use when IMT Sensor Lot has expired");
+    Log.Message("US259977 : Prevent Use when IMT Sensor OBS has expired");
+    
+    Log.Message("FEATURE: 247523 - IMT Bulk System Fluids") 
+    Log.Message("US247570 : Lot Expiration for IMT System Fluids "); 
+    Log.Message("US247571 : OBS Expiration for IMT System Fluids"); 
+    
+    Log.Message("FEATURE: 247524 - Pretreatment Consumable") 
+    Log.Message("US259381 : Prevent Use when Pretreatment Lot has expired");
+    Log.Message("US259382 : Prevent Use when Pretreatment OBS has expired");       
+    
+    strScenario ="US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired";
+    
+    //Result.xml -In Progress
+    ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "I");
+
+    //GIVEN 1
+    LogHighlight("GIVEN 1: IMT and Pretreatment fluids are loaded on the system");
+    Log["PopLogFolder"]()
+    
+    //GIVEN 2
+    LogHighlight("GIVEN : Atleast one IMT and Pretreatment test is enabled");
+    Log["Warning"]("There is an error in 'All Tests' screen")
+    Log["PopLogFolder"]()
+    
+    //GIVEN 3
+    LogHighlight("GIVEN 4: Lot and OBS Expired");
+    var DBExcelSheet="IMTPreLoadedTestEnabledLotOBSExp";
+    if(!GIVENFluidLotOBSUpdateForIMTAndPretreatmentDB(DBExcelSheet)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "F");
+        Log["PopLogFolder"]();
+        ScenarioCompleted(strScenario);
+        return false;}       
+        //Launch and Login to ARM to reflect DB changes
+    LogHighlight("Restart and Login to ARM to reflect DB changes");
+        InitializeHydra() 
+    Log["PopLogFolder"]()   
+    
+    //WHEN
+    LogHighlight("WHEN : Operator Navigates to Supplies overview screen");
+    if(!WHENOperatorChecksForSupplies()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "F");
+        Log["PopLogFolder"]();
+        return false;}
+    Log["PopLogFolder"]()
+
+    //THEN 1
+    LogHighlight("THEN : Fluid volume/Lot/OBS display as 0");
+    Log["PopLogFolder"]()
+    
+    //THEN 2
+    LogHighlight("THEN :LOT Expiration should display the expired date");
+    if(!THENVerifyPretreatmentAndIMTWithVolumeAndLotDataDB()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "F");
+        Log["PopLogFolder"]();
+        return false;}
+    Log["PopLogFolder"]()
+    
+    //THEN 3
+    LogHighlight("THEN :OBS should display 0 days");
+    if(!THENVerifyPretreatmentAndIMTWithOBSExpirationData()){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "F");
+        Log["PopLogFolder"]();
+        return false;}
+    Log["PopLogFolder"]()
+    
+    //THEN 4
+    LogHighlight("THEN :Visual indication on the UI (ex: highlighting in Red) that the LOT/OBS has expired");
+    var boolFlag = true;
+    if(!THENVerifyVisualIndicationForLotAndOBS(boolFlag)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "F");
+        Log["PopLogFolder"]();
+        return false;}
+    Log["PopLogFolder"]()
+	 
+    //THEN 5
+    LogHighlight("THEN : Operator event log generated for LOT/OBS below user threshold ");
+    var thresholdIndicator="Expired"
+    if(!THENVerifyOperatorEventLogWhenOBSBelowThreshold(thresholdIndicator)){
+        ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP15_GWT_01_IMTPreLoadedAtleastOneTestEnabledFluidAboveThresAndLotOBSBelowThreshold", "F");
+        Log["PopLogFolder"]();
+        return false;}
+    Log["PopLogFolder"]()																					  
+														   
+    //Result.xml -Pass
+    ReportTestStatusToResultXML_MTM("Supplies Overview", "US_GROUP08_GWT_01_IMTPreLoadedAtleastOneTestEnabledLotOBSExpired", "P");
+
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : ReportTestStatusToResultXML_MTM_MTM
+//*
+//*  Description: Updates Result.xml
+//*  
+//*  Input: strTestCategory, strTestID, strResult
+//*
+//*  Output: 
+//*
+//*  Example: ReportTestStatusToResultXML_MTM_MTM("AppStartup", "AppStartup_ENG" , "P");
+//            "P" stands for Pass
+//            "F" stands for Fail
+//*
+//*  Date of Creating: 18/10/2016
+//*
+//*  Last Modified date: 8th Mar 2019 [bhawya]
+//***********************************************************************************************************************************************************************************
+function ReportTestStatusToResultXML_MTM(strTestCategory, strTestID, strResult)
+{
+  try
+  {
+      var strTestCategory, strTestID, strResult
+      var sProjectPath=Project.Path;
+      var sPath= sProjectPath.split("TA_Scripts");
+      var strXMLPath=sPath[0]+"TestOutput\\"+strTestID+"_Result.xml"
+      var objNode = null;
+      objXMLDoc   = Sys["OleObject"]("Msxml2.DOMDocument.6.0");
+      objXMLDoc["async"] = false;
+      
+      if(strResult == "P"){
+        strResult ="Pass";
+      }else if(strResult =="F"){
+        strResult ="Fail"
+      }else{
+        strResult ="Inprogress"
+      }
+      
+      if (!aqFile["Exists"](strXMLPath))
+      {
+          //aqFile["Create"](strXMLPath);
+         var TestResultsNode=objXMLDoc["createElement"]("TestResults");
+         objXMLDoc["appendChild"](TestResultsNode)
+         var TestResultNode=objXMLDoc["createElement"]("TestResult");         
+         TestResultNode["setAttribute"]("startdatetime",aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ))
+//             newlineNode=objXMLDoc["createTextNode"](VbCrLf);
+//             TestResultNode["appendChild"](newlineNode)
+                   
+          var objNode = objXMLDoc["selectSingleNode"]("/TestResults")
+         objNode["appendChild"](TestResultNode)
+        objNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult")
+          var EnvDetailsNode=objXMLDoc["createElement"]("EnvDetails");
+           objNode["appendChild"](EnvDetailsNode)
+           
+         objNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult/EnvDetails")
+//           var BuildIDNode=objXMLDoc["createElement"]("BuildID");
+//          BuildIDNode["text"]=""
+//           objNode["appendChild"](BuildIDNode) 
+           //var xpath=objXMLDoc["selectSingleNode"]("/TestResults/TestResult/EnvDetails/BuildID")
+           
+          
+             //Env Details : Updated Bhawya
+             var BuildNode=objXMLDoc["createElement"]("Build");
+             BuildNode["text"]=  Project["Variables"]["BuildName"]
+             objNode["appendChild"](BuildNode) 
+             
+             var DeploymentTypeNode=objXMLDoc["createElement"]("DeploymentType"); 
+             DeploymentTypeNode["text"]=Project["Variables"]["DeploymentType"];
+             objNode["appendChild"](DeploymentTypeNode)
+             
+             var DeploymentModeNode=objXMLDoc["createElement"]("DeploymentMode");
+             DeploymentModeNode["text"]= Project["Variables"]["InstallType"];
+             objNode["appendChild"](DeploymentModeNode)
+             
+             objXMLDoc.Save(strXMLPath)
+               
+
+          
+//           var BuildNode=objXMLDoc["createElement"]("Build");
+//           BuildNode["text"]=""
+//           objNode["appendChild"](BuildNode) 
+//           var DeploymentTypeNode=objXMLDoc["createElement"]("DeploymentType"); 
+//           DeploymentTypeNode["text"]=""
+//           objNode["appendChild"](DeploymentTypeNode)
+//           var DeploymentModeNode=objXMLDoc["createElement"]("DeploymentMode");
+//           DeploymentModeNode["text"]=""
+//           objNode["appendChild"](DeploymentModeNode)
+ 
+           
+           
+           var TestsNode=objXMLDoc["createElement"]("Tests");
+           objNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult")
+           TestsNode["text"]=""
+            objNode["appendChild"](TestsNode)
+          //aNode["appendChild"]("TestResult")
+          objXMLDoc["save"](strXMLPath);
+          
+      }
+  
+      
+      objXMLDoc["load"](strXMLPath);
+  
+      //Report in the error log if there is an error in parsing the XML
+      if(objXMLDoc["parseError"]["errorCode"] != 0)
+      {
+        strMsg = "Reason:\t" + objXMLDoc["parseError"]["reason"] + "\n" +
+            "Line:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["line"]) + "\n" + 
+            "Pos:\t" + aqConvert["VarToStr"](objXMLDoc["parseError"]["linePos"]) + "\n" + 
+            "Source:\t" + objXMLDoc["parseError"]["srcText"];
+
+        Log["Error"]("Cannot parse the document. ", strMsg); 
+        return false;
+      }
+  
+      //General includes the following nodes : Build, DateTime, DeploymentType, DeploymentMode
+      if ( strTestCategory == "EnvDetails" )
+      {
+        var objTestResultNode=objXMLDoc["selectSingleNode"]("/TestResults/TestResult");
+        objTestResultNode["setAttribute"]("startdatetime",aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ));
+        
+        strXPath  = "/TestResults/TestResult/EnvDetails/" + strTestID;
+        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+        
+        
+        
+        
+        if(objNode != null )
+        {
+          //Updating the concerned Result Node value
+          objNode["text"] = strResult;
+          //Saving the XML with the updated Node value
+          objXMLDoc["save"](strXMLPath);
+        }
+      }
+      else
+      {
+        //Constructing the XPath to select the concerned result node
+        strXPath  = "/TestResults/TestResult/Tests/test[@name='" + strTestID + "']";
+        objNode   = objXMLDoc["selectSingleNode"](strXPath);
+        if(objNode != null )
+        {
+          //Updating the concerned Result Node value and saving the XML
+          objNode["setAttribute"]("result", strResult );
+          if (strResult=="Inprogress")
+          {
+            objNode["setAttribute"]("starttime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ) );
+            objNode["setAttribute"]("endtime", "" );
+          }
+          else
+          {
+             objNode["setAttribute"]("endtime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ));
+          }
+
+          objXMLDoc["save"](strXMLPath);
+        }
+      }
+  
+      //Adding a node that is not in the template
+      if(objNode == null )
+      {
+        objElement = objXMLDoc["createElement"]("test");
+        if (strTestCategory!="")
+        {
+          objElement["setAttribute"]("category", strTestCategory);
+        }
+        
+        objElement["setAttribute"]("name", strTestID);
+        objElement["setAttribute"]("result",strResult );
+        objElement["setAttribute"]("starttime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S" ));    
+        objElement["setAttribute"]("endtime", aqConvert["DateTimeToFormatStr"](aqDateTime["Now"](), "%m/%d/%Y %H:%M:%S"));
+        
+        objNode    = objXMLDoc["selectSingleNode"]("/TestResults/TestResult/Tests");
+        objNode["appendChild"](objElement)
+        objXMLDoc["save"](strXMLPath);
+      }
+  
+      //Validating the updated XML
+      if (strResult!="Inprogress")
+      {
+        if(objXMLDoc["parseError"]["errorCode"] == 0)
+        {
+          //Log["Message"]("Successfully updated the Result XML.")
+          return true;
+        }
+        else
+        {
+          Log["Error"]("Error in updating the Result value for : " + strTestID);      
+          return false;
+        }
+      }
+      objXMLDoc = null;
+  }
+  catch(exp) 
+  {
+    Log["Error"]("Exception", exp["description"]);
+  }
+}
+
+
+
+//*************************************************************************
+//*  FunctionName : ScenarioCompleted
+//*  Description: 
+//*  Input: 
+//*  Output: 
+//*  Example:
+//*  Date of Creating: 
+//*  Created By: Bhawya V J
+//*************************************************************************
+function ScenarioCompleted(strScenarioName)
+{
+  try
+    {   
+        var sPath = "F:\\SystemTest\\TestOutput\\"+strScenarioName+"_Complete.txt"
+        if (!aqFile.Exists(sPath)) 
+          aqFile.Create(sPath);
+        else{
+          aqFile["Delete"](sPath)
+          aqFile.Create(sPath);
+        }
+     }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}

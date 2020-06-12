@@ -1,0 +1,3465 @@
+﻿//USEUNIT StepDefinition
+//USEUNIT CommonUtilities
+//USEUNIT CommonFeatureUtils
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+function GivenACappedSampleHasBeenIdentifiedAsCandidateForDecapping()
+{
+  
+  //Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  //Verify decapper status
+  if(!StepVerifyDecapperStatus())
+    return false;
+  
+    //
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+    
+  //SHConfig
+  if(!IsSHConfigured())/////////// create panel only for holding area is configured
+     return false;
+     
+  if(StepIsHoldingAreaConfigured())
+    return false;
+   
+  //Create patient order and load sample
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+  
+
+//  sFakeBarCodefilepath=Project["Path"]+"TestData";
+//  
+//  if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+//    return false;
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdats
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false; 
+     
+  //verify sample attribute is capped
+  //return StepVerifySampleAttribute(SampleId, "Capped");
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped");
+  
+}
+
+function IsSHConfigured()
+{
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  //StepActivateSortPanel("Default");
+  if (StepVerifySortPanelActive("Default"))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("Default"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  
+      if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  
+//  if(!StepShutdownAllApps())
+//                      return false;
+//   
+//  return StepInvokeAllApps();
+
+}
+
+function WhenTheDecappingIsSuccessfull()
+{
+    //Verify sample status is decapped
+
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithoutHolding")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+    
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000)
+    
+    //return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+    
+    
+}
+
+function WhenSampleHasAnalyticalWorkToProcess()
+{
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithoutHolding")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+   
+     //verify sample has a workorder
+   return StepVerifySampleHasWorkorder(SampleId)
+}
+
+
+function ThenSampleCapStatusIsDecapped()
+{
+//Verify cap status is decapped
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithoutHolding")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+    
+    return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+}
+
+
+function ThenTheSampleIsRoutedForFurthurProcessing()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWithoutHolding")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_01_DecapWithValidWorkOrderWhenNoHoldAreaConfigured", "F");
+    return false;  
+  }
+}
+ 
+
+
+
+function IsSampleDecapped()
+{  
+  var arrTestData   = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecappedSample")
+  var dictColumn    = arrTestData[0];
+  var SampleID      = dictColumn["Item"]("OutputSampleID");
+  var CapStatus      = dictColumn["Item"]("CapStatus");
+  
+//  Verify cap status of sample in Sample>Sample List
+//  return StepVerifySampleProperty(SampleID, "CapStatus", CapStatus)
+  return StepWaitForSampleProperty(SampleID, "CapStatus", CapStatus, "60000")
+    
+}
+
+
+function IsCappedSampleLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecappedSample")
+  var dictColumn=arrTestData[0];
+  
+  var sSampleID = dictColumn["Item"]("SampleId");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  //sFakeBarCodefilepath=Project["Path"]+"TestData";
+  
+  if(!StepUpdateFakebarcodeReadingsFile(sSampleID))
+    return false;
+    
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  //IsInputTrayEmpty("DecappedSample")
+  
+  //verify sample attribute is capped
+  //return StepVerifySampleAttribute(SampleId, "Capped");
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped");
+  
+}
+
+
+function IsDecappedSampleOnAnalyzer()
+{
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecappedSample")
+  var dictColumn=arrTestData[0];
+  
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus         = dictColumn["Item"]("SampleStatus");
+  var SampleProblem        = dictColumn["Item"]("SampleProblem");
+  
+//  var boolValue = StepVerifySampleStatus(SampleId, SampleStatus,SampleProblem)
+  
+//  Wait for sample to come in COMPLETE status
+	if(!StepWaitForSampleStatus(SampleID, SampleStatus))
+	  return false;
+	  
+	var sTime="15 Minutes"
+	   //var sModuleSerialNumber="Decapper"
+  var DeCapperSerialNumbers=StepGetModuleNames("DECAPPER")
+  
+  //following ae the error codes shown in event log when hardware error occurs during decapping
+  var iErrorcodes=["20 004 03 08","20 004 03 09","20 004 03 10","20 004 03 11","20 004 03 12","20 004 03 13","20 004 03 14","20 004 03 15","20 004 03 16","20 004 03 17","20 004 03 18","20 004 03 19","20 004 03 20","20 004 03 21","20 004 03 22","20 004 03 23","20 004 03 24"]
+   
+	var boolValue =StepVerifyNoErrorEventLog(sTime,DeCapperSerialNumbers[0],iErrorcodes);
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT188758_01_DecappedSample", "F"); 
+    return false;
+  }
+    
+}
+
+function  IsInputTrayEmpty(ScenarioName)
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHInputTraysEmpty",ScenarioName)
+  var dictColumn = arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleCount           = dictColumn["Item"]("SampleCount");
+  
+  return StepVerifyInputTrayEmpty(SampleCount,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  //StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+}
+
+function GivenACappedSampleIsLoadedWithHoldingForDecapping()
+{
+//Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  //Verify decapper status
+  if(!StepVerifyDecapperStatus())
+    return false;
+      
+  //SHConfig
+  if(!IsSHWithHoldingConfigured())/////////// create panel only for holding area is configured
+     return false;
+     
+  if(!StepIsHoldingAreaConfigured())
+    return false;
+ 
+  //Create patient order and load sample
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+  
+//  sFakeBarCodefilepath=Project["Path"]+"TestData";
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdats
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false; 
+     
+  //verify sample attribute is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped");
+
+}
+
+function IsSHWithHoldingConfigured()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  //StepActivateSortPanel("Default");
+  if (StepVerifySortPanelActive("DecapWithHolding"))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("DecapWithHolding"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapWithHolding"))//Default SH drawer config
+      return false;
+      //
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+  
+  if(!StepStartAnalyzer("SH"))
+    return false;
+    
+    return GivenAtellicaInitialized();
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+
+}
+
+
+function ThenSampleIsMovedToHoldingAndThenInput0utput()
+{
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWithHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  //Wait for sample to get aspirated
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+   
+   //Verify sample unloading location
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+//  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingAvailable")
+//  var dictColumn=arrTestData[0];
+//  var SampleID = dictColumn["Item"]("OutputSampleID");
+//  var SampleStatus=dictColumn["Item"]("SampleStatus");
+//  var aSampleStatus=SampleStatus["split"](";");
+//  var SampleLocation=dictColumn["Item"]("SampleLocation")
+//
+//  Wait for sample to come in COMPLETE status
+//  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[1]))
+//    return false;
+//      
+//  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWithHoldingAvailable")
+//  var dictColumn=arrTestData[1];
+//  var TrayType             = dictColumn["Item"]("TrayType");
+//  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+//  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+//  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+//  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+//  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+//  
+//  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_02_DecapWithValidWorkOrderWhenHoldAreaConfiguredAndAvailable", "F"); 
+    return false; 
+  }
+    
+}
+
+function WhenTheDecappingIsSuccessfullForHoldingAvailable()
+{
+    //Verify sample status is decapped
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingAvailable")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+    
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000)
+    //return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+    
+}
+
+
+function WhenSampleHasAnalyticalWorkToProcessForHoldingAvailable()
+{
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingAvailable")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+   
+     //verify sample has a workorder
+   return StepVerifySampleHasWorkorder(SampleId)
+}
+
+function ThenSampleCapStatusIsDecappedForHoldingAvailable()
+{
+  //Verify cap status is decapped
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingAvailable")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+    
+    return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+}
+
+function WhenTheDecappingIsSuccessfullWithHoldingUnavailable()
+{
+    //Verify sample status is decapped
+
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingUnavailable")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+    
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 60000)
+    
+    //return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+}
+
+function WhenSampleHasAnalyticalWorkToProcessWithHoldingUnavailable()
+
+{
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingUnavailable")
+   var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+   
+     //verify sample has a workorder
+   return StepVerifySampleHasWorkorder(SampleId)
+}
+
+
+
+function ThenSampleCapStatusIsDecappedWithHoldingUnavailable()
+{
+//Verify cap status is decapped
+    var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingUnavailable")
+    var dictColumn=arrTestData[0];
+    var SampleId = dictColumn["Item"]("SampleId");
+    
+    return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+}
+ 
+ function ThenTheSampleIsRoutedForFurthurProcessingWhenHoldingIsUnavailable()
+ {
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingUnavailable")
+  var dictColumn=arrTestData[0];
+
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWithHoldingUnavailable")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+
+
+  //verify holding area not available
+   if(!StepVerifySHAreaHasNoEmptySlots(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapWithHoldingUnavailable")
+  var dictColumn=arrTestData[0];
+
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT179838_03_DecapWithValidWorkOrderWhenHoldAreaUnavailable", "F");  
+    return false;
+  }
+
+  return boolValue;
+ }
+
+
+ 
+function GivenACappedSampleHasBeenIdentifiedAsCandidateForDecappingWithHoldingUnavailable()
+{
+  //Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  
+  //Verify decapper status
+  if(!StepVerifyDecapperStatus())
+    return false;
+
+  
+    //
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+    
+  //SHConfig
+
+  if(!IsSHConfiguredWithHolding())
+     return false;
+     
+  if(!StepIsHoldingAreaConfigured())
+    return false;
+   
+ 
+  //Create patient order and load sample
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapWithHoldingUnavailable")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+  
+  
+  
+//  sFakeBarCodefilepath=Project["Path"]+"TestData";
+//  
+//  if(!StepUpdateFakeBarCodeFile(sFakeBarCodefilepath,FakeBarCodeFilename))
+//    return false;
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdats
+    return false;
+   
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  //To simulate holding area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+      
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false; 
+     
+  //verify sample attribute is capped
+  return StepVerifySampleProperty(SampleId, "CapStatus", "Capped");
+
+    
+}
+
+
+function IsSHConfiguredWithHolding()
+{
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  //StepActivateSortPanel("Default");
+  if (StepVerifySortPanelActive("DecapWithHolding"))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("DecapWithHolding"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapWithHolding"))//Default SH drawer config
+      return false;
+
+      if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+//    if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+}
+
+
+function GivenAtleastOneDecapperIsConfigured()
+{
+//    Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  //Verify decapper status
+  if(!StepVerifyDecapperStatus())
+    return false;
+      
+  //SHConfig
+  if(!IsSHWithHoldingConfigured())/////////// create panel only for holding area is configured
+     return false;
+     
+  return StepIsHoldingAreaConfigured();
+    
+}
+
+function WhenACappedSampleTubeWithRunnableWorkOrderIsLoaded()
+{
+  //Create patient order and load sample
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWithHoldingGWT183545")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+  
+//  sFakeBarCodefilepath=Project["Path"]+"TestData";
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdats
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+}
+
+
+function WhenDecapperIsInStoppedState()
+{
+  if(!StepStopAnalyzer("DECAPPER"))
+    return false;
+    
+  return StepVerifyModuleStatus("DECAPPER","Stopped")
+}
+
+
+function ThenSampleIsRoutedToAnAlternateDecapperIfAvailableOrParkedInSampleHandler()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWithHoldingGWT183545")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+
+  //Verify sample location shows track as VMM
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+  return false;
+  
+  //verify sample attribute is capped
+   if(!(StepWaitForSampleProperty(SampleID, "CapStatus", "DecapPending", 60000)))
+   {
+     if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 60000))
+      return false;
+   } 
+    
+//  
+//  if(!StepVerifySampleProperty(SampleID, "CapStatus", "DecapPending"))
+//    return false;
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedWithHoldingGWT183545")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  //var SampleIDs           = dictColumn["Item"]("SampleIDs");
+  
+  // Verify Holding area has empty slots
+  if(!StepVerifyEmptySlotsInSortArea(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+   
+  //Verify sample gets unloaded to Holding area 
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  
+//  //Verify sample gets unloaded to Input Only --- ? Need clarification on this regarding timing of sample movement
+//  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedWithHolding")
+//  var dictColumn=arrTestData[1];
+//  var TrayType             = dictColumn["Item"]("TrayType");
+//  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+//  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+//  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+//  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+//  
+//  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+//    return false;  
+  
+  //Verify Cap Status is Capped after unloading to Input only
+  //boolValue = StepVerifySampleAttribute(SampleID, "Capped")
+  var boolValue=StepWaitForSampleProperty(SampleID, "CapStatus", "DecapPending", 60000);
+  if(boolValue==false)
+  {
+    boolValue=StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 60000)
+  } 
+
+  //boolValue = StepVerifySampleProperty(SampleID, "CapStatus", "DecapPending");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_01_DecapperStoppedWhenHoldAreaAvailable", "F"); 
+    return false; 
+  }
+}
+
+function WhenACappedSampleTubeWithRunnableWorkOrderIsLoadedWithHoldingUnavailable()
+{
+  //Create patient order and load sample
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWithHoldingUnavailableGWT183545")
+  var dictColumn=arrTestData[0];
+ 
+  
+//  sFakeBarCodefilepath=Project["Path"]+"TestData";
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+   //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdats
+    return false;
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+      
+    //To simulate holding area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample();
+    
+}
+
+function ThenSampleIsRoutedToAnAlternateDecapperIfAvailableOrParkedInSampleHandlerWithHoldingUnavailable()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedWithHoldingUnavailableGWT183545")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID"); 
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+    //Verify sample location shows track as SH // actually it shud be as VMM
+  if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+  return false;
+  
+  //verify sample attribute is capped
+//  if(!StepVerifySampleProperty(SampleID, "CapStatus", "DecapPending"))
+//    return false;
+    
+  if(!(StepWaitForSampleProperty(SampleID, "CapStatus", "DecapPending", 60000)))
+  {
+   if(!StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 60000))
+    return false;
+  } 
+    
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedWithHoldingUnavailableGWT183545")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers"); 
+  //var SampleIDs           = dictColumn["Item"]("SampleIDs");
+     
+  //verify holding area not available
+   if(!StepVerifySHAreaHasNoEmptySlots(TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+
+   
+  //Verify sample gets unloaded to Input Only --- ? Need clarification on this regarding timing of sample movement
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedWithHoldingUnavailableGWT183545")
+  var dictColumn=arrTestData[1];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  var SampleID             = dictColumn["Item"]("SampleIDs");
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;  
+  
+  //Verify Cap Status is Capped after unloading to Input only
+  //boolValue = StepVerifySampleProperty(SampleID, "CapStatus", "DecapPending");
+  var boolValue=StepWaitForSampleProperty(SampleID, "CapStatus", "DecapPending", 60000);
+  if(boolValue==false)
+  {
+    boolValue=StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 60000)
+  } 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183545_02_DecapperStoppedWhenHoldAreaUnavailable", "F");
+    return false;  
+  }
+}
+
+
+function WhenTheOperatorNavigatesToAlertSettingsCongigurationPage()
+{
+  return StepNavigateToAlertSettingsConfigPage()
+
+} 
+
+function WhenACappedNonExceptionsampleWithAnalyticalWorkInAtellicaIsPlacedInInputTrayOfSH()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedSampleWithAnalyticalWork")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+
+ return StepLoadSample();
+ 
+}
+
+
+function ThenTheSystemAllowsTheOperatorToConfigureTheDecapperWastebinAlmostFullThreshold()
+{
+
+  var boolValue = StepVerifyWasteBinThresholdLevel("Enabled", "False");
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_01_WastebinConfigurability", "F");
+    return false;  
+  }
+} 
+
+
+
+function GivenAtleastOneDecapperIsConfiguredAndStopped()
+{
+  //Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  if(!StepStopAnalyzer("DECAPPER"))
+    return false;
+    
+  return StepVerifyModuleStatus("DECAPPER","Stopped")
+  
+}
+
+
+function ThenTheSystemAllowsTheOperatorToConfigureTheDecapperWastebinAlmostFullThresholdInWasteBinThresholdLevel()
+{
+  //Verify Almost full threshold range dropdown is enabled
+  var boolValue = StepVerifyWasteBinThresholdLevel("Enabled", "True");
+  
+  if (boolValue)
+  {
+    Log["Message"]("Wastebin Almost Full Threshold combobox is enabled");
+  }
+  else
+  {
+    Log["Message"]("Wastebin Almost Full Threshold combobox is disabled");
+    return false;
+  }
+    
+  //Verify dropdown values
+  var transValue;
+  var sDropdownValues="50% of Full Threshold;75% of Full Threshold;90% of Full Threshold;95% of Full Threshold";
+  //Select anyone value and verify its saved
+  var sValues=sDropdownValues["split"](";")
+  var iFlag=0;
+  for(var i=0;i<sValues["length"];i++)
+  {
+    transValue = GetTranslatedString(sValues[i],"")
+    if(StepSetWasteBinThresholdLevel(transValue))
+      iFlag=iFlag+1;   
+  }
+ 
+  if(iFlag==4)
+  {
+    Log["Message"]("Verified all values of Wastebin Almost Full Threshold combobox");
+    boolValue=true;
+  }
+  else
+  {
+    Log["Message"]("Verification of all values of Wastebin Almost Full Threshold combobox failed");
+    boolValue=false;
+  }
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Decapper Wastebin", "GWT190027_02_WastebinConfigurabilityWhenDecapperStopped", "F");
+    return false;  
+  }
+  
+}
+
+function WhenACappedNonExceptionsampleWithSortingWorkInAtellicaIsPlacedInInputTrayOfSH()
+
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedSampleWithSortingWork");
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+ return StepLoadSample();
+     
+} 
+
+function ThenTheCappedSampleTubeWithAnalyticalWorkShouldBeSentToDecapperForDecapping()
+
+{
+  //Verify cap status is Decapped
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedSampleWithAnalyticalWork")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //verify sample attribute is capped
+  StepVerifySampleProperty(SampleID, "CapStatus", "Capped");
+   
+  aqUtils["Delay"](5000, "Waiting for sample to get decapped"); 
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  var boolFlag = StepWaitForSampleStatus(SampleID, aSampleStatus[0])
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolFlag == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_02_CappedNonExceptionsampleWithAnalyticalWork", "F");  
+    return false;
+  }
+} 
+
+function ThenTheCappedSampleTubeWithSortWorkShouldBeSentToDecapperForDecapping()
+{
+  //Verify cap status is Decapped
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedSampleWithSortingWork")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //verify sample attribute is capped
+
+  StepVerifySampleProperty(SampleID, "CapStatus", "Capped");
+  
+  aqUtils["Delay"](5000, "Waiting for sample to get decapped");
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+  
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","CappedSampleWithSortingWork")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  var boolFlag = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolFlag == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_01_CappedNonExceptionsampleWithSortWork", "F");  
+    return false;
+  }
+}
+function WhenACappedNonExceptionsampleWithNoWorkorderInAtellicaIsPlacedInInputTrayOfSH()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedSampleWithNoWork")
+  var dictColumn=arrTestData[0];
+  //var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample()
+} 
+
+function ThenTheCappedSampleTubeWithNoWorkShouldBeSentToDecapperForDecapping()
+{
+  //Verify cap status is Decapped
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","CappedSampleWithNoWork")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("SampleId");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  
+  //verify sample attribute is capped
+  StepVerifySampleProperty(SampleID, "CapStatus", "Capped");
+  
+  aqUtils["Delay"](5000, "Waiting for sample to get decapped");
+  if(!StepVerifySampleProperty(SampleID, "CapStatus", "Decapped"))
+    return false;
+    
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+  //Verify sample gets unloaded to Input Only
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","CappedSampleWithNoWork")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  
+  boolFlag = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers);
+
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolFlag == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183550_03_CappedNonExceptionsampleWithNoWork", "F");  
+    return false;
+  }
+} 
+
+function GivenDecapAllIsConfigured()
+{
+    if(!StepConfigureDecapAllTubes("Yes"))
+      return false;
+      
+    var arrDrawers = GetTestItemsByTestName(TestDataFile,"SortConfig","NotArchivedSortSamples")
+    var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+    var sTestType = arrDrawers[0]["Item"]("TestType");
+    var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+    var PanelName=arrDrawers[0]["Item"]("Panel");
+    
+    ProjPath = ProjectSuite["Path"];
+    arrPath  = ProjPath["split"]("Atellica")
+    var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+    var DeploymentType = GetDeploymentType(sConfigPath)
+    
+    if (StepVerifySortPanelActive(PanelName))
+      return true;
+      
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddPanel(PanelName))
+      return false;        // added after feature set up came into picture
+    
+    if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName))
+      return false;
+  
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "NotArchivedSortSamples"))
+      return false
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+  
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+}
+
+function DecapperTeardown()
+{
+ 
+  if(!StartAnalyzer("DECAPPER"))
+    return false;
+ 
+ //Clear all data
+  return ClearApplicationData();  
+}
+
+function GivenSortingareaIsConfigured()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapOffboardSample")
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sSortCode=arrDrawers[0]["Item"]("SortCode");
+    
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)  
+  
+
+  if (StepVerifySortPanelActive(PanelName))
+      return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddOperatordefinedSortTestCode(sSortCode))
+    return false;  
+  
+  if(!StepAddPanel(PanelName))
+    return false;        // added after feature set up came into picture
+    
+  if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName, "Always"))
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapOffboardSample"))
+    return false;
+  
+    //Decap all is configured
+  if(!StepConfigureDecapAllTubes("Yes"))
+    return false;
+    
+  if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+    
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+}
+
+function WhenSortingDestinationRequiresDecapping()
+{
+  //Verify decap tubes checkbox is checked for particular test sort group
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapOffboardSample")
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  
+  if(!StepTestSortDecapTubes(sTestSortGroupName, "Always", true))
+  {
+    // If Decap Tubes checkbox is not in desired state then Stop SH and change the Test Sort Group configuration.
+    if(!StepStopAnalyzer("SH"))
+      return false;
+      
+    if(!StepTestSortDecapTubes(sTestSortGroupName, "Always", true))
+      return false;
+      
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+      
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+  }
+  else
+  {
+    return true;  
+  }
+}
+
+function WhenDecapperModuleIsConfiguredAndAvailableForDecapping()
+{
+  //Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+      
+  var Expectedstatus = "Ready/Processing/Standby"
+  return StepVerifyModuleStatus("Decapper",Expectedstatus)
+
+}
+
+function WhenDecapAllSettingIsNotConfigured()
+{
+  return StepConfigureDecapAllTubes("No")
+}
+function WhenDecapAllSettingIsConfigured()
+{
+  return StepConfigureDecapAllTubes("Yes")
+}
+
+function ThenCappedSampleIsDecapped()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapOffboardSample")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  //IsInputTrayEmpty("DecappedSample")
+  
+  //verify sample attribute is capped
+  StepVerifySampleProperty(SampleId, "CapStatus", "Capped");
+  
+  //aqUtils["Delay"](5000, "Waiting for sample to get decapped");
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 10000)
+  //return StepVerifySampleProperty(SampleId, "CapStatus", "Decapped")
+    
+}
+
+function ThenCappedSampleIsDecappedWithDecapAllNotConfigured()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapOffboardSampleDecapAllNotConfigured")
+  var dictColumn=arrTestData[0];
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+
+  //verify sample attribute is capped
+  StepVerifySampleProperty(SampleId, "CapStatus", "Capped");
+
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Decapped", 10000)
+}
+
+function ThenThesampleIsUnloadedInTheConfiguredSortingArea()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapOffboardSample")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapOffboardSample")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_01_OffboardSortDestinationRequiresDecapping", "F");
+    return false;  
+  }
+
+}
+
+function ThenThesampleIsUnloadedInTheConfiguredSortingAreaWithDecapAllNotConfigured()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapOffboardSampleDecapAllNotConfigured")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapOffboardSample")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  //var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185695_02_OffboardSortDestinationRequiresDecappingDecapAllNotConfigured", "F");
+    return false;  
+  }
+
+}
+
+
+function GivenSortingareaIsConfiguredWithDecapAllUnchecked()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"SortConfig","DecapOffboardSample")
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  var sSortCode=arrDrawers[0]["Item"]("SortCode");
+    
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)  
+  
+
+  if (StepVerifySortPanelActive(PanelName))
+      return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddOperatordefinedSortTestCode(sSortCode))
+    return false;  
+  
+  if(!StepAddPanel(PanelName))
+    return false;        // added after feature set up came into picture
+    
+  if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName, "Always"))
+    return false;
+  
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "DecapOffboardSample"))
+    return false;
+  
+    //Decap all is configured
+
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    return GivenAtellicaInitialized();
+//   if(!StepShutdownAllApps())
+//    return false;
+   
+  return StepInvokeAllApps();
+}
+
+
+function GivenDecapperConfiguredWithHoldingAvailable()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica");
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+    
+  //Configure SH with Holding and Archive Area
+  if (!StepVerifySortPanelActive("HoldAndArchive"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("HoldAndArchive"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))// SH drawer config with Holding Area
+      return false;
+  }
+  
+  
+//Set Wastebin Threshold values    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperStoppedHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+  //Set Decap ALL = False
+   if(!StepConfigureDecapAllTubes("No"))
+   return false;
+  
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    if(!GivenAtellicaInitialized())
+      return false;
+
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+// if(!StepInvokeAllApps())
+//    return false;
+  
+  return DecapperConfiguredAndStatus()
+}
+
+
+function GivenDecapperIsInStoppedState()
+{
+    if(!StepStopAnalyzer("DECAPPER"))
+    return false;
+    
+    return StepVerifyModuleStatus("DECAPPER","Stopped")
+}
+
+
+
+function DecapALLIsSelected()
+{
+
+      var DecapALL = StepConfigureDecapAllTubes("No");
+     // if(!StepConfigureDecapAllTubes("No"))
+      if(!DecapALL)
+      return false;
+      else
+      return true;
+
+}
+
+
+function WhenCappedSampleWithAnalyticalWorkIsLoaded()
+{
+
+   var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedHoldingAvailable")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  // Update Fake Barcode File
+   if(!StepUpdateFakebarcodeReadingsFile(SampleID))
+    return false;
+    
+  //Create patient orders 
+  if(!StepCreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  //Place output tray/Holding/Archive Tray  
+  if(!StepPlaceOutputTray())
+  return false; 
+    
+  //Place Input Tray and place sample in tray
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+     
+// Load the Sample using the WEB UI   
+   return StepLoadSample()
+
+////Check whether the Sample appears in Sample List      
+//  if(!StepVerifyBatchSamplesProperty(SampleID,"CapStatus", "Capped", 10000))
+//    return false;
+//      
+//  return StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000)
+}
+
+
+function ThenCappedSampleIsNotLoadedToDecapper()
+{
+
+//  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedHoldingAvailable"; 
+//  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperStoppedHoldingAvailable";
+//  InitializeMetaData();
+//  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var ExpectedCapStatus =dictColumn["Item"]("CapStatus");
+ 
+  if(!StepSampleNotLoadedToDecapper(SampleID))
+    return false;
+  
+   if(!(StepWaitForSampleProperty(SampleID, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 60000);
+  else
+    return true;  
+}
+
+function ThenCappedSampleIsUnloadedToHoldingArea()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedHoldingAvailable")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_01_DecapperStoppedHoldingAvailable", "F");
+    return false;  
+  }
+}
+
+
+
+function GivenDecapperConfiguredWithHoldingNotAvailable()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica");
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+    
+  //Configure SH with Holding and Archive Area
+  if (!StepVerifySortPanelActive("HoldAndArchive"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("HoldAndArchive"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))// SH drawer config with Holding Area
+      return false;
+  }
+  
+  
+//Set Wastebin Threshold values    
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperStoppedHoldingNotAvailable")
+  var dictColumn=arrTestData[0];
+  
+  var FullThreshold               = dictColumn["Item"]("FullThreshold");
+  var AlmostFullThresholdPercent  = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var AlmostFullThreshold          = dictColumn["Item"]("AlmostFullThreshold");
+   
+  
+  if (!StepSetWasteBinThresholdlevelsInXML(FullThreshold,AlmostFullThresholdPercent))
+    return false;
+      
+   NetworkSuite["Variables"]["CapCount"]=0; 
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+  //Set Decap ALL = False
+   if(!StepConfigureDecapAllTubes("No"))
+   return false;
+   
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    if(!GivenAtellicaInitialized())
+      return false;   
+  
+//  
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  if(!StepInvokeAllApps())
+//    return false;
+      
+  return DecapperConfiguredAndStatus()
+}
+
+
+
+function WhenCappedSampleWithAnalyticalWorkLoaded()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedHoldingNotAvailable")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  // Update Fake Barcode File
+   if(!StepUpdateFakebarcodeReadingsFile(SampleID))
+    return false;
+    
+  //Create patient orders 
+  if(!StepCreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+  
+    
+      
+  //Place output tray/Holding/Archive Tray  
+  if(!StepPlaceOutputTray())
+  return false; 
+  
+//Fill the Holding Tray with capped samples.
+  if(!StepPlaceFullyPopulatedTray())
+  return false;
+  
+  
+  
+    
+  //Place Input Tray and place sample in tray
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+     
+// Load the Sample using the WEB UI   
+   return StepLoadSample()
+
+////Check whether the Sample appears in Sample List      
+//  if(!StepVerifyBatchSamplesProperty(SampleID,"CapStatus", "Capped", 10000))
+//    return false;
+//      
+//  return StepVerifyBatchSamplesProperty(arrSampleIDs,"CapStatus", "Decapped", 10000)
+}
+
+function ThenCappedSampleNotLoadedToDecapper()
+{
+
+//  NetworkSuite["Variables"]["SHScenario"] = "DecapperStoppedHoldingAvailable"; 
+//  NetworkSuite["Variables"]["DecapperScenario"] = "DecapperStoppedHoldingAvailable";
+//  InitializeMetaData();
+//  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedHoldingNotAvailable")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var ExpectedCapStatus =dictColumn["Item"]("CapStatus");
+
+  if(!StepSampleNotLoadedToDecapper(SampleID))
+    return false;
+ 
+
+  //return (StepWaitForSampleProperty(SampleID, "CapStatus", ExpectedCapStatus, 60000))
+   
+  if(!(StepWaitForSampleProperty(SampleID, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleID, "CapStatus", "Capped", 60000);
+  else
+    return true; 
+  
+}
+
+function ThenCappedSampleIsUnloadedToInputArea()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedHoldingNotAvailable")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedHoldingNotAvailable")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+   
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_02_DecapperStoppedHoldingNotAvailable", "F");
+    return false;  
+  }
+}
+
+function GivenTestSortAreaIsConfiguredWithDecapAllUnchecked()
+{
+  var arrDrawers = GetTestItemsByTestName(TestDataFile,"SortConfig","SortingButNoArchiving")
+  var sTestSortGroupName = arrDrawers[0]["Item"]("TestSortGroupName");
+  var sTestType = arrDrawers[0]["Item"]("TestType");
+  var sTestsInGroup = arrDrawers[0]["Item"]("TestsInGroup");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+    
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)  
+  
+  //Set Wastebin Threshold values  
+  //Set Capcount to 0
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinDefault")
+  var dictColumn=arrTestData[0];
+  
+  var strAlomstFullthresholdPercent    = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var strFullThresholdValue            = dictColumn["Item"]("FullThreshold");
+  
+  if(!StepSetWasteBinThresholdlevelsInXML(strFullThresholdValue,strAlomstFullthresholdPercent))
+    return false;
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+  //Decap all is not configured
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+  
+  //// SH Test sort panel verfiication - if not presents then Configure SH
+  if (!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddTestSortGroup(sTestType,sTestsInGroup,sTestSortGroupName, "Never"))
+      return false; 
+   
+    if(!StepAddPanel(PanelName))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SortingButNoArchiving"))
+      return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+  }
+
+  
+    
+//   if(!StepShutdownAllApps())
+//    return false;
+//   
+//  if(!StepInvokeAllApps())
+//    return false;
+      
+  return DecapperConfiguredAndStatus()
+
+}
+
+function WhenCappedSampleOnlySortingWorkOrderIsLoaded()
+{
+
+ //Create patient order sort test only and load sample
+ var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedSortingWorkOrderWithDecapAllUnchecked");
+  var dictColumn=arrTestData[0];
+//  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename");  
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  //return StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 10000)
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+
+}
+
+function ThenCappedSampleOnlySortingWorkOrderUnloadedToTestSortArea()
+{
+
+ //Verify sample gets unloaded to TestSort area
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedSortingWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  var SampleID             = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+    
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedSortingWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var booValue = StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", "10000")
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_04_DecapSortingWorkOrderWithDecapAllUnchecked", "F");
+    return false;  
+  }
+ 
+}
+
+function ThenCappedSampleOnlySortingWorkOrderIsNotLoadedToDecapper()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedSortingWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("SampleId");
+  
+  return StepSampleNotLoadedToDecapper(SampleId)
+  
+}
+
+function GivenSHDefaultPanelIsConfiguredWithDecapAllUnchecked()
+{     
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)  
+  
+  //Set Wastebin Threshold values  
+  //Set Capcount to 0
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"DecapperWasteBin","DecapperWasteBinDefault")
+  var dictColumn=arrTestData[0];
+  
+  var strAlomstFullthresholdPercent    = dictColumn["Item"]("AlmostFullThresholdPercent");
+  var strFullThresholdValue            = dictColumn["Item"]("FullThreshold");
+  
+  if(!StepSetWasteBinThresholdlevelsInXML(strFullThresholdValue,strAlomstFullthresholdPercent))
+    return false;
+    
+  if(!StepThresholdsAndCapCountInDecapper())
+    return false;
+    
+  //Decap all is not configured
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+  
+  //// SH Default panel verfiication - if not presents then Configure SH
+  if (!StepVerifySortPanelActive("Default"))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+   
+    if(!StepAddPanel("Default"))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))//Default SH drawer config
+      return false;
+  }
+
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+    if(!GivenAtellicaInitialized())
+      return false; 
+//    if(!StepShutdownAllApps())
+//    return false;
+//   
+//  if(!StepInvokeAllApps())
+//    return false;
+    
+  return DecapperConfiguredAndStatus()
+
+}
+
+function WhenCappedSampleNoWorkOrderIsLoaded()
+{
+
+   //load sample without work order
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedNoWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0];
+  
+  var SampleId             = dictColumn["Item"]("OutputSampleID");
+  
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 10000)
+
+
+}
+
+function ThenCappedSampleNoWorkOrderIsNotLoadedToDecapper()
+{
+
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedNoWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("OutputSampleID");
+  
+  return StepSampleNotLoadedToDecapper(SampleId)
+    
+}
+
+
+function ThenCappedSampleNoWorkOrderUnloadedToOutputNormal()
+{
+  //Verify sample gets unloaded to Output normal
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedNoWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  var SampleID             = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedNoWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("OutputSampleID");
+  var boolValue = StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", "10000")
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_05_DecapNoWorkOrderWithDecapAllUnchecked", "F");
+    return false;  
+  }
+}
+
+
+function WhenCappedSampleOnlyAnalyticalWorkOrderIsLoaded()
+{
+  //Create patient order analytical work only and load sample
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedAnalyticalWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+     //Reagent is available
+  if(!StepVerifyReagentAvailable(Assay))// testdata-------------------if reagents are not available samplelist shows reagents required
+    return false;
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+    
+  //return StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 10000)
+  if(!(StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000)))
+    return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000);
+  else
+    return true;
+
+}
+
+function ThenCappedSampleOnlyAnalyticalWorkOrderIsNotLoadedToDecapper()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedAnalyticalWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("OutputSampleID");
+  
+  return StepSampleNotLoadedToDecapper(SampleId)
+  
+}
+
+function ThenCappedSampleOnlyAnalyticalWorkOrderUnloadedToInputArea()
+{
+  //Verify sample gets unloaded to Output normal
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperStoppedAnalyticalWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0];
+  
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");
+  var SampleID             = dictColumn["Item"]("SampleIDs");
+  
+  if(!StepVerifySampleLocation(SampleID,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers))
+    return false;
+  
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperStoppedAnalyticalWorkOrderWithDecapAllUnchecked")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("OutputSampleID");
+  //var boolValue = StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", "10000")
+  var boolValue=StepWaitForSampleProperty(SampleId, "CapStatus", "DecapPending", 60000);
+  if(boolValue==false)
+  {
+    boolValue=StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 60000)
+  } 
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183555_03_DecapAnalyticalWorkOrderWithDecapAllUnchecked", "F");
+    return false;  
+  }
+
+}
+
+function GivenCapErrorSortAreaIsConfigured()
+{
+
+    arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "CapErrorSortConfig");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  
+  if (StepVerifySortPanelActive(PanelName))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+  
+  if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+    return false;
+  
+  if(!StepAddPanel(PanelName))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "CapErrorSortConfig"))
+    return false;
+  
+  if(!StepDisableDecapper())
+     return false;
+
+  if(!StepShutdownAnalyzer("SH"))
+      return false;
+    if(! StepShutDownDecapperSim())
+      return false;
+    if(!StepShutdownTrinidad())
+      return false;
+    if(!StepDisableDecapper())
+     return false;
+    if(!StepLaunchAnalyzer("SH"))
+      return false;
+    if(!LaunchAndLoadDecapper())
+      return false;
+     return StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile);
+} 
+
+function GivenAllAvailableDecappersAreDeactivated()
+{
+ if(CheckModuleExists("DECAPPER"))
+  {
+    if(!StepShutdownAnalyzer("SH"))
+      return false;
+    if(! StepShutDownDecapperSim())
+      return false;
+    if(!StepShutdownTrinidad())
+      return false;
+    if(!StepDisableDecapper())
+     return false;
+    if(!StepLaunchAnalyzer("SH"))
+      return false;
+    if(!LaunchAndLoadDecapper())
+      return false;
+     if(!StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile))
+      return false; 
+
+     return StepCheckDecapperNotExists();
+    }
+    return true;
+} 
+
+function WhenCappedSampleIsLoaded()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CapErrorSortPatOrder")
+var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+  
+  if(!StepVerifyReagentAvailable(Assay))
+    return false;
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  return StepLoadSample();
+} 
+
+function ThenTheSampleStatusWillBeCapError()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","CapErrorSortPatOrder");
+  var dictColumn=arrTestData[0];
+  var SampleId = dictColumn["Item"]("SampleId");
+  
+  return StepVerifyCapError(SampleId);
+} 
+
+function ThenSampleWillBeUnloadedToTheCapErrorSortArea()
+{
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","CapErrorSortPatOrder");
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT185694_01_SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured", "F");
+    return false;
+  }
+  
+} 
+
+//function SortingDestinationRequiresDecapping_DecapperModuleIsNotConfigured_TearDown()
+//{
+//  ProjPath = ProjectSuite["Path"];
+//  arrPath  = ProjPath["split"]("Atellica")
+//    var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+//    var DeploymentType = GetDeploymentType(sConfigPath);
+//    
+//      if(!StepShutdownAnalyzer("SH"))
+//      return false;
+//    if(!StepShutdownTrinidad())
+//      return false;
+//    if(!StepEnableDecapper())
+//     return false;
+//    if(!StepLaunchAnalyzer("SH"))
+//      return false;
+//    if(!StepLaunchAndLoginToTrinidad(TestDataFile, DeploymentType));
+//      return false; 
+//}
+
+//sprint 37
+
+function GivenDecapeprNotConfiguredAndHoldingArchivingWithCapErrorSortAreaIsConfigured()
+{
+
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchivingWithCapErrorSort");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  //// SH panel verfiication - if not presents then Configure SH
+  if(!StepVerifySortPanelActive(PanelName))
+  {  
+    if(!StepStopAnalyzer("SH"))
+      return false;
+    
+    if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+    return false;
+   
+    if(!StepAddPanel(PanelName))
+      return false;
+
+    if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchivingWithCapErrorSort"))
+      return false;
+    
+  }
+  
+  return GivenAllAvailableDecappersAreDeactivated();
+
+}
+
+function WhenCappedSampleIsLoadedForHoldingAndArchingWithCapErrorSortNotAvailable()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","HoldingAndArchivingWithCapErrorSort")
+  var dictColumn=arrTestData[0];
+
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleId             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var Priority             = dictColumn["Item"]("Priority");
+    
+  if(!StepUpdateFakebarcodeReadingsFile(SampleId))
+    return false;
+  
+  if(!StepCreatePatientOrder(Assay, SampleId, Specimen, Analyzer, Priority))
+    return false;
+    
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  if(!StepPlaceOutputTray())
+    return false;
+    
+  //Fill the Holding Tray with capped samples.
+  if(!StepPlaceFullyPopulatedTray())
+  return false;
+   
+  //Place Input tray and all capped tubes in input or other trays as mentioned in TubeInTray sheet in SH TestData 
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+  if(!StepLoadSample())
+    return false;
+  
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", 10000)
+
+}
+
+function ThenHoldingArchivingCapErrorSortNotAvailableCappedSampleIsNotLoadedToDecapper()
+{
+  var arrTestData=GetTestItemsByTestName(TestDataFile,"PatientOrder","HoldingAndArchivingWithCapErrorSort")
+  var dictColumn=arrTestData[0]; 
+
+  var SampleId             = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus         =dictColumn["Item"]("SampleStatus");
+  
+  if(!StepWaitForSampleStatus(SampleId, SampleStatus))
+    return false;
+    
+  return StepWaitForSampleProperty(SampleId, "CapStatus", "Capped", "10000")
+  
+}
+
+
+function ThenCappedSampleForHoldingAndArchingWithCapErrorSortNotAvailableUnloadedToInputTray()
+{
+//  //Verify sample gets unloaded to Input area
+var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","HoldingAndArchivingWithCapErrorSort");
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs            = dictColumn["Item"]("SampleIDs");
+  
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers)
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed","GWT183544",pmNormal,attr);
+    EnableDecapper_TearDown();
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_04_CapErrorSortDecapperNotConfiguredHoldingArchivingConfiguredButNotAvailable", "F");
+    return false;  
+  }
+
+
+}
+
+function GivenCapErrorSortGroupIsCreated()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "DecapTubesOption");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+    
+//  if(!StepIsTrinidadInitialized(DeploymentType))
+//    return false;
+  
+  ////Error sort group verfiication - if not presents then create an error sort group
+  if(StepVerifyAnErrorSortGroup(sSortGroupName))
+    return true;
+//  {  
+//    if(!StepStopAnalyzer("SH"))
+//      return false;
+//      
+//    return StepAddAnErrorSortGroupOnly(sErrorStatus,sSortGroupName)
+//  }
+//  else
+//    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddAnErrorSortGroupOnly(sErrorStatus,sSortGroupName))
+    return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+ return GivenAtellicaInitialized();
+
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+}
+
+function WhenExceptionSortAreaIsSelected()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "DecapTubesOption");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  
+  return StepVerifyAnErrorSortGroup(sSortGroupName)
+}
+
+
+function ThenVerifyDecapTubesDropdownNotPresentOnErrorSort()
+{
+  var boolValue = StepVerifyDecapTubesComboBoxErrorSortScreen()
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == false)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_01_DecapTubesConfigurationNotAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_01_DecapTubesConfigurationNotAvailable", "F");
+    return false;  
+  }
+
+}
+
+function GivenConfigureSHWithHoldingAndArchiving()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+//  if(!StepIsTrinidadInitialized(DeploymentType))
+//    return false;
+  
+  //// SH panel verfiication - if not presents then Configure SH
+  if(StepVerifySortPanelActive(PanelName))
+    return true;
+//  {  
+//    if(!StepStopAnalyzer("SH"))
+//      return false;
+//   
+//    if(!StepAddPanel(PanelName))
+//      return false;
+//
+//    return StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving")
+//  }
+//  else 
+//    return true;
+    
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel(PanelName))
+      return false;
+      
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchiving"))
+    return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+ return GivenAtellicaInitialized();
+
+//  if(!StepShutdownAllApps())
+//    return false;
+//   
+//  return StepInvokeAllApps();
+}
+
+function WhenHoldingAndArchivingPanelIsConfigured()
+{
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchiving");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  //// SH panel verfiication
+  return StepVerifySortPanelActive(PanelName)
+
+}
+
+function ThenVerifyDecapTubesDropdownNotPresentOnSHConfigurationScreen()
+{
+   var boolValue = StepVerifyDecapTubesComboBoxSHConfigurationScreen()
+  
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == false)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_02_DecapTubesConfigurationNotAvailable", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT187851_02_DecapTubesConfigurationNotAvailable", "F");
+    return false;  
+  }
+
+}
+
+
+function GivenDecapperNotConfigured()
+{
+if(CheckModuleExists("DECAPPER"))
+  {
+  if(!StepShutdownAnalyzer("SH"))
+  return false;
+    
+  if(!StepShutdownTrinidad())
+  return false;
+  
+  if(!StepDisableDecapper())
+  return false;
+  
+  if(!StepLaunchAnalyzer("SH"))
+  return false;
+  
+  if(!StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile))
+  return false; 
+
+  return StepCheckDecapperNotExists();
+  }
+
+ 
+ else
+ {
+ return true;
+}
+   }
+
+function GivenSHSetToDefault()
+{
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica");
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+    
+  //Configure SH with Default Sort Config
+  if (StepVerifySortPanelActive("Default"))
+  return true; 
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("Default"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "SampleParking"))
+    return false;
+  
+  if(!StepDisableDecapper())
+     return false;
+  
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+    
+  if(!StepShutDownDecapperSim())
+    return false;
+  
+  if(!StepShutdownTrinidad())
+    return false;
+   
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+    
+  if(! StepLaunchAndLoadDecapper())
+    return false;
+  
+  return StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile, DeploymentType);
+      
+ 
+}
+
+function WhenCappedSampleTubeIsLoaded()
+{
+   var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredCappedSample")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  // Update Fake Barcode File
+   if(!StepUpdateFakebarcodeReadingsFile(SampleID))
+    return false;
+    
+  //Create patient orders 
+  if(!StepCreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  //Place output tray/Holding/Archive Tray  
+  if(!StepPlaceOutputTray())
+  return false; 
+    
+  //Place Input Tray and place sample in tray
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+     
+// Load the Sample using the WEB UI   
+   return StepLoadSample()
+}
+
+
+function ThenCappedSampleTubeNotLoadedToDecapper()
+{
+ 
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredCappedSample")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var ExpectedCapStatus =dictColumn["Item"]("CapStatus");
+
+  return (StepWaitForSampleProperty(SampleID, "CapStatus", ExpectedCapStatus, 60000))
+}
+
+function ThenCappedSampleTubeUnloadedToSH()
+{
+
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredCappedSample")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperNotConfiguredCappedSample")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Message"]("Test Failed","GWT183544",pmNormal,attr);
+    EnableDecapper_TearDown();
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_01_DecapperNotConfiguredCappedSample", "F");
+    return false;  
+  }
+}
+
+function GivenSHSetToCapSortAndHoldingAvailable()
+{
+
+  arrDrawers = GetTestItemsByTestName(TestDataFile, "SortConfig", "HoldingAndArchivingWithCapErrorSort");
+  var sErrorStatus = arrDrawers[0]["Item"]("ErrorStatus");
+  var sSortGroupName = arrDrawers[0]["Item"]("SortGroupName");
+  var PanelName=arrDrawers[0]["Item"]("Panel");
+  
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica");
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+    
+  //Configure SH with Default Sort Config
+  if (StepVerifySortPanelActive("HoldingAndArchivingWithCapErrorSortPanel"))
+  return true; 
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+    
+  if(!StepAddAnErrorSortGroup(sErrorStatus,sSortGroupName))
+    return false;
+   
+  if(!StepAddPanel("HoldingAndArchivingWithCapErrorSortPanel"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchivingWithCapErrorSort"))
+    return false;
+  
+  if(!StepDisableDecapper())
+     return false;
+  
+  if(!StepShutdownAnalyzer("SH"))
+    return false;
+    
+  if(!StepShutDownDecapperSim())
+    return false;
+    
+  if(!StepShutdownTrinidad())
+    return false;
+   
+  if(!StepLaunchAnalyzer("SH"))
+    return false;
+    
+  if(! StepLaunchAndLoadDecapper())
+    return false;
+  
+  return StepLaunchAndLoginToTrinidadAvailableModule(TestDataFile, DeploymentType);
+ 
+}
+
+function WhenCappedSampleTubeLoaded()
+{
+   var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredWithCapErrorSortArea")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  // Update Fake Barcode File
+   if(!StepUpdateFakebarcodeReadingsFile(SampleID))
+    return false;
+    
+  //Create patient orders 
+  if(!StepCreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+  //Place output tray/Holding/Archive Tray  
+  if(!StepPlaceOutputTray())
+  return false; 
+    
+  //Place Input Tray and place sample in tray
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+     
+// Load the Sample using the WEB UI   
+   return StepLoadSample()
+}
+
+
+function ThenCappedSampleTubeIsNotLoadedToDecapper()
+{
+
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredWithCapErrorSortArea")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var ExpectedCapStatus =dictColumn["Item"]("CapStatus");
+
+  return (StepWaitForSampleProperty(SampleID, "CapStatus", ExpectedCapStatus, 60000))
+}
+
+function ThenCappedSampleTubeUnloadedToSortArea()
+{
+
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredWithCapErrorSortArea")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperNotConfiguredWithCapErrorSortArea")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Warning"]("Test Failed","GWT183544",pmNormal,attr);
+    EnableDecapper_TearDown();
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_02_DecapperNotConfiguredCappedSample", "F");
+    return false;  
+  }
+}
+
+
+
+function WhenCappedSampleTubeLoadedInSH()
+{
+   var arrDrawers = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredWithNoCapErrorSortArea")
+  var dictColumn=arrDrawers[0]
+  var Assay                = dictColumn["Item"]("Assay");
+  var SampleID             = dictColumn["Item"]("SampleId");
+  var Specimen             = dictColumn["Item"]("Specimen");
+  var Analyzer             = dictColumn["Item"]("Analyzer");
+  var SampleLocation       = dictColumn["Item"]("SampleLocation");
+  var Priority             = dictColumn["Item"]("Priority");
+  var SampleAttribute      = dictColumn["Item"]("SampleAttributes");
+  var FakeBarCodeFilename  = dictColumn["Item"]("FakeBarCodeFilename"); 
+  var SpecifyRangeBy       = dictColumn["Item"]("SpecifyRangeBy"); 
+  var SampleCount          = dictColumn["Item"]("SampleCount"); 
+   
+  
+  // Update Fake Barcode File
+   if(!StepUpdateFakebarcodeReadingsFile(SampleID))
+    return false;
+    
+  //Create patient orders 
+  if(!StepCreatePatientOrder(Assay, SampleID, Specimen, Analyzer, Priority))
+    return false;
+   
+  if(!StepLaunchDVSinSH())
+    return false;
+    
+    //To simulate Cap Sort area not available  
+  if(!StepPlaceFullyPopulatedTray())
+    return false;
+    
+  //Place output tray/Holding/Archive Tray  
+  if(!StepPlaceOutputTray())
+  return false; 
+    
+  //Place Input Tray and place sample in tray
+  if(!StepPlaceSample("Capped"))
+    return false;
+    
+     
+// Load the Sample using the WEB UI   
+   return StepLoadSample()
+}
+
+
+function ThenCappedSampleTubeIsNotSentToDecapper()
+{
+
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredWithNoCapErrorSortArea")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var ExpectedCapStatus =dictColumn["Item"]("CapStatus");
+
+  return (StepWaitForSampleProperty(SampleID, "CapStatus", ExpectedCapStatus, 60000))
+}
+
+function ThenCappedSampleTubeUnloadedToHoldingArea()
+{
+
+
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"PatientOrder","DecapperNotConfiguredWithNoCapErrorSortArea")
+  var dictColumn=arrTestData[0];
+  var SampleID = dictColumn["Item"]("OutputSampleID");
+  var SampleStatus=dictColumn["Item"]("SampleStatus");
+  var aSampleStatus=SampleStatus["split"](";");
+  var SampleLocation=dictColumn["Item"]("SampleLocation")
+  
+  
+  var arrTestData = GetTestItemsByTestName(TestDataFile,"SHTraysEmptySlots","DecapperNotConfiguredWithNoCapErrorSortArea")
+  var dictColumn=arrTestData[0];
+  var TrayType             = dictColumn["Item"]("TrayType");
+  var DrawerNumber         = dictColumn["Item"]("DrawerNumber");
+  var DrawerZone           = dictColumn["Item"]("DrawerZone");
+  var DrawerPanels         = dictColumn["Item"]("DrawerPanels");
+  var RowNumbers           = dictColumn["Item"]("RowNumbers");    
+  var SampleIDs           = dictColumn["Item"]("SampleIDs");
+   
+   //Verify sample unloading location
+  
+  if(!StepWaitForSampleStatus(SampleID, aSampleStatus[0]))
+    return false;
+    
+ if(!StepVerifySampleLocationOnTrack(SampleID, SampleLocation))
+    return false;
+   
+  var boolValue = StepVerifySampleLocation(SampleIDs,TrayType,DrawerNumber,DrawerZone,DrawerPanels,RowNumbers) 
+    
+  var attr = Log["CreateNewAttributes"]();
+  attr["Bold"] = true;
+  attr["Italic"] = true;
+  if(boolValue == true)
+  {
+    attr["FontColor"] = clGreen
+    Log["Message"]("Test Passed",null,pmNormal,attr);
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "P");
+    return true;
+  }
+  else
+  {
+    attr["FontColor"] = clRed
+    Log["Warning"]("Test Failed","GWT183544",pmNormal,attr);
+    EnableDecapper_TearDown();
+    ReportTestStatusToResultXML("Cap tube handling with Decapper", "GWT183544_03_DecapperNotConfiguredCappedSample", "F");
+    return false;  
+  }
+}
+
+function EnableDecapper_TearDown()
+{
+  Log["AppendFolder"]("TearDown-Enabling Decapper Module");   
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+    var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+    var DeploymentType = GetDeploymentType(sConfigPath);
+      if(!StepEnableDecapper())
+       return false;  
+        
+    if(!StepShutdownAllApps())        //Shutdown and restart is required
+      return false;
+   
+   return StepInvokeAllApps();
+      
+}
+
+function StartDecapper_TearDown()
+{
+  return StartAnalyzer("DECAPPER")
+}
+
+function GivenAtleastOneDecapperIsConfiguredWithHoldingAndArchiving()
+{
+   //Verify decapper is configured
+  if(!StepDetectDecapperConfiguration())
+    return false;
+  
+  //Verify decapper status
+  if(!StepVerifyDecapperStatus())
+    return false;
+     
+  ProjPath = ProjectSuite["Path"];
+  arrPath  = ProjPath["split"]("Atellica")
+  var sConfigPath =  arrPath[0] + "TestcaseLayer\\Initialization\\TestData\\BuildInstrumentsInfo.xml";
+  var DeploymentType = GetDeploymentType(sConfigPath)
+  
+  //StepActivateSortPanel("Default");
+  if (StepVerifySortPanelActive("HoldAndArchiveGWT183545"))
+    return true;
+  
+  if(!StepStopAnalyzer("SH"))
+    return false;
+   
+  if(!StepAddPanel("HoldAndArchiveGWT183545"))
+    return false;
+
+  if(!StepPerformSortConfiguration(TestDataFile, "SortConfig", "HoldingAndArchivingGWT183545"))
+      return false;
+      //
+  if(!StepConfigureDecapAllTubes("No"))
+    return false;
+    
+    if(!StepStartAnalyzer("SH"))
+      return false;
+    
+ if(!GivenAtellicaInitialized())
+    return false;
+  
+//   if(!StepShutdownAllApps())
+//    return false;
+//   
+//  if(!StepInvokeAllApps())
+//    return false;
+     
+  return StepIsHoldingAreaConfigured();
+
+}
+function TearDownSHReset()  //This function to handle Drawer lock issue during CI execution
+{ 
+// RestartSHnPCC()
+  if(!StepShutdownAllApps())
+    return false;
+    
+  return StepInvokeAllApps()
+ }

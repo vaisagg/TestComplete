@@ -1,0 +1,2503 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT CommonUtilities
+
+
+//Project file Paths
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra")
+var IoTPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\IoT";
+var SimulationPath = "C:\\Siemens\\ARM\\Emulator\\";
+     
+/////////////////**************** Loading Hydra Reagents ***************************////////
+
+function LaunchDiagnosticsClient()
+{
+  try
+  {    
+      
+    
+    //Initialize
+    var obj = new ActiveXObject("WScript.shell")    
+    //Project file Paths
+    var ProjPath = ProjectSuite["Path"];
+    var arrPath  = ProjPath["split"]("Hydra")
+    var testDataPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\AppConfigFiles";
+    
+    //Open log
+    Log["AppendFolder"]("Launch Hydra Application :: Launch the DiagnosticsClient Application");
+        
+    //Start Diagnostics Client
+    Log["Enabled"] = false;
+    obj["Run"](testDataPath+"\\Start_DiagnosticsClient.bat")
+    var diagClientObj = Sys["WaitProcess"]("DiagnosticsClient", 240000);
+    diagClientObj["WaitProperty"]("Visible", true, 10000);    
+    Log["Enabled"] =true;  
+
+    //Verify Diagnostics Client Application Launched
+    if(VerifyObjectExists(diagClientObj)) 
+    {
+      //Get control names
+      var btnEnterDiagnostics = GetAutomationIDControl("MechanismSequences","btnEnterDiagnostics");
+      var counter = 0;
+      while(!btnEnterDiagnostics["Exists"] && counter <= 50) 
+      { 
+        aqUtils["Delay"](2000, "Wait for the diagnostics client app to be active");
+        diagClientObj["Refresh"]();
+        counter = counter + 1;
+        
+        btnEnterDiagnostics = GetAutomationIDControl("MechanismSequences","btnEnterDiagnostics");
+        if(btnEnterDiagnostics["Exists"])
+        {
+          break;
+        }
+      }
+      
+      if(btnEnterDiagnostics["Exists"])
+      {
+        Log["Message"]("Diagnostics Client Application session is initialized");
+        Log["PopLogFolder"]();
+        return true;
+      } else {
+        Log["Error"]("Failed to activate the diagnsotics client screen waiting after 10 mins");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    } else {
+      Log["Message"]("Diagnostics Client Application session has not initialized yet");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch (e)
+  {
+    Log["Enabled"] =true;  
+    Log["Error"]("Exception : ", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//*************************************************************************
+//*  FunctionName : LoadingHydraReagents(ReagentType,MechName,SeqName)
+//*  Description: Loading Hydra Reagents
+//*  Input: ReagentType,MechName,SeqName
+//*  Output: Boolean
+//*  Date of Creating: 27 Jan 2019
+//*  Created By: Shahana
+//*************************************************************************
+function LoadingHydraReagents(ReagentType,MechName,SeqName)
+{
+  try
+  {      
+      //Open Log
+      Log["AppendFolder"]("Loading Hydra Reagents")   
+      
+      //Create Simulation Folder  
+      if(!aqFileSystem["Exists"](SimulationPath))
+      {
+        if(aqFileSystem["CreateFolder"](SimulationPath) !=0)
+        {
+            Log["Error"]("Unable to create folder "+SimulationPath)
+            Log["PopLogFolder"]();
+            return false;
+        }
+        else
+            Log["Message"]("Created Simulation folder") 
+      } 
+  
+      //Copy AnalyticalDoorStatus.txt to simulation folder
+      aqFile["Copy"](IoTPath+"\\AnalyticalDoorStatus.txt",SimulationPath,false)  
+      Log["Checkpoint"]("Copied Analytical door status file to simulation folder")
+      
+      //If Reagent type is IM Primary
+      if(ReagentType=="IMPrimary")
+      {       
+        //Copy IA primary barcode text file to simulation folder
+        aqFile["Copy"](IoTPath+"\\PrimaryBarcodes.txt",SimulationPath,false) 
+        Log["Checkpoint"]("Copied IM primary barcode file to simulation folder")
+        
+        //sending files to IOT
+        if(!ReagentLoadforIM())
+        {
+          Log["Error"]("Failed to send IM primary barcode file");
+          Log["PopLogFolder"]();
+          return false;
+        }      
+      }
+      
+      //If Reagent type is IM Ancillary
+      if(ReagentType=="IMAncillary")
+      { 
+        //Copy IM ancillary barcode text file to simulation folder
+        aqFile["Copy"](IoTPath+"\\AncillaryBarcodes.txt",SimulationPath,false) 
+        Log["Checkpoint"]("Copied IM ancillary barcode file to simulation folder")
+        
+        //sending files to IOT
+        if(!ReagentLoadforIMAncillary())
+        {
+          Log["Error"]("Failed to send IM ancillary barcode file");
+          Log["PopLogFolder"]();
+          return false;
+        } 
+
+      }
+      
+      //If Reagent type is CC
+      if(ReagentType=="CH")
+      {
+        //Copy CC barcode text file to simulation folder
+        aqFile["Copy"](IoTPath+"\\CHInputBarcodes.txt",SimulationPath,false)
+        Log["Checkpoint"]("Copied CH barcode file to simulation folder")
+        
+        //sending files to IOT
+        if(!ReagentLoadforCH())
+        {
+          Log["Error"]("Failed to send CH barcode file");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](10000,"Loading reagents")
+      
+      //Enter Diagnostic mode
+      if(!ClickOnEnterDiagnostics())
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      aqUtils["Delay"](10000,"Wait for Enter Diagnostics")
+      
+      //Running sequences in Diagnostic
+      if(!ExecutePredefinedSequenceRT(MechName,SeqName))
+      {
+          Log["Error"]("Diagnostics Sequence Execution Failed")
+          Log["PopLogFolder"]();
+          return false;
+      }
+      
+      //Exit Diagnostic mode
+      if(!ClickOnExitDiagnostics())
+      {
+          Log["PopLogFolder"]();
+          return false;
+      }
+      aqUtils["Delay"](10000,"Wait for Exit Diagnostics")
+      
+      Log["Message"]("Reagents sent to IOT and scanned in diagnostics successfully");
+      
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+    
+  //log close 
+  Log["PopLogFolder"]();
+  return true;  
+  
+}
+
+//******************************************************************
+//                Common Reusable Functions
+//******************************************************************
+
+function StartDiagnosticsService()
+{
+    var serviceName="DiagnosticsWindowsService"     
+    var servicestatus=StartService(".",serviceName)
+    
+    if(servicestatus==true)
+    {
+      Log["CheckPoint"]("DiagnosticsWindowsService started successfully")
+        // aqUtils["Delay"](60000,"Waiting after starting the DiagnosticsWindowsService")
+      return true;
+    }
+    else
+    {
+      Log["Error"]("DiagnosticsWindowsService is not started")
+      return false;
+    }
+} 
+
+function StartServiceAndInitializeDiagnosticsClient()
+{
+  Log["AppendFolder"]("Starting service and initialize Diagnostics")
+
+    serviceName="DiagnosticsWindowsService"
+
+    var servicestatus=StartService(".",serviceName)
+	if(servicestatus==false)
+    {
+      aqUtils["Delay"](60000,"Waiting for Diagnostic service to start");
+      var servicestatus=StartService(".",serviceName);
+    }
+	
+    if(servicestatus==true)
+    {
+      Log["CheckPoint"]("DiagnosticsWindowsService started successfully")
+      aqUtils["Delay"](60000,"Waiting after starting the DiagnosticsWindowsService")
+    }
+    else
+    {
+      Log["Error"]("DiagnosticsWindowsService is not started")
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+  
+    //Initialize Diagnostics and enterig into Diagnostics 
+    if(!InitializeDiagnostics())
+      return false;    
+    Log["Enabled"]=false
+    
+    try{
+    if(Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Connection_Issue")["UIAObject"]("OK")["Exists"])
+    {
+      Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Connection_Issue")["UIAObject"]("OK")["Click"]()
+      aqUtils["Delay"](1000)
+      Sys["Process"]("DiagnosticsClient")["Terminate"]();
+      
+      serviceName="DiagnosticsWindowsService"
+      var servicestatus=StartService(".",serviceName)
+    if(servicestatus==true)
+    {
+      Log["Enabled"]=true
+      Log["CheckPoint"]("DiagnosticsWindowsService started successfully")
+      aqUtils["Delay"](60000,"Waiting after starting the DiagnosticsWindowsService")
+      if(!InitializeDiagnostics())
+      { 
+      return false; 
+      }  
+    }
+    else{
+      Log["Enabled"]=true
+      Log["Error"]("DiagnosticsWindowsService is not started");
+      return false; 
+      }
+    } 
+    
+    }catch(e)
+     {
+       Log["Enabled"]=true;
+       return false; 
+     } 
+     Log["Enabled"]=true
+     return true;
+} 
+
+
+//*************************************************************************
+//*  FunctionName : StopDiagnosticsService
+//*  Description: StopDiagnosticsService
+//*  Input: na
+//*  Output: Boolean
+//*  Example: StopDiagnosticsService()
+//*  Date of Creating: 25 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function StopDiagnosticsService()
+{
+    try
+    {
+      //Close Diagnostics App
+      Log["AppendFolder"]("Close Diagnostics App")
+      Log["Enabled"] =false
+      if(Sys["process"]("DiagnosticsClient")["Exists"]){
+        Log["Enabled"] =true;
+        Sys["process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["Close"]()
+        Log["Checkpoint"]("Diagnostics Client closed sucessfully")}
+      else{
+          Log["Enabled"] =true;
+          Log["Checkpoint"]("Diagnostics Client is already closed")}
+      Log["PopLogFolder"]()
+      
+      //Enable Log
+      Log["Enabled"] =true;
+      
+      //Stop Diagnostics Service
+      Log["AppendFolder"]("Stopping Diagnostics Service")
+      serviceName="DiagnosticsWindowsService"
+      computerName ="."
+
+      var service = GetService(computerName, serviceName);
+      if (service == null) 
+      {
+        Log.Warning("The " + serviceName + " service on the " + computerName +
+        " computer was not found");
+      }
+      else
+        service.StopService();
+        
+      //Verify
+      WMI["ComputerName"] = computerName
+      intStartTime = aqDateTime.Time();
+      do
+      {
+        intTimeElapsed = aqDateTime.Time() - intStartTime;
+      } while(WMI["GetServiceState"](serviceName) != "Stopped" && intTimeElapsed < 15000)
+    
+      if(WMI["GetServiceState"](serviceName) == "Stopped"){
+        Log["Checkpoint"]("Diagnostics service Stopped sucessfully")
+        Log["PopLogFolder"]()
+        return true;}
+      else{
+        Log["PopLogFolder"]()
+        return false;}
+   
+    }catch(e){
+      Log["Enabled"]=true;
+      return false; 
+    } 
+} 
+
+/////////////////**************** Diagnostics functions ***************************////////
+
+//*************************************************************************
+//*  FunctionName : SelectMechanism(MechanismName)
+//*  Description: Select Mechanism
+//*  Input: Mechanism Name
+//*  Output: Boolean
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function SelectMechanism(MechanismName)
+{
+ try { 
+   Log["AppendFolder"]("Selecting "+MechanismName+" mechanism from the list")
+ 
+     //Selecting Mechanism name from Mechanism list
+      var pArr = ["ClassName","ObjectIdentifier"];
+      //var pArrValue = ["ListView","MechanismList"];
+	   var pArrValue = ["ListView","ListView"];
+      var pArr1 = ["ClassName","ObjectIdentifier"];
+      var pArrValue1 = ["TextBlock",MechanismName+"*"];
+      var mechanism= Sys["Find"](pArr,pArrValue,200);
+      var SelectedMechanism= mechanism["Find"](pArr1,pArrValue1,200);
+      if(SelectedMechanism["Exists"])
+      {
+       SelectedMechanism["ScrollIntoView"]();
+       SelectedMechanism["Click"]();   
+       Log["PopLogFolder"]();   
+       return true
+      }
+ }catch(e){
+        Log["Error"]("Exception :"+e["Description"]);
+        Log["PopLogFolder"]();
+        return false;
+        }
+}
+
+//*************************************************************************
+//*  FunctionName : SelectComboBoxValueAndRunSequence(Sequence)
+//*  Description: Select ComboBoxValue and Run the Sequence
+//*  Input: Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function SelectComboBoxValueAndRunSequence(Sequence)
+{
+  try{    
+    //Selecting sequence from combo box
+     //Open Log
+        Log["AppendFolder"]("Selecting sequence from combo box and clicking on RunSequence button")
+         
+        //var SequenceComboBox = GetControl("MechanismSequences", "cmbAvailableSequence");
+		//var SequenceComboBox = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("ComboBox");
+    var SequenceComboBox = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("ScrollViewer", 2)["UIAObject"]("ComboBox");
+        SequenceComboBox["Click"]();
+        aqUtils["Delay"](500)
+        SequenceComboBox["Expand"]();
+        //SequenceComboBox["MouseWheel"](-105);
+        aqUtils["Delay"](3000)  
+       // eval(SequenceComboBox["UIAObject"](Sequence))["ScrollIntoView"]();
+       SequenceComboBox["MouseWheel"](410);
+          SequenceComboBox["MouseWheel"](410);
+		if(Sequence=="IM_Reagent_Scan_Primary"||Sequence=="IM_Reagent_Scan_Ancillary")
+        {
+          SequenceComboBox["MouseWheel"](-410);
+          SequenceComboBox["MouseWheel"](-410);
+        }
+        aqUtils["Delay"](3000)  
+        eval(SequenceComboBox["UIAObject"](Sequence))["Click"]()   
+        //var objctrl = GetControl("MechanismSequences", "btnRunSequence");
+		//var objctrl = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Run_Sequence")
+    var objctrl =Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("ScrollViewer", 2)["UIAObject"]("Run_Sequence")
+        ClickControl(objctrl);
+        Log["PopLogFolder"]();
+        return true
+        
+  }catch(e){
+        Log["Error"]("Exception :"+e["Description"]);
+        Log["PopLogFolder"]();
+        return false;
+        }
+}
+
+
+//*************************************************************************
+//*  FunctionName : InitializeDiagnostics()
+//*  Description: InitializeDiagnostics
+//*  Input: na
+//*  Output: Boolean
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function InitializeDiagnostics()
+{
+  try
+    {   //Open Log
+        Log["AppendFolder"]("Launch Diagnostics Client Window")
+        var res;
+        
+        var diagnosticsPath = "explorer.exe shell:appsFolder\\DiagnosticsClient_byy8dcmdf21wa!App";
+        var shellobj = Sys["OleObject"]("WScript.Shell");
+        //Kill the Diagnostics window if exists
+        if (Sys["WaitProcess"]("DiagnosticsClient")["Exists"])
+        {
+            Sys["Process"]("DiagnosticsClient")["Terminate"]();
+            Log["Message"]("Terminated the existing DiagnosticsClient window");
+            aqUtils["Delay"](1000)
+        }    
+        shellobj["Run"](diagnosticsPath);
+        var DiagClient = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient");
+         // Checks whether DiagnosticsClient has started successfully
+        if (DiagClient ["Exists"]) 
+        {
+            Log["Checkpoint"]("DiagnosticsClient has been started successfully")
+            DiagClient["Maximize"]()
+            res = true
+        }
+        else
+        {
+            Log["Error"]("DiagnosticsClient hasn't been started");
+            res = false           
+        }        
+        aqUtils["Delay"](3000)
+        
+    }catch(e){
+        Log["Error"]("Exception :"+e["Description"]);
+        Log["PopLogFolder"]();
+        return false;
+    }  
+    Log["PopLogFolder"]();
+    return res;
+}
+
+//*************************************************************************
+//*  FunctionName : ClickLoadDataCheckbox()
+//*  Description: Click on Load data checkbox
+//*  Input: na
+//*  Output: Boolean
+//*  Date of Creating: 13 Feb 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function ClickLoadDataCheckbox()
+{
+  try
+  {     
+        Log["AppendFolder"]("Scenarion : Click on Load Data button in Diagnostics Client")
+        
+        //Click on Mechanism Tab:
+        var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+        var Mechanism_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Mechanism_Sequences");   
+        Mechanism_tab["Click"]();
+        aqUtils["Delay"](1000)
+        
+        //Click on Load Data :Bhawya -13 Feb 2019
+        var pArr = ["ClassName","ObjectIdentifier"];
+        var pArrValue = ["CheckBox","Load_Data"];
+        var LoadDataCheckBx= Sys["Find"](pArr,pArrValue,200);
+      
+        if(LoadDataCheckBx["Exists"])
+        {
+          Log["AppendFolder"]("Check Load Data Checkbox")
+          LoadDataCheckBx["Click"]();   
+          Log["PopLogFolder"]()
+          return true;
+        }
+        else
+        {
+          Log["Error"]("Load Data Checkbox unavailable in Diagnostics -Sequences")
+          Log["PopLogFolder"]()
+          return false;
+        }       
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception : "+exp.description) ;
+    return false;
+  }
+}
+
+
+//*************************************************************************
+//*  FunctionName : ClickOnEnterDiagnostics()
+//*  Description: Click on EnterDiagnostics button
+//*  Input: na
+//*  Output: Boolean
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Ramitha K
+//*  Modified By: Shahana (14 March 2019)
+//*************************************************************************
+function ClickOnEnterDiagnostics()
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Clicking on Enter Diagnostics button")
+                             
+        //Get control names
+        var btnEnterDiagnostics = GetControl("MechanismSequences","btnEnterDiagnostics");
+        //var btnExitDiagnostics = GetControl("MechanismSequences","btnExitDiagnosticsARM"); 
+        
+        if(btnEnterDiagnostics ["Enabled"]) 
+        {      
+            ClickControl(btnEnterDiagnostics);
+            
+            aqUtils["Delay"](25000,"Wait for Enter Diagnostics"); //Modified by Shrutika - increased wait time
+            
+            var btnExitDiagnostics = GetControl("MechanismSequences","btnExitDiagnosticsARM"); 
+            if(btnExitDiagnostics["Enabled"])
+            {
+              Log["Checkpoint"]("System is entered into Diagnostics state");
+              Log["PopLogFolder"]();
+              return true;
+            }
+            else
+            {
+              Log["Error"]("Failed to Enter Diagnostics");
+              Log["PopLogFolder"]();
+              return false;
+            }
+        }
+        else
+        {
+          var btnExitDiagnostics = GetControl("MechanismSequences","btnExitDiagnosticsARM");
+           if(btnExitDiagnostics["Enabled"])
+           {
+              Log["Checkpoint"]("System is already in Diagnostics state");
+              Log["PopLogFolder"]();
+              return true;
+           }        
+        }                        
+    }
+    catch(e)
+    {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+}
+
+//*************************************************************************
+//*  FunctionName : ClickOnExitDiagnostics()
+//*  Description: Click on Exit Diagnostics button
+//*  Input: na
+//*  Output: Boolean
+//*  Date of Creating: 04 Dec 2018
+//*  Created By: Shahana
+//*  Modified By : Shahana (14 March 2019)
+//*************************************************************************
+function ClickOnExitDiagnostics()
+{
+  try
+    {
+        //Click on Exit Diagnostics Button
+        Log["AppendFolder"]("Clicking on Exit Diagnostics button")
+        
+        //Get control names
+        var btnExitDiagnostics = GetControl("MechanismSequences","btnExitDiagnosticsARM");
+        
+        if(btnExitDiagnostics ["Enabled"]) 
+        {           
+          //Click on exit diagnostic button
+          ClickControl(btnExitDiagnostics);
+          
+          aqUtils["Delay"](10000,"Wait for Exit Diagnostics");
+          
+          var btnEnterDiagnostics = GetControl("MechanismSequences","btnEnterDiagnostics");
+          //verify if enter diagnostic button is enabled
+          if(btnEnterDiagnostics["Enabled"])
+          {
+            Log["Checkpoint"]("System exited from Diagnostics state");
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Error"]("Failed to Exit Diagnostics");
+            Log["PopLogFolder"]();
+            return false;
+          }
+        }
+        else
+        {
+          var btnEnterDiagnostics = GetControl("MechanismSequences","btnEnterDiagnostics");
+          if(btnEnterDiagnostics["Enabled"])
+          {
+            Log["Checkpoint"]("System has already exited from Diagnostics state");
+            Log["PopLogFolder"]();
+            return false;
+          }        
+        }                        
+    }
+    catch(e)
+    {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+}
+
+
+//*************************************************************************
+//*  FunctionName : ExecutePredefinedSequence(MechName,SeqName,ReagentType)
+//*  Description: Execute Predefined Sequence
+//*  Input: MechName,SeqName, Reagent type
+//*  Output: Boolean
+//*  Date of Creating: 10 Oct 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function ExecutePredefinedSequence(MechName,SeqNames,ReagentType)
+{
+  try
+    {
+         //Open Log
+        Log["AppendFolder"]("Executing "+MechName+" sequences") 
+        
+         //Click on Mechanism Tab
+        var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+        var Mechanism_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Mechanism_Sequences");   
+        Mechanism_tab["Click"]();
+        
+        var MechanismList = GetControl("MechanismSequences", "lstMechanismList");
+    
+        //Selecting Mechanism from the list 
+        SelectMechanism(MechName)
+        
+        var arrSequenceNames=SeqNames["split"](";") ;        
+        for(var i=0;i<arrSequenceNames["length"];i++)
+        {
+            SelectComboBoxValueAndRunSequence(arrSequenceNames[i])           
+            var res=VerifySequenceStatus(arrSequenceNames[i])
+            if (!res)
+            {
+                Log["Error"]("Sequence execution is failed") 
+                Log["PopLogFolder"]();
+                return false
+           }              
+        }              
+                      
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //log close 
+    Log["PopLogFolder"]();
+    return true
+}
+
+//*************************************************************************
+//*  FunctionName : VerifySequenceStatus(SequenceName)
+//*  Description: Verify Sequence Status
+//*  Input: SequenceName
+//*  Output: Boolean
+//*  Date of Creating: 09 Oct 2018
+//*  Created By: Ramitha K
+//*************************************************************************
+function VerifySequenceStatus(SequenceName)
+{
+ try{
+  
+  Log["AppendFolder"](" Verifying sequence in SequenceRequestHistory Grid") 
+   if (Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("SequenceRequestHistoryGrid")["RowCount"]>0)
+   {
+        Log["Enabled"]=false
+        for(z=0 ;z<2;z++){ 
+          try{
+            if (Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("SequenceRequestHistoryGrid")["UIAObject"]("PART_ScrollViewer")["UIAObject"]("DataGridCellsPanel")["UIAObject"]("Successful")["UIAObject"]("Successful")["Exists"])
+            {
+              break;
+            } 
+          }catch(e){      
+           aqUtils["Delay"](1000)
+            continue;
+          } 
+        } 
+        Log["Enabled"]=true
+        
+        var pArr = ["ClassName","AutomationId"];
+        var pArrValue = ["DataGridCellInfo","RadDataGridCell_Cell_0_4"];
+        var pArr1 = ["ClassName","Text"];
+        var pArrValue1 = ["TextBlock","Successful"];
+
+        var row= Sys["Find"](pArr,pArrValue,200);  
+        var sstatus= row["Find"](pArr1,pArrValue1,200);
+  
+        if(sstatus["Exists"])
+        {
+          Log["CheckPoint"](SequenceName+" status is Successful")
+          Log["PopLogFolder"](); 
+          return true
+        }
+        else
+        {
+          Log["Error"](SequenceName+" status is not Successful")
+          Log["PopLogFolder"]();
+          return false
+        }
+  }else{
+      Log["Error"]("No sequences present in 'SequenceRequestHistoryGrid'")
+      Log["PopLogFolder"]();
+      return false
+  }
+ 
+  }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+   
+} 
+
+/////////////////**************** IoT functions ***************************////////
+  function LoadReagent(reagent)
+  {
+   // Start DML on IOT
+  //startIoT();
+ 
+     switch(reagent)
+    {
+      case "IMPrimary" : 
+      var sStatus=ReagentLoadforIM();
+      return sStatus;
+      break;
+      
+      case "IMAncillary" : 
+      var sStatus=ReagentLoadforIMAncillary();
+      return sStatus;
+      break;
+    
+      case "CH" :
+      var sStatus=ReagentLoadforCH();
+      return sStatus;
+      break;
+      default :   return false;
+    } 
+  } 
+
+function ReagentLoadforIM()
+{
+ try {
+  var fileToUpdate = "C:\\data\\deploy\\simulation\\AnalyticalDoorStatus.txt";
+  
+   // Open text file
+  var openedTextFile = aqFile["OpenTextFile"](fileToUpdate, aqFile["faRead"], aqFile["ctANSI"]);
+  
+  // Read the contents of file
+  var contents = openedTextFile["ReadAll"]();
+  
+  // Replace the text for IM to 1 to open the door
+  var updatedString = aqString["Replace"](contents,"0 IAPrimaryReagentDoor", "1 IAPrimaryReagentDoor");
+
+  // Write updated string to text file
+  aqFile["WriteToTextFile"](fileToUpdate, updatedString, aqFile["ctANSI"], true);
+  Log.Message("Door is Opened for IM");
+  
+    // Send Analytical door file to IOT
+  if(SendAnalyticaldoortxt())
+  {
+    return false;
+  } 
+  aqUtils["Delay"](15000);
+  
+  // Send IM Primary reagent file to IOT
+  Sendprimaryreagentxt();
+  aqUtils["Delay"](15000);
+   Log.Message("IM Reagent file is sent to IOT");
+
+  // Replace the text for IM to 0 to close the door
+  var updatedString = aqString["Replace"](contents,"1 IAPrimaryReagentDoor", "0 IAPrimaryReagentDoor");
+  // Write updated string to text file
+  aqFile["WriteToTextFile"](fileToUpdate, updatedString, aqFile["ctANSI"], true);
+  Log.Message("Door is closed for IM ");
+  
+  // Send Analytical door file to IOT
+  SendAnalyticaldoortxt();
+  aqUtils["Delay"](15000);
+  
+  return true;
+  }
+  catch(exp){
+      Log["Error"](exp["description"]);
+      return false;}
+}
+
+function ReagentLoadforCH()
+{
+ try
+ {
+  var fileToUpdate = "C:\\data\\deploy\\simulation\\AnalyticalDoorStatus.txt";
+  
+   // Open text file
+  var openedTextFile = aqFile["OpenTextFile"](fileToUpdate, aqFile["faRead"], aqFile["ctANSI"]);
+  
+  // Read the contents of file
+  var contents = openedTextFile["ReadAll"]();
+  
+  // Replace the text for CH to 1 to open the door
+  var updatedString = aqString["Replace"](contents,"0 CCAutoLoaderStationDoor", "1 CCAutoLoaderStationDoor");
+  
+  // Write updated string to text file
+  aqFile["WriteToTextFile"](fileToUpdate, updatedString, aqFile["ctANSI"], true);
+  Log.Message("Door is opened for CH ");
+  
+  
+  // Send Analytical door file to IOT
+ SendAnalyticaldoortxt();
+  aqUtils["Delay"](17000);
+  
+  // Send CH Primary reagent file to IOT     
+  SendCHreagentxt();
+  aqUtils["Delay"](17000);
+  Log.Message("CH Reagent file is sent to IOT");
+    
+  // Replace the text for CH to 1 to open the door
+  var updatedString = aqString["Replace"](contents,"1 CCAutoLoaderStationDoor", "0 CCAutoLoaderStationDoor");
+  
+  // Write updated string to text file
+  aqFile["WriteToTextFile"](fileToUpdate, updatedString, aqFile["ctANSI"], true);
+  Log.Message("Door is closed for CH ");
+  
+  // Send Analytical door file to IOT
+  SendAnalyticaldoortxt();
+  aqUtils["Delay"](17000);
+  return true;
+  }
+  catch(exp){
+      Log["Error"](exp["description"]);
+      return false;}
+
+}
+
+function ReagentLoadforIMAncillary()
+{
+ try {
+  var fileToUpdate = "C:\\data\\deploy\\simulation\\AnalyticalDoorStatus.txt";
+  
+   // Open text file
+  var openedTextFile = aqFile["OpenTextFile"](fileToUpdate, aqFile["faRead"], aqFile["ctANSI"]);
+  
+  // Read the contents of file
+  var contents = openedTextFile["ReadAll"]();
+  
+  // Replace the text for IM to 1 to open the door
+  var updatedString = aqString["Replace"](contents,"0 IAAncillaryReagentDoor", "1 IAAncillaryReagentDoor");
+
+  // Write updated string to text file
+  aqFile["WriteToTextFile"](fileToUpdate, updatedString, aqFile["ctANSI"], true);
+  Log.Message("Door is Opened for IM");
+  
+    // Send Analytical door file to IOT
+  if(SendAnalyticaldoortxt())
+  {
+    return false;
+  } 
+  aqUtils["Delay"](15000);
+  
+  // Send IM Ancillary reagent file to IOT
+  SendAncillaryreagentxt();
+  aqUtils["Delay"](15000);
+   Log.Message("IM Reagent file is sent to IOT");
+
+  // Replace the text for IM to 0 to close the door
+  var updatedString = aqString["Replace"](contents,"1 IAAncillaryReagentDoor", "0 IAAncillaryReagentDoor");
+  // Write updated string to text file
+  aqFile["WriteToTextFile"](fileToUpdate, updatedString, aqFile["ctANSI"], true);
+  Log.Message("Door is closed for IM ");
+  
+  // Send Analytical door file to IOT
+  SendAnalyticaldoortxt();
+  aqUtils["Delay"](15000);
+  
+  return true;
+  }
+  catch(exp){
+      Log["Error"](exp["description"]);
+      return false;}
+}
+
+function startIoT()
+{
+    var StartIoTBat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\Start_IoT_DmL.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](StartIoTBat);
+  aqUtils["Delay"](17000);
+}
+
+function stopIoT()
+{
+  try{
+      Log["AppendFolder"]("Stop IoT")
+      var ProjPath = ProjectSuite["Path"];
+      var arrPath  = ProjPath["split"]("Hydra")
+      var StartIoTBat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\StartIoTFiles\\StopIoTProcess.bat";
+      var obj = Sys["OleObject"]("WScript.Shell");
+      obj["Run"](StartIoTBat);
+      aqUtils["Delay"](10000,"Stop IoT");
+      Log["Checkpoint"]("Sucessfully Stopped IoT")
+  }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }  
+    Log["PopLogFolder"]();
+    return true;
+}
+
+function verifytext()
+{
+  var diagnosticsPath = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\ReagentPSfiles\\verifytextinfile.bat";
+  var obj = Sys["OleObject"]("WScript.Shell");
+  obj["Run"](diagnosticsPath);
+}
+function ExecutePredefinedSequenceRT(MechName,SeqNames)
+{
+  try
+    {
+        
+         //Open Log
+        Log["AppendFolder"]("Executing "+MechName+" sequences")
+        
+         //Click on Mechanism Tab
+        var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+       // var Mechanism_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Mechanism_Sequences");   
+	   var Mechanism_tab = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Sequences");
+        Mechanism_tab["Click"]();
+        
+        //var MechanismList = GetControl("MechanismSequences", "lstMechanismList");
+		 var MechanismList = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("ListView")
+        //MechanismList["Click"]();
+        MechanismList["MouseWheel"](-10);
+        
+        //Selecting Mechanism from the list 
+        SelectMechanism(MechName)
+    
+        Log["Message"]("Selecting sequences from dropdown");
+        var arrSequenceNames=SeqNames["split"](";") ;
+        //for(var i=0;i<SeqNames["length"];i++)
+        for(var i=0;i<arrSequenceNames["length"];i++)
+        {
+            SelectComboBoxValueAndRunSequence(arrSequenceNames[i])           
+            //VerifySequenceStatus(arrSequenceNames[i])
+        }
+               
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    //log close 
+    Log["PopLogFolder"]();
+    return true;
+}
+
+function checkWCFServiceandstartIoT()
+{
+  try{  
+      Log["AppendFolder"]("Check WCF and start IoT");
+      
+      Log["Enabled"]="false";
+      if(Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\bin\\ARMConsole.exe", 1)["Exists"])
+      {
+        cmdObj=  Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\bin\\ARMConsole.exe", 1)
+      } 
+      else
+      {
+        cmdObj=  Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\Bin\\ARMConsole.exe", 1)
+      }   
+      Log["Enabled"]="true";
+      
+      if(!cmdObj["Exists"])
+      {
+        Log["Error"]("ARM Console not present");
+        Log["PopLogFolder"]();
+        return false;
+      }
+      
+      while((cmdObj["Exists"]))
+      {
+          aqUtils["Delay"](5000,"Waiting for WCF Service to load")
+          if(aqString["StrMatches"]("WCF Service Started..",cmdObj["wText"]))    
+          {
+              Log["Checkpoint"]("WCF Service Started text is displayed in ARM Console successfully ")
+        
+              //StartIot   
+              startIoT_DML();
+      
+              //aqUtils["Delay"](5000,"Waiting for Files For Copy")
+              CopyIoTFiles_DML();
+              //CloseIoTwindow();
+              
+              //Verify configuration complete text is displayed in IoTlogs
+              if(!VerifyTextconfigurationcompleteinIoTlogs())
+              {
+                Log["PopLogFolder"]();   
+                return false;
+              } 
+          }   
+          else 
+          {
+              Log["Error"]("WCF Service Started text is not displayed successfully ");
+              Log["PopLogFolder"]();
+              return false;    
+          }
+          break;
+      }
+      Log["PopLogFolder"]();
+      return true;
+      
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+}
+   
+function startIoT_DML()
+{
+    var StartIoTBat = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\StartIoTFiles\\Start_IoT_DmL.bat"; 
+    var obj = Sys["OleObject"]("WScript.Shell");
+    obj["Run"](StartIoTBat);
+   aqUtils["Delay"](140000,"Waiting for start_iot window to run")
+    //aqUtils["Delay"](50000,"Waiting for start_iot window to run")
+}  
+
+function VerifyTextconfigurationcompleteinIoTlogs()
+  {
+  //var file = "F:\\Output\\log3.txt"
+    var file = "F:\\InstrumentOutput\\startIotlogs.txt"
+  
+   // Open text file
+    var Openfile = aqFile["OpenTextFile"](file, aqFile["faRead"], aqFile["ctANSI"]);
+  
+    // Read the contents of file
+    var contents = Openfile["ReadAll"]();
+    var text1 = "Configuration complete";
+    // Verify thetext in contents of file
+     var Res1 = aqString["Find"](contents, text1);
+      if ( Res1 != -1 ) 
+        {
+          Log["Message"]("Download configuration is completed, continuing the script '"); 
+          return true;
+        }
+    else
+        {
+          Log["Error"]("Failed to download configuration");
+          return false;
+        }
+      
+   //Runner.Stop();
+   
+}
+
+function CopyIoTFiles_DML()
+{
+    var CopyIoTFiles = arrPath[0] + "TestcaseLayer\\ARM\\TestData\\IoT\\StartIoTFiles\\CopyIoTLogFiles.bat";
+    var obj = Sys["OleObject"]("WScript.Shell");
+    obj["Run"](CopyIoTFiles);
+    aqUtils["Delay"](8000,"Waiting for IoTlogs to get copied")
+  
+  }
+  
+  function CloseIoTwindow()
+         {
+           // var cmdObj=Sys["Process"]("powershell")["Window"]("ConsoleWindowClass", "Administrator:  StartIoT", 1)
+           var cmdObj = Sys["Process"]("cmd")["Window"]("ConsoleWindowClass", "Administrator:  StartIoT", 1)
+           
+            cmdObj["Close"]();
+         }
+         
+function ExecuteActivityAndSequence()
+{
+  //try
+    //{
+     //Open Log
+    Log["AppendFolder"]("Execution of Diagnostics Activity and Sequences")
+    
+    //Initialize XMLs
+      InitializeMetaDataHYDRA();
+  
+    //Initialize Diagnostics and enterig into Diagnostics 
+    //if(!InitializeDiagnostics())
+     // Runner["Stop"]();   
+
+    //Running "Home INT Testing ImmunoAssay" activity from Activities Tab - for now not required
+//    var DiagnosticsClient= Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+//    DiagnosticsClient["Activate"]()
+//    ClickOnEnterDiagnostics()
+//    aqUtils["Delay"](2000)
+//    
+//    DiagnosticsClient["UIAObject"]("MenuListView")["UIAObject"]("Activities")["Click"]()
+//    aqUtils["Delay"](1000);
+//    DiagnosticsClient["UIAObject"]("ListView")["UIAObject"]("Home_INT_Testing_ImmunoAssay")["Click"]() 
+//    aqUtils["Delay"](1000);
+//    DiagnosticsClient["UIAObject"]("Run_Activity")["Click"]()
+//  
+//    Log["Enabled"]=false
+//    for(z=0 ;z<8;z++){ 
+//      try{
+//        if ((DiagnosticsClient["UIAObject"]("ActivityRequestHistoryGrid")["UIAObject"]("PART_ScrollViewer")["UIAObject"]("DataGridCellsPanel")["UIAObject"]("Completed")["UIAObject"]("Completed")["Exists"]) || (DiagnosticsClient["UIAObject"]("ActivityRequestHistoryGrid")["UIAObject"]("PART_ScrollViewer")["UIAObject"]("DataGridCellsPanel")["UIAObject"]("Failed")["UIAObject"]("Failed")["Exists"])){
+//
+//          break;
+//        } 
+//      }catch(e){      
+//       aqUtils["Delay"](1000)
+//        continue;
+//      } 
+//    } 
+// Log["Enabled"]=true   
+////    counter=0
+////    while(!DiagnosticsClient["UIAObject"]("ActivityRequestHistoryGrid")["UIAObject"]("PART_ScrollViewer")["UIAObject"]("DataGridCellsPanel")["UIAObject"]("Completed")["UIAObject"]("Completed")["Exists"] && counter<9){
+////            aqUtils["Delay"](10000,"Waiting for completed status for activity");
+////            counter =counter+1;
+////        }   
+//    if (DiagnosticsClient["UIAObject"]("ActivityRequestHistoryGrid")["UIAObject"]("PART_ScrollViewer")["UIAObject"]("DataGridCellsPanel")["UIAObject"]("Completed")["UIAObject"]("Completed")["Exists"])
+//      {
+//      Log["CheckPoint"]("Home_INT_Testing_ImmunoAssay status is completed")
+//      }
+//      else
+//      {
+//        Log["Error"]("Home_INT_Testing_ImmunoAssay status is not completed")
+//      }
+// comment end for HOMe INT
+  
+    aqUtils["Delay"](2000)
+//    var pArrGrid = ["ClassName","AutomationId"];
+//    var pArrGridValue = ["RadDataGrid","ActivityRequestHistoryGrid"];
+//     var pArr = ["ClassName","AutomationId"];
+//    var pArrValue = ["DataGridCellInfo","RadDataGridCell_Cell_0_2"];
+//    var pArr1 = ["ClassName","Text"];
+//    var pArrValue1 = ["TextBlock","Completed"];
+//
+//    var row= Sys["Find"](pArrGrid,pArrGridValue,400); 
+//    var row1= row["Find"](pArr,pArrValue,400);  
+//    var Activitystatus= row1["Find"](pArr1,pArrValue1,400);
+//  
+//    counter=0
+//    while(!Activitystatus["Exists"] && counter<9){
+//            aqUtils["Delay"](10000,"Waiting for completed status for activity");
+//            counter =counter+1;
+//        } 
+//    if(Activitystatus["Exists"])
+//    {
+//      Log["CheckPoint"]("Activity status is Completed")
+//      return true
+//    }
+//    else
+//    {
+//      Log["Error"]("Activity status is not Completed")
+//      return false
+//    } 
+    
+    //Running "Turn on Scheduler Work" Sequence from Mechanism Sequences->Logical Mechanism Control 
+    ClickOnEnterDiagnostics()
+    ExecutePredefinedSequence("Logical_Mechanism_Control","Turn_on_Scheduler_Work","") 
+    ClickOnExitDiagnostics()  
+    
+    //Closing Diagnostics Client
+    //DiagnosticsClient["Close"]()
+
+//   }catch(e){
+//      Log["Error"]("Exception", e["Description"]);
+//      Log["PopLogFolder"]();
+//      return false;
+//    } 
+    //log close 
+    Log["PopLogFolder"]();
+    return true;
+}
+
+function VerifyDetectors()
+{
+  try
+  {
+      Log["AppendFolder"]("DiagnosticsLibrary :: VerifyIDetectors")
+      //InitializeMetaDataHYDRA();
+  // Click on Load Data
+      var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+      
+      var Detectors = Diag_wnd["UIAObject"]("ScrollViewer")["UIAObject"]("MenuListView")["UIAObject"]("Detectors")
+      Log.Message("Click on Detctors Tab");
+      Detectors["Click"]();
+      
+      var DynamicReadTab = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("Dynamic_Read")
+      Log.Message("Click on DynamicRead Tab");
+      DynamicReadTab["Click"]();
+      
+      var textbox = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Pivot")["UIAObject"]("Dynamic_Read")["UIAObject"]("ScrollViewer")
+      var CuvetteDelta = textbox["UIAObject"]("TextBox", 12)["UIAObject"]("ContentElement")
+      CuvetteDelta["Click"]();
+      CuvetteDelta["Keys"]("^a10001[Tab]")
+      
+      var HomeOffset = textbox["UIAObject"]("TextBox", 13)["UIAObject"]("ContentElement")
+      HomeOffset["Click"]();
+      HomeOffset["Keys"]("^a10002[Tab]")
+      
+      var NosamplesperTrigger = textbox["UIAObject"]("TextBox", 14)["UIAObject"]("ContentElement")
+      NosamplesperTrigger["Click"]();
+      NosamplesperTrigger["Keys"]("^a5[Tab]")    
+      
+      var NoRefsamplesperTrigger = textbox["UIAObject"]("TextBox", 15)["UIAObject"]("ContentElement")
+      NoRefsamplesperTrigger["Click"]();
+      NoRefsamplesperTrigger["Keys"]("^a10[Tab]")     
+      
+      var SamplePeriod = textbox["UIAObject"]("TextBox", 16)["UIAObject"]("ContentElement")
+      SamplePeriod["Click"]();
+      SamplePeriod["Keys"]("^a101[Tab]")    
+      
+      var FPGAclockConfig = textbox["UIAObject"]("TextBox", 17)["UIAObject"]("ContentElement")
+      FPGAclockConfig["Click"]();
+      FPGAclockConfig["Keys"]("^a10[Tab]")     
+      
+      var btnconfigure = textbox["UIAObject"]("Configure")
+      Log.Message("Click on Configure button");
+      btnconfigure["Click"]();
+      
+      var NumberofReads = textbox["UIAObject"]("TextBox", 18)["UIAObject"]("ContentElement")
+      NumberofReads["Click"]();
+      NumberofReads["Keys"]("^a2") 
+      
+      var btnUpdateStatus = textbox["UIAObject"]("Update_Status")
+      Log.Message("Click on UPdateStatus button");
+      btnUpdateStatus["Click"]();
+      aqUtils["Delay"](200)
+      
+      var btnHomeRing = textbox["UIAObject"]("Home_Ring")
+      Log.Message("Click on HomeRing button");
+      btnHomeRing["Click"]();
+      
+      var btnRun = textbox["UIAObject"]("Run")
+      Log.Message("Click on Run button");
+      btnRun["Click"]();
+           
+      
+      var LED = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("LED")
+      LED["Click"]()
+      
+      var btnLEDOff = LED["UIAObject"]("Turn_LED_Off")
+      var btnLEDOn = LED["UIAObject"]("Turn_LED_On")
+       
+       // Verify if LED is On or Off
+      if(btnLEDOff["IsEnabled"])
+      {
+        Log["Message"]("Turn LED off")
+        btnLEDOff["Click"]()             
+      }
+      else
+      {
+//        Log["Message"]("Turn LED off")
+//        btnLEDOn["Click"]()  
+      }
+       
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+}
+
+
+
+function StartServiceAndInitializeDiagnostics()
+{
+  Log["AppendFolder"]("Starting service and initialize Diagnostics")
+
+    serviceName="DiagnosticsWindowsService"
+
+    var servicestatus=StartService(".",serviceName)
+    if(servicestatus==true)
+    {
+      Log["CheckPoint"]("DiagnosticsWindowsService started successfully")
+      aqUtils["Delay"](60000,"Waiting after starting the DiagnosticsWindowsService")
+    }
+    else
+    {
+      Log["Error"]("DiagnosticsWindowsService is not started")
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]()
+
+    //Initialize XMLs
+     InitializeMetaDataHYDRA();
+  
+    //Initialize Diagnostics and enterig into Diagnostics 
+    if(!InitializeDiagnostics())
+      return false;    
+    Log["Enabled"]=false
+    
+    try{
+    if(Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Connection_Issue")["UIAObject"]("OK")["Exists"])
+    {
+      Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Connection_Issue")["UIAObject"]("OK")["Click"]()
+      aqUtils["Delay"](1000)
+      Sys["Process"]("DiagnosticsClient")["Terminate"]();
+      
+      serviceName="DiagnosticsWindowsService"
+      var servicestatus=StartService(".",serviceName)
+    if(servicestatus==true)
+    {
+      Log["Enabled"]=true
+      Log["CheckPoint"]("DiagnosticsWindowsService started successfully")
+      aqUtils["Delay"](60000,"Waiting after starting the DiagnosticsWindowsService")
+      if(!InitializeDiagnostics())
+      { 
+      return false; 
+      }  
+    }
+    else{
+      Log["Enabled"]=true
+      Log["Error"]("DiagnosticsWindowsService is not started");
+      return false; 
+      }
+    } 
+    
+    }catch(e)
+     {
+       Log["Enabled"]=true;
+       return false; 
+     } 
+     return true;
+} 
+
+//*************************************************************************
+//*  FunctionName : VerifySubSystemTabMechanismTED1Values()
+//*  Description: 
+//*  Input: Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function VerifySubSystemTabMechanismTED1Values()
+{
+  try
+  {
+      Log["AppendFolder"]("DiagnosticsLibrary :: VerifySubSystemTabMechanismTED1Values")
+      aqUtils["Delay"]("10000","Every ten seconds the parameters  to the right are updated")
+  
+      var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  
+      var objControlState = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("TextBlock", 2)
+      var objDutyCycle = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("TextBlock", 3)
+      var objCurrent = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("TextBlock", 4)
+      var objControlledTemp = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("TextBlock", 5)
+      var objTotalPower = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("TextBlock", 6)
+      var objTotalCurrent = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("TextBlock", 7)
+
+      var errorcount = 0;
+  
+      var actualControlState = GetPropertyValue(objControlState,"Text")
+      if(actualControlState!= null && actualControlState!= "")
+        Log["Message"]("Control State is displayed as :" +actualControlState) 
+      else
+      {
+       errorcount = errorcount +1;
+       Log["Error"]("Control State is displayed as :" +actualControlState)
+      }
+   
+      var actualDutyCycle = GetPropertyValue(objDutyCycle,"Text")
+      if(actualDutyCycle!= null && actualDutyCycle!= "")
+        Log["Message"]("Duty Cycle is displayed as :" +actualDutyCycle) 
+      else
+      {
+        errorcount = errorcount +1;
+        Log["Error"]("Duty Cycle is displayed as :" +actualDutyCycle)
+      }
+   
+      var actualCurrent = GetPropertyValue(objCurrent,"Text")
+      if(actualCurrent!= null && actualCurrent!= "")
+        Log["Message"]("Current is displayed as :" +actualCurrent) 
+      else
+      {
+        errorcount = errorcount +1;
+        Log["Error"]("Current is displayed as :" +actualCurrent)
+      }
+   
+      var actualControlledTemp = GetPropertyValue(objControlledTemp,"Text")
+      if(actualControlledTemp!= null && actualControlledTemp!= "")
+        Log["Message"]("Controled Temp is displayed as :" +actualControlledTemp) 
+      else
+      {
+       errorcount = errorcount +1;
+       Log["Error"]("Controled Temp is displayed as :" +actualControlledTemp)
+      }
+   
+      var actualTotalPower = GetPropertyValue(objTotalPower,"Text")
+      if(actualTotalPower!= null && actualTotalPower!= "")
+        Log["Message"]("Total Power is displayed as :" +actualTotalPower) 
+      else
+      {
+        errorcount= errorcount +1;
+        Log["Error"]("Total Power is displayed as :" +actualTotalPower)
+      }
+  
+      var actualTotalCurrent = GetPropertyValue(objTotalCurrent,"Text")
+      if(actualTotalCurrent!= null && actualTotalCurrent!= "")
+        Log["Message"]("Total Current is displayed as :" +actualTotalCurrent)
+      else
+      {
+        errorcount = errorcount +1;
+        Log["Error"]("Total Current is displayed as :" +actualTotalCurrent)
+      }
+  
+      if(errorcount>0)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["PopLogFolder"]();
+        return true;
+      }
+    
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+}
+
+//*************************************************************************
+//*  FunctionName : VerifySubSystemTabMechanismTED2Values()
+//*  Description: 
+//*  Input: Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function VerifySubSystemTabMechanismTED2Values()
+{
+  try
+  {
+      Log["AppendFolder"]("DiagnosticsLibrary :: VerifySubSystemTabMechanismTED2Values")
+      aqUtils["Delay"]("10000","Every ten seconds the parameters  to the right are updated")
+  
+      var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+  
+      var objControlState = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("TextBlock", 2)
+      var objDutyCycle = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("TextBlock", 3)
+      var objCurrent = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("TextBlock", 4)
+      var objControlledTemp = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("TextBlock", 5)
+      var objTotalPower = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("TextBlock", 6)
+      var objTotalCurrent = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("TextBlock", 7)
+
+      var errorcount = 0;
+  
+      var actualControlState = GetPropertyValue(objControlState,"Text")
+      if(actualControlState!= null && actualControlState!= "")
+        Log["Message"]("Control State is displayed as :" +actualControlState) 
+      else
+      {
+       errorcount = errorcount +1;
+       Log["Error"]("Control State is displayed as :" +actualControlState)
+      }
+   
+      var actualDutyCycle = GetPropertyValue(objDutyCycle,"Text")
+      if(actualDutyCycle!= null && actualDutyCycle!= "")
+        Log["Message"]("Duty Cycle is displayed as :" +actualDutyCycle) 
+      else
+      {
+        errorcount = errorcount +1;
+        Log["Error"]("Duty Cycle is displayed as :" +actualDutyCycle)
+      }
+   
+      var actualCurrent = GetPropertyValue(objCurrent,"Text")
+      if(actualCurrent!= null && actualCurrent!= "")
+        Log["Message"]("Current is displayed as :" +actualCurrent) 
+      else
+      {
+        errorcount = errorcount +1;
+        Log["Error"]("Current is displayed as :" +actualCurrent)
+      }
+   
+      var actualControlledTemp = GetPropertyValue(objControlledTemp,"Text")
+      if(actualControlledTemp!= null && actualControlledTemp!= "")
+        Log["Message"]("Controled Temp is displayed as :" +actualControlledTemp) 
+      else
+      {
+       errorcount = errorcount +1;
+       Log["Error"]("Controled Temp is displayed as :" +actualControlledTemp)
+      }
+   
+      var actualTotalPower = GetPropertyValue(objTotalPower,"Text")
+      if(actualTotalPower!= null && actualTotalPower!= "")
+        Log["Message"]("Total Power is displayed as :" +actualTotalPower) 
+      else
+      {
+        errorcount= errorcount +1;
+        Log["Error"]("Total Power is displayed as :" +actualTotalPower)
+      }
+  
+      var actualTotalCurrent = GetPropertyValue(objTotalCurrent,"Text")
+      if(actualTotalCurrent!= null && actualTotalCurrent!= "")
+        Log["Message"]("Total Current is displayed as :" +actualTotalCurrent)
+      else
+      {
+        errorcount = errorcount +1;
+        Log["Error"]("Total Current is displayed as :" +actualTotalCurrent)
+      }
+  
+      if(errorcount>0)
+      {
+        Log["PopLogFolder"]();
+        return false;
+      }
+      else
+      {
+        Log["PopLogFolder"]();
+        return true;
+      }
+    
+  }
+  catch(e)
+  {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  } 
+}
+
+//*************************************************************************
+//*  FunctionName : VerifyAutoAlignmentPhotmetricRun(AlignmentName,sExpectedState,boolInt)
+//*  Description: VerifyAutoAlignmentPhotmetricRun()
+//*  Input: AlignmentName, sExpectedState, boolInt
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function VerifyAutoAlignmentPhotmetricRun(AlignmentName,sExpectedState,boolInt)
+{
+ try
+ {
+    Log["AppendFolder"]("DiagnosticsLibrary::VerifyAutoAlignmentPhotmetricRunCompletedAndOffset") 
+    var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+    var objAutoAlignmentsGrid = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("DiagnosticsClient_ViewModels_EngineAutoAlignment_2")["UIAObject"]("AutoAlignmentsGrid")
+    var totalrows = objAutoAlignmentsGrid["RowCount"]
+    if (totalrows>0)
+    {
+      //RadDataGridCell_Cell_row_column RadDataGridCell_Cell_0_0
+      for (var i = 0; i<totalrows ;i++)
+      {
+        
+        var cell_part1 = aqString["Concat"]("RadDataGridCell_Cell_",i)
+        var alignmentname_column = aqString["Concat"](cell_part1,"_0")
+       
+        var pArr = ["ClassName","AutomationId"];
+        var pArrValue = ["DataGridCellInfo",alignmentname_column];
+        var row= objAutoAlignmentsGrid["Find"](pArr,pArrValue,200); 
+      
+        var pArr1 = ["ClassName","Text"];
+        var pArrValue1 = ["TextBlock",AlignmentName];
+        var objAlignmentName =row["Find"](pArr1,pArrValue1,200);
+      
+        if(objAlignmentName["Exists"])
+        {
+          var cell_part1 = aqString["Concat"]("RadDataGridCell_Cell_",i)
+          var alignmentstate_column = aqString["Concat"](cell_part1,"_1")
+        
+          var pArr = ["ClassName","AutomationId"];
+          var pArrValue = ["DataGridCellInfo",alignmentstate_column];
+          var row= objAutoAlignmentsGrid["Find"](pArr,pArrValue,200); 
+      
+          var pArr1 = ["ClassName"];
+          var pArrValue1 = ["TextBlock"];
+          var objAlignmentState = row["Find"](pArr1,pArrValue1,200);
+        
+          var actualAlingmentState = objAlignmentState["Text"];
+          
+          if(sExpectedState!="")
+          {
+            if(aqString["Find"](actualAlingmentState,sExpectedState)>=0)
+            {
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Expected text : "+sExpectedState+ " is found in actual text : "+actualAlingmentState);
+              Log["Message"]("Pass");
+              Log["PopLogFolder"]();
+              return true;
+            }
+            else
+            {
+              Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Expected text : "+sExpectedState+ " is not found in actual text : "+actualAlingmentState);
+              Log["Message"]("Fail");
+              Log["PopLogFolder"]();
+              return false;
+            }
+          }
+          if(boolInt==true)
+          {
+              var arrActualAlingmentState = actualAlingmentState["split"]("=")
+              if(arrActualAlingmentState[1]!= null && arrActualAlingmentState[1]!= "")
+              {
+                if(aqString["StrMatches"]("[0-9]", arrActualAlingmentState[1]))
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Offset value is displayed in alignment state column as " +arrActualAlingmentState);
+                Log["Message"]("Pass");
+                Log["PopLogFolder"]();
+                return true;
+              }
+              else
+              {
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Offset value is not displayed in alignment state column as " +arrActualAlingmentState);
+                Log["Message"]("Fail");
+                Log["PopLogFolder"]();
+                return false;
+              }
+          }
+        }
+      }// rows if condition ends here
+    
+    }// try block ends here
+    else
+    {
+        Log["Error"]("No row available in 'AutoAlignmentsGrid'")
+        Log["PopLogFolder"]();
+        return false
+    }
+ 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+   
+}
+
+//*************************************************************************
+//*  FunctionName : VerifyCHPhotometerRun()
+//*  Description: VerifyCHPhotometerRun()
+//*  Input: Mechanism Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function  VerifyCHPhotometerRun()
+{
+  try
+  {
+      Log["AppendFolder"]("DiagnosticsLibrary::VerifyCHPhotometerRun");
+      //check CH Photometer checkbox
+      var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+      var objchkboxCHPhotometer = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("DiagnosticsClient_ViewModels_EngineAutoAlignment_2")["UIAObject"]("ListView")["UIAObject"]("CH_Photometer")["UIAObject"]("CH_Photometer")
+      objchkboxCHPhotometer["Click"]();
+  
+      //click on Run Selected
+      var objRunSelected = Diag_wnd["UIAObject"]("Pivot")["UIAObject"]("DiagnosticsClient_ViewModels_EngineAutoAlignment_2")["UIAObject"]("Run_Selected")
+      objRunSelected["Click"]();
+  
+      //Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Pivot")["UIAObject"]("DiagnosticsClient_ViewModels_EngineAutoAlignment_2")["UIAObject"]("AutoAlignmentsGrid")["UIAObject"]("PART_ScrollViewer")["UIAObject"]("DataGridCellsPanel")["UIAObject"]("Running_Executing_photometer_cuvette_mapping_step")["UIAObject"]("Running_Executing_photometer_cuvette_mapping_step")
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"After running CH Photometer - Running_Executing_photometer_cuvette_mapping_step");
+      Log["PopLogFolder"]();
+      return true;
+      
+  }
+  catch(exp)
+  {
+      Log["Error"]("Exception "+exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+
+  }
+
+}
+
+//*************************************************************************
+//*  FunctionName : VerifyCHPhotometerRunOffsetGraph()
+//*  Description: VerifyCHPhotometerRunOffsetGraph
+//*  Input: Mechanism Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function VerifyCHPhotometerRunOffsetGraph()
+{
+  try
+  {
+      Log["AppendFolder"]("DiagnosticsLibrary::VerifyCHPhotometerRunAndOffsetGraph");
+      //click on "more details"
+      var objmoredetails = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("More_Details")
+      objmoredetails["Click"]();
+  
+      //verify graph and offset value is not empty
+      var objgraph = GetControl("AutoAlignment","graphPhotmetricAlignment")
+      if(objgraph["Exists"] ==true)
+      {
+          var objNewOffset = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Popup")["UIAObject"]("TextBlock", 3)
+          var objNewOffsetValue = objNewOffset["Text"];
+          if(objNewOffsetValue!=null && objNewOffsetValue!="")
+          {
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Pass : New Offset value is shown in graph");
+            var objClose = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Popup")["UIAObject"]("Close")
+            objClose["Click"]();
+            Log["PopLogFolder"]();
+            return true;
+          }
+          else
+          {
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Pass : New Offset value is not shown in graph");
+            Log["Error"]("Fail");
+            var objClose = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("Popup")["UIAObject"]("Close")
+            objClose["Click"]();
+            Log["PopLogFolder"]();
+            return false;
+          }
+      }
+  } 
+  catch(exp)
+  {
+      Log["Error"]("Exception "+exp["description"]);
+      Log["PopLogFolder"]();
+      return false;
+
+  }
+
+}
+
+//*************************************************************************
+//*  FunctionName : SelectMechanismInSubSystemTab(MechanismName)
+//*  Description: Select SelectMechanismInSubSystemTab
+//*  Input: Mechanism Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function SelectMechanismInSubSystemTab(MechanismName)
+{
+ try 
+ { 
+    Log["AppendFolder"]("DiagnosticsLibrary::SelectMechanismInSubSystemTab")
+    Log["Message"]("Selecting mechanism " + MechanismName +" in sub system tab")
+    //Selecting Mechanism name from Mechanism list
+    //      var pArr = ["ClassName","ObjectIdentifier"];
+    //      var pArrValue = ["ListView","ListView"];
+    //      var mechanism= Sys["Find"](pArr,pArrValue,200);
+      
+    //    above logic to find listview doesnt work here
+    var mechanism=  Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")["UIAObject"]("ListView")
+      
+    var pArr1 = ["ClassName","ObjectIdentifier"];
+    var pArrValue1 = ["TextBlock",MechanismName];
+      
+    var SelectedMechanism= mechanism["Find"](pArr1,pArrValue1,200);
+    if(SelectedMechanism["Exists"])
+    {
+      SelectedMechanism["ScrollIntoView"]();
+      aqUtils["Delay"]("2000")
+      //SelectedMechanism["ScrollIntoView"]();
+      //SelectedMechanism["Focus"]();
+      //SelectedMechanism["HoverMouse"]();
+      SelectedMechanism["Click"]();
+      aqUtils["Delay"]("2000")
+      SelectedMechanism["Click"]();
+      aqUtils["Delay"]("5000")
+      Log["PopLogFolder"]();   
+      return true
+    }
+ }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//*************************************************************************
+//*  FunctionName : VerifySubSystemMechanismControlLoopIsTurnOnInTED1TED2()
+//*  Description: 
+//*  Input: Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function VerifySubSystemMechanismControlLoopIsTurnOnInTED1TED2()
+{
+  try
+  { 
+    Log["AppendFolder"]("DiagnosticsLibrary::VerifySubSystemMechanismControlLoopIsTurnOn");
+    Log["Message"]("Turn on Control loop");
+    
+    var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+    var objTurnOn = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView", 2)["UIAObject"]("DiagnosticsClient_ViewModels_BindableMechanismPollerComponent")["UIAObject"]("Turn_On")
+    var objControlLoop = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView", 2)["UIAObject"]("DiagnosticsClient_ViewModels_BindableMechanismPollerComponent")["UIAObject"]("Control_Loop")
+    if(!objControlLoop["IsSelected"])
+    {
+      Log["Message"]("Turn on loop radio button is not selected");
+      objTurnOn["Click"]();
+    }
+    else
+      Log["Message"]("Turn on loop radio button is already selected");
+  
+    var objTurnOffTED1 = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("Turn_Off_TED")
+    objTurnOffTED1["Click"]();
+  
+    var objTurnOnTED1 = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("Turn_On_TED")
+    objTurnOnTED1["Click"]();
+  
+    var objTurnOffTED2 = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("Turn_Off_TED")
+    objTurnOffTED2["Click"]();
+  
+    var objTurnOnTED2 = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent_2")["UIAObject"]("Turn_On_TED")
+    objTurnOnTED2["Click"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//*************************************************************************
+//*  FunctionName : VerifySubSystemMechanismControlLoopIsTurnOnInTED1()
+//*  Description: 
+//*  Input: Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function VerifySubSystemMechanismControlLoopIsTurnOnInTED1()
+{
+  try
+  {
+    Log["AppendFolder"]("DiagnosticsLibrary::VerifySubSystemMechanismControlLoopIsTurnOnInTED1");
+    Log["Message"]("Turn on Control loop");
+    
+    var Diag_wnd = Sys["Process"]("DiagnosticsClient")["UIAObject"]("DiagnosticsClient")
+    var objTurnOn = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView", 2)["UIAObject"]("DiagnosticsClient_ViewModels_BindableMechanismPollerComponent")["UIAObject"]("Turn_On")
+    var objControlLoop = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView", 2)["UIAObject"]("DiagnosticsClient_ViewModels_BindableMechanismPollerComponent")["UIAObject"]("Control_Loop")
+    if(!objControlLoop["IsSelected"])
+    {
+      Log["Message"]("Turn on loop radio button is not selected");
+      objTurnOn["Click"]();
+    }
+    else
+      Log["Message"]("Turn on loop radio button is already selected");
+  
+    var objTurnOffTED1 = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("Turn_Off_TED")
+    objTurnOffTED1["Click"]();
+  
+    var objTurnOnTED1 = Diag_wnd["UIAObject"]("ScrollViewer", 3)["UIAObject"]("ListView")["UIAObject"]("DiagnosticsClient_ViewModels_BindableThermalControlComponent")["UIAObject"]("Turn_On_TED")
+    objTurnOnTED1["Click"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+   
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+
+}
+
+
+//*************************************************************************
+//*  FunctionName : function ExecutePredefinedSequence_New(MechName,SeqNames)
+//*  Description: Select ComboBoxValue and Run the Sequence
+//*  Input: MechName , Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function ExecutePredefinedSequence_New(MechName,SeqNames)
+{
+  try
+    {
+        
+         //Open Log
+        Log["AppendFolder"]("DiagnosticsLibrary::ExecutePredefinedSequence_New");
+        Log["Message"]("Executing "+MechName+" sequences");
+        
+        var MechanismList = GetControl("MechanismSequences", "lstMechanismList");
+        MechanismList["MouseWheel"](-10);
+        
+        //Selecting Mechanism from the list 
+        SelectMechanism(MechName)
+    
+        Log["Message"]("Selecting sequences from dropdown");
+        var arrSequenceNames=SeqNames["split"](";") ;
+    
+        for(var i=0;i<arrSequenceNames["length"];i++)
+        {
+            SelectComboBoxValueAndRunSequence(arrSequenceNames[i])
+        }
+            //log close 
+        Log["PopLogFolder"]();
+        return true;
+               
+    }catch(e){
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+
+}
+
+
+//*************************************************************************
+//*  FunctionName : SelectComboBoxValueAndRunSequence_Updated(Sequence)
+//*  Description: Select ComboBoxValue and Run the Sequence
+//*  Input: Sequence Name
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function SelectComboBoxValueAndRunSequence_Updated(Sequence)
+{
+  try{    
+    //Selecting sequence from combo box
+     //Open Log
+        Log["AppendFolder"]("DiagnosticsLibrary::SelectComboBoxValueAndRunSequence_Updated")
+        
+        Log["Message"]("Selecting sequence from combo box and clicking on RunSequence button");
+        
+        var SequenceComboBox = GetControl("MechanismSequences", "cmbAvailableSequence");
+        SequenceComboBox["Click"]();
+        aqUtils["Delay"](500)
+        SequenceComboBox["Expand"]();
+        aqUtils["Delay"](2000) //-- needed/added
+        SequenceComboBox["MouseWheel"](-105); //-- needed/added
+        aqUtils["Delay"](3000)  
+        eval(SequenceComboBox["UIAObject"](Sequence))["ScrollIntoView"]()  
+        aqUtils["Delay"](3000)  
+        eval(SequenceComboBox["UIAObject"](Sequence))["Click"]()   
+        var objctrl = GetControl("MechanismSequences", "btnRunSequence");
+        ClickControl(objctrl);
+        Log["PopLogFolder"]();
+        return true
+        
+  }catch(e){
+        Log["Error"]("Exception :"+e["Description"]);
+        Log["PopLogFolder"]();
+        return false;
+        }
+}
+
+
+//*************************************************************************
+//*  FunctionName : LoadReagentBarcodes(ReagentType,MechName,SeqName,sBarcodes)
+//*  Description: Load reagents which are passed as parameters 
+//*  Input: ReagentType,MechName,SeqName,sBarcodes
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function LoadReagentBarcodes(ReagentType,MechName,SeqName,sBarcodes)
+{
+  
+  try
+  {
+      Log.AppendFolder("DiagnosticsLibrary::LoadReagentBarcodes"); 
+  
+      //Copy AnalyticalDoorStatus.txt to simulation folder
+      var SimulationPath = "C:\\data\\deploy\\simulation\\";
+      aqFile["Copy"](IoTPath+"\\AnalyticalDoorStatus.txt",SimulationPath,false)  
+      Log["Checkpoint"]("Copied Analytical door status file to simulation folder")
+      
+      //If Reagent type is IM Primary
+      if(ReagentType=="IMPrimary")
+      {       
+        //Copy IM Primary barcodes to PrimaryBarcodes text file in simulation folder
+        var sBarcodeFilePath="C:\\data\\deploy\\simulation\\PrimaryBarcodes.txt";
+        if(!UpdateBarcodesFile(sBarcodes,sBarcodeFilePath))
+          Log["Error"]("Fail to copy/write barcodes in PrimaryBarcodes text file in simulation folder");
+        else
+          Log["Message"]("Successfully copy/write barcodes in PrimaryBarcodes text file in simulation folder");
+        
+        //sending files to IOT
+        if(!ReagentLoadforIM())
+        {
+          Log["Error"]("Failed to send IM primary barcode file");
+          Log["PopLogFolder"]();
+          return false;
+        }     
+      }
+      
+      //If Reagent type is IM Ancillary
+      if(ReagentType=="IMAncillary")
+      { 
+        //Copy IM ancillary barcodes to AncillaryBarcodes text file in simulation folder
+        var sBarcodeFilePath="C:\\data\\deploy\\simulation\\AncillaryBarcodes.txt"
+        if(!UpdateBarcodesFile(sBarcodes,sBarcodeFilePath))
+          Log["Error"]("Fail to copy/write barcodes in AncillaryBarcodes text file in simulation folder");
+        else
+          Log["Message"]("Successfully copy/write barcodes in AncillaryBarcodes text file in simulation folder");
+        
+        //sending files to IOT
+        if(!ReagentLoadforIMAncillary())
+        {
+          Log["Error"]("Failed to send IM ancillary barcode file");
+          Log["PopLogFolder"]();
+          return false;
+        } 
+
+      }
+      
+      //If Reagent type is CC
+      if(ReagentType=="CH")
+      {
+        //Copy CH barcodes to CHInputBarcodes text file in simulation folder
+        var sBarcodeFilePath="C:\\data\\deploy\\simulation\\CHInputBarcodes.txt"
+        if(!UpdateBarcodesFile(sBarcodes,sBarcodeFilePath))
+          Log["Error"]("Fail to copy/write barcodes in CHInputBarcodes text file in simulation folder");
+        else
+          Log["Message"]("Successfully copy/write barcodes in CHInputBarcodes text file in simulation folder");
+        
+        //sending files to IOT
+        if(!ReagentLoadforCH())
+        {
+          Log["Error"]("Failed to send CH barcode file");
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+      
+      //Adding delay
+      aqUtils["Delay"](10000,"Loading reagents")
+      
+      //Enter Diagnostic mode
+      ClickOnEnterDiagnostics();
+      aqUtils["Delay"](10000,"Wait for Enter Diagnostics")
+      
+      //Running sequences in Diagnostic
+      if(!ExecutePredefinedSequenceRT(MechName,SeqName))
+      {
+          Log["Error"]("Diagnostics Sequence Execution Failed")
+          Log["PopLogFolder"]();
+          return false;
+      }
+      
+      //Exit Diagnostic mode
+      ClickOnExitDiagnostics();
+      aqUtils["Delay"](10000,"Wait for Exit Diagnostics")
+      
+      Log["Message"]("Reagents sent to IOT and scanned in diagnostics successfully");
+      Log["PopLogFolder"]();
+      return true;
+  
+    }
+    catch(e)
+    {
+      Log["Error"]("Exception :"+e["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+    }
+  
+}
+
+//*************************************************************************
+//*  FunctionName : UpdateBarcodesFile(sBarcodes,sBarcodefilePath)
+//*  Description: put barcodes in text file  
+//*  Input: sBarcodes , sBarcodefilePath
+//*  Output: Boolean
+//*  Date of Creating: 28 Feb 2019
+//*  Created By: Shrutika Tyagi
+//*************************************************************************
+function UpdateBarcodesFile(sBarcodes,sBarcodefilePath)
+{
+  try
+  {
+    Log.AppendFolder("DiagnosticsLibrary::UpdateBarcodesFile"); 
+    var oFile = aqFile["OpenTextFile"](sBarcodefilePath, aqFile["faWrite"], aqFile["ctANSI"], true);
+    
+    if(GetVarType(sBarcodes)==8)//String
+    {
+      oFile["Write"](sBarcodes+"\r\n");
+      Log["Message"]("Fake Barcode file updated with " +sBarcodes);
+    }
+    
+    if(GetVarType(sBarcodes)==1)//null
+    {
+      sBarcodes = "";
+      oFile["Write"](sBarcodes+"\r\n");
+      Log["Message"]("Barcode file updated with " +sBarcodes);
+    }
+    
+    if(GetVarType(sBarcodes)==9)//array
+    {
+      for(var i=0;i<sBarcodes["length"];i++)
+      {
+        oFile["Write"](sBarcodes[i]+"\r\n");
+        var strMessage = strMessage + sBarcodes[i] + " ";
+      }
+      Log["Message"]("Barcode file updated with " + strMessage);
+    }
+    oFile["Close"]();
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Message"]("Exception" + exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+//**************************************************************
+//Description:  This function is used to update Reagent Barcode file and send to IOT.
+//Author - Muru
+//Parameters :1) Reagent Type 2) Barcode
+//****************************************************************
+function LoadReagentBarcode(RgtType,Barcode)
+{
+
+try
+{
+  //Open Log
+      Log["AppendFolder"]("Loading "+RgtType+"Reagent Barcode File to DML ")   
+      
+      //Create Simulation Folder  
+      if(!aqFileSystem["Exists"](SimulationPath))
+      {
+        if(aqFileSystem["CreateFolder"](SimulationPath) !=0)
+        {
+            Log["Error"]("Unable to create folder "+SimulationPath)
+            ReportTestStatusToResultXML("RoundTripWorkflow", "Open_RGTDoor", "F");
+            Runner["Stop"]();
+        }
+        else
+            Log["Message"]("Created Simulation folder") 
+      } 
+      
+      
+       switch(RgtType)
+      {
+       case IAPrimary:
+              if (aqFile["Exists"](SimulationPath+"\\PrimaryBarcodes.txt")) //Delete and create a new Barcode file
+                {aqFile["Delete"](SimulationPath+"\\PrimaryBarcodes.txt");}
+              aqFile["Create"](SimulationPath+"\\PrimaryBarcodes.txt");          
+              aqFile["WriteToTextFile"](SimulationPath+"\\PrimaryBarcodes.txt",Barcode, aqFile["ctANSI"], true); //Write Barcode to file   
+              Sendprimaryreagentxt()//Send Barcode File to DML    
+              aqUtils["Delay"]("20000","Sending "+RgtType+" Reagent Barcode File to DML")               
+       break;
+          
+         
+       case IAAncillary:   
+              if (aqFile["Exists"](SimulationPath+"\\AncillaryBarcodes.txt")) //Delete and create a new Barcode file
+                {aqFile["Delete"](SimulationPath+"\\AncillaryBarcodes.txt");}
+              aqFile["Create"](SimulationPath+"\\AncillaryBarcodes.txt");          
+              aqFile["WriteToTextFile"](SimulationPath+"\\AncillaryBarcodes.txt",Barcode, aqFile["ctANSI"], true); //Write Barcode to file    
+              SendAncillaryreagentxt() //Send Barcode File to DML
+              aqUtils["Delay"]("20000","Sending "+RgtType+" Reagent Barcode File to DML") 
+       break;
+       
+       
+       case CH:   
+              if (aqFile["Exists"](SimulationPath+"\\ChemistryBarcodes.txt")) //Delete and create a new Barcode file
+                {aqFile["Delete"](SimulationPath+"\\ChemistryBarcodes.txt");}
+              aqFile["Create"](SimulationPath+"\\ChemistryBarcodes.txt");          
+              aqFile["WriteToTextFile"](SimulationPath+"\\ChemistryBarcodes.txt",Barcode, aqFile["ctANSI"], true); //Write Barcode to file   
+              SendCHreagentxt()///Send Barcode File to DML
+              aqUtils["Delay"]("20000","Sending "+RgtType+" Reagent Barcode File to DML") 
+       break;  
+    
+      } 
+      return true;
+}
+
+  catch (exp)
+  {   
+      Log["Error"]("Exception :"+exp["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  
+  }
+}
+
+
+//*************************************************************************
+//*  FunctionName : EnterOperatorDiagnostics
+//*  Description: EnterOperatorDiagnostics [UIW]
+//*  Input: na
+//*  Output: Boolean
+//*  Example: EnterOperatorDiagnostics()
+//*  Date of Creating: 21 March 2019
+//*  Created By: Bhawya V J
+//*************************************************************************
+function EnterOperatorDiagnostics()
+{
+  try
+  {      
+      Log["AppendFolder"]("Enter Diagnostics from UIW")
+
+      //Click Enter Diagnostics
+	    var objctrl = GetControl("System_OperatorDiagnostics","btnSystemEnterDiagnostics");
+      if (VerifyObjectExistance(objctrl))
+      {
+        ClickControl(objctrl)
+        var objctrl = GetControl("System_Status_System","btnYes");
+        ClickControl(objctrl);
+      }else{
+        Log["Error"]("Unable to Enter Diagnostics")
+        return false;
+      }
+      
+      //Click on Status Tab
+      Log["AppendFolder"]("Navigate to System tab")
+      objctrl = GetControl("","tbbtnStatus")
+      ClickControl(objctrl);
+      aqUtils["Delay"](2000)
+      Log["PopLogFolder"]()
+      
+      //Wiat to enter Diagnostics
+      for (var i=0;i<30;i++)
+      {
+        var ModuleStatus=GetModuleStatusHydra("HYDRA")
+        if (ModuleStatus=="Diagnostics")
+        {
+          Log["Checkpoint"]("HYDRA Entered Diagnostics")
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else
+        {
+          aqUtils["Delay"](10000,"Waiting to Enter Diagnostics")
+        }
+        if (i==30)
+        {
+          Log["Error"]("Unable to Enter Diagnostics")
+          Log["PopLogFolder"]();
+          return false;
+        }
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+    Log["PopLogFolder"]();
+    return true;
+}
+
+//*************************************************************************
+//*  FunctionName : WasteBinDrawerOpenClose(WasteType,Action)
+//*  Description: WasteBin Drawer Open and Close
+//*  Input: WasteType,Action
+//*  Output: Boolean
+//*  Example: WasteBinDrawerOpenClose(Tips,Open)
+//*  Date of Creating:  11 April 2019
+//*  Created By: Ramitha K
+//*************************************************************************
+function WasteBinDrawerOpenClose(WasteType,Action) 
+{
+  try
+  {
+    //Open Log
+      Log["AppendFolder"]("Performing "+WasteType+" waste drawer "+Action)   
+      
+      //Create Simulation Folder  
+      if(!aqFileSystem["Exists"](SimulationPath))
+      {
+        if(aqFileSystem["CreateFolder"](SimulationPath) !=0)
+        {
+            Log["Error"]("Unable to create folder "+SimulationPath)
+            ReportTestStatusToResultXML("RoundTripWorkflow", "Open_RGTDoor", "F");
+            Log["PopLogFolder"]();
+            Runner["Stop"]();
+        }
+        else
+            Log["Message"]("Created Simulation folder") 
+      } 
+  
+      //Create a new AnalyticalDoorStatus.txt in simulation folder
+      Log["Message"]("Creating a new Analytical Door status File ");
+      if (aqFile["Exists"](SimulationPath+"\\AnalyticalDoorStatus.txt")) 
+       { aqFile["Delete"](SimulationPath+"\\AnalyticalDoorStatus.txt");}
+      aqFile["Create"](SimulationPath+"\\AnalyticalDoorStatus.txt");      
+      
+      
+           
+      //Create a new SensorStateChange.txt in simulation folder
+      Log["Message"]("Creating a new Sensor status File ");
+      if (aqFile["Exists"](SimulationPath+"\\SensorStateChange.txt")) 
+       { aqFile["Delete"](SimulationPath+"\\SensorStateChange.txt");}
+      aqFile["Create"](SimulationPath+"\\SensorStateChange.txt");       
+      
+
+     switch(WasteType)
+      {
+       case "Tips":
+       
+          // Replace the text 0 to 1 to open the drawer [For command TipWasteDrawerOpen: 1 ->Open; 0-> close]
+          if (Action == "Open")
+          {aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 TipWasteDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 TipWasteDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML                
+          break;}
+          
+         // Replace the text 1 to 0 to close the drawer
+          if (Action == "Close")
+          {aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 TipWasteDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 TipWasteDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML                
+          break;}
+         
+       case "Cuvettes":   
+
+          // Replace the text 0 to 1 to open the drawer   [For command CuvetteWasteDrawerOpen: 1 ->Open; 0-> close]
+          if (Action == "Open") 
+          {aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "1 CuvetteWasteDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "1 CuvetteWasteDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break; } 
+     
+          // Replace the text 1 to 0 to close the drawer
+          if (Action == "Close") 
+          {aqFile["WriteToTextFile"](SimulationPath+"\\AnalyticalDoorStatus.txt", "0 CuvetteWasteDrawerOpen", aqFile["ctANSI"], true); 
+          aqFile["WriteToTextFile"](SimulationPath+"\\SensorStateChange.txt", "0 CuvetteWasteDrawerOpen", aqFile["ctANSI"], true);    //Send Sensor state file to DML
+          break; }  
+      } 
+          // Send Analytical door file to IOT
+          SendAnalyticaldoortxt();
+          //aqUtils["Delay"](15000);
+      
+          // Send Sensor state file to IOT
+          SendSensorStatetxt();
+          //aqUtils["Delay"](15000);
+           
+          Log["Checkpoint"]("Success- "+Action+ " waste drawer for "+WasteType);
+          Log["PopLogFolder"]();
+          return true;             
+  }
+  catch (exp)
+  {   
+      Log["Error"]("Exception :"+exp["Description"]);
+      Log["PopLogFolder"]();
+      return false;
+  
+  }
+}
+
+function CloseDiagnosticsClient()
+{
+  try
+  {
+    Log["AppendFolder"]("Shutdown Hydra Application :: Close Diagnostics Client");
+
+    var killAtempt = false;
+    var diagnosticsPath = "explorer.exe shell:appsFolder\\DiagnosticsClient_byy8dcmdf21wa!App";
+    var shellobj = Sys["OleObject"]("WScript.Shell");
+    
+    //Kill the Diagnostics window if exists
+    if (Sys["WaitProcess"]("DiagnosticsClient")["Exists"])
+    {
+      Sys["Process"]("DiagnosticsClient")["Terminate"]();
+      Log["Message"]("Terminated the existing DiagnosticsClient window");
+      aqUtils["Delay"](1000)
+    } 
+    
+    //Close Diagnostics Client if it is exists
+    if (Sys["WaitProcess"]("DiagnosticsClient")["Exists"])
+    {
+        killAtempt = true;
+        Sys["Process"]("DiagnosticsClient")["Terminate"]();
+        Log["Message"]("Closed the Diagnostic Client");
+        aqUtils["Delay"](1000);
+        Log["PopLogFolder"]();
+        return true;
+    } 
+    
+    //Check the kill process succcess
+    if(killAtempt && Sys["WaitProcess"]("DiagnosticsClient")["Exists"])
+    {
+      Log["Error"]("Failed to Close the Diagnostic Client");
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    else 
+    {
+      Log["Message"]("Verification : There is no Diagnostic Client Instance Exists");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch (e)
+  {
+    Log["Error"]("Exception: ", e["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function checkTestAffinities()
+{
+    try{
+          //Initialize variables
+          Log["Enabled"]="false"
+          if(Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\bin\\ARMConsole.exe", 1)["Exists"])
+          {
+            cmdObj=  Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\bin\\ARMConsole.exe", 1)
+          } 
+          else
+          {
+            cmdObj=  Sys["Process"]("ARMConsole")["Window"]("ConsoleWindowClass", "C:\\Siemens\\ARM\\Bin\\ARMConsole.exe", 1)
+          } 
+          Log["Enabled"]="true"
+          
+          //Checking Test affinities status in ARM console
+          if((cmdObj["Exists"]==true))
+          {
+            for(i=1; i < 300; i++)
+            {
+              if ( aqString["StrMatches"]("3 Test Affinities available",cmdObj["wText"])||aqString["StrMatches"]("2 Test Affinities available",cmdObj["wText"])||aqString["StrMatches"]("1 Test Affinities available",cmdObj["wText"]))
+              {
+                Log["Message"]( "Test Affinities available");
+                return true;
+              }
+              aqUtils["Delay"](2000, "Waiting for Test Affinities text to load")
+            }
+            
+            //If Test affinities not displayed as expected
+            if(i==300)
+            {
+              Log["Error"](" Test Affinities text is not displayed successfully ");
+              Log["PopLogFolder"]();
+              return false;
+            }
+          }
+    }catch(e)
+    {
+    Log["Error"]("Exception", e["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    } 
+}
+
+
+
+

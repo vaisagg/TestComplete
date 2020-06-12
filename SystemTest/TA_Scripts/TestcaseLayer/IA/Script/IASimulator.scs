@@ -1,0 +1,388 @@
+﻿//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT TCNativeLibraries
+//USEUNIT NetworkSuiteLibrary
+
+var strWorkflowXMLPath=Project["Path"]+"TestData\\IAWorkflows.xml";
+var strControlXMLPath = Project["Path"]+"Testdata\\IAControls.xml";
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+
+
+function SetAutoDataGeneration()
+{
+  Log["AppendFolder"]("IASimulator::SetAutoDataGeneration");
+  NetworkSuite["Variables"]["TaskStatus"] = "False";
+
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    
+    var objCtrl=GetControl("AMSim","MainForm");
+    if(!SelectStripMenuItem(objCtrl, "Tools|Settings..."))
+    {
+      Log["Warning"]("Unable to launch settings window in AM simulator");
+      Log["PopLogFolder"]();
+      NetworkSuite["Variables"]["TaskStatus"] = "False";
+      return false;
+    }
+    
+    objCtrl=GetControl("AMSim","radioDataGeneration");
+    SelectRadioBtn(objCtrl);
+    objCtrl=GetControl("AMSim","btnSettingsOK");
+    ClickControl(objCtrl);
+    NetworkSuite["Variables"]["TaskStatus"] = "True";
+    return true;
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception" + exp["description"]);
+    Log["PopLogFolder"]();
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    return false;
+  } 
+} 
+
+function RandomBarcode(sReagent)
+{
+     len=aqString["GetLength"](sReagent)
+     var iSequencenumber=GetRandomInteger(1000,9999);
+     return (aqString["Remove"](sReagent,len-4,4)+iSequencenumber)
+} 
+
+function LoadReagent()
+{
+  Log["AppendFolder"]("IASimulator::LoadReagent");
+  NetworkSuite["Variables"]["TaskStatus"] = "False";
+  var arrTestData=GetTestItemsByTestName(TestDataFile, "LoadReagent", "Initialization");
+  var dictColumn=arrTestData[0];
+  var strReagents = dictColumn["Item"]("Reagent");
+
+  try
+  {
+    InitializeWorkflowXML(strWorkflowXMLPath);
+    InitializeControlXML(strControlXMLPath);
+    
+    arrReagents = strReagents["split"](";");
+    for(intIndex=0; intIndex<arrReagents["length"]; intIndex++)
+    {
+      //Splitting arrReagents[intIndex] based on ";" to get single reagent barcode
+      var sReagent = RandomBarcode(arrReagents[intIndex]);
+      var objCtrl=GetControl("AMSim","MainForm");
+      if(!SelectStripMenuItem(objCtrl, "Reagents|Reagent Drawer Load..."))
+      {
+        Log["Warning"]("Unable to launch reagent drawer load window in AM simulator");
+        Log["PopLogFolder"]();
+        NetworkSuite["Variables"]["TaskStatus"] = "False";
+        return false;
+      }
+      objCtrl=GetControl("AMSim","txtBoxBarcode1");
+      SetText(objCtrl, sReagent);
+      objCtrl=GetControl("AMSim","btnOK");
+      ClickControl(objCtrl);
+      
+      aqUtils["Delay"](1000, "Loading the reagent");
+      var objStatusTextBox = GetControl("AMSim","txtBoxStatus");
+      var strStatusText = GetComboxBoxValue(objStatusTextBox);
+      //var intRes = aqString["Find"](strStatusText, "Pack with barcode");
+      var intRes = aqString["Find"](strStatusText, "Barcode:" + sReagent + ", Status:GoodRead");
+      if(intRes != -1)
+      {
+        Log["Message"]("The reagent barcode: " + sReagent + " was loaded");
+        NetworkSuite["Variables"]["TaskStatus"] = "True";
+      }
+      else
+      {
+        Log["Warning"]("The reagent barcode: " + sReagent + " was NOT loaded");
+        NetworkSuite["Variables"]["TaskStatus"] = "False";
+      }
+    }
+    Log["PopLogFolder"]();
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception" + exp["description"]);
+    Log["PopLogFolder"]();
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    return false;
+  } 
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeIA
+//*
+//*  Description: Invoke IA application
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeIA()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeIA(strAppName,strAppPath,Testobj,strProcessName)
+{
+   try
+   {
+       var strpath = strAppPath// + strAppName;
+//       var objWS = Sys["OleObject"]("WScript.Shell")
+//       var oShell=Sys["OleObject"]("Shell.Application");
+//       oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5);
+//        TestedApps.IA.Run();
+
+        var folderView;
+        folderView = Aliases.explorer.wndProgman.SHELLDLL_DefView.FolderView;
+        folderView.ClickItem("Start ENG Mode", 0);
+        folderView.ClickItemR("Start ENG Mode", 0);
+        folderView.PopupMenu.Click("Run as administrator");
+
+        
+       //Waits for the Shell Process to initialize. Max waiting time : 30 seconds
+       aqUtils.Delay(5000)
+       
+       if(strProcessName!="")
+       {
+          if(Sys["WaitProcess"](strProcessName,100000)["Exists"] == true)
+          {
+         
+            Sys.Process(strProcessName)["Refresh"]();
+      
+            Log["Message"]("The Process "+strProcessName+" has started successfully");
+            for(i=1;i<=100;i++)
+            {
+              if (Testobj!="")
+              {
+                if(Testobj["Exists"]==true)
+                { 
+                  break;    
+                }
+              }
+            }
+            if (Testobj!="")
+            {
+              if(Testobj["Exists"])
+              {
+                Log["Message"]("The Application "+strAppName+" launched successfully");
+                return true;
+              }
+            
+              else
+              {
+                Log["Message"]("Unable to launch the Application "+strAppName);
+                return false;
+              }
+            }
+          }
+          else
+          {
+            Log["Error"]("Unable to start the process "+strProcessName);
+            return false;
+          }
+       }
+   }
+   catch(exp)
+   {
+      Log["Error"]("Exception",exp["description"]);    
+   }
+}
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : InvokeAMSimulator
+//*
+//*  Description: InvokeAMSimulator application
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: InvokeAMSimulator()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function InvokeAMSimulator(strAppName,strAppPath,Testobj,strProcessName)
+{
+   try
+   {
+       var strpath = strAppPath// + strAppName;
+//       var objWS = Sys["OleObject"]("WScript.Shell")
+//       var oShell=Sys["OleObject"]("Shell.Application");
+//       oShell.ShellExecute(strpath,strAppName,"C:\\Siemens\\Bin","runas",5);
+
+        var folderView;
+        folderView = Aliases.explorer.wndProgman.SHELLDLL_DefView.FolderView;
+        folderView.ClickItem("Launch AM Simulator", 0);
+        folderView.ClickItemR("Launch AM Simulator", 0);
+        folderView.PopupMenu.Click("Run as administrator");
+
+        
+       //Waits for the Shell Process to initialize. Max waiting time : 30 seconds
+       aqUtils.Delay(10000)
+       
+       if(strProcessName!="")
+       {
+          if(Sys["WaitProcess"](strProcessName,100000)["Exists"] == true)
+          {
+         
+            Sys.Process(strProcessName)["Refresh"]();
+      
+            Log["Message"]("The Process "+strProcessName+" has started successfully");
+            for(i=1;i<=100;i++)
+            {
+              if (Testobj!="")
+              {
+                if(Testobj["Exists"]==true)
+                { 
+                  break;    
+                }
+              }
+            }
+            if (Testobj!="")
+            {
+              if(Testobj["Exists"])
+              {
+                Log["Message"]("The Application "+strAppName+" launched successfully");
+                return true;
+              }
+            
+              else
+              {
+                Log["Message"]("Unable to launch the Application "+strAppName);
+                return false;
+              }
+            }
+          }
+          else
+          {
+            Log["Error"]("Unable to start the process "+strProcessName);
+            return false;
+          }
+       }
+   }
+   catch(exp)
+   {
+      Log["Error"]("Exception",exp["description"]);    
+   }
+}
+
+
+//************************************************************************************************************************************************************************************
+//*  FunctionName : IAShutdown
+//*
+//*  Description: Shutdown IA Simulator App
+//*  
+//*  Input: NA
+//*
+//*  Output: Boolean
+//*
+//*  Example: IAShutdown()
+//*
+//*  Author Name: 
+//*
+//*  Date of Creating: 20/09/2016
+//*
+//*  Last Modified date:
+//***********************************************************************************************************************************************************************************
+function IAShutdown()
+{
+  try
+  { 
+    var oShell=Sys["OleObject"]("Shell.Application");
+    var strshutdownPath = "C:\\Siemens\\Bin\\IA_Shutdown.bat"
+   
+    oShell.ShellExecute(strshutdownPath,"","C:\\Siemens\\Bin","runas",5);
+    var IAProcessobj = Sys["Process"]("ICMessageViewer")
+    while(IAProcessobj["Exists"])
+    {
+      aqUtils["Delay"](2000);
+    }
+    
+    if (Sys.Process("AMSimulator").Exists)
+    {
+      Sys.Process("AMSimulator").Terminate()
+      aqUtils["Delay"](2000);
+    }
+    
+    if(!Sys["Process"]("ICMessageViewer")["Exists"])
+      return true;
+    else
+      return false;    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+  }
+}
+
+function SetRLUValueInSampleRepliactes(sRLUValues)
+{
+  try
+  {
+    //var sRLUValues="1000";
+   NetworkSuite["Variables"]["TaskStatus"] = "False";
+    InitializeWorkflowXML(strWorkflowXMLPath)
+    InitializeControlXML(strControlXMLPath)
+    
+    var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+    
+    var arrTestData=GetTestItemsByTestName(TestDataFile, "SampleReplicates", scenarioname);
+   
+    
+    for(var j=0;j<dictColumn["length"];j++)
+    {
+     var dictColumn=arrTestData[j];
+     var sRLUValues=dictColumn["item"]("RLUValues")
+     var aRLUValues=sRLUValues["split"](";");
+       
+      for(var i=0;i<30;i++)
+      {
+        var objCtrl=GetControl("AMSim","frmSampleReplicatesForm");
+        var BoolValue=VerifyObjectExistance(objCtrl)
+        if(BoolValue==false)
+        {
+          aqUtils["Delay"]("2000","Waiting for Sample replicates window")
+        }
+        else
+        {
+          break;
+        }        
+      } 
+      if(i>30)
+      {
+        Log["Error"](("unable to find Sample replicates window"));
+        NetworkSuite["Variables"]["TaskStatus"] = "False";
+        return false;
+      }
+       
+      for(var i=0;i<aRLUValues["length"];i++)
+      { 
+        var objCtrl=GetControl("AMSim","grdSampleReplicatesRLUValue");
+        ClickCellInGrid(objCtrl,i,1)
+    
+        var objCtrl=GetControl("AMSim","txtBoxEditingControl");
+        SetText(objCtrl,aRLUValues[i]);
+      } 
+    
+      var objCtrl=GetControl("AMSim","btnDone");
+      Clickbutton(objCtrl);
+      NetworkSuite["Variables"]["TaskStatus"] = "True";
+      return true;
+      }      
+    
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception" + exp["description"]);
+    Log["PopLogFolder"]();
+    NetworkSuite["Variables"]["TaskStatus"] = "False";
+    return false;
+  } 
+} 

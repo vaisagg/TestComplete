@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE Nodes [
+
+<!ENTITY % NameValue "CDATA">
+<!ENTITY % PropType "(I|S|D|L|H|B)">
+<!ENTITY % VersionValue "CDATA">
+
+<!ELEMENT Prp (#PCDATA)>
+<!ELEMENT Node (Node|Prp)*>
+<!ELEMENT Nodes (Node)+>
+
+<!ATTLIST Nodes version CDATA "1">
+
+<!ATTLIST Node name CDATA #REQUIRED>
+
+<!ATTLIST Prp name CDATA #REQUIRED>
+<!ATTLIST Prp type CDATA #REQUIRED>
+<!ATTLIST Prp value CDATA #REQUIRED>
+]>
+<Nodes version="1">
+	<Node name="root">
+		<Node name="data">
+			<Node name="{0bd10fb3-4b43-4c9e-bd32-21d10563b013}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Decapper\Decapper.mds.tcLS"/>
+			</Node>
+			<Node name="{0fb3fb51-76ab-46f2-a587-fe71fd71eb25}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\CalibrationDemo\Demo\CalibrationDemo.mds.tcLS"/>
+			</Node>
+			<Node name="{12fa34ec-f4e0-44a8-89bb-155472b12add}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\InvokeSimApps\InvokeSimApps.mds.tcLS"/>
+			</Node>
+			<Node name="{16ae3ae8-aca2-4f55-94b5-8558f69dff3b}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\P2\P2.mds.tcLS"/>
+			</Node>
+			<Node name="{24b6fa0b-0143-461a-9758-aeb9e9a9428b}">
+				<Prp name="default project" type="S" value="{3D502B8D-9960-467E-8C06-A0DCFEF83295}"/>
+			</Node>
+			<Node name="{3d502b8d-9960-467e-8c06-a0dcfef83295}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Initialization\Initialization.mds.tcLS"/>
+			</Node>
+			<Node name="{54353910-b82a-4084-9b6d-59c3a2ccb023}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\IA\IA.mds.tcLS"/>
+			</Node>
+			<Node name="{610332c4-e149-4269-857e-7712dff26e43}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\SampleHandler\SampleHandler.mds.tcLS"/>
+			</Node>
+			<Node name="{8722d6a2-c235-4aac-99fd-419aba038e0b}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\CalibrationDemo\CalibrationDemo.mds.tcLS"/>
+			</Node>
+			<Node name="{887c8648-20fb-4cdf-9e3a-78777d321f23}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\LocalizationTest\LocalizationTest.mds.tcLS"/>
+			</Node>
+			<Node name="{8e212c2d-ecf1-4005-a0fa-de718b5f26b4}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\Initialization\Initialization.mds.tcLS"/>
+			</Node>
+			<Node name="{992eddbd-db45-45af-8afa-21479db144f6}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\SampleHandler\SampleHandler.mds.tcLS"/>
+			</Node>
+			<Node name="{a50427fa-f5c9-4612-a88a-967cfc18bf93}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\Sorting\TestProject1\TestProject1.mds.tcLS"/>
+			</Node>
+			<Node name="{a580676d-5158-45e3-a55a-f604d7a73d00}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\InstallationTest\InstallationTest.mds.tcLS"/>
+			</Node>
+			<Node name="{a7db350c-2df4-47c1-9da3-8048343079f4}">
+				<Prp name="relpath" type="S" value="Sealer\Sealer.mds.tcLS"/>
+			</Node>
+			<Node name="{a9be6024-37a6-4e8f-952f-b4656cc08e85}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\SampleHandler\SampleHandler.mds.tcLS"/>
+			</Node>
+			<Node name="{b208ee0f-3676-4fb8-8935-23d4f94e170c}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\Sorting\Sorting.mds.tcLS"/>
+			</Node>
+			<Node name="{b6db8e51-4ee4-4b25-840f-8be78e1f69ae}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\InvokeSimApps\InvokeSimApps.mds.tcLS"/>
+			</Node>
+			<Node name="{bddd8126-01a7-414e-aa04-12c66e222189}">
+				<Prp name="relpath" type="S" value="IA\IA.mds.tcLS"/>
+			</Node>
+			<Node name="{be855dd2-74b2-4891-8b64-8c5c25fa6119}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\SmokeTest\SmokeTest.mds.tcLS"/>
+			</Node>
+			<Node name="{c7e28bbd-8ff3-41aa-9714-080b35a8a567}">
+				<Prp name="relpath" type="S" value="Atellica\Atellica.mds.tcLS"/>
+			</Node>
+			<Node name="{d01b4ac3-5e46-4b8c-9569-f973b960c763}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Sealer\Sealer.mds.tcLS"/>
+			</Node>
+			<Node name="{dcb17439-2923-4bb2-8d4b-6f4ab4c0db76}">
+				<Prp name="relpath" type="S" value="..\..\TestcaseLayer\LocalizationTest\TestProject1\TestProject1.mds.tcLS"/>
+			</Node>
+			<Node name="{f4296574-c164-4eef-ad11-53f8f359ec5b}">
+				<Prp name="relpath" type="S" value="\TestProject1\TestProject1.mds.tcLS"/>
+			</Node>
+			<Node name="{fa40288c-9926-4cd1-ae46-f9ba5239205e}">
+				<Prp name="relpath" type="S" value="..\TestcaseLayer\Sorting\P2.mds.tcLS"/>
+			</Node>
+			<Node name="envmngrlogs">
+				<Prp name="key" type="S" value="{F61C06EA-A1FA-4B6C-93E1-BEBC2A7A6497}"/>
+			</Node>
+			<Node name="logs">
+				<Prp name="key" type="S" value="{B769DEC4-08C1-4CEC-8BE7-6F5A45E57151}"/>
+				<Prp name="relpath" type="S" value="Log"/>
+			</Node>
+			<Node name="variables">
+				<Node name="datav3">
+					<Node name="var0">
+						<Node name="value">
+							<Prp name="boolvalue" type="B" value="0"/>
+						</Node>
+						<Prp name="name" type="S" value="StartCCStatus"/>
+					</Node>
+					<Node name="var1">
+						<Node name="value">
+							<Prp name="boolvalue" type="B" value="0"/>
+						</Node>
+						<Prp name="name" type="S" value="ShutdownCCStatus"/>
+					</Node>
+				</Node>
+				<Prp name="version" type="I" value="3"/>
+			</Node>
+		</Node>
+		<Prp name="signature" type="S" value="{71078212-FAEB-4856-A901-B237C89E6B5C}"/>
+	</Node>
+</Nodes>

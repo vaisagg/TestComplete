@@ -1,0 +1,789 @@
+﻿//USEUNIT CommonUtilities
+//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT LocalizationUtilities
+//USEUNIT PatientOrders
+
+
+function MoveAllSamplesToHistorical()
+{
+  try
+  {
+    Log.AppendFolder("Worklist::MoveAllSamplesToHistorical");
+
+	var objctrl =GetControl("Worklist_WorklistOverview","cmbBoxOrderDate");
+    stransValue=GetTranslatedString("All","")
+    SetComboValue(objctrl,stransValue);	
+
+    var objctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+	aqUtils["Delay"](2000,"Selecting all orders")
+    objctrl["Click"](32, 26);
+	 aqUtils["Delay"](5000,"Selecting all orders")
+	var objctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    var intSampleCount = GetGridRowCount(objctrl);
+    if(intSampleCount == 0)
+    {
+      Log["Message"]("No samples available in worklist")
+      Log["PopLogFolder"]();
+      return true;
+    }
+ 
+    var objctrl =GetControl("Worklist_WorklistOverview","btnMoveToHistorical");
+    if (objctrl["Enabled"])
+    {
+      ClickControl(objctrl);
+  
+      var objctrl =GetControl("Worklist_WorklistOverview","btnYes");
+      ClickControl(objctrl);
+	  aqUtils["Delay"](6000,"Moving all orders to historical")
+      var objctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+      var intSampleCount = GetGridRowCount(objctrl);
+      if(intSampleCount == 0)
+      {
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["PopLogFolder"]();
+        return false;  
+      }
+    } 
+	 else
+    {
+      Log["Warning"]("Move To Historical  button is not enabled");
+      Log["PopLogFolder"]();
+      return false; 
+    } 
+    Log["PopLogFolder"]();
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyBatchWorkOrder(strSampleID, intSampleCount)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifyBatchWorkOrder");
+    var boolFlag = false;
+    var intFailCount=0;
+    var arrBatchSampleIDs = GetBatchOrderIDs(strSampleID, intSampleCount);
+    for (var j=0;j<arrBatchSampleIDs["length"];j++)
+    {
+      boolFlag = VerifySampleHasWorkorder(arrBatchSampleIDs[j]);
+      if(boolFlag == false)
+      {
+        intFailCount++;
+      } 
+    }
+    if(intFailCount > 0)
+    {
+      Log["Message"]("Batch order verification failed. " +intFailCount+ " samples are not coming on Worklist");
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("Batch order verification passed.");
+      Log["PopLogFolder"]();
+      return true;
+    } 
+  } 
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySampleHasWorkorder(SampleID)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifySampleHasWorkorder");
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    
+    var Row = GetGridRowNo(objGridctrl,"SID",SampleID)
+    if (Row==null)
+    {
+      Log["Warning"]("Unable to find the workorder for SampleId "+SampleID+" in worklist")
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"](SampleID+" has a workorder");
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }   
+}
+
+
+//This method checks whether any interference test Workorder (either H or I or L) has been created for a given sample id.   
+function VerifyHILWorkOrderNotPresent(strSampleID)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifyHILWorkOrderNotPresent");
+    var boolFlag = true;
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+
+    var intTotalRowCount = GetGridRowCount(objGridctrl);
+    
+    if(CheckTextonGrid(objGridctrl, "SID", strSampleID) == true)
+    {
+      for (var intCurrentRow=0; intCurrentRow<intTotalRowCount; intCurrentRow++)
+      {
+        strCurrentSampleID = GetGridCellText(objGridctrl, intCurrentRow, "SID");
+        if(strCurrentSampleID == strSampleID)
+        {
+          strOrderedTest = GetGridCellText(objGridctrl, intCurrentRow, "Test");
+          if(strOrderedTest == "H" || strOrderedTest == "I" || strOrderedTest == "L")
+          {
+            Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Found an Interference Test: " + strOrderedTest + " that is ordered for Sample: " + strSampleID);
+            boolFlag = false;
+          }
+        } 
+      }
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"No Workorder present on Worklist tab for Sample: " +strSampleID);
+      return false;
+    } 
+    if(!boolFlag)
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+    else
+    {
+      Log["Message"]("HIL tests were not ordered for Sample: " + strSampleID );
+      Log["PopLogFolder"]();
+      return true;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+} 
+
+//Verify WorkOrder Has H,I,L Interference tests
+function VerifyWorkOrderHasHILInterferenceTests(strSampleID)
+{
+  try
+  {
+    //strSampleID="SampleGWT19766001"
+    //InitializeMetaData();
+    Log.AppendFolder("Worklist::VerifyWorkOrderHasHILInterferenceTests");
+    var boolFlag = true;
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+
+    var intTotalRowCount = GetGridRowCount(objGridctrl);
+    iInterference=0;
+    if(CheckTextonGrid(objGridctrl, "SID", strSampleID) == true)
+    {
+      for (var intCurrentRow=0; intCurrentRow<intTotalRowCount; intCurrentRow++)
+      {
+        strCurrentSampleID = GetGridCellText(objGridctrl, intCurrentRow, "SID");
+        if(strCurrentSampleID == strSampleID)
+        {
+          strOrderedTest = GetGridCellText(objGridctrl, intCurrentRow, "Test");
+          if(strOrderedTest == "H" || strOrderedTest == "I" || strOrderedTest == "L")
+          {
+            iInterference=iInterference+1;
+            Log["Message"]("Found an interference test: " + strOrderedTest + " that is ordered for Sample: " + strSampleID)
+          } 
+        } 
+      }
+      
+     if(iInterference == 3)
+     {
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Found HIL interference tests ordered for Sample: " + strSampleID);
+       Log["PopLogFolder"]();
+       return true;
+     } 
+     else
+     {
+        Log["Message"]("Unable to find HIL interfeence test(s) for the sample "+strSampleID+" in worklist")
+        Log["PopLogFolder"]();
+        return false;
+     }
+    }
+    else
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"No Workorder present on Worklist tab for Sample: " +strSampleID);
+      Log["PopLogFolder"]();
+      return false;
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception: " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  } 
+} 
+function VerifySampleResult(SampleId, SampleStatus)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifySampleResult");
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    
+    var blnSampleCheck = false;
+    for(i=0; i<10;i++)
+    {
+      blnSampleCheck = CheckTextonGrid(objGridctrl, "SID", SampleId);
+      if(blnSampleCheck == true)
+        break;
+      else
+      {
+        aqUtils["Delay"](2000, "Waiting for SampleID: " + SampleId + " to show up on Worklist grid");
+      } 
+    }
+    if(!blnSampleCheck)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), SampleId + " did not come up on the Worklist grid");
+      Log["PopLogFolder"]();
+      return false; 
+    }
+    
+    var transSampleStatus=GetTranslatedString(SampleStatus,"");
+    var RowNum = GetGridRowNo(objGridctrl, "SID", SampleId)
+    blnTranslationCheck = false;
+    for(var i=0; i<120;i++)
+    {
+      strSampleStatus = GetGridCellText(objGridctrl, RowNum, "Result");
+      if( aqString["Trim"](strSampleStatus) == aqString["Trim"](transSampleStatus))
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample status for " + SampleId + " is displayed as: " + strSampleStatus);
+        Log["PopLogFolder"]();
+		    blnTranslationCheck = true;
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        aqUtils["Delay"](5000, "Waiting for Sample: " + SampleId + " to be "+SampleStatus+" on Worklist grid")
+      }
+    }
+    
+    if (blnTranslationCheck == false)
+    {
+      Log["Warning"]("Expected sample status : "+ transSampleStatus +" does not match with actual sample status: " + strSampleStatus + " - Translation error");
+      if(aqString["Compare"](SampleStatus, strSampleStatus, true) == 0)
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample result verification passed");
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Sample result verification failed");
+        Log["PopLogFolder"]();
+        return false;
+      }
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+} 
+
+function VerifySampleTestHasSpecimenMismatchError(SampleId,SampleTest,SampleError)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifySampleTestHasVisionError");
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    
+    //
+    var transSampleError=GetTranslatedString(SampleError,"");
+    var iSamplecount= GetGridRowCount(objGridctrl)
+    blnFound = false;
+    
+    for(i=0; i<iSamplecount;i++)
+    {
+      if((CheckTextonGridRow(objGridctrl,"SID",i, SampleId))&&(CheckTextonGridRow(objGridctrl,"Test",i, SampleTest)))
+      {
+          for(var j=0; j<4;j++)
+          {
+              blnTranslationCheck = false;
+              strSampleError = GetGridCellTextByColumnIndex(objGridctrl, i,14);
+//              strSampleError = GetGridCellText(objGridctrl, i, "");        // can use only once we get the column header text from developers
+
+              var arrSampleError = new Array();
+              var Res = aqString["Find"](strSampleError, transSampleError);
+              if ( Res != -1 )
+              {
+                  Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification passed- Sample has specimen mismatch error for " + SampleId + " for Test" + SampleTest + " is displayed as: " + strSampleError);
+            	    blnTranslationCheck = true;
+                  Log["PopLogFolder"]();
+                  return true;
+              }
+              else
+              {
+                aqUtils["Delay"](5000, "Waiting for Sample: " + SampleId + " to be "+SampleError+" on Worklist grid")
+              }
+          }// end of inner for loop
+      }
+
+    if(j>0)
+    break;
+    }// end of outer for loop
+
+    
+    if (blnTranslationCheck == false)
+    {
+        Log["Warning"]("Expected sample error : "+ transSampleError +" does not match with actual sample error: " + strSampleError + " - Translation error");
+        //if(aqString["Compare"](SampleError, strSampleError, true) == 0)
+        var Res = aqString["Find"](strSampleError, SampleError);
+        if ( Res != -1 )
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification passed- Sample has specimen mismatch error for " + SampleId + " for Test" + SampleTest + " is displayed as: " + strSampleError);
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification failed - Sample specimen mismatch error for " + SampleId + " for Test" + SampleTest);
+          Log["PopLogFolder"]();
+          return false;
+        }
+    }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function VerifySampleTestHasVisionError(SampleId,SampleTest,SampleError)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifySampleTestHasVisionError");
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    
+    //
+    var transSampleError=GetTranslatedString(SampleError,"");
+    var iSamplecount= GetGridRowCount(objGridctrl)
+    blnFound = false;
+    
+    for(i=0; i<iSamplecount;i++)
+    {
+      if((CheckTextonGridRow(objGridctrl,"SID",i, SampleId))&&(CheckTextonGridRow(objGridctrl,"Test",i, SampleTest)))
+      {
+          for(var j=0; j<4;j++)
+          {
+              blnTranslationCheck = false;
+              strSampleError = GetGridCellTextByColumnIndex(objGridctrl, i,14);
+//              strSampleError = GetGridCellText(objGridctrl, i, "");        // can use only once we get the column header text from developers
+
+              var arrSampleError = new Array();
+              var Res = aqString["Find"](strSampleError, transSampleError);
+              if ( Res != -1 )
+              {
+                  Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification passed- Sample vision error for " + SampleId + " for Test" + SampleTest + " is displayed as: " + strSampleError);
+            	    blnTranslationCheck = true;
+                  Log["PopLogFolder"]();
+                  return true;
+              }
+              else
+              {
+                aqUtils["Delay"](5000, "Waiting for Sample: " + SampleId + " to be "+SampleError+" on Worklist grid")
+              }
+          }// end of inner for loop
+      }
+
+    if(j>0)
+    break;
+    }// end of outer for loop
+
+    
+    if (blnTranslationCheck == false)
+    {
+        Log["Warning"]("Expected sample error : "+ transSampleError +" does not match with actual sample error: " + strSampleError + " - Translation error");
+        //if(aqString["Compare"](SampleError, strSampleError, true) == 0)
+        var Res = aqString["Find"](strSampleError, SampleError);
+        if ( Res != -1 )
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification passed- Sample vision error for " + SampleId + " for Test" + SampleTest + " is displayed as: " + strSampleError);
+          Log["PopLogFolder"]();
+          return true;
+        }
+        else
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification failed - Sample vision error for " + SampleId + " for Test" + SampleTest);
+          Log["PopLogFolder"]();
+          return false;
+        }
+    }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifySampleTestHasNotThisVisionError(SampleId,SampleTest,SampleError)
+{
+  try
+  {
+    Log.AppendFolder("Worklist::VerifySampleTestHasNotThisVisionError");
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    
+    var transSampleError=GetTranslatedString(SampleError,"");
+    var iSamplecount= GetGridRowCount(objGridctrl)
+    blnFound = false;
+    blnTranslationCheck = false;
+    for(i=0; i<iSamplecount;i++)
+    {
+      if((CheckTextonGridRow(objGridctrl,"SID",i, SampleId))&&(CheckTextonGridRow(objGridctrl,"Test",i, SampleTest)))
+      {
+          blnFound= true;
+          for(var j=0; j<4;j++)
+          { 
+              strSampleError = GetGridCellTextByColumnIndex(objGridctrl, i,14);
+//              strSampleError = GetGridCellText(objGridctrl, i, "");        // get the column header text from developers
+
+              var Res = aqString["Find"](strSampleError, transSampleError);
+              if ( Res != -1 )
+              {
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification failed- Sample vision error for " + SampleId + " for Test" + SampleTest + " is displayed as: " + strSampleError);
+          	    blnTranslationCheck = true;
+                Log["PopLogFolder"]();
+                return false;
+              }
+              else
+              {
+                aqUtils["Delay"](5000, "Verify sample '"+SampleId +"' has not this vision error '" + SampleError+"' for max 20 secs");
+                
+              }
+          }// end of inner for loop
+      }
+
+    if(blnFound==true)
+      break;
+    }// end of outer for loop
+
+    
+    if (blnTranslationCheck == false)
+    {
+        var Res = aqString["Find"](strSampleError, SampleError);
+        if ( Res != -1 )
+        {
+          Log["Warning"]("Unexpected sample error found : "+ strSampleError +" matches with - Translation error");
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification failed- Sample vision error for '" + SampleId + "' for Test '" + SampleTest + "' is displayed as: " + strSampleError);
+          Log["PopLogFolder"]();
+          return false;
+        }
+        else
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Verification passed - Sample '" + SampleId + "' with test '"+ SampleTest +"' does not has this vision error '"+SampleError +"'");
+          Log["PopLogFolder"]();
+          return true;
+        }
+    }
+  
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function VerifySampleHasVisionEntry(SampleId,VisionEntry)
+{
+//InitializeMetaData();
+//SampleId = "1111130"
+//SampleTest = "Crea_2"
+//VisionEntry = "L"
+  try
+  {
+    Log.AppendFolder("Worklist::VerifySampleHasVisionEntry");
+    var objGridctrl =GetControl("Worklist_WorklistOverview","grdWorklistSamples");
+    
+    blnFound = false;
+    var iSamplecount= GetGridRowCount(objGridctrl)
+    
+    for (var i=0;i<iSamplecount;i++)
+    {
+      if((CheckTextonGridRow(objGridctrl,"SID",i,SampleId))&&(CheckTextonGridRow(objGridctrl,"Test",i,VisionEntry)))
+      {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "Vision entry verification for sample " + SampleId + " is passed");
+          Log["PopLogFolder"]();
+          blnFound = true;
+          return true;
+      }
+    }
+    
+    if(blnFound==false)
+    {
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](),"Vision entry " + VisionEntry + " is not present for the sample" + SampleId)
+      Log["PopLogFolder"]();
+      return true;
+    }
+    
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+function VerifyOrderHasCompletedProcessingInWorklist(SID)
+{
+//  var SID="Sample2"
+  try
+  { 
+    Log.AppendFolder("Worklist::VerifyOrderHasCompletedProcessingInWorklist");
+    for(var i=0;i<300;i++)
+    {
+       strSampleStatus = fnGetDBSampleStatus(SID);
+       if((strSampleStatus == "New")||(strSampleStatus == "In Process"))
+       {
+         aqUtils["Delay"](3000,"Waiting for sample resulted");
+         
+       }
+      else
+      {
+        Log["Message"]("Work order with SampleID "+SID+" has completed processing and sample status is "+strSampleStatus)
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), SID+" processed successfully");
+        Log["PopLogFolder"]();
+        return true;
+      }
+    }
+    if(i==300)
+    {
+       Log["Warning"]("Work order with SampleID "+SID+" is unable to complete processing even after waiting 15 minutes and sample status is "+strSampleStatus)
+       Log["Picture"](Sys["Desktop"]["ActiveWindow"](), SID+" is unable to process successfully");
+       Log["PopLogFolder"]();
+       return false;
+    }
+  }
+   catch(exp)
+  {
+    Log["Error"]("Exception " + exp["description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : fnVerifyTestResult(SID)
+//*  Description: Captures the Test Result for Given Sample ID[SID] for Hydra
+//*  Input: SID
+//*  Output: boolean
+//*  Example: fnVerifyTestResult(SID)
+//*  Date of Creating: 31/10/2017
+//*  Last Modified date:03/11/2017
+//*  Modified By : NA
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function fnVerifyTestResult(SID)
+{
+  try
+    {
+     
+      //Initialize
+      var strSampleStatus = "";
+      var strResult       = "";
+      var strTestName     = "";
+      var strFlags        = "";
+      var orderRowNo      = -1;
+      var ColumnIndexSID  = -1;
+      var ColumnIndexFlg  = -1;
+      var RecordSet       = Sys["OleObject"]("ADODB.RecordSet")
+        
+      //Get Sample Status from DB
+      aqUtils["Delay"](60000,"Wait for sample processing to start")
+      strSampleStatus = fnGetDBSampleStatus(SID);
+      if(strSampleStatus == false) {
+        ProjectSuite["Variables"]["ExecutionStatus"] ="False"
+        return false
+      }
+
+      //Verify Sample Overview Table Exists
+      var objSmplOvwGrid= GetControl("Worklist_WorklistOverview", "grdWorklistSamples");
+      if(VerifyObjectExistance(objSmplOvwGrid)!=true){
+        Log["Error"]("Unable to locate Sample Overview table.");
+        ProjectSuite["Variables"]["ExecutionStatus"] ="False"
+        return false;
+      }
+    
+      //Repeat for all tests for same sample
+      ColumnIndexSID = GetGridColumnIndex(objSmplOvwGrid,"SID");
+      var TotalRows = objSmplOvwGrid["RowCount"];
+      for(Row=0;Row<TotalRows;Row++)
+      {
+             
+        //Fetch SID
+        strCellValue = objSmplOvwGrid["Rows"]["Item"](Row)["Cells"]["Item"](ColumnIndexSID)["Value"]["OleValue"];
+          
+        if(strCellValue == SID)
+        {
+            //Set Sample Row Number
+            orderRowNo = Row
+            
+            //Get Test name
+            strTestName = GetGridCellText(objSmplOvwGrid,orderRowNo,"Test");
+    
+            //Log
+            Log["AppendFolder"](strTestName+" Test Result");
+                            
+            //Sample not Processed -Fail State
+            if(strSampleStatus == "New"){
+                Log["Error"]("Error - Sample is in New Status");
+                Log["PopLogFolder"]();
+                return false;
+            }
+    
+            //If Sample "In process" then Wait -Modified Wait- Bhawya 18 Dec -22 Mins
+            var i =0;
+            if(strSampleStatus =="In Process"){
+              Log["Message"]("Processing "+SID+" for "+strTestName+" test");
+              while(strSampleStatus == "In Process" && i <22){
+                strSampleStatus = fnGetDBSampleStatus(SID);
+                aqUtils["Delay"](60000);
+                i = i+1;
+              }
+              Log["Message"]("SampleStatus -"+strSampleStatus)
+              if(strSampleStatus !="In Process")
+                Log["Picture"](Sys["Desktop"]["ActiveWindow"](), SID+" processed successfully");
+              else{
+                Log["Error"](SID+" not processed"); 
+                Log["PopLogFolder"]()
+                return false;
+              }
+            }
+            
+            //Adding delay
+      aqUtils["Delay"](10000,"Adding delay")
+            
+ //   If Sample "In process" then Wait
+//            var i =0;
+//            if(strSampleStatus =="In Process"){
+//              Log["Message"]("Processing "+SID+" for "+strTestName+" test");
+//              while(strSampleStatus == "In Process" && i <60){
+//                strSampleStatus = fnGetDBSampleStatus(SID);
+//                aqUtils["Delay"](15000);
+//                i = i+1;
+//                if(strSampleStatus !="In Process"){
+//                Log["Message"](SID+" processed successfully");
+//                break;
+//                }
+//              }
+//              Log["Error"](SID+" not processed"); 
+//                return false;
+//            }
+            //Get Flags
+            ColumnIndexFlg = GetGridColumnIndex(objSmplOvwGrid,"Flags");
+            ColumnIndexresult = GetGridColumnIndex(objSmplOvwGrid,"Result");
+            ColumnIndexFlg = ColumnIndexFlg+3;
+            strFlags = objSmplOvwGrid["Rows"]["Item"](orderRowNo)["Cells"]["Item"](ColumnIndexFlg)["Value"]["OleValue"];
+    
+    
+            //Get Result for SID
+            strResult = GetGridCellText(objSmplOvwGrid,orderRowNo,"Result");
+            if( strResult == "undefined" || strResult =="Error" ){
+              Log["Error"]("Result : "+strResult+" - "+strFlags);
+              Log["PopLogFolder"]();
+              return false;
+            }
+            else if( strFlags =="Cal Invalid")
+            {
+              Log["Message"]("Result : "+strResult+" - "+strFlags);
+            }
+            else{
+              Log["Message"]("Result : "+strResult);
+              Log["Message"]("Result value : "+ColumnIndexresult);
+            }
+            Log["PopLogFolder"]();
+        }  
+
+      }
+      //Log    
+     // Log["PopLogFolder"]();
+    }
+  	catch(exp)
+  	{
+  	  Log["Error"](exp["description"]);
+      return false;
+  	}
+    return true;
+}
+
+//'***************************************************************************************************************************
+//*  FunctionName : fnGetDBSampleStatus(SID)
+//*  Description: Fetch the Sample Status From Database
+//*  Input: SID
+//*  Output: boolean
+//*  Example: fnGetDBSampleStatus(SID)
+//*  Date of Creating: 31/10/2017
+//*  Last Modified date:
+//*  Created By: Bhawya V J
+//'***************************************************************************************************************************
+function fnGetDBSampleStatus(SID)
+{
+    var strSampleStatus = "";
+    try
+    {
+        //Get Sample Status from Database
+        var strConString = "Provider=sqloledb;Server=.;Database=Bus_DM;Integrated Security=SSPI;"
+        var strQuery = "SELECT Description FROM dbo.Sample_States WHERE StateID in (SELECT StatusID FROM dbo.Samples WHERE SID = '"+SID+ "')";
+        RecordSet = ReturnQueryRecordSetFromString(strQuery,strConString)
+        
+        //Verify Sample Exists in DB
+        if(RecordSet["EOF"] == false)
+        {
+          RecordSet["MoveFirst"]();
+          strSampleStatus = RecordSet["Fields"]("Description").Value;
+        }
+        else
+        {
+          Log["Error"](SID+" does not exist in database.");
+          ProjectSuite["Variables"]["ExecutionStatus"] ="False"
+          return false;
+        }
+    }
+    catch(exp)
+    {
+        Log["Error"]("Exception",exp["description"]);
+        return false;
+    }
+    return strSampleStatus;
+} 

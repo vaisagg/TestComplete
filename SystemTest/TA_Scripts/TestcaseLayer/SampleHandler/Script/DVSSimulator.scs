@@ -1,0 +1,1632 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT CommonUtilities
+//USEUNIT WorkflowNavigator
+
+var TestDataFile = Project["Path"]+"TestData\\TestData.xls";
+//var strBrowsePath = "C:\\hydra.dev\\drop\\Configuration\\DVS\\VirtualData"
+var strBrowsePath = "C:\\Siemens\\Configs\\DVS\\VirtualData"
+
+function LaunchApplication(strPath)
+{
+  try
+  {  
+    Log["AppendFolder"]("DVSSimulator::LaunchApplication");
+    Log["Enabled"]=false;
+    if (Sys["WaitProcess"]("PCM.DrawerVisionSystemSimulator",1000)["WaitWinFormsObject"]("Form1",1000)["Exists"] == true)
+    { 
+      Log["Enabled"]=true;
+      Sys["Process"]("PCM.DrawerVisionSystemSimulator")["Close"]();
+      Log["Message"]("Existing DVS window is closed successfully")
+      var objShell = Sys["OleObject"]("WScript.Shell")
+      var objDVSLaunch = objShell.Exec(strPath)
+      if(Sys["Process"]("PCM.DrawerVisionSystemSimulator")["WinFormsObject"]("Form1")["Exists"] == true)
+      {
+        Log["Message"]("DVS is launched successfully")
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+       Log["Message"]("DVS is not launched successfully")
+       Log["PopLogFolder"]();
+       return false;
+      }
+    }
+    else
+    {
+      Log["Enabled"]=true;
+      var objShell = Sys["OleObject"]("WScript.Shell")
+      var objDVSLaunch = objShell.Exec(strPath)
+      if(Sys["Process"]("PCM.DrawerVisionSystemSimulator")["WinFormsObject"]("Form1")["Exists"] == true)
+      {
+        Log["Message"]("DVS is launched successfully")
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+       Log["Message"]("DVS is not launched successfully")
+       Log["PopLogFolder"]();
+       return false;
+      }
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+       return false;
+  }
+    
+}
+
+
+//function PlaceSampleTube()   // function for DVS new UI
+//{
+//  try
+//  {
+//    
+//    Log["AppendFolder"]("DVSSimulator::PlaceSampleTube");
+//    
+//    var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+////    var scenarioname = "PersistWasteBinOnSystemResume2" 
+//    
+//    var arrTubeInTray = new Array();
+//    var arrTubeInTray = GetTestItemsByTestName(TestDataFile, "TubeInTray", scenarioname)
+//     
+//    var TubeTrayCount
+//    TubeTrayCount = arrTubeInTray["length"]
+//    
+//      for(var k=0;k<TubeTrayCount;k++)
+//      {
+//        var TrayType  = arrTubeInTray[k]["Item"]("TrayType")
+//        var TubeType  = arrTubeInTray[k]["Item"]("TubeType")
+//        var DrawerNo  = arrTubeInTray[k]["Item"]("DrawerNo")
+//        var DrawerZone  = arrTubeInTray[k]["Item"]("DrawerZone")
+//        var DrawerPanel  = arrTubeInTray[k]["Item"]("DrawerPanel")
+//        var TubeCount  = arrTubeInTray[k]["Item"]("TubeCount")
+//  
+//        //Select TubeType   - Plain , Capped or TTSC
+//        Log["AppendFolder"]("Selecting the Tube Type in the Simulator");
+//        SelectTubeType(TubeType);
+//        Log["PopLogFolder"]();
+//  
+//        //Place tube in slot
+//        Log["AppendFolder"]("Placing the Tube in the Tray");
+//        PlaceTubeInTray(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel,TubeType);
+//        Log["PopLogFolder"]();
+//        
+//    }
+//    
+//    Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after placing tube in input or output tray");
+//    //Click Save button
+//    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+//    SaveDrawerConfig();
+//    Log["PopLogFolder"]();
+//    
+//    Log["PopLogFolder"]();
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception "+ exp["Description"]);
+//    Log["PopLogFolder"]();
+//    return false;
+//    
+//  }
+// 
+//}
+
+
+function TubeData(Tube)
+{
+//    if (InputOutputTray == "InputTray")
+//    {
+//      var Query = "SELECT " + Tube +" FROM [TubeInInputTray$]"; 
+//    }
+//    else if (InputOutputTray == "OutputTray")
+//    {
+//      var Query = "SELECT " + Tube + " FROM [TubeInOutputTray$]";
+//    }
+    var Query = "SELECT " + Tube +" FROM [TubeInTray$]"; 
+    var arrTempTrayData = new Array();
+    arrTempTrayData = GetTestItems(TestDataFile, Query, Tube);
+    return arrTempTrayData
+
+}
+
+
+
+
+function TrayData(InputOutputTray,TrayNumber)
+{
+    if (InputOutputTray == "InputTray")
+    {
+      var Query = "SELECT " + TrayNumber +" FROM [InputTray$]"; 
+      //var Query = "SELECT TrayNumber FROM [InputTray$]";
+    }
+    else if (InputOutputTray == "OutputTray")
+    {
+      var Query = "SELECT " + TrayNumber + " FROM [OutputTray$]";
+      //var Query = "SELECT TrayNumber FROM [OutputTray$]";
+    }
+    var arrTempTrayData = new Array();
+    arrTempTrayData = GetTestItems(TestDataFile, Query, TrayNumber);
+    return arrTempTrayData
+
+}
+
+
+function SelectAndPlaceTray(InputOutputTray)   // method handles both new and old UI's of DVS
+{
+  try
+  { 
+   Log["AppendFolder"]("DVSSimulator::SelectAndPlaceTray");
+   var InputOutputTray
+    switch(InputOutputTray)
+    {
+      case("InputTray"):
+        var SheetName = "InputTray"
+        var qSheetName = "[InputTray$]"
+        break;
+      case ("OutputTray"):
+        var SheetName = "OutputTray"
+        var qSheetName = "[OutputTray$]"
+        break;
+    }
+    
+		var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+      //var scenarioname = "NotArchiveSTATSample";
+      
+      var arrTraysName = new Array();
+      var arrTraysName = GetTestItemsByTestName(TestDataFile, SheetName, scenarioname)
+     
+      var Traycount
+      Traycount = arrTraysName["length"]
+      if(Traycount==0)
+      {
+        SheetName = SheetName + "_1";
+        var arrTraysName = GetTestItemsByTestName(TestDataFile, SheetName, scenarioname);
+      }
+      Traycount = arrTraysName["length"];
+    
+      for(var k=0;k<Traycount;k++)
+      {
+        var TrayType  = arrTraysName[k]["Item"]("TrayType")
+        var MakeSTAT  = arrTraysName[k]["Item"]("MakeSTAT")
+        var DrawerNo  = arrTraysName[k]["Item"]("DrawerNo")
+        var DrawerZone  = arrTraysName[k]["Item"]("DrawerZone")
+        var DrawerPanel  = arrTraysName[k]["Item"]("DrawerPanel")
+        
+        var objMakeSTAT =  GetControl("DVSSimulator","chkbxMakeStat");
+        if (objMakeSTAT["Exists"]==null)
+        {
+         // Select Tray - Standard or FalseBottomTubes
+        Log["AppendFolder"]("Selecting the Tray Model in the Simulator");
+          if(!SelectTrayModel(MakeSTAT))//(TrayModel))
+            return false;
+          //Log["PopLogFolder"]();
+        
+          //Select Tray
+          Log["AppendFolder"]("Selecting the Tray Type in the Simulator");
+          if(!SelectTray(TrayType))         
+           return false;
+          //Log["PopLogFolder"]();
+        } 
+        else
+        {
+        
+          // Make STAT or not
+          Log["AppendFolder"]("STAT checkbox in the Simulator");
+          if(!SelectSTAT(MakeSTAT))
+            return false;
+          Log["PopLogFolder"]();
+        
+        //  Select Tray
+          Log["AppendFolder"]("Selecting the Tray Type in the Simulator");
+          if(!SelectTrayType(TrayType))
+            return false;
+          Log["PopLogFolder"]();
+        }
+  
+        //PlaceTray in Drawer
+        if(!PlaceTrayInDrawer(DrawerNo,DrawerZone,DrawerPanel))
+        {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after not placing tray in input or output tray");
+        return false;
+        }
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after placing tray in input or output tray");
+
+    }
+  
+    //Click Save button
+    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+    if(!SaveDrawerConfig())
+    {
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    }
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+  
+}
+
+
+
+
+function SelectTray(TrayType)
+{
+  try
+  {
+    Log["AppendFolder"]("DVSSimulator::SelectTray");
+    TrayType = ToUpperCase(TrayType); 
+    switch(TrayType)
+    {
+      case "STAT":
+          var objTray = GetControl("DVSSimulator","pnlStatTray")
+          break;
+      case "ROUTINE15":
+          var objTray = GetControl("DVSSimulator","pnlRoutine15Tray")
+          break;
+      case "ROUTINE55":
+          var objTray = GetControl("DVSSimulator","pnlRoutine55Tray")
+          break;    
+    }  
+    Log["Message"]("Selecting the "+TrayType+" Tray in the Simulator");
+    //click(objTray);
+    if(objTray["Exists"])
+    {
+      ClickControl(objTray);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+}
+
+
+//function SelectTubeModel(TubeModel)
+function SelectTrayModel(TrayModel)
+{
+  try
+  {
+    Log["AppendFolder"]("DVSSimulator::SelectTrayModel");
+    //TubeModel = ToUpperCase(TubeModel);
+    TrayModel = ToUpperCase(TrayModel);  
+    switch(TrayModel)
+    {
+      case "STANDARD":
+        var objTube = GetControl("DVSSimulator","rdbtnStandardTube")
+        break;
+      case "FALSEBOTTOM":
+        var objTube = GetControl("DVSSimulator","rdbtnFalseBottomTube")     
+        break;      
+    }
+    Log["Message"]("Selecting the "+TrayModel+" tray model");
+    if(objTube["Exists"])
+    {
+      SelectRadioBtn(objTube);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+      Log["PopLogFolder"]();
+      return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+
+function SelectTubeType(TubeType)
+{
+  try
+  {
+    Log["AppendFolder"]("DVSSimulator::SelectTubeType");
+    TubeType = ToUpperCase(TubeType); 
+    switch(TubeType)
+    {
+      case "PLAIN":
+          var objTube = GetControl("DVSSimulator","pcbxPlainTube") 
+          break;
+      case "CAPPED":
+          var objTube = GetControl("DVSSimulator","pcbxCappedTube") 
+          break;
+      case "TTSC":
+        var objTube = GetControl("DVSSimulator","pcbxTTSCTube") 
+        break;    
+    }
+    Log["Message"]("Selecting the "+TubeType+" tube in DVS simulator");
+    //click(objTube); 
+    if(objTube["Exists"])
+    {
+      ClickControl(objTube);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+      Log["PopLogFolder"]();
+      return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+}
+
+
+function PlaceTrayInDrawer(DrawerNo,DrawerZone,DrawerPanel)
+{
+  try
+  {  
+    Log["AppendFolder"]("DVSSimulator::PlaceTrayInDrawer");
+    DrawerZone = ToUpperCase(DrawerZone);
+    DrawerPanel = ToUpperCase(DrawerPanel);  
+
+    Log["Message"]("Placing the Tray on the Drawer "+DrawerNo+" at "+DrawerZone+" Zone" +DrawerPanel+ " panel")
+  
+    //Getting the specific drawer --- drawer1, drawer2, drawer3, drawer4
+    switch(DrawerNo)
+    {
+      case("1"):
+        var objDrawer =  GetControl("DVSSimulator","dwrDrawer1")
+        break;
+      case("2"):
+        var objDrawer =  GetControl("DVSSimulator","dwrDrawer2")
+        break;
+      case("3"):
+        var objDrawer =  GetControl("DVSSimulator","dwrDrawer3")
+        break;
+      case("4"):
+        var objDrawer =  GetControl("DVSSimulator","dwrDrawer4")
+        break;
+    }
+
+    //Getting the front zone or back zone of above selected drawer
+    switch (DrawerZone)
+    {
+     case("FRONT"):
+      var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneFront")
+      break;
+     case("BACK") :
+      var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneBack")
+      break;    
+    }
+  
+    //Selecting the Top, Middle or Bottom panel of above selected front/back zone of specified drawer and place the selected tray type
+    switch (DrawerPanel)
+    {
+      case "TOP":
+        proparr=["WinFormsControlName","VisibleOnScreen"];
+        vararr=["panelTop","True"];  
+        var objTop = Getchild(objDrawerZone,proparr,vararr)
+        if(objTop["Exists"])
+        {
+          clickR(objTop);
+          return true;
+          //break;
+        }
+        else
+          Log["PopLogFolder"]();
+          return false;
+        
+      case "MIDDLE":
+        //var objFMiddle = GetControl("DVSSimulator","pnlMiddle")
+        proparr=["WinFormsControlName","VisibleOnScreen"];
+        vararr=["panelMiddle","True"];  
+        var objMiddle = Getchild(objDrawerZone,proparr,vararr)
+        if(objMiddle["Exists"])
+        {
+          clickR(objMiddle);
+          return true;
+          //break;
+        }
+        else
+          Log["PopLogFolder"]();
+          return false;
+          
+      case "BOTTOM":
+        proparr=["WinFormsControlName","VisibleOnScreen"];
+        vararr=["panelBottom","True"]; 
+        var objBottom = Getchild(objDrawerZone,proparr,vararr)
+        if(objBottom["Exists"])
+        {
+          clickR(objBottom); 
+          return true;     
+          //break; 
+        }
+        else
+          Log["PopLogFolder"]();
+          return false; 
+    } 
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  } 
+}
+
+
+function PlaceTubeInTray(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel,TubeType)
+{
+  try
+  {
+    Log["AppendFolder"]("DVSSimulator::PlaceTubeInTray");
+    TubeType    = ToUpperCase(TubeType);
+    for(var count = 0; count<TubeCount ;count++)
+    {
+      var objSlot = GetSlot(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel);
+      
+      if(objSlot)
+      {
+        if(TubeType=="PLAIN")
+          {var Tube = "PLAIN_TUBE";}
+        if(TubeType=="CAPPED")
+          {var Tube = "CAPPED_TUBE";}
+        if(TubeType=="TTSC")
+          {var Tube = "TTSC";}
+      
+        SetTubeInSlot(objSlot,Tube);
+        
+      }
+      else
+        break;
+    }// end of for loop
+    
+    if(objSlot)
+    {
+      Log["Message"]("Placed" +TubeCount+ " " +TubeType+" tube in Drawer "+DrawerNo+"- "+DrawerZone+ " Zone " +DrawerPanel+ " Panel");
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+    {
+      Log["Error"]("Unable to place tube in Drawer "+DrawerNo+"- "+DrawerZone+ " Zone " +DrawerPanel+ " Panel");
+      Log["PopLogFolder"]();
+      return false;
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;   
+  }  
+}
+
+
+function GetSlot(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel)   // method for DVS new/old UI
+{
+  try
+  {
+      TrayType = ToUpperCase(TrayType);
+      DrawerZone  = ToUpperCase(DrawerZone);
+      DrawerPanel = ToUpperCase(DrawerPanel); 
+     
+      switch(DrawerNo)
+      {
+        case("1"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer1")
+          break;
+        case("2"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer2")
+          break;
+        case("3"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer3")
+          break;
+        case("4"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer4")
+          break;
+      }
+
+      switch (DrawerZone)
+      {
+       case("FRONT"):
+        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneFront")
+        if(TrayType=="TRINIDADMOLD15"||TrayType=="FALSEBOTTOM15"|TrayType=="ROUTINE15"||TrayType=="STAT")
+        {
+          if(DrawerPanel=="TOP")
+          {
+            var panel = "FRONTTOP";
+            break;
+          }    
+          if(DrawerPanel=="MIDDLE")
+          {
+            var panel = "FRONTMIDDLE";
+            break;
+          }
+          if(DrawerPanel=="BOTTOM")
+          {
+            var panel = "FRONTBOTTOM";
+            break;  
+          }
+        }
+        else if(TrayType=="TRINIDADMOLD55"||TrayType=="FALSEBOTTOM55"||TrayType=="ROUTINE55")
+        {
+          var panel = "FRONT";  
+          break;
+        }
+       case("BACK") :
+        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneBack")
+        if(TrayType=="TRINIDADMOLD15"||TrayType=="FALSEBOTTOM15"||TrayType=="ROUTINE15"||TrayType=="STAT")
+        {
+          if(DrawerPanel=="TOP")
+          {
+            var panel = "BACKTOP";
+            break;
+          }
+          if(DrawerPanel=="MIDDLE")
+          {
+            var panel = "BACKMIDDLE";
+            break;
+          }
+          if(DrawerPanel=="BOTTOM")
+          {
+            var panel = "BACKBOTTOM";
+            break;
+          }
+        }
+        else if(TrayType=="TRINIDADMOLD55"||TrayType=="FALSEBOTTOM55"||TrayType=="ROUTINE55")
+        {
+          var panel = "BACK";
+          break;
+        } 
+      }
+       
+   var objMakeSTAT =  GetControl("DVSSimulator","chkbxMakeStat");
+   if (objMakeSTAT["Exists"]==null)
+   {
+      proparr=["WinFormsControlName","Position"];
+      vararr=["SmallTray",panel]; 
+   }
+   else
+   {
+      proparr=["WinFormsControlName","Position"];
+      vararr=["Tray",panel]; 
+   }
+    
+      var objplacedtray = Getchild(objDrawerZone,proparr,vararr)
+//      if (objplacedtray["Exists"]==false)
+//      {
+//        Log["Message"]("Object doesnot exists");
+//      }
+      if(objplacedtray["Exists"]==true)
+      {
+          var SlotCount = objplacedtray["ChildCount"];
+          for(slot=1;slot<=SlotCount;slot++)
+          {
+            proparr=["WinFormsControlName","Index"];
+            vararr=["Slot",slot];
+            //vararr=["Slot",TubeSlotIndex];
+          
+            var objSlot = Getchild(objplacedtray,proparr,vararr)
+            if (objSlot["Exists"]==false)
+            {
+              Log["Message"]("Slot doesnot exists");
+              break;
+            }
+            else if(objSlot["SlotOccupancy"]=="EMPTY")
+            {
+              return(objSlot);
+            }     
+          } 
+      }
+      else
+      {
+        Log["Error"]("Tray doesnot exists");
+        return false;
+      }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;   
+  } 
+}
+
+
+function SaveDrawerConfig()
+{
+  try
+  {
+    Log["AppendFolder"]("DVSSimulator::SaveDrawerConfig");
+    var objtxtbxbrowse =GetControl("DVSSimulator","txtbxBrowse")
+    SetText(objtxtbxbrowse,strBrowsePath);
+    var objsavebtn=GetControl("DVSSimulator","btnSave")
+    if(objsavebtn["Exists"])
+    {
+      ClickControl(objsavebtn);
+      Log["PopLogFolder"]();
+      return true;
+    }
+    else
+      Log["PopLogFolder"]();
+      return false;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;   
+  }
+}
+
+function RemoveATray(TrayType,DrawerNo,DrawerZone,DrawerPanel)	//This method handles old and new DVS UI
+{
+  try
+  {
+      Log["AppendFolder"]("DVSSimulator::RemoveATray");
+      TrayType = ToUpperCase(TrayType);
+      DrawerZone  = ToUpperCase(DrawerZone);
+      DrawerPanel = ToUpperCase(DrawerPanel); 
+     
+      switch(DrawerNo)
+      {
+        case("1"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer1")
+          break;
+        case("2"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer2")
+          break;
+        case("3"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer3")
+          break;
+        case("4"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer4")
+          break;
+      } 
+
+    Log["Message"]("Removing the Tray on the Drawer "+DrawerNo+" at "+DrawerZone+" Zone" +DrawerPanel+ " panel")
+  
+    //Getting the specific drawer --- drawer1, drawer2, drawer3, drawer4
+    switch (DrawerZone)
+      {
+       case("FRONT"):
+        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneFront")
+//        if(TrayType=="ROUTINE15"||TrayType=="STAT")                     /// for DVS OLD UI
+        if(TrayType=="TRINIDADMOLD15"||TrayType=="FALSEBOTTOM15"||TrayType=="ROUTINE15"||TrayType=="STAT")   //// for DVS new UI
+        {
+          if(DrawerPanel=="TOP")
+          {
+            var panel = "FRONTTOP";
+            break;
+          }    
+          if(DrawerPanel=="MIDDLE")
+          {
+            var panel = "FRONTMIDDLE";
+            break;
+          }
+          if(DrawerPanel=="BOTTOM")
+          {
+            var panel = "FRONTBOTTOM";
+            break;  
+          }
+        }
+//        else if(TrayType=="ROUTINE55")                      /// for DVS OLD UI
+        else if(TrayType=="TRINIDADMOLD55"||TrayType=="FALSEBOTTOM55" || TrayType=="ROUTINE55")    //// for DVS new UI
+        {
+          var panel = "FRONT";  
+          break;
+        }
+       case("BACK") :
+        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneBack")
+//        if(TrayType=="ROUTINE15"||TrayType=="STAT")      /// for DVS OLD UI
+        if(TrayType=="TRINIDADMOLD15"||TrayType=="FALSEBOTTOM15"||TrayType=="ROUTINE15")    //// for DVS new UI
+        {
+          if(DrawerPanel=="TOP")
+          {
+            var panel = "BACKTOP";
+            break;
+          }
+          if(DrawerPanel=="MIDDLE")
+          {
+            var panel = "BACKMIDDLE";
+            break;
+          }
+          if(DrawerPanel=="BOTTOM")
+          {
+            var panel = "BACKBOTTOM";
+            break;
+          }
+        }
+//        else if(TrayType=="ROUTINE55")     /// for DVS OLD UI
+        else if(TrayType=="TRINIDADMOLD55"||TrayType=="FALSEBOTTOM55"||TrayType=="ROUTINE55")       //// for DVS new UI
+        {
+          var panel = "BACK";
+          break;
+        } 
+      }
+
+
+      var proparr=["WinFormsControlName","Position"];
+      
+      var objMakeSTAT =  GetControl("DVSSimulator","chkbxMakeStat");
+      if(objMakeSTAT["Exists"]==null)   //Checking the presence of MakeSTAT checkbox to determine DVS UI is old or new
+        var vararr=["SmallTray",panel];   // for DVS OLD UI
+      else
+        var vararr=["Tray",panel];  // for DVS new UI
+
+
+      var objplacedtray = Getchild(objDrawerZone,proparr,vararr)
+      if (objplacedtray["Exists"]==true)
+      {
+        clickR(objplacedtray);
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Tray doesnot exists");
+        Log["PopLogFolder"]();
+        return false;
+      }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  } 
+}
+
+/*
+function RemoveATray(TrayType,DrawerNo,DrawerZone,DrawerPanel)
+{
+  try
+  {
+      Log["AppendFolder"]("DVSSimulator::RemoveATray");
+      TrayType = ToUpperCase(TrayType);
+      DrawerZone  = ToUpperCase(DrawerZone);
+      DrawerPanel = ToUpperCase(DrawerPanel); 
+     
+      switch(DrawerNo)
+      {
+        case("1"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer1")
+          break;
+        case("2"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer2")
+          break;
+        case("3"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer3")
+          break;
+        case("4"):
+          var objDrawer =  GetControl("DVSSimulator","dwrDrawer4")
+          break;
+      } 
+
+    Log["Message"]("Removing the Tray on the Drawer "+DrawerNo+" at "+DrawerZone+" Zone" +DrawerPanel+ " panel")
+  
+    //Getting the specific drawer --- drawer1, drawer2, drawer3, drawer4
+    switch (DrawerZone)
+      {
+       case("FRONT"):
+        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneFront")
+        if(TrayType=="ROUTINE15"||TrayType=="STAT")                     /// for DVS OLD UI
+        //if(TrayType=="TRINIDADAMOLD15"||TrayType=="FALSEBOTTOM15")   //// for DVS new UI
+        {
+          if(DrawerPanel=="TOP")
+          {
+            var panel = "FRONTTOP";
+            break;
+          }    
+          if(DrawerPanel=="MIDDLE")
+          {
+            var panel = "FRONTMIDDLE";
+            break;
+          }
+          if(DrawerPanel=="BOTTOM")
+          {
+            var panel = "FRONTBOTTOM";
+            break;  
+          }
+        }
+        else if(TrayType=="ROUTINE55")                      /// for DVS OLD UI
+//        else if(TrayType=="TRINIDADAMOLD55"||TrayType=="FALSEBOTTOM55")    //// for DVS new UI
+        {
+          var panel = "FRONT";  
+          break;
+        }
+       case("BACK") :
+        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneBack")
+        if(TrayType=="ROUTINE15"||TrayType=="STAT")      /// for DVS OLD UI
+//        if(TrayType=="TRINIDADAMOLD15"||TrayType=="FALSEBOTTOM15")    //// for DVS new UI
+        {
+          if(DrawerPanel=="TOP")
+          {
+            var panel = "BACKTOP";
+            break;
+          }
+          if(DrawerPanel=="MIDDLE")
+          {
+            var panel = "BACKMIDDLE";
+            break;
+          }
+          if(DrawerPanel=="BOTTOM")
+          {
+            var panel = "BACKBOTTOM";
+            break;
+          }
+        }
+        else if(TrayType=="ROUTINE55")     /// for DVS OLD UI
+//        else if(TrayType=="TRINIDADAMOLD55"||TrayType=="FALSEBOTTOM55")       //// for DVS new UI
+        {
+          var panel = "BACK";
+          break;
+        } 
+      }
+
+
+      proparr=["WinFormsControlName","Position"];
+      vararr=["SmallTray",panel];   /// for DVS OLD UI
+//      vararr=["Tray",panel];  //// for DVS new UI
+    
+      var objplacedtray = Getchild(objDrawerZone,proparr,vararr)
+      if (objplacedtray["Exists"]==true)
+      {
+        clickR(objplacedtray);
+        Log["PopLogFolder"]();
+        return true;
+      }
+      else
+      {
+        Log["Message"]("Tray doesnot exists");
+        Log["PopLogFolder"]();
+        return false;
+      }
+
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  } 
+}
+*/
+function RemoveTrays()
+{
+  try
+  { 
+    Log["AppendFolder"]("DVSSimulator::RemoveTrays");
+           
+    var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+//    var scenarioname = "NotArchivedOnTrackSortSamples";
+    
+    var arrTraysName = new Array();
+    var arrTraysName = GetTestItemsByTestName(TestDataFile, "RemoveTray", scenarioname)
+     
+    var Traycount
+    Traycount = arrTraysName["length"]
+    
+    for(var k=0;k<Traycount;k++)
+    {
+      var TrayType  = arrTraysName[k]["Item"]("TrayType")
+      var DrawerNo  = arrTraysName[k]["Item"]("DrawerNo")
+      var DrawerZone  = arrTraysName[k]["Item"]("DrawerZone")
+      var DrawerPanel  = arrTraysName[k]["Item"]("DrawerPanel")
+  
+      //Remove Tray from Drawer
+      //Log["AppendFolder"]("Removing the Tray from the Drawer");
+      if(!RemoveATray(TrayType,DrawerNo,DrawerZone,DrawerPanel))
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after not removing a tray from drawer"+DrawerNo + "zone "+ DrawerZone+ "panel" +DrawerPanel);
+        return false;
+      } 
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after removing a tray from drawer"+DrawerNo + "zone "+ DrawerZone+ "panel" +DrawerPanel);
+      //Log["PopLogFolder"]();
+
+    }
+  
+    //Click Save button
+    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+    if(!SaveDrawerConfig())
+    {
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+  
+}
+
+
+function SetFullyPopulated()
+{ 
+ try
+ {
+   Log["AppendFolder"]("DVSSimulator::SetFullyPopulated");
+   var objFullyPopulated =  GetControl("DVSSimulator","checkFullyPopulated");
+   //ClickControl(objFullyPopulated);
+   SelectCheckbox(objFullyPopulated)
+   //set_Checked
+   if(objFullyPopulated["Checked"])
+   {
+      Log["Message"]("Fully Populated is checked")
+      Log["PopLogFolder"]();
+      return true;
+   }
+   else
+   {
+    Log["Error"]("Unable to set Fully populated checkbox")
+    Log["PopLogFolder"]();
+    return false;
+   }
+ }
+ catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+ 
+}
+
+function UncheckFullyPopulated()
+{
+   try
+  {
+   Log["AppendFolder"]("DVSSimulator::UncheckFullyPopulated");
+   var objFullyPopulated =  GetControl("DVSSimulator","checkFullyPopulated");
+   //ClickControl(objFullyPopulated);
+   if(objFullyPopulated["Checked"])
+       SelectCheckbox(objFullyPopulated)
+   //set_Checked
+   if(!objFullyPopulated["Checked"])
+   {
+      Log["Message"]("Fully Populated is unchecked")
+      Log["PopLogFolder"]();
+      return true;
+   }
+   else
+   {
+    Log["Error"]("Unable to uncheck Fully populated checkbox")
+    Log["PopLogFolder"]()
+    return false;
+   }
+ }
+ catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+ 
+}
+
+function SelectAndPlaceFullyPopulatedTray(InputOutputTray)
+{
+  try
+  {
+    Log["AppendFolder"]("DVSSimulator::SelectAndPlaceFullyPopulatedTray");
+    switch(InputOutputTray)
+    {
+      case("InputTray"):
+                        //var TraysName = TestDataSheetColumnName(TestDataFile,"InputTray")
+                        var SheetName = "InputTray"
+                        var qSheetName = "[InputTray$]"
+                        break;
+      case ("OutputTray"):
+                        //var TraysName = TestDataSheetColumnName(TestDataFile,"OutputTray")
+                        var SheetName = "OutputTray"
+                        var qSheetName = "[OutputTray$]"
+                        break;
+      case ("OutputTray"):
+                        //var TraysName = TestDataSheetColumnName(TestDataFile,"OutputTray")
+                        var SheetName = "RemoveTray"
+                        var qSheetName = "[RemoveTray$]"
+                        break;
+         case ("FullyPopulatedTray"):
+                        //var TraysName = TestDataSheetColumnName(TestDataFile,"OutputTray")
+                        var SheetName = "FullyPopulatedTray"
+                        var qSheetName = "[FullyPopulatedTray$]"
+                        break;
+    }
+    
+    var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+    //var scenarioname = "DecapWithHoldingUnavailable";
+    //Log["Message"]("Network suite variables value : " +scenarioname);
+    var arrTraysName = new Array();
+    var arrTraysName = GetTestItemsByTestName(TestDataFile, SheetName, scenarioname)
+     
+    var Traycount
+    Traycount = arrTraysName["length"]
+    for(var k=0;k<Traycount;k++)
+    {
+      var TrayType  = arrTraysName[k]["Item"]("TrayType")
+      var DrawerNo  = arrTraysName[k]["Item"]("DrawerNo")
+      var DrawerZone  = arrTraysName[k]["Item"]("DrawerZone")
+      var DrawerPanel  = arrTraysName[k]["Item"]("DrawerPanel")
+        
+      var objMakeSTAT =  GetControl("DVSSimulator","chkbxMakeStat");
+      
+      if(objMakeSTAT["Exists"]==null)     //Checking the presence of MakeSTAT checkbox to determine DVS UI is old or new 
+      {
+        var TrayModel  = arrTraysName[k]["Item"]("MakeSTAT")    // for DVS old UI                
+        //Select Tray - Standard or FalseBottomTubes          // for DVS old UI
+        if(!SelectTrayModel(TrayModel))
+          return false;
+        
+        //Select Tray
+        if(!SelectTray(TrayType))    // for DVS old UI       
+         return false;
+      }
+      else
+      {
+        if(!SelectTrayType(TrayType))   // for DVS new UI
+          return false;
+      }
+        
+      if(!SetFullyPopulated())
+        return false;
+        
+      //Log["AppendFolder"]("Select tube type in DVS");
+      if(!SelectTubeType("Plain"))
+        return  false;
+      //Log["PopLogFolder"]();
+          
+      //PlaceTray in Drawer
+      //Log["AppendFolder"]("Placing the Tray in the Drawer");
+      if(!PlaceTrayInDrawer(DrawerNo,DrawerZone,DrawerPanel))
+      {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after not placing fully populated tray in input or output tray");
+        return false;
+      } 
+      Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after placing fully populated tray in input or output tray");
+      //Log["PopLogFolder"]();
+        
+       if(!UncheckFullyPopulated())
+        return false;  
+    }
+  
+    //Click Save button
+    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+    if(!SaveDrawerConfig())
+    {
+      Log["PopLogFolder"](); 
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+  }
+}
+
+/*
+function SelectAndPlaceFullyPopulatedTray(InputOutputTray)
+{
+  try{ 
+   Log["AppendFolder"]("DVSSimulator::SelectAndPlaceFullyPopulatedTray");
+ 
+    switch(InputOutputTray)
+    {
+      case("InputTray"):
+        //var TraysName = TestDataSheetColumnName(TestDataFile,"InputTray")
+        var SheetName = "InputTray"
+        var qSheetName = "[InputTray$]"
+        break;
+      case ("OutputTray"):
+        //var TraysName = TestDataSheetColumnName(TestDataFile,"OutputTray")
+        var SheetName = "OutputTray"
+        var qSheetName = "[OutputTray$]"
+        break;
+      case ("OutputTray"):
+        //var TraysName = TestDataSheetColumnName(TestDataFile,"OutputTray")
+        var SheetName = "RemoveTray"
+        var qSheetName = "[RemoveTray$]"
+        break;
+         case ("FullyPopulatedTray"):
+        //var TraysName = TestDataSheetColumnName(TestDataFile,"OutputTray")
+        var SheetName = "FullyPopulatedTray"
+        var qSheetName = "[FullyPopulatedTray$]"
+        break;
+    }
+    
+    var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+      //Log["Message"]("Network suite variables value : " +scenarioname);
+      
+      var arrTraysName = new Array();
+      var arrTraysName = GetTestItemsByTestName(TestDataFile, SheetName, scenarioname)
+     
+      var Traycount
+      Traycount = arrTraysName["length"]
+    
+      for(var k=0;k<Traycount;k++)
+      {
+        var TrayModel  = arrTraysName[k]["Item"]("TrayModel")    // for DVS old UI
+        var TrayType  = arrTraysName[k]["Item"]("TrayType")
+        var DrawerNo  = arrTraysName[k]["Item"]("DrawerNo")
+        var DrawerZone  = arrTraysName[k]["Item"]("DrawerZone")
+        var DrawerPanel  = arrTraysName[k]["Item"]("DrawerPanel")
+
+                
+//        Select Tray - Standard or FalseBottomTubes          // for DVS old UI
+        //Log["AppendFolder"]("Selecting the Tray Model in the Simulator");
+        if(!SelectTrayModel(TrayModel))
+          return false;
+        //Log["PopLogFolder"]();
+        
+        //Select Tray
+        //Log["AppendFolder"]("Selecting the Tray Type in the Simulator");
+        if(!SelectTray(TrayType))    // for DVS old UI       
+         return false;  
+//        SelectTrayType(TrayType)   // for DVS new UI
+        //Log["PopLogFolder"]();
+        
+        if(!SetFullyPopulated())
+          return false;
+        
+        //Log["AppendFolder"]("Select tube type in DVS");
+        if(!SelectTubeType("Plain"))
+          return  false;
+        //Log["PopLogFolder"]();
+          
+        //PlaceTray in Drawer
+        //Log["AppendFolder"]("Placing the Tray in the Drawer");
+        if(!PlaceTrayInDrawer(DrawerNo,DrawerZone,DrawerPanel))
+        {
+          Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after not placing fully populated tray in input or output tray");
+          return false;
+        } 
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after placing fully populated tray in input or output tray");
+        //Log["PopLogFolder"]();
+        
+         if(!UncheckFullyPopulated())
+          return false;  
+    }
+  
+    //Click Save button
+    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+    if(!SaveDrawerConfig())
+    {
+      Log["PopLogFolder"](); 
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+  
+}
+*/
+
+
+//function SelectAndPlaceTray(InputOutputTray)   // method for DVS new UI
+//{
+//  try
+//  { 
+//   Log["AppendFolder"]("DVSSimulator::SelectAndPlaceTray");
+//   var InputOutputTray
+//    switch(InputOutputTray)
+//    {
+//      case("InputTray"):
+//        var SheetName = "InputTray"
+//        var qSheetName = "[InputTray$]"
+//        break;
+//      case ("OutputTray"):
+//        var SheetName = "OutputTray"
+//        var qSheetName = "[OutputTray$]"
+//        break;
+//    }
+//    
+//      var scenarioname = NetworkSuite["Variables"]["SHScenario"]
+////      var scenarioname = "PersistWasteBinOnSystemResume2;
+//      
+//      var arrTraysName = new Array();
+//      var arrTraysName = GetTestItemsByTestName(TestDataFile, SheetName, scenarioname)
+//     
+//      var Traycount
+//      Traycount = arrTraysName["length"]
+//    
+//      for(var k=0;k<Traycount;k++)
+//      {
+//        var TrayType  = arrTraysName[k]["Item"]("TrayType")
+//        var MakeSTAT  = arrTraysName[k]["Item"]("MakeSTAT")
+//        var DrawerNo  = arrTraysName[k]["Item"]("DrawerNo")
+//        var DrawerZone  = arrTraysName[k]["Item"]("DrawerZone")
+//        var DrawerPanel  = arrTraysName[k]["Item"]("DrawerPanel")
+//
+//        // Make STAT or not
+//        Log["AppendFolder"]("STAT checkbox in the Simulator");
+//        SelectSTAT(MakeSTAT);
+//        Log["PopLogFolder"]();
+//        
+//        //Select Tray
+//        Log["AppendFolder"]("Selecting the Tray Type in the Simulator");
+//        SelectTrayType(TrayType);
+//        Log["PopLogFolder"]();
+//  
+//        //PlaceTray in Drawer
+//        Log["AppendFolder"]("Placing the Tray in the Drawer");
+//        PlaceTrayInDrawer(DrawerNo,DrawerZone,DrawerPanel);
+//        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after placing tray in input or output tray");
+//        Log["PopLogFolder"]();
+//
+//    }
+//  
+//    //Click Save button
+//    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+//    SaveDrawerConfig();
+//    Log["PopLogFolder"]();
+//    
+//    Log["PopLogFolder"]();
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception "+ exp["Description"]);
+//    Log["PopLogFolder"]();
+//    return false;
+//    
+//  }
+//  
+//}
+
+
+function SelectTrayType(TrayType)
+{
+  try
+  {
+    
+    TrayType = ToUpperCase(TrayType);  
+    switch(TrayType)
+    {
+      case "TRINIDADMOLD15":
+        var objTube = GetControl("DVSSimulator","rdbtnTrinidadMold15")
+        break;
+      case "TRINIDADMOLD55":
+        var objTube = GetControl("DVSSimulator","rdbtnTrinidadMold55")     
+        break;
+      case "FALSEBOTTOM15":
+        var objTube = GetControl("DVSSimulator","rdbtnFalseBottom15")
+        break;
+      case "FALSEBOTTOM55":
+        var objTube = GetControl("DVSSimulator","rdbtnFalseBottom55")     
+        break;    
+    }
+    Log["Message"]("Selecting the "+TrayType+" tray");
+    SelectRadioBtn(objTube);
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+}
+
+
+
+function SelectSTAT(value)
+{ 
+ try
+ {
+   Log["AppendFolder"]("DVSSimulator::SelectSTAT");
+   var objMakeSTAT =  GetControl("DVSSimulator","chkbxMakeStat");
+   
+   if (value == "No")
+    {
+      if (DVSCheckboxStatus(objMakeSTAT) ==  true)
+        SelectCheckbox(objMakeSTAT)
+    }
+    else if (value == "Yes")
+    {
+      if (DVSCheckboxStatus(objMakeSTAT) ==  false)
+        SelectCheckbox(objMakeSTAT)
+    }
+
+   if((value == "No")&&(!objMakeSTAT["Checked"]))
+   {
+      Log["Message"]("Make STAT is unchecked")
+      Log["PopLogFolder"]();
+   }
+   else if((value == "Yes")&&(objMakeSTAT["Checked"]))
+   {
+    Log["Message"]("Make STAT checkbox is checked")
+    Log["PopLogFolder"]();
+   }
+   return true;
+ }
+ catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+ 
+}
+
+function PlaceSampleTube()   // method for DVS old UI
+{
+  try
+  {
+   
+  // var strWorkflowXMLPath=Project["Path"]+"TestData\\SHWorkflows.xml";
+//var strControlXMLPath = Project["Path"]+"Testdata\\SHControls.xml";
+
+   
+   // InitializeWorkflowXML(strWorkflowXMLPath);
+//  InitializeControlXML(strControlXMLPath);
+    Log["AppendFolder"]("DVSSimulator::PlaceSampleTube");
+    
+    var scenarioname =NetworkSuite["Variables"]["SHScenario"]
+    //NetworkSuite["Variables"]["SHScenario"]="SortingScenario_08"
+   // var scenarioname = "SortingScenario_08"//"NotArchiveSTATSample"
+    
+    var arrTubeInTray = new Array();
+    var arrTubeInTray = GetTestItemsByTestName(TestDataFile, "TubeInTray", scenarioname)
+     
+    var TubeTrayCount
+    TubeTrayCount = arrTubeInTray["length"]
+    
+      for(var k=0;k<TubeTrayCount;k++)
+      {
+        var TrayType  = arrTubeInTray[k]["Item"]("TrayType")
+        var TubeType  = arrTubeInTray[k]["Item"]("TubeType")
+        var DrawerNo  = arrTubeInTray[k]["Item"]("DrawerNo")
+        var DrawerZone  = arrTubeInTray[k]["Item"]("DrawerZone")
+        var DrawerPanel  = arrTubeInTray[k]["Item"]("DrawerPanel")
+        var TubeCount  = arrTubeInTray[k]["Item"]("TubeCount")
+  
+        //Select TubeType   - Plain , Capped or TTSC
+        //Log["AppendFolder"]("Selecting the Tube Type in the Simulator");
+        if(!SelectTubeType(TubeType))
+          return false;
+        //Log["PopLogFolder"]();
+  
+        //Place tube in slot
+        //Log["AppendFolder"]("Placing the Tube in the Tray");
+        if(!PlaceTubeInTray(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel,TubeType))
+        {
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after not placing tube in input or output tray");
+        return false;
+        }
+        Log["Picture"](Sys["Desktop"]["ActiveWindow"](), "DVS screen after placing tube in input or output tray");
+        //Log["PopLogFolder"]();
+        
+    
+    }
+ 
+    //Click Save button
+    Log["AppendFolder"]("Saving the Configuration in the Simulator");
+    if(!SaveDrawerConfig())
+    {
+      Log["PopLogFolder"]();
+      Log["PopLogFolder"]();
+      return false;
+    } 
+    Log["PopLogFolder"]();
+    
+    Log["PopLogFolder"]();
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception "+ exp["Description"]);
+    Log["PopLogFolder"]();
+    return false;
+    
+  }
+ 
+}
+
+//function PlaceTubeInTray(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel,TubeType)
+//{
+//  try
+//  {
+//    TubeType    = ToUpperCase(TubeType);
+//    for(var count = 0; count<TubeCount ;count++)
+//    {
+//      var objSlot = GetSlot(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel);
+//  
+//      if(TubeType=="PLAIN")
+//      {var Tube = "PLAIN_TUBE";}
+//      if(TubeType=="CAPPED")
+//      {var Tube = "CAPPED_TUBE";}
+//      if(TubeType=="TTSC")
+//      {var Tube = "TTSC";}
+//  
+//      SetTubeInSlot(objSlot,Tube);
+//    }
+//    
+//    Log["Message"]("Placed" +TubeCount+ " " +TubeType+" tube in Drawer "+DrawerNo+"- "+DrawerZone+ " Zone " +DrawerPanel+ " Panel");
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception "+ exp["Description"]);
+//    Log["PopLogFolder"]();
+//    return false;   
+//  }  
+//}
+
+
+
+//function GetSlot(TubeCount,TrayType,DrawerNo,DrawerZone,DrawerPanel)   // method for DVS new UI
+//{
+//  try
+//  {
+//      TrayType = ToUpperCase(TrayType);
+//      DrawerZone  = ToUpperCase(DrawerZone);
+//      DrawerPanel = ToUpperCase(DrawerPanel); 
+//     
+//      switch(DrawerNo)
+//      {
+//        case("1"):
+//          var objDrawer =  GetControl("DVSSimulator","dwrDrawer1")
+//          break;
+//        case("2"):
+//          var objDrawer =  GetControl("DVSSimulator","dwrDrawer2")
+//          break;
+//        case("3"):
+//          var objDrawer =  GetControl("DVSSimulator","dwrDrawer3")
+//          break;
+//        case("4"):
+//          var objDrawer =  GetControl("DVSSimulator","dwrDrawer4")
+//          break;
+//      }
+//
+//      switch (DrawerZone)
+//      {
+//       case("FRONT"):
+//        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneFront")
+//        if(TrayType=="TRINIDADAMOLD15"||TrayType=="FALSEBOTTOM15")
+//        {
+//          if(DrawerPanel=="TOP")
+//          {
+//            var panel = "FRONTTOP";
+//            break;
+//          }    
+//          if(DrawerPanel=="MIDDLE")
+//          {
+//            var panel = "FRONTMIDDLE";
+//            break;
+//          }
+//          if(DrawerPanel=="BOTTOM")
+//          {
+//            var panel = "FRONTBOTTOM";
+//            break;  
+//          }
+//        }
+//        else if(TrayType=="TRINIDADAMOLD55"||TrayType=="FALSEBOTTOM55")
+//        {
+//          var panel = "FRONT";  
+//          break;
+//        }
+//       case("BACK") :
+//        var objDrawerZone = Getchild(objDrawer,"WinFormsControlName","trayZoneBack")
+//        if(TrayType=="TRINIDADAMOLD15"||TrayType=="FALSEBOTTOM15")
+//        {
+//          if(DrawerPanel=="TOP")
+//          {
+//            var panel = "BACKTOP";
+//            break;
+//          }
+//          if(DrawerPanel=="MIDDLE")
+//          {
+//            var panel = "BACKMIDDLE";
+//            break;
+//          }
+//          if(DrawerPanel=="BOTTOM")
+//          {
+//            var panel = "BACKBOTTOM";
+//            break;
+//          }
+//        }
+//        else if(TrayType=="TRINIDADAMOLD55"||TrayType=="FALSEBOTTOM55")
+//        {
+//          var panel = "BACK";
+//          break;
+//        } 
+//      }
+//
+//
+//      proparr=["WinFormsControlName","Position"];
+//      vararr=["Tray",panel]; 
+//    
+//      var objplacedtray = Getchild(objDrawerZone,proparr,vararr)
+////      if (objplacedtray["Exists"]==false)
+////      {
+////        Log["Message"]("Object doesnot exists");
+////      }
+//      if(objplacedtray["Exists"]==true)
+//      {
+//          var SlotCount = objplacedtray["ChildCount"];
+//          for(slot=1;slot<=SlotCount;slot++)
+//          {
+//            proparr=["WinFormsControlName","Index"];
+//            vararr=["Slot",slot];
+//            //vararr=["Slot",TubeSlotIndex];
+//          
+//            var objSlot = Getchild(objplacedtray,proparr,vararr)
+//            if (objSlot["Exists"]==false)
+//            {
+//              Log["Message"]("Slot doesnot exists");
+//              break;
+//            }
+//            else if(objSlot["SlotOccupancy"]=="EMPTY")
+//            {
+//              return(objSlot);
+//            }     
+//          } 
+//      }
+//      else
+//      {
+//        Log["Error"]("Tray doesnot exists");
+//        return false;
+//      }
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception "+ exp["Description"]);
+//    Log["PopLogFolder"]();
+//    return false;   
+//  } 
+//}

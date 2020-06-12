@@ -1,0 +1,147 @@
+﻿//USEUNIT TCNativeLibraries
+//USEUNIT ControlAccessLibrary
+//USEUNIT WorkflowNavigator
+//USEUNIT System
+//USEUNIT CommonUtilities
+//USEUNIT Authentication
+
+//Project file Paths
+var ProjPath = ProjectSuite["Path"];
+var arrPath  = ProjPath["split"]("Hydra")
+var IoTPath = arrPath[0] +"TestcaseLayer\\ARM\\TestData\\IoT";
+var SimulationPath = "C:\\Siemens\\ARM\\Emulator\\";
+var HydraSimulatorPath = "C:\\Siemens\\ARM\\Bin\\";
+
+
+function LaunchHydraDMLSimulator()
+{
+  try
+  {
+    Log["AppendFolder"]("Launching Hydra DML Simulator");
+    if(Sys["WaitProcess"]("HydraDMLSimulatorUI",2000)["Exists"])
+    {  
+      Log["Message"]("HydraDML Simulator Already launched.Hence Killing and Relaunching");
+      //Kill HydraDML Simulator
+      Sys["Process"]("HydraDMLSimulatorUI")["Terminate"]();      
+    }
+    
+    //Launch Hydra DML Simulator 
+    var obj = new ActiveXObject("WScript.shell")
+    obj["Run"](HydraSimulatorPath+"HydraDMLSimulatorUI.exe")
+    aqUtils["Delay"](30000,"Waiting for Hydra DML Simulator");
+  
+    //Check IF DMLSimulator launched or not and then Activate
+    if(!Sys["WaitProcess"]("HydraDMLSimulatorUI",20000)["Exists"])
+    {  
+      Log["Error"]("Hydra DML Simulator not launched properly");  
+      Log["PopLogFolder"]()
+      return false;
+    }
+    else
+    {
+      Sys["Process"]("HydraDMLSimulatorUI")["WPFObject"]("HwndSource: MainWindow", "Hydra Dml Simulator : *")["Activate"]();
+      Log["Checkpoint"]("Hydra DML Simulator Launched Successfully");
+      Log["PopLogFolder"]();
+      return true;    
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception :"+exp["Description"]);  
+    return false;
+  }  
+}
+
+function ShutdownDMLSimulator()
+{
+  try
+  {
+    Log["AppendFolder"]("Shutdown Hydra application :: Shutdown Hydra DML Simulator");
+    
+    if(Sys["WaitProcess"]("HydraDMLSimulatorUI",2000)["Exists"])
+    {      
+      //Kill HydraDML Simulator
+      Sys["Process"]("HydraDMLSimulatorUI")["Terminate"](); 
+      Log["Message"]("HydraDML Simulator terminated");     
+    }
+    else
+    {
+      Log["Message"]("HydraDML Simulator already terminated");
+    }
+    
+    Log["PopLogFolder"]();
+    return true; 
+  }
+  catch(e)
+  {
+    Log["Error"]("Exception :"+e["Description"]); 
+    Log["PopLogFolder"](); 
+    return false;
+  }
+}
+
+//arrSampleID  - > array of Sample IDs
+//Assign SampleID as [Invalid][NoBarcode] for empty slots 
+function LoadSamplesinDMLSimulator(arrSampleID)
+{
+  try
+  {   
+    Log["AppendFolder"]("Loading Samples using DL Sample Load in Hydra DML Simulator");
+    
+    //Navigate to Dl Sample Load
+    var tabDLLoad = GetAutomationIDControl("DLSampleLoad","DLLoadTab");
+    tabDLLoad["Click"]();    
+    
+    //Check whether connected to SIM
+    var objSIMConnectionStatus = GetAutomationIDControl("DLSampleLoad","ConnectionStatus");
+    var ConnectionStatus = objSIMConnectionStatus["Text"]["OleValue"];
+    if (!((ConnectionStatus =="Connected")||(ConnectionStatus == "AlreadyConnected")))
+    { 
+      //Click Connect to SIM button
+      var btnConnectToSIM = GetAutomationIDControl("DLSampleLoad", "ConnectToSIM");
+      Clickbutton(btnConnectToSIM)
+    }    
+     
+    var index =0;
+    var numberOfSampleToLoad = 6;
+    
+    while(index < arrSampleID.length)
+    {
+      //get only 6 number of samples from the given array of samples 
+      var arrSampleSet = arrSampleID.slice(index, numberOfSampleToLoad + index)
+    
+      //Loading the 1 set of 6 samples through load rack
+      for(var SID=0; SID < numberOfSampleToLoad; SID++)
+      {
+        Log["Message"](arrSampleSet[SID]);
+        
+        //get the barcode text field
+        var Barcode = GetAutomationIDControl("DLSampleLoad", "SampleBarcode"+(SID+1))
+        var txtBarcode = Barcode["FindChild"]("WPFControlAutomationId","SampleBarcodeTextBox", 35)      
+       
+        Log["Message"]("Entering Barcode for Tube"+(SID+1))
+        SetText(txtBarcode, arrSampleSet[SID]);
+        aqUtils["Delay"](1000);
+      }
+  
+      //Click Load rack button
+      Log["Message"]("Clicking Load Rack button");
+      var btnLoadRack=GetAutomationIDControl("DLSampleLoad","LoadRackButton");
+      Clickbutton(btnLoadRack);
+      
+      //Update the index of the loop
+      index += numberOfSampleToLoad;
+    }
+        
+    
+    Log["Checkpoint"]("Sample Tube loaded successfully");
+    Log["PopLogFolder"]()
+    return true;
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception :"+exp["Description"]);
+    Log["PopLogFolder"](); 
+    return false;
+  }   
+}

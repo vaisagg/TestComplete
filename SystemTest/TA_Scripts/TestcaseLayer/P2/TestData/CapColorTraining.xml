@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<!--HighLevelModuleID values :
+		GENERAL_IAPM_MODULE
+        ANALYTICS_MODULE
+        CALIBRATION_MODULE
+        DIAGNOSTIC_MODULE
+        FLASH_FIRMWARE_MODULE
+        FILE_TRANSFER_MODULE
+        LOW_LEVEL_MESSAGE_HANDLER_MODULE
+        CAP_COLOR_TRAINING_MODULE -->
+<!--HighLevelErrorID values :
+        /// General error codes
+		NoError
+        NO_CLIENT_SUBSCRIPTION
+        LOGIN_FAILED
+        INSUFFICIENT_ACCESS_RIGHTS
+        IAPM_ERROR_STATE
+        FAILED_TO_GET_IMAGES
+        INCORRECT_DATA_IN_REQUEST
+        FILE_NOT_FOUND
+        EXCEPTION_IN_ALGORITHM
+
+        /// Analysis error codes
+        ANALYSIS_FEATURE_NOT_SUPPORTED
+        ANALYSIS_CANCELLED
+        INVALID_ANALYSIS_ID
+        SYSTEM_NOT_CALIBRATED
+
+        /// Calibration error codes
+        INVALID_CALIBRATION_FEATURE
+        CALIBRATION_FEATURE_NOT_AVAILABLE
+        ERROR_IN_CALIBRATION
+
+        /// Diagnostic error codes
+        INVALID_DIAGNOSTIC_FEATURE_ID
+
+        /// Flash Firmware error codes
+        FIRMWARE_UPLOAD_FAILED
+        FIRMWARE_DOWNLOAD_FAILED
+        SYSTEM_CONFIG_UPLOAD_FAILED
+        SYSTEM_CONFIG_DOWNLOAD_FAILED
+
+        /// File transfer error codes
+        INVALID_FILE
+        INVALID_FILE_USAGE_PAIR
+        FILE_OPERATION_FAILED
+
+        /// Low level message error code
+        FAILED_TO_HANDLE_LOW_LEVEL_MESSAGE
+        TAKE_SNAPSHOT_WITH_SETTINGS_FAILED
+       
+        /// Cap color training error codes
+        CCT_DATABASE_CORRUPT
+        CCT_NO_TUBE_IN_PUCK_SLOT
+        CCT_TUBE_WITHOUT_CAP
+        DummyError -->
+<CapColorTrainingResponseValues>
+	<ConsistentCapColors>
+		<ConsistentCapColor>
+			<Primary>
+				<R Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<G Value="0"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<B Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+			</Primary>
+			<Secondary>
+				<R Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<G Value="0"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<B Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+			</Secondary>
+		</ConsistentCapColor>
+	</ConsistentCapColors>
+	<TubeTypeConsistentData>
+		<!--HighLevelModuleID values are defined at the top of this file-->
+		<HighLevelModuleID Value="CAP_COLOR_TRAINING_MODULE"/>
+		<!--HighLevelErrorID values are defined at the top of this file-->
+		<HighLevelErrorID Value="NoError"/>
+		<ResultDescription Value="Not in error state"/>
+	</TubeTypeConsistentData>
+	<AssignTubeGroupResponse>
+		<!--HighLevelModuleID values are defined at the top of this file-->
+		<HighLevelModuleID Value="CAP_COLOR_TRAINING_MODULE"/>
+		<!--HighLevelErrorID values are defined at the top of this file-->
+		<HighLevelErrorID Value="NoError"/>
+		<ResultDescription Value="Not in error state"/>
+	</AssignTubeGroupResponse>
+	<ValidateTubeGroupsNonOverlappingResponse>
+		<!--HighLevelModuleID values are defined at the top of this file-->
+		<HighLevelModuleID Value="CAP_COLOR_TRAINING_MODULE"/>
+		<!--HighLevelErrorID values are defined at the top of this file-->
+		<HighLevelErrorID Value="NoError"/>
+		<ResultDescription Value="Not in error state"/>
+	</ValidateTubeGroupsNonOverlappingResponse>
+	<RemoveTrainedTubeResponse>
+		<!--HighLevelModuleID values are defined at the top of this file-->
+		<HighLevelModuleID Value="CAP_COLOR_TRAINING_MODULE"/>
+		<!--HighLevelErrorID values are defined at the top of this file-->
+		<HighLevelErrorID Value="NoError"/>
+		<ResultDescription Value="Not in error state"/>
+	</RemoveTrainedTubeResponse>
+	<ValidateTrainedTubeDatabaseResponse>
+		<!--HighLevelModuleID values are defined at the top of this file-->
+		<HighLevelModuleID Value="CAP_COLOR_TRAINING_MODULE"/>
+		<!--HighLevelErrorID values are defined at the top of this file-->
+		<HighLevelErrorID Value="NoError"/>
+		<ResultDescription Value="Not in error state"/>
+	</ValidateTrainedTubeDatabaseResponse>
+	<TubeDatas>
+		<TubeData>
+			<CapColorPrimary>
+				<R Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<G Value="0"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<B Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+			</CapColorPrimary>
+			<CapColorSecondary>
+				<R Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<G Value="0"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+				<B Value="255"/>
+				<!--MinValue = "0" MaxValue = "255"-->
+			</CapColorSecondary>
+			<!--HighLevelModuleID values are defined at the top of this file-->
+			<HighLevelModuleID Value="CAP_COLOR_TRAINING_MODULE"/>
+			<!--HighLevelErrorID values are defined at the top of this file-->
+			<HighLevelErrorID Value="NoError"/>
+			<ResultDescription Value="Not in error state"/>
+		</TubeData>
+	</TubeDatas>
+</CapColorTrainingResponseValues>

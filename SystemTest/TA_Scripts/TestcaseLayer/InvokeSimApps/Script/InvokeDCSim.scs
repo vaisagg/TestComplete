@@ -1,0 +1,59 @@
+﻿//USEUNIT DecapperLibrary
+//USEUNIT WorkflowNavigator
+
+function InvokeDCSim()
+{ 
+  try
+  {
+
+    strAppName="-skip true" //modified for CI installer build
+    var strAppPath ="C:\\Siemens\\Bin\\Ramp.exe";    //modified for CI installer build
+    //    var strAppPath ="C:\\Siemens\\LaunchDcprSimulation.bat"
+    var oShell=Sys.OleObject("Shell.Application");
+    var bReturn = false;
+//      var objBtnLoadConfig = Aliases.NodeNetworkSimulator.HwndSource_MainWindow.MainWindow.ConfigButton
+//      if(objBtnLoadConfig.Exists==false)
+    proc=Sys["WaitProcess"]("NodeNetworkSimulator");
+    if(!proc["Exists"])
+    {
+      InvokeDecapper(strAppName,strAppPath)
+      //aqUtils.Delay(45000);     
+    }
+  }
+  catch(exp)
+  {
+    Log["Error"]("Exception",exp["description"]);    
+  }
+  
+}
+
+//function InvokeDCSim()
+//{ 
+//  try
+//  {
+//   //InitializeMetaData()
+//          
+//
+//     strAppName="Decapper"
+//     var strAppPath ="C:\\hydra.dev\\drop\\Bin\\Ramp.exe"; // modified for P2 project
+//      var oShell=Sys.OleObject("Shell.Application");
+//      var bReturn = false;
+//      var objBtnLoadConfig = Aliases.NodeNetworkSimulator.HwndSource_MainWindow.MainWindow.ConfigButton
+//      //Check if the CC Process exists
+//      if(objBtnLoadConfig.Exists==false)
+//      {
+//        InvokeDecapper(strAppName,strAppPath)
+//        //aqUtils.Delay(45000);     
+//      }
+//  }
+//  catch(exp)
+//  {
+//    Log["Error"]("Exception",exp["description"]);    
+//  }
+//  
+//  }
+  function LoadDecapper1()
+  {
+     var objBtnLoadConfig = GetControl("Decapper", "btnLoadConfig")
+    ClickControl(objBtnLoadConfig);
+  }
